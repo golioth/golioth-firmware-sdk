@@ -11,7 +11,6 @@
 #include "golioth_statistics.h"
 #include "golioth_local_log.h"
 #include <cJSON.h>
-// #include <nvs_flash.h>
 #include <math.h>  // modf
 
 // Example settings request from cloud:
@@ -38,53 +37,11 @@
 
 #define SETTINGS_PATH_PREFIX ".c/"
 #define SETTINGS_STATUS_PATH "status"
-#define GOLIOTH_NVS_NAMESPACE "golioth"
 
 static struct {
     bool initialized;
     golioth_settings_cb callback;
 } _golioth_settings;
-
-#if 0
-static void save_to_nvs(const char* key, const golioth_settings_value_t* value) {
-    nvs_handle_t handle;
-    esp_err_t err = nvs_open(GOLIOTH_NVS_NAMESPACE, NVS_READWRITE, &handle);
-    if (err != ESP_OK) {
-        ESP_LOGE(TAG, "nvs_open failed");
-        return;
-    }
-
-    switch (value->type) {
-        case GOLIOTH_SETTINGS_VALUE_TYPE_INT:
-            err = nvs_set_i32(handle, key, value->i32);
-            break;
-        case GOLIOTH_SETTINGS_VALUE_TYPE_BOOL:
-            // nvs_flash doesn't support bool type, so we will
-            // use u8 to store it instead.
-            err = nvs_set_u8(handle, key, value->b);
-            break;
-        case GOLIOTH_SETTINGS_VALUE_TYPE_FLOAT:
-            // nvs_flash doesn't support float type, so we will
-            // use u32 to store it instead.
-            err = nvs_set_u32(handle, key, *(uint32_t*)&value->f);
-            break;
-        case GOLIOTH_SETTINGS_VALUE_TYPE_STRING:
-            err = nvs_set_str(handle, key, value->string.ptr);
-            break;
-        case GOLIOTH_SETTINGS_VALUE_TYPE_UNKNOWN:  // fallthrough
-        default:
-            ESP_LOGE(TAG, "Unable to save, invalid type");
-            break;
-    }
-
-    if (err != ESP_OK) {
-        ESP_LOGE(TAG, "nvs_set_X err: %d", err);
-    }
-
-    nvs_commit(handle);
-    nvs_close(handle);
-}
-#endif
 
 static void send_status_report(
         golioth_client_t client,
@@ -191,9 +148,7 @@ static void on_settings(
 
         if (value.type != GOLIOTH_SETTINGS_VALUE_TYPE_UNKNOWN) {
             golioth_settings_status_t setting_status = _golioth_settings.callback(key, &value);
-            if (setting_status == GOLIOTH_SETTINGS_SUCCESS) {
-                // save_to_nvs(key, &value);
-            } else {
+            if (setting_status != GOLIOTH_SETTINGS_SUCCESS) {
                 cumulative_status = setting_status;
             }
         }
@@ -201,14 +156,6 @@ static void on_settings(
     next_setting:
         setting = setting->next;
     }
-
-    // if (cumulative_status == GOLIOTH_SETTINGS_SUCCESS) {
-        // golioth_settings_value_t value = {
-        //         .type = GOLIOTH_SETTINGS_VALUE_TYPE_INT,
-        //         .i32 = version->valueint,
-        // };
-        // save_to_nvs("version", &value);
-    // }
 
     send_status_report(client, version->valueint, cumulative_status);
 

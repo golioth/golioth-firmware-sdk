@@ -15,17 +15,13 @@
 /// Functions for interacting with the Golioth Settings service
 ///
 /// The Settings service is for long-lived persistent configuration data.
-/// Settings are configured/written from the cloud, read
-/// by the device, and written to device flash. The device observes
+/// Settings are configured/written from the cloud and read
+/// by the device. The device observes
 /// for settings updates, and reports status of applying the
 /// settings to the cloud.
 ///
 /// Each setting is a key/value pair, where the key is a string
-/// and the value can be int32_t, bool, float, or string. The
-/// settings are stored in non-volatile storage (NVS), via
-/// Espressif's nvs_flash component. Keys can be no more than
-/// 15 characters (limitation in nvs_flash component) and values
-/// can be no more than 1000 characters.
+/// and the value can be int32_t, bool, float, or string.
 ///
 /// Overall, the flow is:
 ///
@@ -37,8 +33,8 @@
 ///    save the setting to NVS. Otherwise, it will not be saved to NVS.
 /// 6. This library reports status of applying settings to cloud.
 ///
-/// This library is responsible for interfacing with the cloud
-/// and saving settings to flash, but has no knowledge of the specific settings.
+/// This library is responsible for interfacing with the cloud,
+/// but has no knowledge of the specific settings.
 ///
 /// @{
 
@@ -56,7 +52,7 @@ typedef enum {
     GOLIOTH_SETTINGS_VALUE_OUTSIDE_RANGE = 4,
     /// The setting value string is too long, exceeds max length
     GOLIOTH_SETTINGS_VALUE_STRING_TOO_LONG = 5,
-    /// Other general error (e.g. Flash I/O error)
+    /// Other general error (e.g. I/O error)
     GOLIOTH_SETTINGS_GENERAL_ERROR = 6,
 } golioth_settings_status_t;
 
