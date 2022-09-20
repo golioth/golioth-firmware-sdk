@@ -1,3 +1,0 @@
-[submodule "third_party/libcoap"]
-	path = third_party/libcoap
-	url = https://github.com/obgm/libcoap
