@@ -1,8 +1,12 @@
+#include "golioth_fw_update.h"
+
+#if 0
 /*
  * Copyright (c) 2022 Golioth, Inc.
  *
  * SPDX-License-Identifier: Apache-2.0
  */
+
 #include <string.h>
 #include "esp_log.h"
 #include "esp_ota_ops.h"
@@ -359,8 +363,10 @@ static void fw_update_task(void* arg) {
         esp_restart();
     }
 }
+#endif
 
 void golioth_fw_update_init(golioth_client_t client, const char* current_version) {
+#if 0
     static bool initialized = false;
 
     ESP_LOGI(TAG, "Current firmware version: %s", current_version);
@@ -383,4 +389,5 @@ void golioth_fw_update_init(golioth_client_t client, const char* current_version
             initialized = true;
         }
     }
+#endif
 }

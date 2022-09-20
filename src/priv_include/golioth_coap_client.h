@@ -5,15 +5,15 @@
  */
 #pragma once
 
-#include <stdint.h>
-#include <freertos/FreeRTOS.h>
-#include <freertos/task.h>
-#include <freertos/semphr.h>
-#include <freertos/timers.h>
-#include <freertos/event_groups.h>
+#include <FreeRTOS.h>
+#include <task.h>
+#include <semphr.h>
+#include <timers.h>
+#include <event_groups.h>
 #include <coap3/coap.h>  // COAP_MEDIATYPE_*
 #include "golioth_client.h"
 #include "golioth_lightdb.h"
+#include "golioth_config.h"
 
 /// Event group bits for request_complete_event
 #define RESPONSE_RECEIVED_EVENT_BIT (1 << 0)

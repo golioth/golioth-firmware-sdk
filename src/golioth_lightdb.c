@@ -3,7 +3,7 @@
  *
  * SPDX-License-Identifier: Apache-2.0
  */
-#include <esp_log.h>
+#include "golioth_local_log.h"
 #include "golioth_coap_client.h"
 #include "golioth_lightdb.h"
 #include "golioth_util.h"
@@ -44,7 +44,7 @@ static golioth_status_t golioth_lightdb_set_int_internal(
         golioth_set_cb_fn callback,
         void* callback_arg) {
     char buf[16] = {};
-    snprintf(buf, sizeof(buf), "%d", value);
+    snprintf(buf, sizeof(buf), "%"PRId32, value);
     return golioth_coap_client_set(
             client,
             path_prefix,

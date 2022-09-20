@@ -3,12 +3,12 @@
  *
  * SPDX-License-Identifier: Apache-2.0
  */
-#include <esp_log.h>
 #include <cJSON.h>
 #include "golioth_coap_client.h"
 #include "golioth_log.h"
 #include "golioth_time.h"
 #include "golioth_statistics.h"
+#include "golioth_local_log.h"
 
 #define TAG "golioth_log"
 

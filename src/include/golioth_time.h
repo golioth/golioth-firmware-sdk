@@ -10,9 +10,6 @@
 /// For Golioth APIs that take a timeout parameter
 #define GOLIOTH_WAIT_FOREVER -1
 
-/// Time since boot, in microseconds
-uint64_t golioth_time_micros(void);
-
 /// Time since boot, in milliseconds
 uint64_t golioth_time_millis(void);
 

@@ -8,6 +8,7 @@
 #include <stdint.h>
 #include "golioth_status.h"
 #include "golioth_client.h"
+#include "golioth_config.h"
 
 /// @defgroup golioth_ota golioth_ota
 /// Functions for interacting with Golioth OTA services

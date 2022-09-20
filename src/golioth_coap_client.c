@@ -8,8 +8,6 @@
 #include <sys/socket.h>
 #include <netdb.h>      // struct addrinfo
 #include <sys/param.h>  // MIN
-#include <freertos/event_groups.h>
-#include <esp_log.h>
 #include <coap3/coap.h>
 #include "golioth_client.h"
 #include "golioth_coap_client.h"
@@ -17,6 +15,8 @@
 #include "golioth_util.h"
 #include "golioth_time.h"
 #include "golioth_lightdb.h"
+#include "golioth_local_log.h"
+#include "golioth_config.h"
 
 #define TAG "golioth_coap_client"
 
@@ -118,30 +118,30 @@ static coap_response_t coap_response_handler(
 
     if (req) {
         if (req->type == GOLIOTH_COAP_REQUEST_EMPTY) {
-            ESP_LOGD(TAG, "%d.%02d (empty req), len %zu", class, code, data_len);
+            ESP_LOGD(TAG, "%d.%02d (empty req), len %"PRIu32, class, code, (uint32_t)data_len);
         } else if (class != 2) {  // not 2.XX, i.e. not success
             ESP_LOGW(
                     TAG,
-                    "%d.%02d (req type: %d, path: %s%s), len %zu",
+                    "%d.%02d (req type: %d, path: %s%s), len %"PRIu32,
                     class,
                     code,
                     req->type,
                     req->path_prefix,
                     req->path,
-                    data_len);
+                    (uint32_t)data_len);
         } else {
             ESP_LOGD(
                     TAG,
-                    "%d.%02d (req type: %d, path: %s%s), len %zu",
+                    "%d.%02d (req type: %d, path: %s%s), len %"PRIu32,
                     class,
                     code,
                     req->type,
                     req->path_prefix,
                     req->path,
-                    data_len);
+                    (uint32_t)data_len);
         }
     } else {
-        ESP_LOGD(TAG, "%d.%02d (unsolicited), len %zu", class, code, data_len);
+        ESP_LOGD(TAG, "%d.%02d (unsolicited), len %"PRIu32, class, code, (uint32_t)data_len);
     }
 
     if (req && token_matches_request(req, received)) {
@@ -168,9 +168,9 @@ static coap_response_t coap_response_handler(
 
                 ESP_LOGD(
                         TAG,
-                        "Request block index = %u, response block index = %u, offset 0x%08X",
-                        req->get_block.block_index,
-                        opt_block_index,
+                        "Request block index = %"PRIu32", response block index = %"PRIu32", offset 0x%08"PRIX32,
+                        (uint32_t)req->get_block.block_index,
+                        (uint32_t)opt_block_index,
                         opt_block_index * 1024);
                 ESP_LOG_BUFFER_HEXDUMP(TAG, data, min(32, data_len), ESP_LOG_DEBUG);
 
@@ -510,7 +510,7 @@ static int validate_cn_call_back(
         unsigned depth,
         int validated,
         void* arg) {
-    ESP_LOGI(TAG, "Server Cert: Depth = %u, Len = %zu, Valid = %d", depth, asn1_length, validated);
+    ESP_LOGI(TAG, "Server Cert: Depth = %u, Len = %"PRIu32", Valid = %d", depth, (uint32_t)asn1_length, validated);
     return 1;
 }
 
@@ -704,7 +704,7 @@ static golioth_status_t coap_io_loop_once(
         } else {
             time_spent_waiting_ms += num_ms;
             if (request_msg.got_response) {
-                ESP_LOGD(TAG, "Received response in %d ms", time_spent_waiting_ms);
+                ESP_LOGD(TAG, "Received response in %"PRId32" ms", time_spent_waiting_ms);
                 break;
             } else {
                 // During normal operation, there will be other kinds of IO to process,

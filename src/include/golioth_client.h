@@ -7,6 +7,7 @@
 
 #include <stdbool.h>
 #include <stdlib.h>
+#include <stdint.h>
 #include "golioth_status.h"
 
 /// @defgroup golioth_client golioth_client

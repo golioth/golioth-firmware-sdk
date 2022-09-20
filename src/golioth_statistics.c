@@ -5,7 +5,7 @@
  */
 
 #include "golioth_statistics.h"
-#include <esp_log.h>
+#include "golioth_local_log.h"
 #include <stdint.h>
 #include <stdlib.h>
 

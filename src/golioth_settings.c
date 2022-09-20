@@ -9,9 +9,9 @@
 #include "golioth_time.h"
 #include "golioth_coap_client.h"
 #include "golioth_statistics.h"
+#include "golioth_local_log.h"
 #include <cJSON.h>
-#include <nvs_flash.h>
-#include <esp_log.h>
+// #include <nvs_flash.h>
 #include <math.h>  // modf
 
 // Example settings request from cloud:
@@ -45,6 +45,7 @@ static struct {
     golioth_settings_cb callback;
 } _golioth_settings;
 
+#if 0
 static void save_to_nvs(const char* key, const golioth_settings_value_t* value) {
     nvs_handle_t handle;
     esp_err_t err = nvs_open(GOLIOTH_NVS_NAMESPACE, NVS_READWRITE, &handle);
@@ -83,6 +84,7 @@ static void save_to_nvs(const char* key, const golioth_settings_value_t* value) 
     nvs_commit(handle);
     nvs_close(handle);
 }
+#endif
 
 static void send_status_report(
         golioth_client_t client,
@@ -190,7 +192,7 @@ static void on_settings(
         if (value.type != GOLIOTH_SETTINGS_VALUE_TYPE_UNKNOWN) {
             golioth_settings_status_t setting_status = _golioth_settings.callback(key, &value);
             if (setting_status == GOLIOTH_SETTINGS_SUCCESS) {
-                save_to_nvs(key, &value);
+                // save_to_nvs(key, &value);
             } else {
                 cumulative_status = setting_status;
             }
@@ -200,13 +202,13 @@ static void on_settings(
         setting = setting->next;
     }
 
-    if (cumulative_status == GOLIOTH_SETTINGS_SUCCESS) {
-        golioth_settings_value_t value = {
-                .type = GOLIOTH_SETTINGS_VALUE_TYPE_INT,
-                .i32 = version->valueint,
-        };
-        save_to_nvs("version", &value);
-    }
+    // if (cumulative_status == GOLIOTH_SETTINGS_SUCCESS) {
+        // golioth_settings_value_t value = {
+        //         .type = GOLIOTH_SETTINGS_VALUE_TYPE_INT,
+        //         .i32 = version->valueint,
+        // };
+        // save_to_nvs("version", &value);
+    // }
 
     send_status_report(client, version->valueint, cumulative_status);
 
