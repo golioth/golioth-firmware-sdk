@@ -8,7 +8,7 @@
 #include "golioth_log.h"
 #include "golioth_time.h"
 #include "golioth_statistics.h"
-#include "golioth_local_log.h"
+#include "golioth_debug.h"
 
 #define TAG "golioth_log"
 
@@ -49,7 +49,7 @@ static golioth_status_t golioth_log_internal(
     GSTATS_INC_FREE("json");
 
     if (!printed) {
-        ESP_LOGE(TAG, "Failed to serialize log: %s", logbuf);
+        GLTH_LOGE(TAG, "Failed to serialize log: %s", logbuf);
         return GOLIOTH_ERR_SERIALIZE;
     }
 

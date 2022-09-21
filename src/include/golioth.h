@@ -14,3 +14,4 @@
 #include "golioth_time.h"
 #include "golioth_fw_update.h"
 #include "golioth_settings.h"
+#include "golioth_debug.h"

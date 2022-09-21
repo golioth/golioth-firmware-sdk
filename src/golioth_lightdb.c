@@ -3,7 +3,7 @@
  *
  * SPDX-License-Identifier: Apache-2.0
  */
-#include "golioth_local_log.h"
+#include "golioth_debug.h"
 #include "golioth_coap_client.h"
 #include "golioth_lightdb.h"
 #include "golioth_util.h"

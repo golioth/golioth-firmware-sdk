@@ -49,12 +49,12 @@ static bool header_valid(const uint8_t* bytes, size_t nbytes) {
     if (last_invalid_app) {
         if (memcmp(invalid_app_info.version, new_app_info.version, sizeof(new_app_info.version))
             == 0) {
-            ESP_LOGW(TAG, "New version is the same as invalid version.");
-            ESP_LOGW(
+            GLTH_LOGW(TAG, "New version is the same as invalid version.");
+            GLTH_LOGW(
                     TAG,
                     "Previously, there was an attempt to launch the firmware with %s version, but it failed.",
                     invalid_app_info.version);
-            ESP_LOGW(TAG, "The firmware has been rolled back to the previous version.");
+            GLTH_LOGW(TAG, "The firmware has been rolled back to the previous version.");
             return false;
         }
     }
@@ -79,7 +79,7 @@ static void fw_update_rollback_and_reboot(void) {
 
 static void fw_update_cancel_rollback(void) {
     esp_ota_mark_app_valid_cancel_rollback();
-    ESP_LOGI(TAG, "State = Idle");
+    GLTH_LOGI(TAG, "State = Idle");
     golioth_ota_report_state_sync(
             _client,
             GOLIOTH_OTA_STATE_UPDATING,
@@ -94,7 +94,7 @@ static bool fw_update_manifest_version_is_different(const golioth_ota_manifest_t
     _main_component = golioth_ota_find_component(manifest, "main");
     if (_main_component) {
         if (0 != strcmp(_current_version, _main_component->version)) {
-            ESP_LOGI(
+            GLTH_LOGI(
                     TAG,
                     "Current version = %s, Target version = %s",
                     _current_version,
@@ -110,7 +110,7 @@ static golioth_status_t fw_update_download_and_write_flash(void) {
 
     esp_err_t err = ESP_OK;
 
-    ESP_LOGI(TAG, "State = Downloading");
+    GLTH_LOGI(TAG, "State = Downloading");
     golioth_ota_report_state_sync(
             _client,
             GOLIOTH_OTA_STATE_DOWNLOADING,
@@ -122,20 +122,20 @@ static golioth_status_t fw_update_download_and_write_flash(void) {
 
     _update_partition = esp_ota_get_next_update_partition(NULL);
     assert(_update_partition);
-    ESP_LOGI(
+    GLTH_LOGI(
             TAG,
             "Writing to partition subtype %d at offset 0x%x",
             _update_partition->subtype,
             _update_partition->address);
 
     // Handle blocks one at a time
-    ESP_LOGI(TAG, "Image size = %zu", _main_component->size);
+    GLTH_LOGI(TAG, "Image size = %zu", _main_component->size);
     size_t nblocks = golioth_ota_size_to_nblocks(_main_component->size);
     size_t bytes_written = 0;
     for (size_t i = 0; i < nblocks; i++) {
         size_t block_nbytes = 0;
 
-        ESP_LOGI(TAG, "Getting block index %d (%d/%d)", i, i + 1, nblocks);
+        GLTH_LOGI(TAG, "Getting block index %d (%d/%d)", i, i + 1, nblocks);
 
         golioth_status_t status = golioth_ota_get_block_sync(
                 _client,
@@ -146,7 +146,7 @@ static golioth_status_t fw_update_download_and_write_flash(void) {
                 &block_nbytes,
                 GOLIOTH_WAIT_FOREVER);
         if (status != GOLIOTH_OK) {
-            ESP_LOGE(TAG, "Failed to get block index %d (%s)", i, golioth_status_to_str(status));
+            GLTH_LOGE(TAG, "Failed to get block index %d (%s)", i, golioth_status_to_str(status));
             break;
         }
 
@@ -156,10 +156,10 @@ static golioth_status_t fw_update_download_and_write_flash(void) {
             if (!header_valid(_ota_block_buffer, block_nbytes)) {
                 break;
             }
-            ESP_LOGI(TAG, "Erasing flash");
+            GLTH_LOGI(TAG, "Erasing flash");
             err = esp_ota_begin(_update_partition, _main_component->size, &_update_handle);
             if (err != ESP_OK) {
-                ESP_LOGE(TAG, "esp_ota_begin failed (%s)", esp_err_to_name(err));
+                GLTH_LOGE(TAG, "esp_ota_begin failed (%s)", esp_err_to_name(err));
                 esp_ota_abort(_update_handle);
                 break;
             }
@@ -174,14 +174,14 @@ static golioth_status_t fw_update_download_and_write_flash(void) {
         bytes_written += block_nbytes;
     }
 
-    ESP_LOGI(TAG, "Total bytes written: %zu", bytes_written);
+    GLTH_LOGI(TAG, "Total bytes written: %zu", bytes_written);
     if (bytes_written != _main_component->size) {
-        ESP_LOGE(
+        GLTH_LOGE(
                 TAG,
                 "Download failed, downloaded size %zu does not match manifest size %zu",
                 bytes_written,
                 _main_component->size);
-        ESP_LOGI(TAG, "State = Idle");
+        GLTH_LOGI(TAG, "State = Idle");
         golioth_ota_report_state_sync(
                 _client,
                 GOLIOTH_OTA_STATE_IDLE,
@@ -201,12 +201,12 @@ static golioth_status_t fw_update_validate(void) {
     esp_err_t err = esp_ota_end(_update_handle);
     if (err != ESP_OK) {
         if (err == ESP_ERR_OTA_VALIDATE_FAILED) {
-            ESP_LOGE(TAG, "Image validation failed, image is corrupted");
+            GLTH_LOGE(TAG, "Image validation failed, image is corrupted");
         } else {
-            ESP_LOGE(TAG, "esp_ota_end failed (%s)!", esp_err_to_name(err));
+            GLTH_LOGE(TAG, "esp_ota_end failed (%s)!", esp_err_to_name(err));
         }
 
-        ESP_LOGI(TAG, "State = Idle");
+        GLTH_LOGI(TAG, "State = Idle");
         golioth_ota_report_state_sync(
                 _client,
                 GOLIOTH_OTA_STATE_IDLE,
@@ -218,7 +218,7 @@ static golioth_status_t fw_update_validate(void) {
         return GOLIOTH_ERR_FAIL;
     }
 
-    ESP_LOGI(TAG, "State = Downloaded");
+    GLTH_LOGI(TAG, "State = Downloaded");
     golioth_ota_report_state_sync(
             _client,
             GOLIOTH_OTA_STATE_DOWNLOADED,
@@ -233,7 +233,7 @@ static golioth_status_t fw_update_validate(void) {
 static golioth_status_t fw_update_change_boot_image(void) {
     assert(_update_partition);
 
-    ESP_LOGI(TAG, "State = Updating");
+    GLTH_LOGI(TAG, "State = Updating");
     golioth_ota_report_state_sync(
             _client,
             GOLIOTH_OTA_STATE_UPDATING,
@@ -243,10 +243,10 @@ static golioth_status_t fw_update_change_boot_image(void) {
             NULL,
             GOLIOTH_WAIT_FOREVER);
 
-    ESP_LOGI(TAG, "Setting boot partition");
+    GLTH_LOGI(TAG, "Setting boot partition");
     esp_err_t err = esp_ota_set_boot_partition(_update_partition);
     if (err != ESP_OK) {
-        ESP_LOGE(TAG, "esp_ota_set_boot_partition failed (%s)!", esp_err_to_name(err));
+        GLTH_LOGE(TAG, "esp_ota_set_boot_partition failed (%s)!", esp_err_to_name(err));
         return GOLIOTH_ERR_FAIL;
     }
     return GOLIOTH_OK;
@@ -263,18 +263,18 @@ static void on_ota_manifest(
         return;
     }
 
-    ESP_LOGD(TAG, "Received OTA manifest: %.*s", payload_size, payload);
+    GLTH_LOGD(TAG, "Received OTA manifest: %.*s", payload_size, payload);
 
     golioth_ota_state_t state = golioth_ota_get_state();
     if (state == GOLIOTH_OTA_STATE_DOWNLOADING) {
-        ESP_LOGW(TAG, "Ignoring manifest while download in progress");
+        GLTH_LOGW(TAG, "Ignoring manifest while download in progress");
         return;
     }
 
     golioth_status_t status =
             golioth_ota_payload_as_manifest(payload, payload_size, &_ota_manifest);
     if (status != GOLIOTH_OK) {
-        ESP_LOGE(TAG, "Failed to parse manifest: %s", golioth_status_to_str(status));
+        GLTH_LOGE(TAG, "Failed to parse manifest: %s", golioth_status_to_str(status));
         return;
     }
     xSemaphoreGive(_manifest_rcvd);
@@ -292,7 +292,7 @@ static void fw_update_task(void* arg) {
     //
     // If we don't connect after 30 seconds, roll back to the old image.
     if (fw_update_is_pending_verify()) {
-        ESP_LOGI(TAG, "Waiting for golioth client to connect before cancelling rollback");
+        GLTH_LOGI(TAG, "Waiting for golioth client to connect before cancelling rollback");
         int seconds_elapsed = 0;
         while (seconds_elapsed < 30) {
             if (golioth_client_is_connected(_client)) {
@@ -305,13 +305,13 @@ static void fw_update_task(void* arg) {
         if (seconds_elapsed == 30) {
             // We didn't connect to Golioth cloud, so something might be wrong with
             // this firmware. Roll back and reboot.
-            ESP_LOGW(TAG, "Failed to connect to Golioth");
-            ESP_LOGW(TAG, "!!!");
-            ESP_LOGW(TAG, "!!! Rolling back and rebooting now!");
-            ESP_LOGW(TAG, "!!!");
+            GLTH_LOGW(TAG, "Failed to connect to Golioth");
+            GLTH_LOGW(TAG, "!!!");
+            GLTH_LOGW(TAG, "!!! Rolling back and rebooting now!");
+            GLTH_LOGW(TAG, "!!!");
             fw_update_rollback_and_reboot();
         } else {
-            ESP_LOGI(TAG, "Firmware updated successfully!");
+            GLTH_LOGI(TAG, "Firmware updated successfully!");
             fw_update_cancel_rollback();
         }
     }
@@ -328,35 +328,35 @@ static void fw_update_task(void* arg) {
     golioth_ota_observe_manifest_async(_client, on_ota_manifest, NULL);
 
     while (1) {
-        ESP_LOGI(TAG, "Waiting to receive OTA manifest");
+        GLTH_LOGI(TAG, "Waiting to receive OTA manifest");
         xSemaphoreTake(_manifest_rcvd, portMAX_DELAY);
-        ESP_LOGI(TAG, "Received OTA manifest");
+        GLTH_LOGI(TAG, "Received OTA manifest");
         if (!fw_update_manifest_version_is_different(&_ota_manifest)) {
-            ESP_LOGI(TAG, "Manifest does not contain different firmware version. Nothing to do.");
+            GLTH_LOGI(TAG, "Manifest does not contain different firmware version. Nothing to do.");
             continue;
         }
 
         if (fw_update_download_and_write_flash() != GOLIOTH_OK) {
-            ESP_LOGE(TAG, "Firmware download failed");
+            GLTH_LOGE(TAG, "Firmware download failed");
             fw_update_end();
             continue;
         }
 
         if (fw_update_validate() != GOLIOTH_OK) {
-            ESP_LOGE(TAG, "Firmware validate failed");
+            GLTH_LOGE(TAG, "Firmware validate failed");
             fw_update_end();
             continue;
         }
 
         if (fw_update_change_boot_image() != GOLIOTH_OK) {
-            ESP_LOGE(TAG, "Firmware change boot image failed");
+            GLTH_LOGE(TAG, "Firmware change boot image failed");
             fw_update_end();
             continue;
         }
 
         int countdown = 5;
         while (countdown > 0) {
-            ESP_LOGI(TAG, "Rebooting into new image in %d seconds", countdown);
+            GLTH_LOGI(TAG, "Rebooting into new image in %d seconds", countdown);
             vTaskDelay(1000 / portTICK_PERIOD_MS);
             countdown--;
         }
@@ -369,7 +369,7 @@ void golioth_fw_update_init(golioth_client_t client, const char* current_version
 #if 0
     static bool initialized = false;
 
-    ESP_LOGI(TAG, "Current firmware version: %s", current_version);
+    GLTH_LOGI(TAG, "Current firmware version: %s", current_version);
 
     _client = client;
     _current_version = current_version;
@@ -384,7 +384,7 @@ void golioth_fw_update_init(golioth_client_t client, const char* current_version
                 3,     // pri
                 NULL);
         if (!task_created) {
-            ESP_LOGE(TAG, "Failed to create shell task");
+            GLTH_LOGE(TAG, "Failed to create shell task");
         } else {
             initialized = true;
         }

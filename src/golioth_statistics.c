@@ -5,7 +5,7 @@
  */
 
 #include "golioth_statistics.h"
-#include "golioth_local_log.h"
+#include "golioth_debug.h"
 #include <stdint.h>
 #include <stdlib.h>
 
@@ -48,7 +48,7 @@ void golioth_statistics_increment_alloc(const char* name) {
         // No more room for allocations, just drop it
         static bool logged_warning = false;
         if (!logged_warning) {
-            ESP_LOGW(TAG, "Ran out of space for tracking allocations");
+            GLTH_LOGW(TAG, "Ran out of space for tracking allocations");
             logged_warning = true;
         }
         return;
@@ -75,7 +75,7 @@ bool golioth_statistics_has_allocation_leaks(void) {
         bool alloc_has_leak = (a->num_allocs != a->num_frees);
         any_alloc_has_leak |= alloc_has_leak;
 
-        ESP_LOGD(
+        GLTH_LOGD(
                 TAG,
                 "%-32s: %d %d%s",
                 a->name,

@@ -9,7 +9,7 @@
 #include "golioth_time.h"
 #include "golioth_coap_client.h"
 #include "golioth_statistics.h"
-#include "golioth_local_log.h"
+#include "golioth_debug.h"
 #include <cJSON.h>
 #include <math.h>  // modf
 
@@ -51,7 +51,7 @@ static void send_status_report(
     cJSON_AddNumberToObject(status_report, "version", version);
     cJSON_AddNumberToObject(status_report, "error_code", status);
     char* json_string = cJSON_PrintUnformatted(status_report);
-    ESP_LOGD(TAG, "Sending status: %s", json_string);
+    GLTH_LOGD(TAG, "Sending status: %s", json_string);
     golioth_coap_client_set(
             client,
             SETTINGS_PATH_PREFIX,
@@ -79,24 +79,24 @@ static void on_settings(
         return;
     }
 
-    ESP_LOG_BUFFER_HEXDUMP(TAG, payload, min(64, payload_size), ESP_LOG_DEBUG);
+    GLTH_LOG_BUFFER_HEXDUMP(TAG, payload, min(64, payload_size), GLTH_LOG_DEBUG);
 
     cJSON* json = cJSON_ParseWithLength((const char*)payload, payload_size);
     if (!json) {
-        ESP_LOGE(TAG, "Failed to parse settings");
+        GLTH_LOGE(TAG, "Failed to parse settings");
         goto cleanup;
     }
     GSTATS_INC_ALLOC("on_settings_json");
 
     const cJSON* version = cJSON_GetObjectItemCaseSensitive(json, "version");
     if (!version || !cJSON_IsNumber(version)) {
-        ESP_LOGE(TAG, "Key version not found");
+        GLTH_LOGE(TAG, "Key version not found");
         goto cleanup;
     }
 
     const cJSON* settings = cJSON_GetObjectItemCaseSensitive(json, "settings");
     if (!settings) {
-        ESP_LOGE(TAG, "Key settings not found");
+        GLTH_LOGE(TAG, "Key settings not found");
         goto cleanup;
     }
 
@@ -109,7 +109,7 @@ static void on_settings(
     while (setting) {
         const char* key = setting->string;
         if (strlen(key) > 15) {
-            ESP_LOGW(TAG, "Skipping setting because key too long: %s", key);
+            GLTH_LOGW(TAG, "Skipping setting because key too long: %s", key);
             cumulative_status = GOLIOTH_SETTINGS_KEY_NOT_VALID;
             goto next_setting;
         }
@@ -143,7 +143,7 @@ static void on_settings(
             }
         } else {
             value.type = GOLIOTH_SETTINGS_VALUE_TYPE_UNKNOWN;
-            ESP_LOGW(TAG, "Setting with key %s has unknown type", key);
+            GLTH_LOGW(TAG, "Setting with key %s has unknown type", key);
         }
 
         if (value.type != GOLIOTH_SETTINGS_VALUE_TYPE_UNKNOWN) {
@@ -170,12 +170,12 @@ golioth_status_t golioth_settings_register_callback(
         golioth_client_t client,
         golioth_settings_cb callback) {
     if (_golioth_settings.initialized) {
-        ESP_LOGE(TAG, "Unable to register more than one callback");
+        GLTH_LOGE(TAG, "Unable to register more than one callback");
         return GOLIOTH_ERR_NOT_ALLOWED;
     }
 
     if (!callback) {
-        ESP_LOGE(TAG, "Callback must not be NULL");
+        GLTH_LOGE(TAG, "Callback must not be NULL");
         return GOLIOTH_ERR_NULL;
     }
 

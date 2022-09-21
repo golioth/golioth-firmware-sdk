@@ -8,7 +8,7 @@
 #include "golioth_ota.h"
 #include "golioth_coap_client.h"
 #include "golioth_statistics.h"
-#include "golioth_local_log.h"
+#include "golioth_debug.h"
 
 #define TAG "golioth_ota"
 
@@ -102,7 +102,7 @@ golioth_status_t golioth_ota_payload_as_manifest(
 
     cJSON* json = cJSON_ParseWithLength((const char*)payload, payload_size);
     if (!json) {
-        ESP_LOGE(TAG, "Failed to parse manifest");
+        GLTH_LOGE(TAG, "Failed to parse manifest");
         ret = GOLIOTH_ERR_INVALID_FORMAT;
         goto cleanup;
     }
@@ -110,7 +110,7 @@ golioth_status_t golioth_ota_payload_as_manifest(
 
     const cJSON* seqnum = cJSON_GetObjectItemCaseSensitive(json, "sequenceNumber");
     if (!seqnum || !cJSON_IsNumber(seqnum)) {
-        ESP_LOGE(TAG, "Key sequenceNumber not found");
+        GLTH_LOGE(TAG, "Key sequenceNumber not found");
         ret = GOLIOTH_ERR_INVALID_FORMAT;
         goto cleanup;
     }
@@ -123,7 +123,7 @@ golioth_status_t golioth_ota_payload_as_manifest(
 
         const cJSON* package = cJSON_GetObjectItemCaseSensitive(component, "package");
         if (!package || !cJSON_IsString(package)) {
-            ESP_LOGE(TAG, "Key package not found");
+            GLTH_LOGE(TAG, "Key package not found");
             ret = GOLIOTH_ERR_INVALID_FORMAT;
             goto cleanup;
         }
@@ -131,7 +131,7 @@ golioth_status_t golioth_ota_payload_as_manifest(
 
         const cJSON* version = cJSON_GetObjectItemCaseSensitive(component, "version");
         if (!version || !cJSON_IsString(version)) {
-            ESP_LOGE(TAG, "Key version not found");
+            GLTH_LOGE(TAG, "Key version not found");
             ret = GOLIOTH_ERR_INVALID_FORMAT;
             goto cleanup;
         }
@@ -139,7 +139,7 @@ golioth_status_t golioth_ota_payload_as_manifest(
 
         const cJSON* size = cJSON_GetObjectItemCaseSensitive(component, "size");
         if (!size || !cJSON_IsNumber(size)) {
-            ESP_LOGE(TAG, "Key size not found");
+            GLTH_LOGE(TAG, "Key size not found");
             ret = GOLIOTH_ERR_INVALID_FORMAT;
             goto cleanup;
         }

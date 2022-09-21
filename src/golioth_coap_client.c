@@ -15,7 +15,7 @@
 #include "golioth_util.h"
 #include "golioth_time.h"
 #include "golioth_lightdb.h"
-#include "golioth_local_log.h"
+#include "golioth_debug.h"
 #include "golioth_config.h"
 
 #define TAG "golioth_coap_client"
@@ -93,7 +93,7 @@ static coap_response_t coap_response_handler(
     uint8_t code = rcvd_code & 0x1F;
 
     if (rcv_type == COAP_MESSAGE_RST) {
-        ESP_LOGW(TAG, "Got RST");
+        GLTH_LOGW(TAG, "Got RST");
         return COAP_RESPONSE_OK;
     }
 
@@ -118,9 +118,9 @@ static coap_response_t coap_response_handler(
 
     if (req) {
         if (req->type == GOLIOTH_COAP_REQUEST_EMPTY) {
-            ESP_LOGD(TAG, "%d.%02d (empty req), len %"PRIu32, class, code, (uint32_t)data_len);
+            GLTH_LOGD(TAG, "%d.%02d (empty req), len %"PRIu32, class, code, (uint32_t)data_len);
         } else if (class != 2) {  // not 2.XX, i.e. not success
-            ESP_LOGW(
+            GLTH_LOGW(
                     TAG,
                     "%d.%02d (req type: %d, path: %s%s), len %"PRIu32,
                     class,
@@ -130,7 +130,7 @@ static coap_response_t coap_response_handler(
                     req->path,
                     (uint32_t)data_len);
         } else {
-            ESP_LOGD(
+            GLTH_LOGD(
                     TAG,
                     "%d.%02d (req type: %d, path: %s%s), len %"PRIu32,
                     class,
@@ -141,7 +141,7 @@ static coap_response_t coap_response_handler(
                     (uint32_t)data_len);
         }
     } else {
-        ESP_LOGD(TAG, "%d.%02d (unsolicited), len %"PRIu32, class, code, (uint32_t)data_len);
+        GLTH_LOGD(TAG, "%d.%02d (unsolicited), len %"PRIu32, class, code, (uint32_t)data_len);
     }
 
     if (req && token_matches_request(req, received)) {
@@ -149,12 +149,12 @@ static coap_response_t coap_response_handler(
 
         if (CONFIG_GOLIOTH_COAP_KEEPALIVE_INTERVAL_S > 0) {
             if (!xTimerReset(client->keepalive_timer, 0)) {
-                ESP_LOGW(TAG, "Failed to reset keepalive timer");
+                GLTH_LOGW(TAG, "Failed to reset keepalive timer");
             }
         }
 
         if (golioth_time_millis() > req->ageout_ms) {
-            ESP_LOGW(TAG, "Ignoring response from old request, type %d", req->type);
+            GLTH_LOGW(TAG, "Ignoring response from old request, type %d", req->type);
         } else {
             if (req->type == GOLIOTH_COAP_REQUEST_GET) {
                 if (req->get.callback) {
@@ -166,13 +166,13 @@ static coap_response_t coap_response_handler(
                 assert(block_opt);
                 uint32_t opt_block_index = coap_opt_block_num(block_opt);
 
-                ESP_LOGD(
+                GLTH_LOGD(
                         TAG,
                         "Request block index = %"PRIu32", response block index = %"PRIu32", offset 0x%08"PRIX32,
                         (uint32_t)req->get_block.block_index,
                         (uint32_t)opt_block_index,
                         opt_block_index * 1024);
-                ESP_LOG_BUFFER_HEXDUMP(TAG, data, min(32, data_len), ESP_LOG_DEBUG);
+                GLTH_LOG_BUFFER_HEXDUMP(TAG, data, min(32, data_len), GLTH_LOG_DEBUG);
 
                 if (req->get_block.callback) {
                     req->get_block.callback(
@@ -196,7 +196,7 @@ static coap_response_t coap_response_handler(
 }
 
 static int event_handler(coap_session_t* session, const coap_event_t event) {
-    ESP_LOGD(TAG, "event: 0x%04X", event);
+    GLTH_LOGD(TAG, "event: 0x%04X", event);
     return 0;
 }
 
@@ -207,30 +207,30 @@ static void nack_handler(
         const coap_mid_t id) {
     switch (reason) {
         case COAP_NACK_TOO_MANY_RETRIES:
-            ESP_LOGE(TAG, "Received nack reason: COAP_NACK_TOO_MANY_RETRIES");
+            GLTH_LOGE(TAG, "Received nack reason: COAP_NACK_TOO_MANY_RETRIES");
             break;
         case COAP_NACK_NOT_DELIVERABLE:
-            ESP_LOGE(TAG, "Received nack reason: COAP_NACK_NOT_DELIVERABLE");
+            GLTH_LOGE(TAG, "Received nack reason: COAP_NACK_NOT_DELIVERABLE");
             break;
         case COAP_NACK_TLS_FAILED:
-            ESP_LOGE(TAG, "Received nack reason: COAP_NACK_TLS_FAILED");
+            GLTH_LOGE(TAG, "Received nack reason: COAP_NACK_TLS_FAILED");
             // TODO - customize error message based on PSK vs cert usage
-            ESP_LOGE(TAG, "Maybe your PSK-ID or PSK is incorrect?");
+            GLTH_LOGE(TAG, "Maybe your PSK-ID or PSK is incorrect?");
             break;
         default:
-            ESP_LOGE(TAG, "Received nack reason: %d", reason);
+            GLTH_LOGE(TAG, "Received nack reason: %d", reason);
     }
 }
 
 static void coap_log_handler(coap_log_t level, const char* message) {
     if (level <= LOG_ERR) {
-        ESP_LOGE("libcoap", "%s", message);
+        GLTH_LOGE("libcoap", "%s", message);
     } else if (level <= LOG_WARNING) {
-        ESP_LOGW("libcoap", "%s", message);
+        GLTH_LOGW("libcoap", "%s", message);
     } else if (level <= LOG_INFO) {
-        ESP_LOGI("libcoap", "%s", message);
+        GLTH_LOGI("libcoap", "%s", message);
     } else {
-        ESP_LOGD("libcoap", "%s", message);
+        GLTH_LOGD("libcoap", "%s", message);
     }
 }
 
@@ -244,11 +244,11 @@ static golioth_status_t get_coap_dst_address(const coap_uri_t* host_uri, coap_ad
     const char* hostname = (const char*)host_uri->host.s;
     int error = getaddrinfo(hostname, NULL, &hints, &ainfo);
     if (error != 0) {
-        ESP_LOGE(TAG, "DNS lookup failed for destination ainfo %s. error: %d", hostname, error);
+        GLTH_LOGE(TAG, "DNS lookup failed for destination ainfo %s. error: %d", hostname, error);
         return GOLIOTH_ERR_DNS_LOOKUP;
     }
     if (!ainfo) {
-        ESP_LOGE(TAG, "DNS lookup %s did not return any addresses", hostname);
+        GLTH_LOGE(TAG, "DNS lookup %s did not return any addresses", hostname);
         return GOLIOTH_ERR_DNS_LOOKUP;
     }
     GSTATS_INC_ALLOC("ainfo");
@@ -265,7 +265,7 @@ static golioth_status_t get_coap_dst_address(const coap_uri_t* host_uri, coap_ad
             dst_addr->addr.sin6.sin6_port = htons(host_uri->port);
             break;
         default:
-            ESP_LOGE(TAG, "DNS lookup response failed");
+            GLTH_LOGE(TAG, "DNS lookup response failed");
             freeaddrinfo(ainfo);
             GSTATS_INC_FREE("ainfo");
             return GOLIOTH_ERR_DNS_LOOKUP;
@@ -337,7 +337,7 @@ static void golioth_coap_empty(golioth_coap_request_msg_t* req, coap_session_t* 
     // Instead, we will send an empty DELETE request
     coap_pdu_t* req_pdu = coap_new_pdu(COAP_MESSAGE_CON, COAP_REQUEST_DELETE, session);
     if (!req_pdu) {
-        ESP_LOGE(TAG, "coap_new_pdu() delete failed");
+        GLTH_LOGE(TAG, "coap_new_pdu() delete failed");
         return;
     }
     GSTATS_INC_ALLOC("empty_pdu");
@@ -350,7 +350,7 @@ static void golioth_coap_empty(golioth_coap_request_msg_t* req, coap_session_t* 
 static void golioth_coap_get(golioth_coap_request_msg_t* req, coap_session_t* session) {
     coap_pdu_t* req_pdu = coap_new_pdu(COAP_MESSAGE_CON, COAP_REQUEST_GET, session);
     if (!req_pdu) {
-        ESP_LOGE(TAG, "coap_new_pdu() get failed");
+        GLTH_LOGE(TAG, "coap_new_pdu() get failed");
         return;
     }
     GSTATS_INC_ALLOC("get_pdu");
@@ -368,7 +368,7 @@ static void golioth_coap_get_block(
         coap_session_t* session) {
     coap_pdu_t* req_pdu = coap_new_pdu(COAP_MESSAGE_CON, COAP_REQUEST_GET, session);
     if (!req_pdu) {
-        ESP_LOGE(TAG, "coap_new_pdu() get failed");
+        GLTH_LOGE(TAG, "coap_new_pdu() get failed");
         return;
     }
     GSTATS_INC_ALLOC("get_block_pdu");
@@ -396,7 +396,7 @@ static void golioth_coap_get_block(
 static void golioth_coap_post(golioth_coap_request_msg_t* req, coap_session_t* session) {
     coap_pdu_t* req_pdu = coap_new_pdu(COAP_MESSAGE_CON, COAP_REQUEST_POST, session);
     if (!req_pdu) {
-        ESP_LOGE(TAG, "coap_new_pdu() post failed");
+        GLTH_LOGE(TAG, "coap_new_pdu() post failed");
         return;
     }
     GSTATS_INC_ALLOC("post_pdu");
@@ -412,7 +412,7 @@ static void golioth_coap_post(golioth_coap_request_msg_t* req, coap_session_t* s
 static void golioth_coap_delete(golioth_coap_request_msg_t* req, coap_session_t* session) {
     coap_pdu_t* req_pdu = coap_new_pdu(COAP_MESSAGE_CON, COAP_REQUEST_DELETE, session);
     if (!req_pdu) {
-        ESP_LOGE(TAG, "coap_new_pdu() delete failed");
+        GLTH_LOGE(TAG, "coap_new_pdu() delete failed");
         return;
     }
     GSTATS_INC_ALLOC("delete_pdu");
@@ -436,7 +436,7 @@ static void add_observation(golioth_coap_request_msg_t* req, golioth_coap_client
     }
 
     if (!found_slot) {
-        ESP_LOGE(TAG, "Unable to observe path %s, no slots available", req->path);
+        GLTH_LOGE(TAG, "Unable to observe path %s, no slots available", req->path);
         return;
     }
 
@@ -451,7 +451,7 @@ static void golioth_coap_observe(
     // GET with an OBSERVE option
     coap_pdu_t* req_pdu = coap_new_pdu(COAP_MESSAGE_CON, COAP_REQUEST_GET, session);
     if (!req_pdu) {
-        ESP_LOGE(TAG, "coap_new_pdu() get failed");
+        GLTH_LOGE(TAG, "coap_new_pdu() get failed");
         return;
     }
     GSTATS_INC_ALLOC("observe_pdu");
@@ -485,7 +485,7 @@ static void reestablish_observations(golioth_coap_client_t* client, coap_session
 static golioth_status_t create_context(golioth_coap_client_t* client, coap_context_t** context) {
     *context = coap_new_context(NULL);
     if (!*context) {
-        ESP_LOGE(TAG, "Failed to create CoAP context");
+        GLTH_LOGE(TAG, "Failed to create CoAP context");
         return GOLIOTH_ERR_MEM_ALLOC;
     }
     GSTATS_INC_ALLOC("context");
@@ -510,7 +510,7 @@ static int validate_cn_call_back(
         unsigned depth,
         int validated,
         void* arg) {
-    ESP_LOGI(TAG, "Server Cert: Depth = %u, Len = %"PRIu32", Valid = %d", depth, (uint32_t)asn1_length, validated);
+    GLTH_LOGI(TAG, "Server Cert: Depth = %u, Len = %"PRIu32", Valid = %d", depth, (uint32_t)asn1_length, validated);
     return 1;
 }
 
@@ -525,7 +525,7 @@ static golioth_status_t create_session(
             strlen(CONFIG_GOLIOTH_COAP_HOST_URI),
             &host_uri);
     if (uri_status < 0) {
-        ESP_LOGE(TAG, "CoAP host URI invalid: %s", CONFIG_GOLIOTH_COAP_HOST_URI);
+        GLTH_LOGE(TAG, "CoAP host URI invalid: %s", CONFIG_GOLIOTH_COAP_HOST_URI);
         return GOLIOTH_ERR_INVALID_FORMAT;
     }
 
@@ -533,7 +533,7 @@ static golioth_status_t create_session(
     coap_address_t dst_addr = {};
     GOLIOTH_STATUS_RETURN_IF_ERROR(get_coap_dst_address(&host_uri, &dst_addr));
 
-    ESP_LOGI(TAG, "Start CoAP session with host: %s", CONFIG_GOLIOTH_COAP_HOST_URI);
+    GLTH_LOGI(TAG, "Start CoAP session with host: %s", CONFIG_GOLIOTH_COAP_HOST_URI);
 
     char client_sni[256] = {};
     memcpy(client_sni, host_uri.host.s, MIN(host_uri.host.length, sizeof(client_sni) - 1));
@@ -585,12 +585,12 @@ static golioth_status_t create_session(
         *session =
                 coap_new_client_session_pki(context, NULL, &dst_addr, COAP_PROTO_DTLS, &dtls_pki);
     } else {
-        ESP_LOGE(TAG, "Invalid TLS auth type: %d", auth_type);
+        GLTH_LOGE(TAG, "Invalid TLS auth type: %d", auth_type);
         return GOLIOTH_ERR_NOT_ALLOWED;
     }
 
     if (!*session) {
-        ESP_LOGE(TAG, "coap_new_client_session() failed");
+        GLTH_LOGE(TAG, "coap_new_client_session() failed");
         return GOLIOTH_ERR_MEM_ALLOC;
     }
     GSTATS_INC_ALLOC("session");
@@ -611,15 +611,15 @@ static golioth_status_t coap_io_loop_once(
             CONFIG_GOLIOTH_COAP_REQUEST_QUEUE_TIMEOUT_MS / portTICK_PERIOD_MS);
     if (!got_request_msg) {
         // No requests, so process other pending IO (e.g. observations)
-        ESP_LOGV(TAG, "Idle io process start");
+        GLTH_LOGV(TAG, "Idle io process start");
         coap_io_process(context, COAP_IO_NO_WAIT);
-        ESP_LOGV(TAG, "Idle io process end");
+        GLTH_LOGV(TAG, "Idle io process end");
         return GOLIOTH_OK;
     }
 
     // Make sure the request isn't too old
     if (golioth_time_millis() > request_msg.ageout_ms) {
-        ESP_LOGW(
+        GLTH_LOGW(
                 TAG,
                 "Ignoring request that has aged out, type %d, path %s",
                 request_msg.type,
@@ -644,35 +644,35 @@ static golioth_status_t coap_io_loop_once(
     bool request_is_valid = true;
     switch (request_msg.type) {
         case GOLIOTH_COAP_REQUEST_EMPTY:
-            ESP_LOGD(TAG, "Handle EMPTY");
+            GLTH_LOGD(TAG, "Handle EMPTY");
             golioth_coap_empty(&request_msg, session);
             break;
         case GOLIOTH_COAP_REQUEST_GET:
-            ESP_LOGD(TAG, "Handle GET %s", request_msg.path);
+            GLTH_LOGD(TAG, "Handle GET %s", request_msg.path);
             golioth_coap_get(&request_msg, session);
             break;
         case GOLIOTH_COAP_REQUEST_GET_BLOCK:
-            ESP_LOGD(TAG, "Handle GET_BLOCK %s", request_msg.path);
+            GLTH_LOGD(TAG, "Handle GET_BLOCK %s", request_msg.path);
             golioth_coap_get_block(&request_msg, client, session);
             break;
         case GOLIOTH_COAP_REQUEST_POST:
-            ESP_LOGD(TAG, "Handle POST %s", request_msg.path);
+            GLTH_LOGD(TAG, "Handle POST %s", request_msg.path);
             golioth_coap_post(&request_msg, session);
             assert(request_msg.post.payload);
             free(request_msg.post.payload);
             GSTATS_INC_FREE("request_payload");
             break;
         case GOLIOTH_COAP_REQUEST_DELETE:
-            ESP_LOGD(TAG, "Handle DELETE %s", request_msg.path);
+            GLTH_LOGD(TAG, "Handle DELETE %s", request_msg.path);
             golioth_coap_delete(&request_msg, session);
             break;
         case GOLIOTH_COAP_REQUEST_OBSERVE:
-            ESP_LOGD(TAG, "Handle OBSERVE %s", request_msg.path);
+            GLTH_LOGD(TAG, "Handle OBSERVE %s", request_msg.path);
             golioth_coap_observe(&request_msg, client, session);
             add_observation(&request_msg, client);
             break;
         default:
-            ESP_LOGW(TAG, "Unknown request_msg type: %u", request_msg.type);
+            GLTH_LOGW(TAG, "Unknown request_msg type: %u", request_msg.type);
             request_is_valid = false;
             break;
     }
@@ -704,7 +704,7 @@ static golioth_status_t coap_io_loop_once(
         } else {
             time_spent_waiting_ms += num_ms;
             if (request_msg.got_response) {
-                ESP_LOGD(TAG, "Received response in %"PRId32" ms", time_spent_waiting_ms);
+                GLTH_LOGD(TAG, "Received response in %"PRId32" ms", time_spent_waiting_ms);
                 break;
             } else {
                 // During normal operation, there will be other kinds of IO to process,
@@ -735,12 +735,12 @@ static golioth_status_t coap_io_loop_once(
     }
 
     if (io_error) {
-        ESP_LOGE(TAG, "Error in coap_io_process");
+        GLTH_LOGE(TAG, "Error in coap_io_process");
         return GOLIOTH_ERR_IO;
     }
 
     if (time_spent_waiting_ms >= timeout_ms) {
-        ESP_LOGE(TAG, "Timeout: never got a response from the server");
+        GLTH_LOGE(TAG, "Timeout: never got a response from the server");
 
         // Call user's callback with GOLIOTH_ERR_TIMEOUT
         // TODO - simplify, put callback directly in request which removes if/else branches
@@ -779,7 +779,7 @@ static golioth_status_t coap_io_loop_once(
 static void on_keepalive(TimerHandle_t timer) {
     golioth_coap_client_t* c = (golioth_coap_client_t*)pvTimerGetTimerID(timer);
     if (c->is_running && golioth_client_num_items_in_request_queue(c) == 0 && !c->pending_req) {
-        ESP_LOGD(TAG, "keepalive");
+        GLTH_LOGD(TAG, "keepalive");
         golioth_coap_client_empty(c, false, GOLIOTH_WAIT_FOREVER);
     }
 }
@@ -806,10 +806,10 @@ static void golioth_coap_client_task(void* arg) {
         client->session_connected = false;
 
         client->is_running = false;
-        ESP_LOGD(TAG, "Waiting for the \"run\" signal");
+        GLTH_LOGD(TAG, "Waiting for the \"run\" signal");
         xSemaphoreTake(client->run_sem, portMAX_DELAY);
         xSemaphoreGive(client->run_sem);
-        ESP_LOGD(TAG, "Received \"run\" signal");
+        GLTH_LOGD(TAG, "Received \"run\" signal");
         client->is_running = true;
 
         if (create_context(client, &coap_context) != GOLIOTH_OK) {
@@ -840,12 +840,12 @@ static void golioth_coap_client_task(void* arg) {
         // them up again now (tokens will be updated).
         reestablish_observations(client, coap_session);
 
-        ESP_LOGI(TAG, "Entering CoAP I/O loop");
+        GLTH_LOGI(TAG, "Entering CoAP I/O loop");
         int iteration = 0;
         while (!client->end_session) {
             // Check if we should still run (non-blocking)
             if (!xSemaphoreTake(client->run_sem, 0)) {
-                ESP_LOGI(TAG, "Stopping");
+                GLTH_LOGI(TAG, "Stopping");
                 break;
             }
             xSemaphoreGive(client->run_sem);
@@ -857,7 +857,7 @@ static void golioth_coap_client_task(void* arg) {
         }
 
     cleanup:
-        ESP_LOGI(TAG, "Ending session");
+        GLTH_LOGI(TAG, "Ending session");
 
         if (client->event_callback && client->session_connected) {
             client->event_callback(
@@ -897,7 +897,7 @@ golioth_client_t golioth_client_create(const golioth_client_config_t* config) {
 
     golioth_coap_client_t* new_client = calloc(1, sizeof(golioth_coap_client_t));
     if (!new_client) {
-        ESP_LOGE(TAG, "Failed to allocate memory for client");
+        GLTH_LOGE(TAG, "Failed to allocate memory for client");
         goto error;
     }
     GSTATS_INC_ALLOC("client");
@@ -906,7 +906,7 @@ golioth_client_t golioth_client_create(const golioth_client_config_t* config) {
 
     new_client->run_sem = xSemaphoreCreateBinary();
     if (!new_client->run_sem) {
-        ESP_LOGE(TAG, "Failed to create run semaphore");
+        GLTH_LOGE(TAG, "Failed to create run semaphore");
         goto error;
     }
     GSTATS_INC_ALLOC("run_sem");
@@ -915,7 +915,7 @@ golioth_client_t golioth_client_create(const golioth_client_config_t* config) {
     new_client->request_queue = xQueueCreate(
             CONFIG_GOLIOTH_COAP_REQUEST_QUEUE_MAX_ITEMS, sizeof(golioth_coap_request_msg_t));
     if (!new_client->request_queue) {
-        ESP_LOGE(TAG, "Failed to create request queue");
+        GLTH_LOGE(TAG, "Failed to create request queue");
         goto error;
     }
     GSTATS_INC_ALLOC("request_queue");
@@ -928,7 +928,7 @@ golioth_client_t golioth_client_create(const golioth_client_config_t* config) {
             CONFIG_GOLIOTH_COAP_TASK_PRIORITY,
             &new_client->coap_task_handle);
     if (!task_created) {
-        ESP_LOGE(TAG, "Failed to create client task");
+        GLTH_LOGE(TAG, "Failed to create client task");
         goto error;
     }
     GSTATS_INC_ALLOC("coap_task_handle");
@@ -940,14 +940,14 @@ golioth_client_t golioth_client_create(const golioth_client_config_t* config) {
             new_client,  // pvTimerID
             on_keepalive);
     if (!new_client->keepalive_timer) {
-        ESP_LOGE(TAG, "Failed to create keepalive timer");
+        GLTH_LOGE(TAG, "Failed to create keepalive timer");
         goto error;
     }
     GSTATS_INC_ALLOC("keepalive_timer");
 
     if (CONFIG_GOLIOTH_COAP_KEEPALIVE_INTERVAL_S > 0) {
         if (!xTimerStart(new_client->keepalive_timer, 0)) {
-            ESP_LOGE(TAG, "Failed to start keepalive timer");
+            GLTH_LOGE(TAG, "Failed to start keepalive timer");
             goto error;
         }
     }
@@ -976,7 +976,7 @@ golioth_status_t golioth_client_stop(golioth_client_t client) {
         return GOLIOTH_ERR_NULL;
     }
     if (!xSemaphoreTake(c->run_sem, 100 / portTICK_PERIOD_MS)) {
-        ESP_LOGE(TAG, "stop: failed to take run_sem");
+        GLTH_LOGE(TAG, "stop: failed to take run_sem");
         return GOLIOTH_ERR_TIMEOUT;
     }
     return GOLIOTH_OK;
@@ -1026,7 +1026,7 @@ golioth_status_t golioth_coap_client_empty(
     }
 
     if (!c->is_running) {
-        ESP_LOGW(TAG, "Client not running, dropping request");
+        GLTH_LOGW(TAG, "Client not running, dropping request");
         return GOLIOTH_ERR_INVALID_STATE;
     }
 
@@ -1050,7 +1050,7 @@ golioth_status_t golioth_coap_client_empty(
 
     BaseType_t sent = xQueueSend(c->request_queue, &request_msg, 0);
     if (!sent) {
-        ESP_LOGW(TAG, "Failed to enqueue request, queue full");
+        GLTH_LOGW(TAG, "Failed to enqueue request, queue full");
         if (is_synchronous) {
             vEventGroupDelete(request_msg.request_complete_event);
             GSTATS_INC_FREE("request_complete_event");
@@ -1100,7 +1100,7 @@ golioth_status_t golioth_coap_client_set(
     uint8_t* request_payload = NULL;
 
     if (!c->is_running) {
-        ESP_LOGW(TAG, "Client not running, dropping request for path %s", path);
+        GLTH_LOGW(TAG, "Client not running, dropping request for path %s", path);
         return GOLIOTH_ERR_INVALID_STATE;
     }
 
@@ -1112,7 +1112,7 @@ golioth_status_t golioth_coap_client_set(
         // or in this function if we fail to enqueue the request.
         request_payload = (uint8_t*)calloc(1, payload_size);
         if (!request_payload) {
-            ESP_LOGE(TAG, "Payload alloc failure");
+            GLTH_LOGE(TAG, "Payload alloc failure");
             return GOLIOTH_ERR_MEM_ALLOC;
         }
         GSTATS_INC_ALLOC("request_payload");
@@ -1149,7 +1149,7 @@ golioth_status_t golioth_coap_client_set(
 
     BaseType_t sent = xQueueSend(c->request_queue, &request_msg, 0);
     if (!sent) {
-        ESP_LOGW(TAG, "Failed to enqueue request, queue full");
+        GLTH_LOGW(TAG, "Failed to enqueue request, queue full");
         if (payload_size > 0) {
             free(request_payload);
             GSTATS_INC_FREE("request_payload");
@@ -1198,7 +1198,7 @@ golioth_status_t golioth_coap_client_delete(
     }
 
     if (!c->is_running) {
-        ESP_LOGW(TAG, "Client not running, dropping request for path %s", path);
+        GLTH_LOGW(TAG, "Client not running, dropping request for path %s", path);
         return GOLIOTH_ERR_INVALID_STATE;
     }
 
@@ -1229,7 +1229,7 @@ golioth_status_t golioth_coap_client_delete(
 
     BaseType_t sent = xQueueSend(c->request_queue, &request_msg, 0);
     if (!sent) {
-        ESP_LOGW(TAG, "Failed to enqueue request, queue full");
+        GLTH_LOGW(TAG, "Failed to enqueue request, queue full");
         if (is_synchronous) {
             vEventGroupDelete(request_msg.request_complete_event);
             GSTATS_INC_FREE("request_complete_event");
@@ -1274,7 +1274,7 @@ static golioth_status_t golioth_coap_client_get_internal(
     }
 
     if (!c->is_running) {
-        ESP_LOGW(TAG, "Client not running, dropping get request");
+        GLTH_LOGW(TAG, "Client not running, dropping get request");
         return GOLIOTH_ERR_INVALID_STATE;
     }
 
@@ -1304,7 +1304,7 @@ static golioth_status_t golioth_coap_client_get_internal(
 
     BaseType_t sent = xQueueSend(c->request_queue, &request_msg, 0);
     if (!sent) {
-        ESP_LOGE(TAG, "Failed to enqueue request, queue full");
+        GLTH_LOGE(TAG, "Failed to enqueue request, queue full");
         if (is_synchronous) {
             vEventGroupDelete(request_msg.request_complete_event);
             GSTATS_INC_FREE("request_complete_event");
@@ -1400,7 +1400,7 @@ golioth_status_t golioth_coap_client_observe_async(
     }
 
     if (!c->is_running) {
-        ESP_LOGW(TAG, "Client not running, dropping request for path %s", path);
+        GLTH_LOGW(TAG, "Client not running, dropping request for path %s", path);
         return GOLIOTH_ERR_INVALID_STATE;
     }
 
@@ -1419,7 +1419,7 @@ golioth_status_t golioth_coap_client_observe_async(
 
     BaseType_t sent = xQueueSend(c->request_queue, &request_msg, 0);
     if (!sent) {
-        ESP_LOGW(TAG, "Failed to enqueue request, queue full");
+        GLTH_LOGW(TAG, "Failed to enqueue request, queue full");
         return GOLIOTH_ERR_QUEUE_FULL;
     }
 
@@ -1448,12 +1448,12 @@ uint32_t golioth_client_task_stack_min_remaining(golioth_client_t client) {
 
 void golioth_client_set_packet_loss_percent(uint8_t percent) {
     if (percent > 100) {
-        ESP_LOGE(TAG, "Invalid percent %u, must be 0 to 100", percent);
+        GLTH_LOGE(TAG, "Invalid percent %u, must be 0 to 100", percent);
         return;
     }
     static char buf[16] = {};
     snprintf(buf, sizeof(buf), "%u%%", percent);
-    ESP_LOGI(TAG, "Setting packet loss to %s", buf);
+    GLTH_LOGI(TAG, "Setting packet loss to %s", buf);
     coap_debug_set_packet_loss(buf);
 }
 

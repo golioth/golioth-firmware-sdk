@@ -10,7 +10,7 @@
 #include "golioth_util.h"
 #include "golioth_time.h"
 #include "golioth_statistics.h"
-#include "golioth_local_log.h"
+#include "golioth_debug.h"
 
 #define TAG "golioth_rpc"
 
@@ -86,36 +86,36 @@ static void on_rpc(
         return;
     }
 
-    ESP_LOG_BUFFER_HEXDUMP(TAG, payload, min(64, payload_size), ESP_LOG_DEBUG);
+    GLTH_LOG_BUFFER_HEXDUMP(TAG, payload, min(64, payload_size), GLTH_LOG_DEBUG);
 
     cJSON* json = cJSON_ParseWithLength((const char*)payload, payload_size);
     if (!json) {
-        ESP_LOGE(TAG, "Failed to parse rpc call");
+        GLTH_LOGE(TAG, "Failed to parse rpc call");
         goto cleanup;
     }
     GSTATS_INC_ALLOC("on_rpc_json");
 
     const cJSON* rpc_call_id = cJSON_GetObjectItemCaseSensitive(json, "id");
     if (!rpc_call_id || !cJSON_IsString(rpc_call_id)) {
-        ESP_LOGE(TAG, "Key id not found");
+        GLTH_LOGE(TAG, "Key id not found");
         goto cleanup;
     }
 
     const cJSON* rpc_method = cJSON_GetObjectItemCaseSensitive(json, "method");
     if (!rpc_method || !cJSON_IsString(rpc_method)) {
-        ESP_LOGE(TAG, "Key method not found");
+        GLTH_LOGE(TAG, "Key method not found");
         goto cleanup;
     }
 
     const cJSON* params = cJSON_GetObjectItemCaseSensitive(json, "params");
     if (!params) {
-        ESP_LOGE(TAG, "Key params not found");
+        GLTH_LOGE(TAG, "Key params not found");
         goto cleanup;
     }
 
     uint8_t detail[64] = {};
     const char* call_id = rpc_call_id->valuestring;
-    ESP_LOGD(TAG, "Calling RPC callback for call id :%s", call_id);
+    GLTH_LOGD(TAG, "Calling RPC callback for call id :%s", call_id);
 
     bool method_found = false;
     for (int i = 0; i < _num_rpcs; i++) {
@@ -128,7 +128,7 @@ static void on_rpc(
                     detail,
                     sizeof(detail) - 1,  // -1 to ensure it's NULL-terminated
                     rpc->callback_arg);
-            ESP_LOGD(TAG, "RPC status code %d for call id :%s", status, call_id);
+            GLTH_LOGD(TAG, "RPC status code %d for call id :%s", status, call_id);
             golioth_rpc_ack_internal(client, call_id, status, detail, strlen((const char*)detail));
             break;
         }
@@ -150,7 +150,7 @@ golioth_status_t golioth_rpc_register(
         golioth_rpc_cb_fn callback,
         void* callback_arg) {
     if (_num_rpcs >= CONFIG_GOLIOTH_RPC_MAX_NUM_METHODS) {
-        ESP_LOGE(
+        GLTH_LOGE(
                 TAG,
                 "Unable to register, can't register more than %d methods",
                 CONFIG_GOLIOTH_RPC_MAX_NUM_METHODS);
