@@ -17,6 +17,7 @@ golioth_debug_log_level_t golioth_debug_get_log_level(void);
 #if CONFIG_GOLIOTH_DEBUG_LOG_ENABLE
 
 #ifndef GLTH_LOGX
+#include <stdio.h>
 #define GLTH_LOGX(LEVEL, LEVEL_STR, TAG, ...) \
     do { \
         if ((LEVEL) <= golioth_debug_get_log_level()) { \
