@@ -134,6 +134,14 @@ typedef void (*golioth_get_cb_fn)(
         const uint8_t* payload,
         size_t payload_size,
         void* arg);
+typedef void (*golioth_get_block_cb_fn)(
+        golioth_client_t client,
+        const golioth_response_t* response,
+        const char* path,
+        const uint8_t* payload,
+        size_t payload_size,
+        bool is_last,
+        void* arg);
 
 /// Callback function type for all asynchronous set and delete requests
 ///

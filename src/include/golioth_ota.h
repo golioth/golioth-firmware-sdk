@@ -132,6 +132,7 @@ golioth_status_t golioth_ota_observe_manifest_async(
 ///           Must be at least GOLIOTH_OTA_BLOCKSIZE bytes.
 /// @param block_nbytes Output param, memory allocated by caller, populated with number
 ///             of bytes in the block, 0 to GOLIOTH_OTA_BLOCKSIZE.
+/// @param is_last Set to true, if this is the last block
 /// @param timeout_s The timeout, in seconds, for receiving a server response
 ///
 /// @return GOLIOTH_OK - response received from server, get was successful
@@ -146,6 +147,7 @@ golioth_status_t golioth_ota_get_block_sync(
         size_t block_index,
         uint8_t* buf,
         size_t* block_nbytes,
+        bool* is_last,
         int32_t timeout_s);
 
 /// Report the state of OTA update to Golioth server synchronously
