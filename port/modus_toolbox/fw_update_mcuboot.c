@@ -99,13 +99,23 @@ golioth_status_t fw_update_validate(void) {
 }
 
 golioth_status_t fw_update_change_boot_image(void) {
+    GLTH_LOGD(TAG, "boot_set_pending");
     int status = boot_set_pending(0);
-    if (status == 0) {
-        return GOLIOTH_OK;
-    } else {
+    if (status != 0) {
         GLTH_LOGE(TAG, "boot_set_pending failed, error %d", status);
-        return GOLIOTH_ERR_FAIL;
+        // Note: We are purposely ignoring this error, as it is expected
+        // with the current version of MCUboot, which does not have
+        // good support for PSOC6 and the 512-byte erase/write alignment
+        // requirement.
+        //
+        // boot_write_trailer fails the alignment check, which prevents
+        // the image trailer from being written.
+        //
+        // See https://github.com/mcu-tools/mcuboot/issues/713
+        //
+        // TODO - treat as an error if/when MCUboot supports 512-byte alignment.
     }
+    return GOLIOTH_OK;
 }
 
 void fw_update_end(void) {
