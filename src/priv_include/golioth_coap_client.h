@@ -43,7 +43,7 @@ typedef struct {
     uint32_t content_type;
     size_t block_index;
     size_t block_size;
-    golioth_get_cb_fn callback;
+    golioth_get_block_cb_fn callback;
     void* arg;
 } golioth_coap_get_block_params_t;
 
@@ -155,7 +155,7 @@ golioth_status_t golioth_coap_client_get_block(
         uint32_t content_type,
         size_t block_index,
         size_t block_size,
-        golioth_get_cb_fn callback,
+        golioth_get_block_cb_fn callback,
         void* callback_arg,
         bool is_synchronous,
         int32_t timeout_s);

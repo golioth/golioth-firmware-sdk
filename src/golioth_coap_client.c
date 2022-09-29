@@ -174,9 +174,11 @@ static coap_response_t coap_response_handler(
                         opt_block_index * 1024);
                 GLTH_LOG_BUFFER_HEXDUMP(TAG, data, min(32, data_len), GLTH_LOG_DEBUG);
 
+                bool is_last = (COAP_OPT_BLOCK_MORE(block_opt) == 0);
+
                 if (req->get_block.callback) {
                     req->get_block.callback(
-                            client, &response, req->path, data, data_len, req->get_block.arg);
+                            client, &response, req->path, data, data_len, is_last, req->get_block.arg);
                 }
             } else if (req->type == GOLIOTH_COAP_REQUEST_POST) {
                 if (req->post.callback) {
@@ -753,7 +755,7 @@ static golioth_status_t coap_io_loop_once(
                 request_msg.type == GOLIOTH_COAP_REQUEST_GET_BLOCK
                 && request_msg.get_block.callback) {
             request_msg.get_block.callback(
-                    client, &response, request_msg.path, NULL, 0, request_msg.get_block.arg);
+                    client, &response, request_msg.path, NULL, 0, false, request_msg.get_block.arg);
         } else if (request_msg.type == GOLIOTH_COAP_REQUEST_POST && request_msg.post.callback) {
             request_msg.post.callback(client, &response, request_msg.path, request_msg.post.arg);
         } else if (request_msg.type == GOLIOTH_COAP_REQUEST_DELETE && request_msg.delete.callback) {
@@ -1366,7 +1368,7 @@ golioth_status_t golioth_coap_client_get_block(
         uint32_t content_type,
         size_t block_index,
         size_t block_size,
-        golioth_get_cb_fn callback,
+        golioth_get_block_cb_fn callback,
         void* arg,
         bool is_synchronous,
         int32_t timeout_s) {

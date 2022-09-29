@@ -18,6 +18,7 @@
 typedef struct {
     uint8_t* buf;
     size_t* block_nbytes;
+    bool* is_last;
 } block_get_output_params_t;
 
 static golioth_ota_state_t _state = GOLIOTH_OTA_STATE_IDLE;
@@ -160,6 +161,7 @@ static void on_block_rcvd(
         const char* path,
         const uint8_t* payload,
         size_t payload_size,
+        bool is_last,
         void* arg) {
     assert(arg);
     assert(payload_size <= GOLIOTH_OTA_BLOCKSIZE);
@@ -172,6 +174,10 @@ static void on_block_rcvd(
     assert(out_params->buf);
     assert(out_params->block_nbytes);
 
+    if (out_params->is_last) {
+        *out_params->is_last = is_last;
+    }
+
     memcpy(out_params->buf, payload, payload_size);
     *out_params->block_nbytes = payload_size;
 }
@@ -183,6 +189,7 @@ golioth_status_t golioth_ota_get_block_sync(
         size_t block_index,
         uint8_t* buf,  // must be at least GOLIOTH_OTA_BLOCKSIZE bytes
         size_t* block_nbytes,
+        bool* is_last,
         int32_t timeout_s) {
     char path[CONFIG_GOLIOTH_OTA_MAX_PACKAGE_NAME_LEN + CONFIG_GOLIOTH_OTA_MAX_VERSION_LEN + 2] =
             {};
@@ -190,6 +197,7 @@ golioth_status_t golioth_ota_get_block_sync(
     block_get_output_params_t out_params = {
             .buf = buf,
             .block_nbytes = block_nbytes,
+            .is_last = is_last,
     };
 
     golioth_status_t status = GOLIOTH_OK;
@@ -204,6 +212,7 @@ golioth_status_t golioth_ota_get_block_sync(
             &out_params,
             true,
             timeout_s);
+
     return status;
 }
 

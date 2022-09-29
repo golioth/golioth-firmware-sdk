@@ -23,19 +23,18 @@ static const golioth_ota_component_t* _main_component;
 static golioth_status_t download_and_write_flash(void) {
     assert(_main_component);
 
-    // int32_t main_size = _main_component->size;
-    // TODO - remove, hack to test DFU
-    int32_t main_size = 1035774;
+    int32_t main_size = _main_component->size;
 
     // Handle blocks one at a time
     GLTH_LOGI(TAG, "Image size = %"PRIu32, main_size);
     size_t nblocks = golioth_ota_size_to_nblocks(main_size);
     size_t bytes_written = 0;
-    for (size_t i = 0; i < nblocks; i++) {
+    for (size_t i = 0; /* empty */; i++) {
         size_t block_nbytes = 0;
 
         GLTH_LOGI(TAG, "Getting block index %d (%d/%d)", i, i + 1, nblocks);
 
+        bool is_last_block = false;
         golioth_status_t status = golioth_ota_get_block_sync(
                 _client,
                 _main_component->package,
@@ -43,6 +42,7 @@ static golioth_status_t download_and_write_flash(void) {
                 i,
                 _ota_block_buffer,
                 &block_nbytes,
+                &is_last_block,
                 GOLIOTH_WAIT_FOREVER);
         if (status != GOLIOTH_OK) {
             GLTH_LOGE(TAG, "Failed to get block index %d (%s)", i, golioth_status_to_str(status));
@@ -62,19 +62,14 @@ static golioth_status_t download_and_write_flash(void) {
         }
 
         bytes_written += block_nbytes;
-    }
 
-    fw_update_post_download();
+        if (is_last_block) {
+            break;
+        }
+    }
 
     GLTH_LOGI(TAG, "Total bytes written: %"PRIu32, (uint32_t)bytes_written);
-    if (bytes_written != main_size) {
-        GLTH_LOGE(
-                TAG,
-                "Download failed, downloaded size %"PRIu32" does not match manifest size %"PRIu32,
-                (uint32_t)bytes_written,
-                main_size);
-        return GOLIOTH_ERR_FAIL;
-    }
+    fw_update_post_download();
 
     return GOLIOTH_OK;
 }
