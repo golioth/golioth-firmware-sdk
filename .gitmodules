@@ -1,0 +1,3 @@
+[submodule "external/libcoap"]
+	path = external/libcoap
+	url = https://github.com/obgm/libcoap.git
