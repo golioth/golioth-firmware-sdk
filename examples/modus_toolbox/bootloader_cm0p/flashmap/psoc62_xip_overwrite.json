@@ -1,0 +1,40 @@
+{
+    "external_flash": [
+        {
+            "flash-size": "0x4000000",
+            "erase-size": "0x40000",
+            "mode": "XIP"
+        }
+    ],
+    "boot_and_upgrade":
+    {
+        "bootloader": {
+            "address": {
+                "description": "Address of the bootloader",
+                "value": "0x10000000"
+            },
+            "size": {
+                "description": "Size of the bootloader",
+                "value": "0x18000"
+            }
+        },
+        "application_1": {
+            "address": {
+                "description": "Address of the application primary slot",
+                "value": "0x18000000"
+            },
+            "size": {
+                "description": "Size of the application primary slot",
+                "value": "0x40000"
+            },
+            "upgrade_address": {
+                "description": "Address of the application secondary slot",
+                "value": "0x18100000"
+            },
+            "upgrade_size": {
+                "description": "Size of the application secondary slot",
+                "value": "0x40000"
+            }
+        }
+    }
+}

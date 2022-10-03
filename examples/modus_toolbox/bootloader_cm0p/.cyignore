@@ -1,0 +1,7 @@
+$(SEARCH_capsense)
+$(SEARCH_mcuboot)
+$(SEARCH_psoc6cm0p)
+$(SEARCH_mtb-hal-cat1)
+
+
+
