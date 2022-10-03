@@ -182,9 +182,10 @@ SOURCES+=\
 endif
 
 SOURCES+=\
-    $(wildcard $(GOLIOTHSDK_PATH)/src/*c)\
-    $(wildcard $(GOLIOTHSDK_PATH)/port/modus_toolbox/*c)\
-    $(wildcard $(GOLIOTHSDK_PATH)/port/modus_toolbox/libcoap/*c)
+    $(wildcard $(GOLIOTHSDK_PATH)/src/*.c)\
+    $(wildcard $(GOLIOTHSDK_PATH)/port/modus_toolbox/*.c)\
+    $(wildcard $(GOLIOTHSDK_PATH)/port/modus_toolbox/libcoap/*.c)\
+    $(wildcard $(GOLIOTHSDK_PATH)/examples/common/*.c)
 
 # Like SOURCES, but for include directories. Value should be paths to
 # directories (without a leading -I).
@@ -207,7 +208,8 @@ INCLUDES+=\
     $(GOLIOTHSDK_PATH)/src/include\
     $(GOLIOTHSDK_PATH)/src/priv_include\
     $(GOLIOTHSDK_PATH)/port/modus_toolbox\
-    $(GOLIOTHSDK_PATH)/port/modus_toolbox/libcoap/include
+    $(GOLIOTHSDK_PATH)/port/modus_toolbox/libcoap/include\
+    $(GOLIOTHSDK_PATH)/examples/common
 
 # Add additional defines to the build process (without a leading -D).
 MBEDTLSFLAGS = MBEDTLS_USER_CONFIG_FILE='"mbedtls_user_config.h"'

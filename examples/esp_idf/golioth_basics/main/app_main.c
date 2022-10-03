@@ -46,6 +46,7 @@ void app_main(void) {
     wifi_init(nvs_read_wifi_ssid(), nvs_read_wifi_password());
     wifi_wait_for_connected();
 
+
     // Now we are ready to connect to the Golioth cloud.
     //
     // To start, we need to create a client. The function golioth_client_create will

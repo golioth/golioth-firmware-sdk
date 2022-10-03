@@ -5,10 +5,12 @@
  */
 #include "golioth_basics.h"
 #include "golioth.h"
-#include "freertos/FreeRTOS.h"
-#include "freertos/task.h"
+#include "FreeRTOS.h"
+#include "task.h"
+#include "semphr.h"
 #include <stdint.h>
 #include <string.h>
+#include <inttypes.h>
 
 #define TAG "golioth_basics"
 
@@ -20,6 +22,17 @@ int32_t _my_config = 0;
 
 // Configurable via Settings service, key = "LOOP_DELAY_S"
 int32_t _loop_delay_s = 10;
+
+// Given if/when the we have a connection to Golioth
+static SemaphoreHandle_t _connected_sem;
+
+static void on_client_event(golioth_client_t client, golioth_client_event_t event, void* arg) {
+    bool is_connected = (event == GOLIOTH_CLIENT_EVENT_CONNECTED);
+    if (is_connected) {
+        xSemaphoreGive(_connected_sem);
+    }
+    GLTH_LOGI(TAG, "Golioth client %s", is_connected ? "connected" : "disconnected");
+}
 
 static golioth_settings_status_t on_setting(
         const char* key,
@@ -38,7 +51,7 @@ static golioth_settings_status_t on_setting(
         }
 
         // Setting has passed all checks, so apply it to the loop delay
-        GLTH_LOGI(TAG, "Setting loop delay to %d s", value->i32);
+        GLTH_LOGI(TAG, "Setting loop delay to %"PRId32" s", value->i32);
         _loop_delay_s = value->i32;
         return GOLIOTH_SETTINGS_SUCCESS;
     }
@@ -77,7 +90,7 @@ static void on_get_my_int(
 
     // Now we can use a helper function to convert the binary payload to an integer.
     int32_t value = golioth_payload_as_int(payload, payload_size);
-    GLTH_LOGI(TAG, "Callback got my_int = %d", value);
+    GLTH_LOGI(TAG, "Callback got my_int = %"PRId32, value);
 }
 
 // Callback function for asynchronous observation of LightDB path "desired/my_config"
@@ -98,16 +111,9 @@ static void on_my_config(
     }
 
     int32_t desired_value = golioth_payload_as_int(payload, payload_size);
-    GLTH_LOGI(TAG, "Cloud desires %s = %d. Setting now.", path, desired_value);
+    GLTH_LOGI(TAG, "Cloud desires %s = %"PRId32". Setting now.", path, desired_value);
     _my_config = desired_value;
     golioth_lightdb_delete_async(client, path, NULL, NULL);
-}
-
-static void on_client_event(golioth_client_t client, golioth_client_event_t event, void* arg) {
-    GLTH_LOGI(
-            TAG,
-            "Golioth client %s",
-            event == GOLIOTH_CLIENT_EVENT_CONNECTED ? "connected" : "disconnected");
 }
 
 void golioth_basics(golioth_client_t client) {
@@ -116,7 +122,11 @@ void golioth_basics(golioth_client_t client) {
     //
     // This is optional, but can be useful for synchronizing operations on connect/disconnect
     // events. For this example, the on_client_event callback will simply log a message.
+    _connected_sem = xSemaphoreCreateBinary();
     golioth_client_register_event_callback(client, on_client_event, NULL);
+
+    GLTH_LOGI(TAG, "Waiting to Golioth to connect...");
+    xSemaphoreTake(_connected_sem, portMAX_DELAY);
 
     // At this point, we have a client that can be used to interact with Golioth services:
     //      Logging
@@ -168,7 +178,7 @@ void golioth_basics(golioth_client_t client) {
     int32_t readback_int = 0;
     status = golioth_lightdb_get_int_sync(client, "my_int", &readback_int, 5);
     if (status == GOLIOTH_OK) {
-        GLTH_LOGI(TAG, "Synchronously got my_int = %d", readback_int);
+        GLTH_LOGI(TAG, "Synchronously got my_int = %"PRId32, readback_int);
     } else {
         GLTH_LOGE(TAG, "Synchronous get my_int failed: %s", golioth_status_to_str(status));
     }
@@ -214,10 +224,10 @@ void golioth_basics(golioth_client_t client) {
     // once in a while.
     GLTH_LOGI(TAG, "Entering endless loop");
     int32_t counter = 0;
-    char sbuf[21];
+    char sbuf[32];
     while (1) {
         golioth_lightdb_set_int_async(client, "counter", counter, NULL, NULL);
-        snprintf(sbuf, sizeof(sbuf), "Sending hello! %d", counter);
+        snprintf(sbuf, sizeof(sbuf), "Sending hello! %"PRId32, counter);
         golioth_log_info_async(client, "app_main", sbuf, NULL, NULL);
         counter++;
         vTaskDelay(_loop_delay_s * 1000 / portTICK_PERIOD_MS);
