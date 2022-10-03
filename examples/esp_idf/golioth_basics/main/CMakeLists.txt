@@ -1,8 +1,17 @@
+set(esp_idf_common "../../common")
+set(examples_common "../../../common")
+
+set(includes
+    "${esp_idf_common}"
+    "${examples_common}"
+)
+
 set(srcs
     "app_main.c"
-    "../../common/shell.c"
-    "../../common/wifi.c"
-    "../../common/nvs.c"
+    "${esp_idf_common}/shell.c"
+    "${esp_idf_common}/wifi.c"
+    "${esp_idf_common}/nvs.c"
+    "${examples_common}/golioth_basics.c"
 )
 
 set(deps
@@ -17,11 +26,11 @@ set(deps
 )
 
 if(CONFIG_GOLIOTH_BLE_SERVICE_ENABLED)
-    list(APPEND srcs "../../common/ble.c")
+    list(APPEND srcs "${esp_idf_common}/ble.c")
 endif()
 
 idf_component_register(
-    INCLUDE_DIRS "../../common"
+    INCLUDE_DIRS "${includes}"
     SRCS "${srcs}"
     PRIV_REQUIRES "${deps}"
 )
