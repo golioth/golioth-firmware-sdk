@@ -58,7 +58,7 @@ static golioth_status_t download_and_write_flash(void) {
                 main_size);
         if (status != GOLIOTH_OK) {
             GLTH_LOGE(TAG, "Failed to handle block index %d", i);
-            break;
+            return status;
         }
 
         bytes_written += block_nbytes;
