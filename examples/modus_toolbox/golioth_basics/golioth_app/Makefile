@@ -149,7 +149,7 @@ MCUBOOT_PATH=$(SEARCH_mcuboot)
 MCUBOOT_CY_PATH=$(MCUBOOT_PATH)/boot/cypress
 MCUBOOTAPP_PATH=$(MCUBOOT_CY_PATH)/MCUBootApp
 
-GOLIOTHSDK_PATH=../../..
+GOLIOTHSDK_PATH=../../../..
 
 # Enable optional code that is ordinarily disabled by default.
 #

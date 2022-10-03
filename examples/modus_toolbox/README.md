@@ -1,6 +1,7 @@
 # Golioth Example App
 
-This is an example Golioth app, based on https://github.com/Infineon/mtb-example-psoc6-mcuboot-basic.
+The `golioth_basics` folder contains an example Golioth app,
+based on https://github.com/Infineon/mtb-example-psoc6-mcuboot-basic.
 It has been tested with the PSoC 6 WiFi BT Prototyping Kit
 (CY8CPROTO-062-4343W).
 
@@ -45,7 +46,7 @@ well as your Golioth PSK-ID and PSK, in `golioth_main.h`:
 Compile and flash the bootloader:
 
 ```
-cd bootloader_cm0p
+cd golioth_basics/bootloader_cm0p
 make build -j8
 make program
 ```
@@ -53,7 +54,7 @@ make program
 Compile and flash the Golioth app:
 
 ```
-cd golioth_app
+cd golioth_basics/golioth_app
 make build -j8
 make program
 ```
