@@ -16,7 +16,6 @@ golioth_debug_log_level_t golioth_debug_get_log_level(void);
 
 #if CONFIG_GOLIOTH_DEBUG_LOG_ENABLE
 
-#ifndef GLTH_LOGX
 #include <stdio.h>
 #define GLTH_LOGX(LEVEL, LEVEL_STR, TAG, ...) \
     do { \
@@ -26,14 +25,31 @@ golioth_debug_log_level_t golioth_debug_get_log_level(void);
             puts(""); \
         } \
     } while (0)
-#endif /* GLTH_LOGX */
 
+// Logging macros can be overridden from golioth_config.h
+#ifndef GLTH_LOGV
 #define GLTH_LOGV(TAG, ...) GLTH_LOGX(GOLIOTH_DEBUG_LOG_LEVEL_VERBOSE, "V", TAG, __VA_ARGS__)
+#endif
+
+#ifndef GLTH_LOGD
 #define GLTH_LOGD(TAG, ...) GLTH_LOGX(GOLIOTH_DEBUG_LOG_LEVEL_DEBUG, "D", TAG, __VA_ARGS__)
+#endif
+
+#ifndef GLTH_LOGI
 #define GLTH_LOGI(TAG, ...) GLTH_LOGX(GOLIOTH_DEBUG_LOG_LEVEL_INFO, "I", TAG, __VA_ARGS__)
+#endif
+
+#ifndef GLTH_LOGW
 #define GLTH_LOGW(TAG, ...) GLTH_LOGX(GOLIOTH_DEBUG_LOG_LEVEL_WARN, "W", TAG, __VA_ARGS__)
+#endif
+
+#ifndef GLTH_LOGE
 #define GLTH_LOGE(TAG, ...) GLTH_LOGX(GOLIOTH_DEBUG_LOG_LEVEL_ERROR, "E", TAG, __VA_ARGS__)
-#define GLTH_LOG_BUFFER_HEXDUMP(TAG, ...) /* TODO */
+#endif
+
+#ifndef GLTH_LOG_BUFFER_HEXDUMP
+#define GLTH_LOG_BUFFER_HEXDUMP(TAG, ...) /* TODO - default hexdump implementation */
+#endif
 
 #else /* CONFIG_GOLIOTH_DEBUG_LOG_ENABLE */
 

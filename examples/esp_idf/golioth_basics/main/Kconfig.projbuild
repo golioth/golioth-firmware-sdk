@@ -1,0 +1,12 @@
+menu "Golioth Example Configuration"
+
+config GOLIOTH_BLE_SERVICE_ENABLED
+    bool "Enable BLE provisioning service"
+    depends on BT_NIMBLE_ENABLED
+    default n
+    help
+        Enables the NimBLE stack and executes a GATT
+        server that serves a provisioning service for
+        settings WiFi and Golioth credentials.
+
+endmenu

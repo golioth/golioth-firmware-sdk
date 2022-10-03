@@ -1,0 +1,25 @@
+idf_component_register(
+    INCLUDE_DIRS
+        "../../common"
+    SRCS
+        "app_main.c"
+        "../../common/shell.c"
+        "../../common/wifi.c"
+        "../../common/nvs.c"
+    PRIV_REQUIRES
+        "golioth_sdk"
+        "console"
+        "spi_flash"
+        "nvs_flash"
+        "json"
+        "driver"
+        "esp_hw_support"
+    EMBED_TXTFILES
+        certs/ca.pem
+        certs/client.pem
+        certs/client.key
+)
+list(APPEND EXTRA_C_FLAGS_LIST
+    -Werror
+)
+component_compile_options(${EXTRA_C_FLAGS_LIST})

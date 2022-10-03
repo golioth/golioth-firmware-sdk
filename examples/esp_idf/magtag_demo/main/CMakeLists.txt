@@ -1,0 +1,31 @@
+idf_component_register(
+    INCLUDE_DIRS
+        "."
+        "epaper"
+        "../../common"
+    SRCS
+        "app_main.c"
+        "leds.c"
+        "led_strip_rmt_ws2812.c"
+        "buttons.c"
+        "i2c.c"
+        "lis3dh.c"
+        "speaker.c"
+        "light_sensor.c"
+        "epaper/epaper.c"
+        "epaper/EPD_2in9d.c"
+        "epaper/ImageData.c"
+        "../../common/shell.c"
+        "../../common/wifi.c"
+        "../../common/nvs.c"
+    PRIV_REQUIRES
+        "golioth_sdk"
+        "json"
+        "console"
+        "nvs_flash"
+        "esp_adc_cal"
+)
+list(APPEND EXTRA_C_FLAGS_LIST
+    -Werror
+)
+component_compile_options(${EXTRA_C_FLAGS_LIST})

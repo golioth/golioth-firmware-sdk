@@ -1,8 +1,19 @@
 #pragma once
 
+// This file defines default configuration values.
+//
+// These can be overridden from golioth_user_config.h or
+// golioth_port_config.h, with user config taking priority
+// over port config.
+
+#ifdef GOLIOTH_USER_CONFIG_INCLUDE
+#include "golioth_user_config.h"
+#endif
+
+#include "golioth_port_config.h"
+
 #ifndef CONFIG_GOLIOTH_COAP_HOST_URI
 #define CONFIG_GOLIOTH_COAP_HOST_URI "coaps://coap.golioth.io"
-// #define CONFIG_GOLIOTH_COAP_HOST_URI "coaps://192.168.86.240"
 #endif
 
 #ifndef CONFIG_GOLIOTH_COAP_RESPONSE_TIMEOUT_S

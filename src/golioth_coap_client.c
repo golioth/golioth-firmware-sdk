@@ -22,6 +22,10 @@
 
 static bool _initialized;
 
+#if CONFIG_GOLIOTH_MAX_NUM_OBSERVATIONS == 3
+#error "three"
+#endif
+
 // This is the struct hidden by the opaque type golioth_client_t
 // TODO - document these
 typedef struct {

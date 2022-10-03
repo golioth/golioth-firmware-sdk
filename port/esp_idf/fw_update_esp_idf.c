@@ -3,6 +3,10 @@
 #include "esp_ota_ops.h"
 #include "esp_partition.h"
 #include "esp_flash_partitions.h"
+#include "esp_system.h"
+#include <string.h> // memcpy
+
+#define TAG "fw_update_esp_idf"
 
 static esp_ota_handle_t _update_handle;
 static const esp_partition_t* _update_partition;

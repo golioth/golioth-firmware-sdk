@@ -1,0 +1,13 @@
+#pragma once
+
+#include <esp_log.h>
+
+#define GLTH_LOGV ESP_LOGV
+#define GLTH_LOGD ESP_LOGD
+#define GLTH_LOGI ESP_LOGI
+#define GLTH_LOGW ESP_LOGW
+#define GLTH_LOGE ESP_LOGE
+
+#define GLTH_LOG_DEBUG ESP_LOG_DEBUG
+
+#define GLTH_LOG_BUFFER_HEXDUMP ESP_LOG_BUFFER_HEXDUMP
