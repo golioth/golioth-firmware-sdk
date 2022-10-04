@@ -5,10 +5,9 @@ CONFIG_LWIP_NETBUF_RECVINFO=y
 CONFIG_FREERTOS_USE_TRACE_FACILITY=y
 CONFIG_FREERTOS_USE_STATS_FORMATTING_FUNCTIONS=y
 
-# Default sdkconfig parameters to use the OTA
-# partition table layout, with a 4MB flash size
 CONFIG_ESPTOOLPY_FLASHSIZE_4MB=y
-CONFIG_PARTITION_TABLE_TWO_OTA=y
+CONFIG_PARTITION_TABLE_CUSTOM=y
+CONFIG_PARTITION_TABLE_CUSTOM_FILENAME="partitions.csv"
 
 # If the new app firmware does not cancel the rollback,
 # then this will ensure that rollback happens automatically
