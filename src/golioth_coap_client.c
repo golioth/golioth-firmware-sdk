@@ -122,11 +122,11 @@ static coap_response_t coap_response_handler(
 
     if (req) {
         if (req->type == GOLIOTH_COAP_REQUEST_EMPTY) {
-            GLTH_LOGD(TAG, "%d.%02d (empty req), len %"PRIu32, class, code, (uint32_t)data_len);
+            GLTH_LOGD(TAG, "%d.%02d (empty req), len %" PRIu32, class, code, (uint32_t)data_len);
         } else if (class != 2) {  // not 2.XX, i.e. not success
             GLTH_LOGW(
                     TAG,
-                    "%d.%02d (req type: %d, path: %s%s), len %"PRIu32,
+                    "%d.%02d (req type: %d, path: %s%s), len %" PRIu32,
                     class,
                     code,
                     req->type,
@@ -136,7 +136,7 @@ static coap_response_t coap_response_handler(
         } else {
             GLTH_LOGD(
                     TAG,
-                    "%d.%02d (req type: %d, path: %s%s), len %"PRIu32,
+                    "%d.%02d (req type: %d, path: %s%s), len %" PRIu32,
                     class,
                     code,
                     req->type,
@@ -145,7 +145,7 @@ static coap_response_t coap_response_handler(
                     (uint32_t)data_len);
         }
     } else {
-        GLTH_LOGD(TAG, "%d.%02d (unsolicited), len %"PRIu32, class, code, (uint32_t)data_len);
+        GLTH_LOGD(TAG, "%d.%02d (unsolicited), len %" PRIu32, class, code, (uint32_t)data_len);
     }
 
     if (req && token_matches_request(req, received)) {
@@ -172,7 +172,8 @@ static coap_response_t coap_response_handler(
 
                 GLTH_LOGD(
                         TAG,
-                        "Request block index = %"PRIu32", response block index = %"PRIu32", offset 0x%08"PRIX32,
+                        "Request block index = %" PRIu32 ", response block index = %" PRIu32
+                        ", offset 0x%08" PRIX32,
                         (uint32_t)req->get_block.block_index,
                         (uint32_t)opt_block_index,
                         opt_block_index * 1024);
@@ -182,7 +183,13 @@ static coap_response_t coap_response_handler(
 
                 if (req->get_block.callback) {
                     req->get_block.callback(
-                            client, &response, req->path, data, data_len, is_last, req->get_block.arg);
+                            client,
+                            &response,
+                            req->path,
+                            data,
+                            data_len,
+                            is_last,
+                            req->get_block.arg);
                 }
             } else if (req->type == GOLIOTH_COAP_REQUEST_POST) {
                 if (req->post.callback) {
@@ -516,7 +523,12 @@ static int validate_cn_call_back(
         unsigned depth,
         int validated,
         void* arg) {
-    GLTH_LOGI(TAG, "Server Cert: Depth = %u, Len = %"PRIu32", Valid = %d", depth, (uint32_t)asn1_length, validated);
+    GLTH_LOGI(
+            TAG,
+            "Server Cert: Depth = %u, Len = %" PRIu32 ", Valid = %d",
+            depth,
+            (uint32_t)asn1_length,
+            validated);
     return 1;
 }
 
@@ -710,7 +722,7 @@ static golioth_status_t coap_io_loop_once(
         } else {
             time_spent_waiting_ms += num_ms;
             if (request_msg.got_response) {
-                GLTH_LOGD(TAG, "Received response in %"PRId32" ms", time_spent_waiting_ms);
+                GLTH_LOGD(TAG, "Received response in %" PRId32 " ms", time_spent_waiting_ms);
                 break;
             } else {
                 // During normal operation, there will be other kinds of IO to process,

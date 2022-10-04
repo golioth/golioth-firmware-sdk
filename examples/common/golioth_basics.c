@@ -51,7 +51,7 @@ static golioth_settings_status_t on_setting(
         }
 
         // Setting has passed all checks, so apply it to the loop delay
-        GLTH_LOGI(TAG, "Setting loop delay to %"PRId32" s", value->i32);
+        GLTH_LOGI(TAG, "Setting loop delay to %" PRId32 " s", value->i32);
         _loop_delay_s = value->i32;
         return GOLIOTH_SETTINGS_SUCCESS;
     }
@@ -90,7 +90,7 @@ static void on_get_my_int(
 
     // Now we can use a helper function to convert the binary payload to an integer.
     int32_t value = golioth_payload_as_int(payload, payload_size);
-    GLTH_LOGI(TAG, "Callback got my_int = %"PRId32, value);
+    GLTH_LOGI(TAG, "Callback got my_int = %" PRId32, value);
 }
 
 // Callback function for asynchronous observation of LightDB path "desired/my_config"
@@ -111,7 +111,7 @@ static void on_my_config(
     }
 
     int32_t desired_value = golioth_payload_as_int(payload, payload_size);
-    GLTH_LOGI(TAG, "Cloud desires %s = %"PRId32". Setting now.", path, desired_value);
+    GLTH_LOGI(TAG, "Cloud desires %s = %" PRId32 ". Setting now.", path, desired_value);
     _my_config = desired_value;
     golioth_lightdb_delete_async(client, path, NULL, NULL);
 }
@@ -178,7 +178,7 @@ void golioth_basics(golioth_client_t client) {
     int32_t readback_int = 0;
     status = golioth_lightdb_get_int_sync(client, "my_int", &readback_int, 5);
     if (status == GOLIOTH_OK) {
-        GLTH_LOGI(TAG, "Synchronously got my_int = %"PRId32, readback_int);
+        GLTH_LOGI(TAG, "Synchronously got my_int = %" PRId32, readback_int);
     } else {
         GLTH_LOGE(TAG, "Synchronous get my_int failed: %s", golioth_status_to_str(status));
     }
@@ -227,7 +227,7 @@ void golioth_basics(golioth_client_t client) {
     char sbuf[32];
     while (1) {
         golioth_lightdb_set_int_async(client, "counter", counter, NULL, NULL);
-        snprintf(sbuf, sizeof(sbuf), "Sending hello! %"PRId32, counter);
+        snprintf(sbuf, sizeof(sbuf), "Sending hello! %" PRId32, counter);
         golioth_log_info_async(client, "app_main", sbuf, NULL, NULL);
         counter++;
         vTaskDelay(_loop_delay_s * 1000 / portTICK_PERIOD_MS);

@@ -11,7 +11,7 @@ static uint32_t millis(void) {
 }
 
 unsigned long mbedtls_timing_get_timer(struct mbedtls_timing_hr_time* val, int reset) {
-    struct _hr_time* t = (struct _hr_time*) val;
+    struct _hr_time* t = (struct _hr_time*)val;
 
     if (reset) {
         t->start_ms = millis();
@@ -52,4 +52,3 @@ int mbedtls_timing_get_delay(void* data) {
 
     return 0;
 }
-

@@ -20,7 +20,7 @@ find $REPO_ROOT/examples/esp_idf/common -type f -name "*.c" -o -name "*.h" \
 find $REPO_ROOT/examples/esp_idf/*/main -type f -name "*.c" -o -name "*.h" \
     | grep -v -E ".*build.*" \
     | xargs clang-format -i -style=file --verbose
-j
-find $REPO_ROOT/examples/modus_toolbox/golioth_app/source -type f -name "*.c" -o -name "*.h" \
+
+find $REPO_ROOT/examples/modus_toolbox/golioth_basics/golioth_app/source -type f -name "*.c" -o -name "*.h" \
     | grep -v -E ".*build.*" \
     | xargs clang-format -i -style=file --verbose
