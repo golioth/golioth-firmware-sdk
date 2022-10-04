@@ -61,7 +61,7 @@ def run_built_in_tests(ser):
     ser.write('built_in_test\r\n'.encode())
 
     start_time = time()
-    timeout_s = 60
+    timeout_s = 120
     while True:
         line = ser.readline().decode('utf-8', errors='replace').replace("\r\n", "")
         if line != "":

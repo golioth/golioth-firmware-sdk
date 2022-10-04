@@ -1,0 +1,119 @@
+name: Test on Hardware
+
+on:
+  push:
+    branches: [ main ]
+  pull_request:
+
+jobs:
+  build_for_hw_test:
+    runs-on: ubuntu-latest
+    # The 'if' will prevent running this job if from a fork pull request
+    if: ${{ github.event.pull_request.head.repo.full_name == github.event.pull_request.base.repo.full_name }}
+    steps:
+    - name: Checkout repository and submodules
+      uses: actions/checkout@v2
+      with:
+        submodules: 'recursive'
+    - name: Setup Python
+      uses: actions/setup-python@v2
+      with:
+        python-version: 3.x
+        architecture: 'x64'
+    - name: Install goliothctl and coap-cli
+      run: |
+        echo "deb [trusted=yes] https://repos.golioth.io/apt/ /" | sudo tee /etc/apt/sources.list.d/golioth.list
+        sudo apt update
+        sudo apt install goliothctl coap
+        goliothctl version
+        coap version
+    - name: Build test project
+      uses: espressif/esp-idf-ci-action@v1
+      with:
+        esp_idf_version: v4.4.1
+        target: esp32s3
+        path: 'examples/esp_idf/test'
+    - name: Create build tarball for serial flashing
+      run: |
+        cd examples/esp_idf/test
+        tar czf build.tar.gz \
+            build/flasher_args.json \
+            build/bootloader/bootloader.bin \
+            build/test.bin \
+            build/partition_table/partition-table.bin \
+            build/ota_data_initial.bin
+    - name: Upload tarball
+      uses: actions/upload-artifact@v3
+      with:
+        name: build.tar.gz
+        path: examples/esp_idf/test/build.tar.gz
+    - name: Replace version 1.2.3 with 1.2.99
+      run: |
+        sed -i 's/1.2.3/1.2.99/g' examples/esp_idf/test/main/app_main.c
+    - name: Rebuild test project with version 1.2.99
+      uses: espressif/esp-idf-ci-action@v1
+      with:
+        esp_idf_version: v4.4.1
+        target: esp32s3
+        path: 'examples/esp_idf/test'
+    - name: Create and rollout new OTA release using goliothctl
+      env:
+        GOLIOTH_API_KEY: ${{ secrets.GOLIOTH_API_KEY }}
+      run: |
+        cd examples/esp_idf/test
+        goliothctl login --apiKey $GOLIOTH_API_KEY
+        goliothctl config set projectId ci
+        goliothctl dfu release delete 1.2.99 || echo "release not found"
+        goliothctl dfu artifact delete 1.2.99 || echo "artifact not found"
+        goliothctl dfu artifact create build/test.bin --version 1.2.99
+        goliothctl dfu release create --release-tags 1.2.99 --components main@1.2.99 --rollout true
+
+  # Assumptions made about the self-hosted runner:
+  #
+  #  1. Has installed the GitHub Actions self-hosted runner service
+  #  2. Has an environment variable defined for the serial port: CI_ESP32S3_PORT
+  #  3. Has credentials defined in the file $HOME/credentials_esp32s3.yml
+  #
+  # It is the responsibility of the self-hosted runner admin to ensure
+  # these pre-conditions are met.
+  #
+  # For item 1, GitHub provides instructions when you add a new self-hosted runner
+  # in Settings -> Actions -> Runners.
+  #
+  # For item 2, this environment variable can be added to $HOME/runner_env.sh:
+  #   export CI_ESP32S3_PORT=/dev/ttyUSB0
+  #
+  # For item 3, the file needs to have contents like:
+  #
+  # {
+  #   "wifi/ssid": "mywifissid",
+  #   "wifi/psk": "mywifipassword",
+  #   "golioth/psk-id": "device@project",
+  #   "golioth/psk": "supersecret"
+  # }
+  hw_flash_and_test:
+    needs: build_for_hw_test
+    runs-on: [self-hosted, has_esp32s3]
+
+    steps:
+    - name: Checkout repository without submodules
+      uses: actions/checkout@v2
+    - name: Download build tarball
+      uses: actions/download-artifact@v3
+      with:
+        name: build.tar.gz
+        path: examples/esp_idf/test
+    - name: Untar
+      run: |
+        cd examples/esp_idf/test
+        tar xvf build.tar.gz
+    - name: Install esptool
+      run: pip install esptool
+    - name: Copy credentials_esp32s3.yml to examples/esp_idf/test
+      run: |
+        cp $HOME/credentials_esp32s3.yml examples/esp_idf/test/credentials.yml
+    - name: Flash and Verify Serial Output
+      run: |
+        cd examples/esp_idf/test
+        source $HOME/runner_env.sh
+        python flash.py $CI_ESP32S3_PORT && python verify.py $CI_ESP32S3_PORT

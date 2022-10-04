@@ -1,0 +1,33 @@
+#!/bin/bash
+# setup all hooks
+THIS_DIR="$( cd "$( dirname "${BASH_SOURCE[0]}" )" && pwd )"
+REPO_ROOT="$THIS_DIR/../.."
+$REPO_ROOT/scripts/git_hooks/install_hooks.sh
+
+DIR=$(dirname "$0")
+
+if git rev-parse --verify HEAD >/dev/null 2>&1
+ then
+    against=HEAD
+else
+    # Initial commit: diff against an empty tree object
+    against=$(git hash-object -t tree /dev/null)
+fi
+
+# Redirect output to stderr.
+exec 1>&2
+
+$REPO_ROOT/scripts/lint/check_clang_format.sh --against "$against" --show-files
+
+RED='\033[0;31m'
+NO_COLOR='\033[0m'
+
+if [[ $? -eq 1 ]]
+then
+    echo -e "${RED}"
+    echo "!! clang-format found a diff on changed files."
+    echo "!! clang-format violations will fail CI."
+    echo "!!"
+    echo "!! Please run clang-format to fix your changed files."
+    echo -e "${NO_COLOR}"
+fi

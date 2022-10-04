@@ -1,0 +1,18 @@
+{
+  "hosting": [
+    {
+      "target": "docs-dev",
+      "public": "doxygen/generated_docs/html",
+      "ignore": [
+        "firebase.json"
+      ]
+    },
+    {
+      "target": "docs-prod",
+      "public": "doxygen/generated_docs/html",
+      "ignore": [
+        "firebase.json"
+      ]
+    }
+  ]
+}

@@ -1,0 +1,17 @@
+{
+  "projects": {
+    "default": "golioth"
+  },
+  "targets": {
+    "golioth": {
+      "hosting": {
+        "docs-dev": [
+          "golioth-firmware-sdk-doxygen-dev"
+        ],
+        "docs-prod": [
+          "golioth-firmware-sdk-doxygen"
+        ]
+      }
+    }
+  }
+}

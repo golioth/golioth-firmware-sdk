@@ -1,0 +1,40 @@
+name: Firmware Build
+
+on:
+  push:
+    branches: [ main ]
+  pull_request:
+
+jobs:
+  lint_and_build_examples:
+    runs-on: ubuntu-latest
+    steps:
+    - name: Checkout repository and submodules
+      uses: actions/checkout@v2
+      with:
+        submodules: 'recursive'
+    - name: Setup Python
+      uses: actions/setup-python@v2
+      with:
+        python-version: 3.x
+        architecture: 'x64'
+    - name: Check code formatting
+      shell: bash
+      run: |
+        git fetch --no-recurse-submodules
+        echo "Checking code format"
+        sudo apt install clang-format
+        REPO_ROOT=`pwd` ./scripts/lint/ci_check_clang_format.sh
+    - name: Build golioth_basics project
+      uses: espressif/esp-idf-ci-action@v1
+      with:
+        esp_idf_version: v4.4.1
+        target: esp32
+        path: 'examples/esp_idf/golioth_basics'
+    - name: Build magtag_demo project
+      uses: espressif/esp-idf-ci-action@v1
+      with:
+        esp_idf_version: v4.4.1
+        target: esp32
+        path: 'examples/esp_idf/magtag_demo'
+    # TODO - build ModusToolbox examples

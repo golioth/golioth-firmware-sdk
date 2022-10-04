@@ -1,0 +1,18 @@
+name: 🚀 Feature request
+description: Suggest new features or enhancements to existing features
+labels: ["enhancement"]
+body:
+  - type: textarea
+    id: proposal
+    attributes:
+      label: Describe the feature
+      description: A concise description of the functionality you would like to have
+    validations:
+      required: true
+  - type: input
+    id: feature-reference
+    attributes:
+      label: Existing feature reference
+      description: Does this request relate to an existing feature? If so, please provide its name.
+    validations:
+      required: false

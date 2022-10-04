@@ -1,0 +1,59 @@
+name: 🐞 Bug Report
+description: File a bug report
+labels: ["bug"]
+body:
+  - type: input
+    id: sdk-version
+    attributes:
+      label: Golioth Firmware SDK Commit Hash
+      description: Run `git show HEAD -s --format='%H'` in your copy of the Golioth Firmware SDK repository
+    validations:
+      required: true
+  - type: input
+    id: platform-os
+    attributes:
+      label: Platform/OS
+      description: e.g. ESP-IDF v4.4.1, ModusToolbox 2.4.0
+    validations:
+      required: true
+  - type: input
+    id: hardware-target
+    attributes:
+      label: Hardware Target
+      description: What hardware platform are you using? (e.g. ESP32, ESP32S3, ESP32C3, etc)
+    validations:
+      required: false
+  - type: textarea
+    id: host-os
+    attributes:
+      label: What host OS are you using?
+      description: Linux users, please share the contents of /etc/os-release (`cat /etc/os-release`)
+  - type: textarea
+    id: current-behavior
+    attributes:
+      label: Current Behavior
+      description: A concise description of what you're experiencing.
+    validations:
+      required: false
+  - type: textarea
+    attributes:
+      label: Expected Behavior
+      description: A concise description of what you expected to happen.
+    validations:
+      required: false
+  - type: textarea
+    attributes:
+      label: Steps To Reproduce
+      description: Steps to reproduce the behavior.
+      placeholder: |
+        1.
+        2.
+        3.
+    validations:
+      required: false
+  - type: textarea
+    id: logs
+    attributes:
+      label: Logs, console output, or any kind of debug information
+      description: Please copy and paste any relevant debug information. This will be automatically formatted into code, so no need for backticks.
+      render: shell
