@@ -26,7 +26,7 @@ static golioth_status_t download_and_write_flash(void) {
     int32_t main_size = _main_component->size;
 
     // Handle blocks one at a time
-    GLTH_LOGI(TAG, "Image size = %"PRIu32, main_size);
+    GLTH_LOGI(TAG, "Image size = %" PRIu32, main_size);
     size_t nblocks = golioth_ota_size_to_nblocks(main_size);
     size_t bytes_written = 0;
     for (size_t i = 0; /* empty */; i++) {
@@ -51,11 +51,7 @@ static golioth_status_t download_and_write_flash(void) {
 
         assert(block_nbytes <= GOLIOTH_OTA_BLOCKSIZE);
 
-        status = fw_update_handle_block(
-                _ota_block_buffer,
-                block_nbytes,
-                bytes_written,
-                main_size);
+        status = fw_update_handle_block(_ota_block_buffer, block_nbytes, bytes_written, main_size);
         if (status != GOLIOTH_OK) {
             GLTH_LOGE(TAG, "Failed to handle block index %d", i);
             return status;
@@ -68,7 +64,7 @@ static golioth_status_t download_and_write_flash(void) {
         }
     }
 
-    GLTH_LOGI(TAG, "Total bytes written: %"PRIu32, (uint32_t)bytes_written);
+    GLTH_LOGI(TAG, "Total bytes written: %" PRIu32, (uint32_t)bytes_written);
     fw_update_post_download();
 
     return GOLIOTH_OK;

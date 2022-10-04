@@ -4,7 +4,7 @@
 #include "esp_partition.h"
 #include "esp_flash_partitions.h"
 #include "esp_system.h"
-#include <string.h> // memcpy
+#include <string.h>  // memcpy
 
 #define TAG "fw_update_esp_idf"
 

@@ -59,12 +59,12 @@ golioth_status_t fw_update_handle_block(
         GLTH_LOGD(TAG, "Secondary flash area:");
         GLTH_LOGD(TAG, "   fa_id        = %d", _secondary_flash_area->fa_id);
         GLTH_LOGD(TAG, "   fa_device_id = %d", _secondary_flash_area->fa_device_id);
-        GLTH_LOGD(TAG, "   fa_off       = 0x%08"PRIx32, _secondary_flash_area->fa_off);
-        GLTH_LOGD(TAG, "   fa_size      = %"PRIu32, (uint32_t)_secondary_flash_area->fa_size);
+        GLTH_LOGD(TAG, "   fa_off       = 0x%08" PRIx32, _secondary_flash_area->fa_off);
+        GLTH_LOGD(TAG, "   fa_size      = %" PRIu32, (uint32_t)_secondary_flash_area->fa_size);
 
         // Erase secondary flash area
         uint32_t erase_size = _secondary_flash_area->fa_size;
-        GLTH_LOGI(TAG, "Erasing %"PRIu32" bytes of flash in secondary area", erase_size);
+        GLTH_LOGI(TAG, "Erasing %" PRIu32 " bytes of flash in secondary area", erase_size);
         status = flash_area_erase(_secondary_flash_area, 0, erase_size);
         GLTH_LOGI(TAG, "Done erasing flash");
         if (status != 0) {
@@ -74,11 +74,7 @@ golioth_status_t fw_update_handle_block(
     }
 
     // Write secondary flash area at offset
-    status = flash_area_write(
-            _secondary_flash_area,
-            offset,
-            block,
-            block_size);
+    status = flash_area_write(_secondary_flash_area, offset, block, block_size);
     if (status != 0) {
         GLTH_LOGE(TAG, "flash_area_write error: %d", status);
         return GOLIOTH_ERR_FAIL;

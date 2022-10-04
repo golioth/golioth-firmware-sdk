@@ -44,7 +44,7 @@ static golioth_status_t golioth_lightdb_set_int_internal(
         golioth_set_cb_fn callback,
         void* callback_arg) {
     char buf[16] = {};
-    snprintf(buf, sizeof(buf), "%"PRId32, value);
+    snprintf(buf, sizeof(buf), "%" PRId32, value);
     return golioth_coap_client_set(
             client,
             path_prefix,
