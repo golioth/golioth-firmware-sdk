@@ -85,12 +85,18 @@ jobs:
   #
   # For item 3, the file needs to have contents like:
   #
-  # {
-  #   "wifi/ssid": "mywifissid",
-  #   "wifi/psk": "mywifipassword",
-  #   "golioth/psk-id": "device@project",
-  #   "golioth/psk": "supersecret"
-  # }
+  # ---
+  # settings:
+  #   wifi/ssid: mywifissid
+  #   wifi/psk: mywifipassword
+  #   golioth/psk-id: device@project
+  #   golioth/psk: supersecret
+  #
+  # golioth_api:
+  #   project_id: project
+  #   device_id: deviceid
+  #   api_key: apikey
+  # ---
   hw_flash_and_test:
     needs: build_for_hw_test
     runs-on: [self-hosted, has_esp32s3]
@@ -107,8 +113,8 @@ jobs:
       run: |
         cd examples/esp_idf/test
         tar xvf build.tar.gz
-    - name: Install esptool
-      run: pip install esptool
+    - name: Install python packages
+      run: python -m pip install esptool requests
     - name: Copy credentials_esp32s3.yml to examples/esp_idf/test
       run: |
         cp $HOME/credentials_esp32s3.yml examples/esp_idf/test/credentials.yml

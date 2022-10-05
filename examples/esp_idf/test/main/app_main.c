@@ -46,6 +46,20 @@ static void on_client_event(golioth_client_t client, golioth_client_event_t even
     }
 }
 
+static golioth_rpc_status_t on_double(
+        const char* method,
+        const cJSON* params,
+        uint8_t* detail,
+        size_t detail_size,
+        void* callback_arg) {
+    if (cJSON_GetArraySize(params) != 1) {
+        return RPC_INVALID_ARGUMENT;
+    }
+    int num_to_double = cJSON_GetArrayItem(params, 0)->valueint;
+    snprintf((char*)detail, detail_size, "{ \"value\": %d }", 2 * num_to_double);
+    return RPC_OK;
+}
+
 static void test_connects_to_wifi(void) {
     if (_wifi_connected) {
         return;
@@ -73,6 +87,7 @@ static void test_golioth_client_create(void) {
 
         TEST_ASSERT_NOT_NULL(_client);
         golioth_client_register_event_callback(_client, on_client_event, NULL);
+        golioth_rpc_register(_client, "double", on_double, NULL);
     }
 }
 
@@ -405,16 +420,21 @@ static int built_in_test(int argc, char** argv) {
     return 0;
 }
 
-static int start_ota(int argc, char** argv) {
+static int connect(int argc, char** argv) {
     UNITY_BEGIN();
     RUN_TEST(test_connects_to_wifi);
     if (!_client) {
         RUN_TEST(test_golioth_client_create);
         RUN_TEST(test_connects_to_golioth);
     }
-    golioth_fw_update_init(_client, _current_version);
     UNITY_END();
 
+    return 0;
+}
+
+static int start_ota(int argc, char** argv) {
+    connect(0, NULL);
+    golioth_fw_update_init(_client, _current_version);
     return 0;
 }
 
@@ -437,6 +457,14 @@ void app_main(void) {
             .func = start_ota,
     };
     shell_register_command(&start_ota_cmd);
+
+    esp_console_cmd_t connect_cmd = {
+            .command = "connect",
+            .help = "Connect to WiFi and Golioth",
+            .func = connect,
+    };
+    shell_register_command(&connect_cmd);
+
     shell_start();
 
     while (1) {

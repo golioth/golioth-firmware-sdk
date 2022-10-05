@@ -4,6 +4,8 @@ import serial
 from time import time
 import re
 import yaml
+import requests
+import random
 
 def wait_for_str_in_line(ser, str, timeout_s=20, log=True):
     start_time = time()
@@ -18,15 +20,11 @@ def wait_for_str_in_line(ser, str, timeout_s=20, log=True):
         if str in line:
             return line
 
-def set_credentials(ser):
-    with open('credentials.yml', 'r') as f:
-        credentials = yaml.safe_load(f)
-
+def set_settings(ser, settings):
     print('===== Setting credentials via CLI (logging disabled) ====')
     ser.write('\r\n'.encode())
     wait_for_str_in_line(ser, 'esp32>', log=False)
 
-    settings = credentials['settings']
     for key, value in settings.items():
         ser.write('settings set {} {}\r\n'.format(key, value).encode())
         wait_for_str_in_line(ser, 'saved', log=False)
@@ -110,6 +108,23 @@ def run_ota_test(ser):
     ser.write('start_ota\r\n'.encode())
     wait_for_str_in_line(ser, 'Manifest does not contain different firmware version')
 
+def run_rpc_test(ser, project_id, device_id, api_key):
+    ser.write('\r\n'.encode())
+    wait_for_str_in_line(ser, 'esp32>')
+    ser.write('connect\r\n'.encode())
+    wait_for_str_in_line(ser, 'Golioth connected')
+
+    test_val = random.randint(1, 100)
+    rpc = { "method":"double", "params":[test_val] }
+    expected_return_val = test_val * 2
+
+    api_url = "https://api.golioth.io/v1/projects/{}/devices/{}/rpc".format(project_id, device_id)
+    headers = { "Content-Type":"application/json", "x-api-key":api_key }
+    response = requests.post(api_url, headers=headers, json=rpc)
+
+    assert response.status_code == 200, response
+    assert response.json()["detail"]["value"] == expected_return_val
+
 def main():
     if len(sys.argv) != 2:
         print('usage: {} <port>'.format(sys.argv[0]))
@@ -119,8 +134,11 @@ def main():
     # Connect to the device over serial and use the shell CLI to interact and run tests
     ser = serial.Serial(port, 115200, timeout=1)
 
+    with open('credentials.yml', 'r') as f:
+        credentials = yaml.safe_load(f)
+
     # Set WiFi and Golioth credentials over device shell CLI
-    set_credentials(ser)
+    set_settings(ser, credentials["settings"])
     reset(ser)
 
     # Run built in tests on the device and check output
@@ -129,6 +147,12 @@ def main():
         if num_test_failures != 0:
             break
         reset(ser)
+
+    proj_id = credentials["golioth_api"]["project_id"]
+    dev_id = credentials["golioth_api"]["device_id"]
+    api_key = credentials["golioth_api"]["api_key"]
+
+    run_rpc_test(ser, proj_id, dev_id, api_key)
 
     if num_test_failures == 0:
         run_ota_test(ser)
