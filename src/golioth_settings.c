@@ -27,8 +27,11 @@
 // Example settings response from device:
 //
 // {
-//   "error_code": 0 // Define error codes
-//   "version": 1652109801583 // Report 0 for errors or ignored for errors
+//   "version": 1652109801583 // timestamp, copied from settings request
+//   "errors": [ // if no errors, then omit
+//      { "setting_key": "string", "error_code": integer, "details": "string" },
+//      ...
+//   ],
 // }
 
 #if (CONFIG_GOLIOTH_SETTINGS_ENABLE == 1)
@@ -43,28 +46,11 @@ static struct {
     golioth_settings_cb callback;
 } _golioth_settings;
 
-static void send_status_report(
-        golioth_client_t client,
-        int32_t version,
-        golioth_settings_status_t status) {
-    cJSON* status_report = cJSON_CreateObject();
-    cJSON_AddNumberToObject(status_report, "version", version);
-    cJSON_AddNumberToObject(status_report, "error_code", status);
-    char* json_string = cJSON_PrintUnformatted(status_report);
-    GLTH_LOGD(TAG, "Sending status: %s", json_string);
-    golioth_coap_client_set(
-            client,
-            SETTINGS_PATH_PREFIX,
-            "status",
-            COAP_MEDIATYPE_APPLICATION_JSON,
-            (const uint8_t*)json_string,
-            strlen(json_string),
-            NULL,
-            NULL,
-            false,
-            GOLIOTH_WAIT_FOREVER);
-    free(json_string);
-    cJSON_Delete(status_report);
+static void add_error_to_array(cJSON* array, const char* key, golioth_settings_status_t code) {
+    cJSON* error = cJSON_CreateObject();
+    cJSON_AddStringToObject(error, "setting_key", key);
+    cJSON_AddNumberToObject(error, "error_code", (double)code);
+    cJSON_AddItemToArray(array, error);
 }
 
 static void on_settings(
@@ -100,8 +86,10 @@ static void on_settings(
         goto cleanup;
     }
 
-    // Status for all settings, to be sent in report to cloud
-    golioth_settings_status_t cumulative_status = GOLIOTH_SETTINGS_SUCCESS;
+    // Create status report that we'll send back to Golioth after processing settings
+    cJSON* report = cJSON_CreateObject();
+    cJSON_AddNumberToObject(report, "version", version->valueint);  // copied from request
+    cJSON* errors = cJSON_AddArrayToObject(report, "errors");
 
     // Iterate over settings object and call callback for each setting
     assert(_golioth_settings.callback);
@@ -110,7 +98,7 @@ static void on_settings(
         const char* key = setting->string;
         if (strlen(key) > 15) {
             GLTH_LOGW(TAG, "Skipping setting because key too long: %s", key);
-            cumulative_status = GOLIOTH_SETTINGS_KEY_NOT_VALID;
+            add_error_to_array(errors, key, GOLIOTH_SETTINGS_KEY_NOT_VALID);
             goto next_setting;
         }
 
@@ -144,20 +132,40 @@ static void on_settings(
         } else {
             value.type = GOLIOTH_SETTINGS_VALUE_TYPE_UNKNOWN;
             GLTH_LOGW(TAG, "Setting with key %s has unknown type", key);
+            add_error_to_array(errors, key, GOLIOTH_SETTINGS_VALUE_FORMAT_NOT_VALID);
+            goto next_setting;
         }
 
-        if (value.type != GOLIOTH_SETTINGS_VALUE_TYPE_UNKNOWN) {
-            golioth_settings_status_t setting_status = _golioth_settings.callback(key, &value);
-            if (setting_status != GOLIOTH_SETTINGS_SUCCESS) {
-                cumulative_status = setting_status;
-            }
+        golioth_settings_status_t setting_status = _golioth_settings.callback(key, &value);
+        if (setting_status != GOLIOTH_SETTINGS_SUCCESS) {
+            add_error_to_array(errors, key, setting_status);
         }
 
     next_setting:
         setting = setting->next;
     }
 
-    send_status_report(client, version->valueint, cumulative_status);
+    // In case of no errors, the errors array must be omitted from the report.
+    if (cJSON_GetArraySize(errors) == 0) {
+        cJSON_DeleteItemFromObject(report, "errors");
+    }
+
+    // Serialize and send the status report
+    char* json_string = cJSON_PrintUnformatted(report);
+    GLTH_LOGD(TAG, "Sending status: %s", json_string);
+    golioth_coap_client_set(
+            client,
+            SETTINGS_PATH_PREFIX,
+            "status",
+            COAP_MEDIATYPE_APPLICATION_JSON,
+            (const uint8_t*)json_string,
+            strlen(json_string),
+            NULL,
+            NULL,
+            false,
+            GOLIOTH_WAIT_FOREVER);
+    free(json_string);
+    cJSON_Delete(report);
 
 cleanup:
     if (json) {
