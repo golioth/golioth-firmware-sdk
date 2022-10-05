@@ -101,7 +101,7 @@ The `verify.py` script will return 0 on success (all tests pass), and non-zero o
 
 | Board               | Platform             | Module           | Last Tested Commit    |
 | ---                 | ---                  | ---              | ---                   |
-| ESP32-S3-DevKitC-1  | ESP-IDF (v4.4.1)     | ESP32-S3-WROOM-1 | Every commit, CI/CD   |
+| ESP32-S3-DevKitC-1  | ESP-IDF (v4.4.2)     | ESP32-S3-WROOM-1 | Every commit, CI/CD   |
 | ESP32-DevKitC-32E   | ESP-IDF (v4.4.1)     | ESP32-WROOM-32E  | v0.3.0 (Oct 4, 2022)  |
 | ESP32-C3-DevKitM-1  | ESP-IDF (v4.4.1)     | ESP32-C3-MINI-1  | v0.3.0 (Oct 4, 2022)  |
 | CY8CPROTO-062-4343W | ModusToolbox (2.4.0) | PSoC® 6 CYW4343W | v0.3.0 (Oct 4, 2022)  |
