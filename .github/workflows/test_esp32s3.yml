@@ -30,7 +30,7 @@ jobs:
     - name: Build test project
       uses: espressif/esp-idf-ci-action@v1
       with:
-        esp_idf_version: v4.4.1
+        esp_idf_version: v4.4.2
         target: esp32s3
         path: 'examples/esp_idf/test'
     - name: Create build tarball for serial flashing
@@ -53,7 +53,7 @@ jobs:
     - name: Rebuild test project with version 1.2.99
       uses: espressif/esp-idf-ci-action@v1
       with:
-        esp_idf_version: v4.4.1
+        esp_idf_version: v4.4.2
         target: esp32s3
         path: 'examples/esp_idf/test'
     - name: Create and rollout new OTA release using goliothctl
