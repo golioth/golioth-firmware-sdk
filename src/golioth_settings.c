@@ -41,6 +41,7 @@
 #define SETTINGS_PATH_PREFIX ".c/"
 #define SETTINGS_STATUS_PATH "status"
 
+// TODO - move this into the client struct so it's not global
 static struct {
     bool initialized;
     golioth_settings_cb callback;
@@ -177,11 +178,6 @@ cleanup:
 golioth_status_t golioth_settings_register_callback(
         golioth_client_t client,
         golioth_settings_cb callback) {
-    if (_golioth_settings.initialized) {
-        GLTH_LOGE(TAG, "Unable to register more than one callback");
-        return GOLIOTH_ERR_NOT_ALLOWED;
-    }
-
     if (!callback) {
         GLTH_LOGE(TAG, "Callback must not be NULL");
         return GOLIOTH_ERR_NULL;
