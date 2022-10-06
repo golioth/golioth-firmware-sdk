@@ -40,6 +40,7 @@ typedef struct {
     void* callback_arg;
 } golioth_rpc_t;
 
+// TODO - move this into the client struct so it's not global
 static golioth_rpc_t _rpcs[CONFIG_GOLIOTH_RPC_MAX_NUM_METHODS];
 static int _num_rpcs;
 
