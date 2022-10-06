@@ -21,7 +21,7 @@
 #define TAG "test"
 
 // Wait this long, in seconds, for a response to a request
-#define TEST_RESPONSE_TIMEOUT_S (CONFIG_GOLIOTH_COAP_RESPONSE_TIMEOUT_S + 1)
+#define TEST_RESPONSE_TIMEOUT_S (2 * CONFIG_GOLIOTH_COAP_RESPONSE_TIMEOUT_S + 1)
 
 static const char* _current_version = "1.2.3";
 
