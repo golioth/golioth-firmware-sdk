@@ -184,7 +184,7 @@ def run_settings_test(project_id, device_id, api_key):
     assert create.status_code == 200, print(create)
 
     # Wait some time for changes to propagate to cloud database
-    sleep(3)
+    sleep(10)
 
     # API: Read LightDB, verify random value matches
     ldb_data = api_lightdb_get(project_id, device_id, api_key, setting_name)
