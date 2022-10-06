@@ -132,6 +132,22 @@ static void test_golioth_client_heap_usage(void) {
     TEST_ASSERT_TRUE(golioth_heap_usage < 50000);
 }
 
+static void wait_for_empty_request_queue(void) {
+    bool is_empty = false;
+
+    // Wait up to 10 s for queue to be empty
+    uint64_t timeout_ms = golioth_time_millis() + 5000;
+    while (golioth_time_millis() < timeout_ms) {
+        if (golioth_client_num_items_in_request_queue(_client) == 0) {
+            is_empty = true;
+            break;
+        }
+        golioth_time_delay_ms(100);
+    }
+
+    TEST_ASSERT_TRUE(is_empty);
+}
+
 static void test_request_dropped_if_client_not_running(void) {
     TEST_ASSERT_EQUAL(GOLIOTH_OK, golioth_client_stop(_client));
     TEST_ASSERT_EQUAL(pdTRUE, xSemaphoreTake(_disconnected_sem, 3000 / portTICK_PERIOD_MS));
@@ -159,6 +175,8 @@ static void test_request_dropped_if_client_not_running(void) {
     TEST_ASSERT_EQUAL(
             pdTRUE,
             xSemaphoreTake(_connected_sem, TEST_RESPONSE_TIMEOUT_S * 1000 / portTICK_PERIOD_MS));
+
+    wait_for_empty_request_queue();
 }
 
 static void test_lightdb_set_get_sync(void) {
@@ -319,6 +337,8 @@ static void test_request_timeout_if_packets_dropped(void) {
     TEST_ASSERT_EQUAL(
             pdTRUE,
             xSemaphoreTake(_connected_sem, TEST_RESPONSE_TIMEOUT_S * 1000 / portTICK_PERIOD_MS));
+
+    wait_for_empty_request_queue();
 }
 
 static void test_lightdb_error_if_path_not_found(void) {
@@ -347,7 +367,7 @@ static void test_client_destroy_and_no_memory_leaks(void) {
     TEST_ASSERT_EQUAL(pdTRUE, xSemaphoreTake(_disconnected_sem, 3000 / portTICK_PERIOD_MS));
 
     // Wait another 2 s for client to be fully stopped
-    uint64_t timeout_ms = golioth_time_millis() + 2000;
+    uint64_t timeout_ms = golioth_time_millis() + 5000;
     while (golioth_time_millis() < timeout_ms) {
         if (!golioth_client_is_running(_client)) {
             break;
