@@ -1,7 +1,7 @@
 import sys
 import os
 import serial
-from time import time
+from time import time, sleep
 import re
 import yaml
 import requests
@@ -108,12 +108,13 @@ def run_ota_test(ser):
     ser.write('start_ota\r\n'.encode())
     wait_for_str_in_line(ser, 'Manifest does not contain different firmware version')
 
-def run_rpc_test(ser, project_id, device_id, api_key):
+def connect(ser):
     ser.write('\r\n'.encode())
     wait_for_str_in_line(ser, 'esp32>')
     ser.write('connect\r\n'.encode())
     wait_for_str_in_line(ser, 'Golioth connected')
 
+def run_rpc_test(project_id, device_id, api_key):
     test_val = random.randint(1, 100)
     rpc = { "method":"double", "params":[test_val] }
     expected_return_val = test_val * 2
@@ -124,6 +125,88 @@ def run_rpc_test(ser, project_id, device_id, api_key):
 
     assert response.status_code == 200, response
     assert response.json()["detail"]["value"] == expected_return_val
+
+def api_get_setting_id(project_id, api_key, setting_name):
+    api_url = "https://api.golioth.io/v1/projects/{}/settings".format(project_id)
+    headers = { "x-api-key":api_key }
+    response = requests.get(api_url, headers=headers)
+    print(response.json())
+    settings = response.json()["list"]
+
+    for setting in settings:
+        if setting["key"] == setting_name:
+            return setting["id"]
+
+    return None
+
+def api_create_setting(project_id, api_key, setting_name, setting_val):
+    api_url = "https://api.golioth.io/v1/projects/{}/settings".format(project_id)
+    headers = { "Content-Type":"application/json", "x-api-key":api_key }
+    setting = {
+            "key": setting_name,
+            "dataType": "integer",
+            "value": setting_val
+    }
+    return requests.post(api_url, headers=headers, json=setting)
+
+def api_lightdb_get(project_id, device_id, api_key, ldb_path):
+    api_url = "https://api.golioth.io/v1/projects/{}/devices/{}/data/{}".format(
+            project_id, device_id, ldb_path)
+    headers = { "x-api-key":api_key }
+    return requests.get(api_url, headers=headers)
+
+def api_get_device_status(project_id, device_id, api_key):
+    api_url = "https://api.golioth.io/v1/projects/{}/devices/{}".format(project_id, device_id)
+    headers = { "x-api-key":api_key }
+    return requests.get(api_url, headers=headers)
+
+def api_delete_setting(project_id, api_key, setting_id):
+    if not setting_id:
+        return None
+
+    api_url = "https://api.golioth.io/v1/projects/{}/settings/{}".format(
+            project_id, setting_id)
+    headers = { "x-api-key":api_key }
+    return requests.delete(api_url, headers=headers)
+
+def run_settings_test(project_id, device_id, api_key):
+    setting_name = "TEST_SETTING"
+    setting_val = random.randint(1, 100)
+    print("setting_val", setting_val)
+
+    # API: Delete test setting (if it exists)
+    setting_id = api_get_setting_id(project_id, api_key, setting_name)
+    delete = api_delete_setting(project_id, api_key, setting_id)
+    print("first delete:", delete)
+
+    # API: Create test setting, value random
+    create = api_create_setting(project_id, api_key, setting_name, setting_val)
+    assert create.status_code == 200, print(create)
+
+    # Wait some time for changes to propagate to cloud database
+    sleep(3)
+
+    # API: Read LightDB, verify random value matches
+    ldb_data = api_lightdb_get(project_id, device_id, api_key, setting_name)
+    print("ldb_get:", ldb_data)
+
+    # API: Get device settings status
+    status = api_get_device_status(project_id, device_id, api_key)
+    sync_status = status.json()["data"]["metadata"]["lastSettingsStatus"]["status"]
+    print("status:", status)
+
+    # API: Delete test setting
+    setting_id = api_get_setting_id(project_id, api_key, setting_name)
+    delete2 = api_delete_setting(project_id, api_key, setting_id)
+    print("second delete:", delete2)
+
+    assert ldb_data.status_code == 200, print(ldb_data)
+    assert ldb_data.json()["data"] == setting_val, "expected {}, got {}".format(
+            setting_val, ldb_data.json()["data"])
+
+    # Verify settings status is "in-sync"
+    assert sync_status == "in-sync", "expected {}, got {}".format(
+            "in-sync", sync_status)
 
 def main():
     if len(sys.argv) != 2:
@@ -141,9 +224,11 @@ def main():
     set_settings(ser, credentials["settings"])
     reset(ser)
 
+    num_test_failures = 0
+
     # Run built in tests on the device and check output
     for _ in range(1):
-        num_test_failures = run_built_in_tests(ser)
+        num_test_failures += run_built_in_tests(ser)
         if num_test_failures != 0:
             break
         reset(ser)
@@ -152,7 +237,11 @@ def main():
     dev_id = credentials["golioth_api"]["device_id"]
     api_key = credentials["golioth_api"]["api_key"]
 
-    run_rpc_test(ser, proj_id, dev_id, api_key)
+    # Connect device again, since we rebooted at the end of built-in-tests
+    connect(ser)
+
+    run_rpc_test(proj_id, dev_id, api_key)
+    run_settings_test(proj_id, dev_id, api_key)
 
     if num_test_failures == 0:
         run_ota_test(ser)
