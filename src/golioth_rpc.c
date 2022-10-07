@@ -34,16 +34,6 @@
 
 #define GOLIOTH_RPC_PATH_PREFIX ".rpc/"
 
-typedef struct {
-    const char* method;
-    golioth_rpc_cb_fn callback;
-    void* callback_arg;
-} golioth_rpc_t;
-
-// TODO - move this into the client struct so it's not global
-static golioth_rpc_t _rpcs[CONFIG_GOLIOTH_RPC_MAX_NUM_METHODS];
-static int _num_rpcs;
-
 static golioth_status_t golioth_rpc_ack_internal(
         golioth_client_t client,
         const char* call_id,
@@ -118,9 +108,11 @@ static void on_rpc(
     const char* call_id = rpc_call_id->valuestring;
     GLTH_LOGD(TAG, "Calling RPC callback for call id :%s", call_id);
 
+    golioth_rpc_t* grpc = golioth_coap_client_get_rpc(client);
+
     bool method_found = false;
-    for (int i = 0; i < _num_rpcs; i++) {
-        const golioth_rpc_t* rpc = &_rpcs[i];
+    for (int i = 0; i < grpc->num_rpcs; i++) {
+        const golioth_rpc_method_t* rpc = &grpc->rpcs[i];
         if (strcmp(rpc->method, rpc_method->valuestring) == 0) {
             method_found = true;
             golioth_rpc_status_t status = rpc->callback(
@@ -150,7 +142,9 @@ golioth_status_t golioth_rpc_register(
         const char* method,
         golioth_rpc_cb_fn callback,
         void* callback_arg) {
-    if (_num_rpcs >= CONFIG_GOLIOTH_RPC_MAX_NUM_METHODS) {
+    golioth_rpc_t* grpc = golioth_coap_client_get_rpc(client);
+
+    if (grpc->num_rpcs >= CONFIG_GOLIOTH_RPC_MAX_NUM_METHODS) {
         GLTH_LOGE(
                 TAG,
                 "Unable to register, can't register more than %d methods",
@@ -158,14 +152,14 @@ golioth_status_t golioth_rpc_register(
         return GOLIOTH_ERR_MEM_ALLOC;
     }
 
-    golioth_rpc_t* rpc = &_rpcs[_num_rpcs];
+    golioth_rpc_method_t* rpc = &grpc->rpcs[grpc->num_rpcs];
 
     rpc->method = method;
     rpc->callback = callback;
     rpc->callback_arg = callback_arg;
 
-    _num_rpcs++;
-    if (_num_rpcs == 1) {
+    grpc->num_rpcs++;
+    if (grpc->num_rpcs == 1) {
         return golioth_coap_client_observe_async(
                 client, GOLIOTH_RPC_PATH_PREFIX, "", COAP_MEDIATYPE_APPLICATION_JSON, on_rpc, NULL);
     }
