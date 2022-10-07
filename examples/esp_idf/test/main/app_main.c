@@ -61,29 +61,9 @@ static golioth_rpc_status_t on_double(
     return RPC_OK;
 }
 
-static golioth_settings_status_t on_setting(
-        const char* key,
-        const golioth_settings_value_t* value) {
-    GLTH_LOGD(TAG, "Received setting: key = %s, type = %d", key, value->type);
-
-    if (0 == strcmp(key, "TEST_SETTING")) {
-        // This setting is expected to be an int, return an error if it's not
-        if (value->type != GOLIOTH_SETTINGS_VALUE_TYPE_INT) {
-            return GOLIOTH_SETTINGS_VALUE_FORMAT_NOT_VALID;
-        }
-
-        // This setting must be in range [1, 100], return an error if it's not
-        if (value->i32 < 1 || value->i32 > 100) {
-            return GOLIOTH_SETTINGS_VALUE_OUTSIDE_RANGE;
-        }
-
-        // Setting has passed all checks, so set it in LightDB
-        GLTH_LOGI(TAG, "Setting LightDB TEST_SETTING to %" PRId32, value->i32);
-        golioth_lightdb_set_int_async(_client, "TEST_SETTING", value->i32, NULL, NULL);
-        return GOLIOTH_SETTINGS_SUCCESS;
-    }
-
-    // If the setting is not recognized, don't worry about, just return success
+static golioth_settings_status_t on_test_setting(int32_t new_value, void* arg) {
+    GLTH_LOGI(TAG, "Setting LightDB TEST_SETTING to %" PRId32, new_value);
+    golioth_lightdb_set_int_async(_client, "TEST_SETTING", new_value, NULL, NULL);
     return GOLIOTH_SETTINGS_SUCCESS;
 }
 
@@ -115,7 +95,7 @@ static void test_golioth_client_create(void) {
         TEST_ASSERT_NOT_NULL(_client);
         golioth_client_register_event_callback(_client, on_client_event, NULL);
         golioth_rpc_register(_client, "double", on_double, NULL);
-        golioth_settings_register_callback(_client, on_setting);
+        golioth_settings_register_int(_client, "TEST_SETTING", on_test_setting, NULL);
     }
 }
 

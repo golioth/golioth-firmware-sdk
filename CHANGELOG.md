@@ -4,6 +4,16 @@ All notable changes to this project will be documented in this file.
 The format is based on [Keep a Changelog](https://keepachangelog.com/en/1.0.0/),
 and this project adheres to [Semantic Versioning](https://semver.org/spec/v2.0.0.html).
 
+## [0.4.0] - TBD
+
+### Breaking Changes
+- Removed `golioth_settings_register_callback` function and redesigned the API.
+  The new API functions are oriented around registering a callback for an
+  individual setting of a known type
+  (e.g. `golioth_settings_register_int(client, "MY_SETTING", on_my_setting, NULL);`).
+  The new APIs are demonstrated in the `golioth_basics` example code, which can be
+  used as a guide for migrating existing code that uses the old APIs.
+
 ## [0.3.0] - 2022-10-04
 
 ### Added

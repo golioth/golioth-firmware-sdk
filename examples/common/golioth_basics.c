@@ -34,30 +34,10 @@ static void on_client_event(golioth_client_t client, golioth_client_event_t even
     GLTH_LOGI(TAG, "Golioth client %s", is_connected ? "connected" : "disconnected");
 }
 
-static golioth_settings_status_t on_setting(
-        const char* key,
-        const golioth_settings_value_t* value) {
-    GLTH_LOGD(TAG, "Received setting: key = %s, type = %d", key, value->type);
-
-    if (0 == strcmp(key, "LOOP_DELAY_S")) {
-        // This setting is expected to be an int, return an error if it's not
-        if (value->type != GOLIOTH_SETTINGS_VALUE_TYPE_INT) {
-            return GOLIOTH_SETTINGS_VALUE_FORMAT_NOT_VALID;
-        }
-
-        // This setting must be in range [1, 100], return an error if it's not
-        if (value->i32 < 1 || value->i32 > 100) {
-            return GOLIOTH_SETTINGS_VALUE_OUTSIDE_RANGE;
-        }
-
-        // Setting has passed all checks, so apply it to the loop delay
-        GLTH_LOGI(TAG, "Setting loop delay to %" PRId32 " s", value->i32);
-        _loop_delay_s = value->i32;
-        return GOLIOTH_SETTINGS_SUCCESS;
-    }
-
-    // If the setting is not recognized, we should return an error
-    return GOLIOTH_SETTINGS_KEY_NOT_RECOGNIZED;
+static golioth_settings_status_t on_loop_delay_setting(int32_t new_value, void* arg) {
+    GLTH_LOGI(TAG, "Setting loop delay to %" PRId32 " s", new_value);
+    _loop_delay_s = new_value;
+    return GOLIOTH_SETTINGS_SUCCESS;
 }
 
 static golioth_rpc_status_t on_double(
@@ -213,12 +193,8 @@ void golioth_basics(golioth_client_t client) {
     golioth_rpc_register(client, "double", on_double, NULL);
 
     // We can register a callback for persistent settings. The Settings service
-    // allows remote users to manage and push settings to devices that will
-    // be stored in device flash.
-    //
-    // When the cloud has new settings for us, the on_setting function will be called
-    // for each setting.
-    golioth_settings_register_callback(client, on_setting);
+    // allows remote users to manage and push settings to devices.
+    golioth_settings_register_int(client, "LOOP_DELAY_S", on_loop_delay_setting, NULL);
 
     // Now we'll just sit in a loop and update a LightDB state variable every
     // once in a while.
