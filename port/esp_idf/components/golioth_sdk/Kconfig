@@ -103,6 +103,13 @@ config GOLIOTH_SETTINGS_ENABLE
     help
         Feature flag for Settings. 0 for disabled, 1 for enabled.
 
+config GOLIOTH_MAX_NUM_SETTINGS
+    int "Max number of Golioth settings"
+    default 16
+    help
+        Maximum number of Golioth settings which can be registered
+        by the application.
+
 config GOLIOTH_RPC_MAX_NUM_METHODS
     int "Maximum number of registered Golioth RPC methods"
     default 8

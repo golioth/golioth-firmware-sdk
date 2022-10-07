@@ -48,6 +48,19 @@ static void add_error_to_array(cJSON* array, const char* key, golioth_settings_s
     cJSON_AddItemToArray(array, error);
 }
 
+static golioth_setting_t* find_registered_setting(golioth_settings_t* gsettings, const char* key) {
+    for (size_t i = 0; i < gsettings->num_settings; i++) {
+        golioth_setting_t* s = &gsettings->settings[i];
+        if (!s->is_valid) {
+            continue;
+        }
+        if (strcmp(s->key, key) == 0) {
+            return s;
+        }
+    }
+    return NULL;
+}
+
 static void on_settings(
         golioth_client_t client,
         const golioth_response_t* response,
@@ -87,21 +100,44 @@ static void on_settings(
     cJSON* errors = cJSON_AddArrayToObject(report, "errors");
 
     golioth_settings_t* gsettings = golioth_coap_client_get_settings(client);
-    assert(gsettings->callback);
 
     // Iterate over settings object and call callback for each setting
     cJSON* setting = settings->child;
     while (setting) {
         const char* key = setting->string;
-        golioth_settings_value_t value = {};
+
+        const golioth_setting_t* registered_setting = find_registered_setting(gsettings, key);
+        if (!registered_setting) {
+            add_error_to_array(errors, key, GOLIOTH_SETTINGS_KEY_NOT_RECOGNIZED);
+            goto next_setting;
+        }
 
         if (cJSON_IsString(setting)) {
-            value.type = GOLIOTH_SETTINGS_VALUE_TYPE_STRING;
-            value.string.ptr = setting->valuestring;
-            value.string.len = strlen(setting->valuestring);
+            if (registered_setting->type != GOLIOTH_SETTINGS_VALUE_TYPE_STRING) {
+                add_error_to_array(errors, key, GOLIOTH_SETTINGS_VALUE_FORMAT_NOT_VALID);
+                goto next_setting;
+            }
+
+            assert(registered_setting->string_cb);
+            golioth_settings_status_t setting_status = registered_setting->string_cb(
+                    setting->valuestring, strlen(setting->valuestring), registered_setting->cb_arg);
+
+            if (setting_status != GOLIOTH_SETTINGS_SUCCESS) {
+                add_error_to_array(errors, key, setting_status);
+            }
         } else if (cJSON_IsBool(setting)) {
-            value.type = GOLIOTH_SETTINGS_VALUE_TYPE_BOOL;
-            value.b = setting->valueint;
+            if (registered_setting->type != GOLIOTH_SETTINGS_VALUE_TYPE_BOOL) {
+                add_error_to_array(errors, key, GOLIOTH_SETTINGS_VALUE_FORMAT_NOT_VALID);
+                goto next_setting;
+            }
+
+            assert(registered_setting->bool_cb);
+            golioth_settings_status_t setting_status = registered_setting->bool_cb(
+                    (bool)setting->valueint, registered_setting->cb_arg);
+
+            if (setting_status != GOLIOTH_SETTINGS_SUCCESS) {
+                add_error_to_array(errors, key, setting_status);
+            }
         } else if (cJSON_IsNumber(setting)) {
             // Use modf to determine if this number is an int or a float
             // TODO - is there a more efficient way to do this?
@@ -114,22 +150,44 @@ static void on_settings(
             }
 
             if (is_float) {
-                value.type = GOLIOTH_SETTINGS_VALUE_TYPE_FLOAT;
-                value.f = setting->valuedouble;
-            } else {
-                value.type = GOLIOTH_SETTINGS_VALUE_TYPE_INT;
-                value.i32 = setting->valueint;
+                if (registered_setting->type != GOLIOTH_SETTINGS_VALUE_TYPE_FLOAT) {
+                    add_error_to_array(errors, key, GOLIOTH_SETTINGS_VALUE_FORMAT_NOT_VALID);
+                    goto next_setting;
+                }
+
+                assert(registered_setting->float_cb);
+                golioth_settings_status_t setting_status = registered_setting->float_cb(
+                        (float)setting->valuedouble, registered_setting->cb_arg);
+
+                if (setting_status != GOLIOTH_SETTINGS_SUCCESS) {
+                    add_error_to_array(errors, key, setting_status);
+                }
+            } else {  // integer
+                if (registered_setting->type != GOLIOTH_SETTINGS_VALUE_TYPE_INT) {
+                    add_error_to_array(errors, key, GOLIOTH_SETTINGS_VALUE_FORMAT_NOT_VALID);
+                    goto next_setting;
+                }
+
+                // Verify min/max range
+                int32_t new_value = (int32_t)setting->valueint;
+                if ((new_value < registered_setting->int_min_val)
+                    || (new_value > registered_setting->int_max_val)) {
+                    add_error_to_array(errors, key, GOLIOTH_SETTINGS_VALUE_OUTSIDE_RANGE);
+                    goto next_setting;
+                }
+
+                assert(registered_setting->int_cb);
+                golioth_settings_status_t setting_status = registered_setting->int_cb(
+                        (int32_t)setting->valueint, registered_setting->cb_arg);
+
+                if (setting_status != GOLIOTH_SETTINGS_SUCCESS) {
+                    add_error_to_array(errors, key, setting_status);
+                }
             }
         } else {
-            value.type = GOLIOTH_SETTINGS_VALUE_TYPE_UNKNOWN;
             GLTH_LOGW(TAG, "Setting with key %s has unknown type", key);
             add_error_to_array(errors, key, GOLIOTH_SETTINGS_VALUE_FORMAT_NOT_VALID);
             goto next_setting;
-        }
-
-        golioth_settings_status_t setting_status = gsettings->callback(key, &value);
-        if (setting_status != GOLIOTH_SETTINGS_SUCCESS) {
-            add_error_to_array(errors, key, setting_status);
         }
 
     next_setting:
@@ -165,26 +223,158 @@ cleanup:
     }
 }
 
-golioth_status_t golioth_settings_register_callback(
+static void settings_lazy_init(golioth_client_t client) {
+    golioth_settings_t* gsettings = golioth_coap_client_get_settings(client);
+
+    if (gsettings->initialized) {
+        return;
+    }
+
+    golioth_status_t status = golioth_coap_client_observe_async(
+            client, SETTINGS_PATH_PREFIX, "", COAP_MEDIATYPE_APPLICATION_JSON, on_settings, NULL);
+
+    if (status != GOLIOTH_OK) {
+        GLTH_LOGE(TAG, "Failed to observe settings");
+        return;
+    }
+
+    gsettings->initialized = true;
+}
+
+golioth_setting_t* alloc_setting(golioth_client_t client) {
+    settings_lazy_init(client);
+
+    golioth_settings_t* gsettings = golioth_coap_client_get_settings(client);
+
+    if (gsettings->num_settings == CONFIG_GOLIOTH_MAX_NUM_SETTINGS) {
+        GLTH_LOGE(
+                TAG,
+                "Exceededed CONFIG_GOLIOTH_MAX_NUM_SETTINGS (%d)",
+                CONFIG_GOLIOTH_MAX_NUM_SETTINGS);
+        return NULL;
+    }
+
+    return &gsettings->settings[gsettings->num_settings++];
+}
+
+golioth_status_t golioth_settings_register_int(
         golioth_client_t client,
-        golioth_settings_cb callback) {
+        const char* setting_name,
+        golioth_int_setting_cb callback,
+        void* callback_arg) {
+    return golioth_settings_register_int_with_range(
+            client, setting_name, INT32_MIN, INT32_MAX, callback, callback_arg);
+}
+
+golioth_status_t golioth_settings_register_int_with_range(
+        golioth_client_t client,
+        const char* setting_name,
+        int32_t min_val,
+        int32_t max_val,
+        golioth_int_setting_cb callback,
+        void* callback_arg) {
     if (!callback) {
         GLTH_LOGE(TAG, "Callback must not be NULL");
         return GOLIOTH_ERR_NULL;
     }
 
-    golioth_settings_t* settings = golioth_coap_client_get_settings(client);
-    settings->callback = callback;
+    golioth_setting_t* new_setting = alloc_setting(client);
+    if (!new_setting) {
+        return GOLIOTH_ERR_MEM_ALLOC;
+    }
 
-    return golioth_coap_client_observe_async(
-            client, SETTINGS_PATH_PREFIX, "", COAP_MEDIATYPE_APPLICATION_JSON, on_settings, NULL);
+    new_setting->is_valid = true;
+    new_setting->key = setting_name;
+    new_setting->type = GOLIOTH_SETTINGS_VALUE_TYPE_INT;
+    new_setting->int_cb = callback;
+    new_setting->int_min_val = min_val;
+    new_setting->int_max_val = max_val;
+    new_setting->cb_arg = callback_arg;
+
+    return GOLIOTH_OK;
+}
+
+golioth_status_t golioth_settings_register_bool(
+        golioth_client_t client,
+        const char* setting_name,
+        golioth_bool_setting_cb callback,
+        void* callback_arg) {
+    if (!callback) {
+        GLTH_LOGE(TAG, "Callback must not be NULL");
+        return GOLIOTH_ERR_NULL;
+    }
+
+    golioth_setting_t* new_setting = alloc_setting(client);
+    if (!new_setting) {
+        return GOLIOTH_ERR_MEM_ALLOC;
+    }
+
+    new_setting->is_valid = true;
+    new_setting->key = setting_name;
+    new_setting->type = GOLIOTH_SETTINGS_VALUE_TYPE_BOOL;
+    new_setting->bool_cb = callback;
+    new_setting->cb_arg = callback_arg;
+
+    return GOLIOTH_OK;
+}
+
+golioth_status_t golioth_settings_register_float(
+        golioth_client_t client,
+        const char* setting_name,
+        golioth_float_setting_cb callback,
+        void* callback_arg) {
+    if (!callback) {
+        GLTH_LOGE(TAG, "Callback must not be NULL");
+        return GOLIOTH_ERR_NULL;
+    }
+
+    golioth_setting_t* new_setting = alloc_setting(client);
+    if (!new_setting) {
+        return GOLIOTH_ERR_MEM_ALLOC;
+    }
+
+    new_setting->is_valid = true;
+    new_setting->key = setting_name;
+    new_setting->type = GOLIOTH_SETTINGS_VALUE_TYPE_FLOAT;
+    new_setting->float_cb = callback;
+    new_setting->cb_arg = callback_arg;
+
+    return GOLIOTH_OK;
 }
 
 #else  // CONFIG_GOLIOTH_SETTINGS_ENABLE
 
-golioth_status_t golioth_settings_register_callback(
+golioth_status_t golioth_settings_register_int(
         golioth_client_t client,
-        golioth_settings_cb callback) {
+        const char* setting_name,
+        golioth_int_setting_cb callback,
+        void* callback_arg) {
+    return GOLIOTH_ERR_NOT_IMPLEMENTED;
+}
+
+golioth_status_t golioth_settings_register_int_with_range(
+        golioth_client_t client,
+        const char* setting_name,
+        int32_t min_val,
+        int32_t max_val,
+        golioth_int_setting_cb callback,
+        void* callback_arg) {
+    return GOLIOTH_ERR_NOT_IMPLEMENTED;
+}
+
+golioth_status_t golioth_settings_register_bool(
+        golioth_client_t client,
+        const char* setting_name,
+        golioth_bool_setting_cb callback,
+        void* callback_arg) {
+    return GOLIOTH_ERR_NOT_IMPLEMENTED;
+}
+
+golioth_status_t golioth_settings_register_float(
+        golioth_client_t client,
+        const char* setting_name,
+        golioth_float_setting_cb callback,
+        void* callback_arg) {
     return GOLIOTH_ERR_NOT_IMPLEMENTED;
 }
 
