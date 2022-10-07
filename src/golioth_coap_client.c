@@ -15,6 +15,7 @@
 #include "golioth_util.h"
 #include "golioth_time.h"
 #include "golioth_lightdb.h"
+#include "golioth_settings.h"
 #include "golioth_debug.h"
 #include "golioth_config.h"
 
@@ -42,6 +43,7 @@ typedef struct {
     size_t block_token_len;
     golioth_client_event_cb_fn event_callback;
     void* event_callback_arg;
+    golioth_settings_t settings;
 } golioth_coap_client_t;
 
 static bool token_matches_request(
@@ -1481,4 +1483,9 @@ uint32_t golioth_client_num_items_in_request_queue(golioth_client_t client) {
 
 bool golioth_client_has_allocation_leaks(void) {
     return golioth_statistics_has_allocation_leaks();
+}
+
+golioth_settings_t* golioth_coap_client_get_settings(golioth_client_t client) {
+    golioth_coap_client_t* c = (golioth_coap_client_t*)client;
+    return &c->settings;
 }

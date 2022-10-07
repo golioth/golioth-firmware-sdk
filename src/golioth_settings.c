@@ -41,12 +41,6 @@
 #define SETTINGS_PATH_PREFIX ".c/"
 #define SETTINGS_STATUS_PATH "status"
 
-// TODO - move this into the client struct so it's not global
-static struct {
-    bool initialized;
-    golioth_settings_cb callback;
-} _golioth_settings;
-
 static void add_error_to_array(cJSON* array, const char* key, golioth_settings_status_t code) {
     cJSON* error = cJSON_CreateObject();
     cJSON_AddStringToObject(error, "setting_key", key);
@@ -92,8 +86,10 @@ static void on_settings(
     cJSON_AddNumberToObject(report, "version", version->valueint);  // copied from request
     cJSON* errors = cJSON_AddArrayToObject(report, "errors");
 
+    golioth_settings_t* gsettings = golioth_coap_client_get_settings(client);
+    assert(gsettings->callback);
+
     // Iterate over settings object and call callback for each setting
-    assert(_golioth_settings.callback);
     cJSON* setting = settings->child;
     while (setting) {
         const char* key = setting->string;
@@ -137,7 +133,7 @@ static void on_settings(
             goto next_setting;
         }
 
-        golioth_settings_status_t setting_status = _golioth_settings.callback(key, &value);
+        golioth_settings_status_t setting_status = gsettings->callback(key, &value);
         if (setting_status != GOLIOTH_SETTINGS_SUCCESS) {
             add_error_to_array(errors, key, setting_status);
         }
@@ -183,8 +179,8 @@ golioth_status_t golioth_settings_register_callback(
         return GOLIOTH_ERR_NULL;
     }
 
-    _golioth_settings.initialized = true;
-    _golioth_settings.callback = callback;
+    golioth_settings_t* settings = golioth_coap_client_get_settings(client);
+    settings->callback = callback;
 
     return golioth_coap_client_observe_async(
             client, SETTINGS_PATH_PREFIX, "", COAP_MEDIATYPE_APPLICATION_JSON, on_settings, NULL);

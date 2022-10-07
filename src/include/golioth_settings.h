@@ -90,6 +90,12 @@ typedef struct {
 typedef golioth_settings_status_t (
         *golioth_settings_cb)(const char* key, const golioth_settings_value_t* value);
 
+/// Private struct to contain settings state data, stored in
+/// the golioth_coap_client_t struct.
+typedef struct {
+    golioth_settings_cb callback;
+} golioth_settings_t;
+
 /// Register callback for handling settings.
 ///
 /// The client will be used to observe for settings from the cloud.
