@@ -13,6 +13,7 @@
 #include <coap3/coap.h>  // COAP_MEDIATYPE_*
 #include "golioth_client.h"
 #include "golioth_lightdb.h"
+#include "golioth_settings.h"
 #include "golioth_config.h"
 
 /// Event group bits for request_complete_event
@@ -167,3 +168,7 @@ golioth_status_t golioth_coap_client_observe_async(
         uint32_t content_type,
         golioth_get_cb_fn callback,
         void* callback_arg);
+
+/// Getters, for internal SDK code to access data within the
+/// coap client struct.
+golioth_settings_t* golioth_coap_client_get_settings(golioth_client_t client);
