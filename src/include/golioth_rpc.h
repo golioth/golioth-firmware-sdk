@@ -8,6 +8,7 @@
 #include <cJSON.h>
 #include "golioth_status.h"
 #include "golioth_client.h"
+#include "golioth_config.h"
 
 /// @defgroup golioth_rpc golioth_rpc
 /// Functions for interacting with the Golioth Remote Procedure Call service
@@ -90,5 +91,19 @@ golioth_status_t golioth_rpc_register(
         const char* method,
         golioth_rpc_cb_fn callback,
         void* callback_arg);
+
+/// Private struct to contain data about a single registered method
+typedef struct {
+    const char* method;
+    golioth_rpc_cb_fn callback;
+    void* callback_arg;
+} golioth_rpc_method_t;
+
+/// Private struct to contain RPC state data, stored in
+/// the golioth_coap_client_t struct.
+typedef struct {
+    golioth_rpc_method_t rpcs[CONFIG_GOLIOTH_RPC_MAX_NUM_METHODS];
+    int num_rpcs;
+} golioth_rpc_t;
 
 /// @}

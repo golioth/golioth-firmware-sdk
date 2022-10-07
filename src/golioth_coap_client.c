@@ -9,15 +9,11 @@
 #include <netdb.h>      // struct addrinfo
 #include <sys/param.h>  // MIN
 #include <coap3/coap.h>
-#include "golioth_client.h"
 #include "golioth_coap_client.h"
 #include "golioth_statistics.h"
 #include "golioth_util.h"
 #include "golioth_time.h"
-#include "golioth_lightdb.h"
-#include "golioth_settings.h"
 #include "golioth_debug.h"
-#include "golioth_config.h"
 
 #define TAG "golioth_coap_client"
 
@@ -44,6 +40,7 @@ typedef struct {
     golioth_client_event_cb_fn event_callback;
     void* event_callback_arg;
     golioth_settings_t settings;
+    golioth_rpc_t rpc;
 } golioth_coap_client_t;
 
 static bool token_matches_request(
@@ -1488,4 +1485,9 @@ bool golioth_client_has_allocation_leaks(void) {
 golioth_settings_t* golioth_coap_client_get_settings(golioth_client_t client) {
     golioth_coap_client_t* c = (golioth_coap_client_t*)client;
     return &c->settings;
+}
+
+golioth_rpc_t* golioth_coap_client_get_rpc(golioth_client_t client) {
+    golioth_coap_client_t* c = (golioth_coap_client_t*)client;
+    return &c->rpc;
 }

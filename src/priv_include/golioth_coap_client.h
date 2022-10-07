@@ -14,6 +14,7 @@
 #include "golioth_client.h"
 #include "golioth_lightdb.h"
 #include "golioth_settings.h"
+#include "golioth_rpc.h"
 #include "golioth_config.h"
 
 /// Event group bits for request_complete_event
@@ -172,3 +173,4 @@ golioth_status_t golioth_coap_client_observe_async(
 /// Getters, for internal SDK code to access data within the
 /// coap client struct.
 golioth_settings_t* golioth_coap_client_get_settings(golioth_client_t client);
+golioth_rpc_t* golioth_coap_client_get_rpc(golioth_client_t client);
