@@ -93,12 +93,6 @@ static void on_settings(
     cJSON* setting = settings->child;
     while (setting) {
         const char* key = setting->string;
-        if (strlen(key) > 15) {
-            GLTH_LOGW(TAG, "Skipping setting because key too long: %s", key);
-            add_error_to_array(errors, key, GOLIOTH_SETTINGS_KEY_NOT_VALID);
-            goto next_setting;
-        }
-
         golioth_settings_value_t value = {};
 
         if (cJSON_IsString(setting)) {
