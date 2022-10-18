@@ -5,6 +5,16 @@ based on https://github.com/Infineon/mtb-example-psoc6-mcuboot-basic.
 It has been tested with the PSoC 6 WiFi BT Prototyping Kit
 (CY8CPROTO-062-4343W).
 
+This example requires ModusToolbox 2.4.0. Newer versions of ModusToolbox (e.g. 3.0.0)
+are supported in the official Golioth example app that is integrated
+into MTB: https://github.com/golioth/mtb-example-golioth. If you have
+multiple versions of MTB installed, you will need to set the version to 2.4.0
+via environment variable in order for this example app to build:
+
+```
+export CY_TOOLS_PATHS=$HOME/ModusToolbox/tools_2.4
+```
+
 This example supports all Golioth services, including Over-the-Air firmware
 updates:
 
