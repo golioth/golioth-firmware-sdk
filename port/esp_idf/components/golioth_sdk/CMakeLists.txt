@@ -4,8 +4,8 @@ set(sdk_idf_port ${sdk_root}/port/esp_idf)
 set(libcoap_dir ${sdk_root}/external/libcoap)
 
 set(libcoap_srcs
-    "${libcoap_dir}/src/address.c"
-    "${libcoap_dir}/src/async.c"
+    "${libcoap_dir}/src/coap_address.c"
+    "${libcoap_dir}/src/coap_async.c"
     "${libcoap_dir}/src/block.c"
     "${libcoap_dir}/src/coap_asn1.c"
     "${libcoap_dir}/src/coap_cache.c"
@@ -22,11 +22,11 @@ set(libcoap_srcs
     "${libcoap_dir}/src/encode.c"
     "${libcoap_dir}/src/mem.c"
     "${libcoap_dir}/src/net.c"
-    "${libcoap_dir}/src/option.c"
+    "${libcoap_dir}/src/coap_option.c"
     "${libcoap_dir}/src/pdu.c"
     "${libcoap_dir}/src/resource.c"
     "${libcoap_dir}/src/str.c"
-    "${libcoap_dir}/src/subscribe.c"
+    "${libcoap_dir}/src/coap_subscribe.c"
     "${libcoap_dir}/src/uri.c")
 
 idf_component_register(
@@ -59,7 +59,6 @@ idf_component_register(
         "${sdk_src}/golioth_statistics.c"
         "${sdk_src}/golioth_settings.c")
 
-list(APPEND EXTRA_C_FLAGS_LIST -Werror)
 component_compile_options(${EXTRA_C_FLAGS_LIST})
 
 target_compile_definitions(${COMPONENT_LIB} PUBLIC WITH_POSIX)
