@@ -222,8 +222,6 @@ static void nack_handler(
             break;
         case COAP_NACK_TLS_FAILED:
             GLTH_LOGE(TAG, "Received nack reason: COAP_NACK_TLS_FAILED");
-            // TODO - customize error message based on PSK vs cert usage
-            GLTH_LOGE(TAG, "Maybe your PSK-ID or PSK is incorrect?");
             break;
         default:
             GLTH_LOGE(TAG, "Received nack reason: %d", reason);
@@ -754,6 +752,11 @@ static golioth_status_t coap_io_loop_once(
 
     if (time_spent_waiting_ms >= timeout_ms) {
         GLTH_LOGE(TAG, "Timeout: never got a response from the server");
+
+        if (coap_session_get_state(session) == COAP_SESSION_STATE_HANDSHAKE) {
+            // TODO - customize error message based on PSK vs cert usage
+            GLTH_LOGE(TAG, "DTLS handshake failed. Maybe your PSK-ID or PSK is incorrect?");
+        }
 
         // Call user's callback with GOLIOTH_ERR_TIMEOUT
         // TODO - simplify, put callback directly in request which removes if/else branches
