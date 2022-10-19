@@ -204,7 +204,11 @@ static coap_response_t coap_response_handler(
 }
 
 static int event_handler(coap_session_t* session, const coap_event_t event) {
-    GLTH_LOGD(TAG, "event: 0x%04X", event);
+    if (event == COAP_EVENT_MSG_RETRANSMITTED) {
+        GLTH_LOGW(TAG, "CoAP message retransmitted");
+    } else {
+        GLTH_LOGD(TAG, "event: 0x%04X", event);
+    }
     return 0;
 }
 
