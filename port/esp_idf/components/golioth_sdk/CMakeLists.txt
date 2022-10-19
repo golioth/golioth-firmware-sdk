@@ -48,6 +48,7 @@ idf_component_register(
     SRCS
         "${libcoap_srcs}"
         "${sdk_idf_port}/fw_update_esp_idf.c"
+        "${sdk_idf_port}/lwip/ethernet_tap.c"
         "${sdk_src}/golioth_status.c"
         "${sdk_src}/golioth_coap_client.c"
         "${sdk_src}/golioth_log.c"
@@ -63,3 +64,6 @@ component_compile_options(${EXTRA_C_FLAGS_LIST})
 
 target_compile_definitions(${COMPONENT_LIB} PUBLIC WITH_POSIX)
 
+target_link_libraries(${COMPONENT_LIB} INTERFACE
+    "-Wl,--wrap=ethernet_input,--wrap=ethernet_output"
+    "-u __wrap_ethernet_input -u __wrap_ethernet_output")
