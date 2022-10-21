@@ -6,7 +6,7 @@ on:
   pull_request:
 
 jobs:
-  lint_and_build_examples:
+  lint_build_unit_test:
     runs-on: ubuntu-latest
     steps:
     - name: Checkout repository and submodules
@@ -25,6 +25,11 @@ jobs:
         echo "Checking code format"
         sudo apt install clang-format
         REPO_ROOT=`pwd` ./scripts/lint/ci_check_clang_format.sh
+    - name: Run unit tests
+      shell: bash
+      run: |
+        cd test
+        ./test.sh
     - name: Build golioth_basics project
       uses: espressif/esp-idf-ci-action@v1
       with:

@@ -37,6 +37,8 @@ changed_files=$(git diff --diff-filter=d --name-only "$AGAINST")
 changed_c_h_files=$(echo "$changed_files" \
     | grep -E "\.(c|h)$" \
     | grep -v -E ".*external.*" \
+    | grep -v -E ".*unity.*" \
+    | grep -v -E ".*fff.*" \
     | grep -v -E ".*cy_flash_map.h") || true
 
 cd "$(git rev-parse --show-toplevel)"
