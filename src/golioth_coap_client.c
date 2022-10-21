@@ -14,6 +14,7 @@
 #include "golioth_util.h"
 #include "golioth_time.h"
 #include "golioth_debug.h"
+#include "golioth_packet_capture.h"
 
 #define TAG "golioth_coap_client"
 
@@ -912,6 +913,8 @@ golioth_client_t golioth_client_create(const golioth_client_config_t* config) {
         time_t t;
         srand(time(&t));
 
+        golioth_packet_capture_init();
+
         _initialized = true;
     }
 
@@ -972,7 +975,10 @@ golioth_client_t golioth_client_create(const golioth_client_config_t* config) {
         }
     }
 
+
     new_client->is_running = true;
+
+    golioth_packet_capture_set_client((golioth_client_t)new_client);
 
     return (golioth_client_t)new_client;
 
