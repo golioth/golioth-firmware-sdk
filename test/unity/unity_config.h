@@ -1,0 +1,6 @@
+#pragma once
+
+#define UNITY_INCLUDE_FLOAT
+#define UNITY_INCLUDE_DOUBLE
+#define UNITY_EXCLUDE_TIME_H
+#define UNITY_OUTPUT_COLOR
