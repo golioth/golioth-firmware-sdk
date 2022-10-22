@@ -1,3 +1,9 @@
 [submodule "external/libcoap"]
 	path = external/libcoap
 	url = https://github.com/obgm/libcoap.git
+[submodule "external/unity"]
+	path = external/unity
+	url = https://github.com/ThrowTheSwitch/Unity.git
+[submodule "external/fff"]
+	path = external/fff
+	url = https://github.com/meekrosoft/fff.git
