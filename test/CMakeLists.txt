@@ -7,8 +7,14 @@ set(CMAKE_BUILD_TYPE Debug)
 set(CMAKE_C_FLAGS "-fprofile-arcs -ftest-coverage")
 set(CMAKE_EXE_LINKER_FLAGS "-fprofile-arcs -ftest-coverage -coverage")
 
-add_subdirectory(unity)
-add_subdirectory(fff)
+set(repo_root ..)
+add_library(unity STATIC ${repo_root}/external/unity/src/unity.c)
+target_compile_definitions(unity PUBLIC -DUNITY_INCLUDE_CONFIG_H)
+target_include_directories(unity PUBLIC ${repo_root}/external/unity/src .)
+
+add_library(fff INTERFACE)
+target_include_directories(fff INTERFACE ${repo_root}/external/fff)
+
 enable_testing()
 
 set(root_dir ..)
