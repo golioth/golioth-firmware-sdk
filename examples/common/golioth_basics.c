@@ -54,6 +54,7 @@ static golioth_rpc_status_t on_double(
     return RPC_OK;
 }
 
+
 // Callback function for asynchronous get request of LightDB path "my_int"
 static void on_get_my_int(
         golioth_client_t client,
@@ -96,6 +97,7 @@ static void on_my_config(
     golioth_lightdb_delete_async(client, path, NULL, NULL);
 }
 
+
 void golioth_basics(golioth_client_t client) {
     // Register a callback function that will be called by the client task when
     // connect and disconnect events happen.
@@ -105,7 +107,7 @@ void golioth_basics(golioth_client_t client) {
     _connected_sem = xSemaphoreCreateBinary();
     golioth_client_register_event_callback(client, on_client_event, NULL);
 
-    GLTH_LOGI(TAG, "Waiting to Golioth to connect...");
+    GLTH_LOGI(TAG, "Waiting for connection to Golioth...");
     xSemaphoreTake(_connected_sem, portMAX_DELAY);
 
     // At this point, we have a client that can be used to interact with Golioth services:
@@ -200,11 +202,9 @@ void golioth_basics(golioth_client_t client) {
     // once in a while.
     GLTH_LOGI(TAG, "Entering endless loop");
     int32_t counter = 0;
-    char sbuf[32];
     while (1) {
         golioth_lightdb_set_int_async(client, "counter", counter, NULL, NULL);
-        snprintf(sbuf, sizeof(sbuf), "Sending hello! %" PRId32, counter);
-        golioth_log_info_async(client, "app_main", sbuf, NULL, NULL);
+        GLTH_LOGI(TAG, "Sending hello! %" PRId32, counter);
         counter++;
         vTaskDelay(_loop_delay_s * 1000 / portTICK_PERIOD_MS);
     };
