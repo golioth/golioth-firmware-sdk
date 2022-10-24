@@ -391,6 +391,20 @@ static void initialize_console(void) {
     linenoiseAllowEmpty(false);
 }
 
+void shell_input_line(const char* line, size_t line_len) {
+    int ret;
+    esp_err_t err = esp_console_run(line, &ret);
+    if (err == ESP_ERR_NOT_FOUND) {
+        printf("Unrecognized command\n");
+    } else if (err == ESP_ERR_INVALID_ARG) {
+        // command was empty
+    } else if (err == ESP_OK && ret != ESP_OK) {
+        printf("Command returned non-zero error code: 0x%x (%s)\n", ret, esp_err_to_name(ret));
+    } else if (err != ESP_OK) {
+        printf("Internal error: %s\n", esp_err_to_name(err));
+    }
+}
+
 static void shell_task(void* arg) {
     initialize_console();
     esp_console_register_help_command();

@@ -14,6 +14,7 @@
 #include "golioth_util.h"
 #include "golioth_time.h"
 #include "golioth_debug.h"
+#include "golioth_remote_shell.h"
 
 #define TAG "golioth_coap_client"
 
@@ -973,6 +974,8 @@ golioth_client_t golioth_client_create(const golioth_client_config_t* config) {
     }
 
     new_client->is_running = true;
+
+    golioth_remote_shell_set_client(new_client);
 
     return (golioth_client_t)new_client;
 
