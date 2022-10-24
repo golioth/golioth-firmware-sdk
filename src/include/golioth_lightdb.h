@@ -436,4 +436,21 @@ golioth_status_t golioth_lightdb_stream_set_json_sync(
         size_t json_str_len,
         int32_t timeout_s);
 
+/// Similar to @ref golioth_lightdb_stream_set_json_async, but for CBOR
+golioth_status_t golioth_lightdb_stream_set_cbor_async(
+        golioth_client_t client,
+        const char* path,
+        const uint8_t* cbor_data,
+        size_t cbor_data_len,
+        golioth_set_cb_fn callback,
+        void* callback_arg);
+
+/// Similar to @ref golioth_lightdb_stream_set_json_sync, but for CBOR
+golioth_status_t golioth_lightdb_stream_set_cbor_sync(
+        golioth_client_t client,
+        const char* path,
+        const uint8_t* cbor_data,
+        size_t cbor_data_len,
+        int32_t timeout_s);
+
 /// @}

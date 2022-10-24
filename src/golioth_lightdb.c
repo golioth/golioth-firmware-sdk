@@ -201,6 +201,29 @@ static golioth_status_t golioth_lightdb_set_json_internal(
             timeout_s);
 }
 
+static golioth_status_t golioth_lightdb_set_cbor_internal(
+        golioth_client_t client,
+        const char* path_prefix,
+        const char* path,
+        const uint8_t* cbor_data,
+        size_t cbor_data_len,
+        bool is_synchronous,
+        int32_t timeout_s,
+        golioth_set_cb_fn callback,
+        void* callback_arg) {
+    return golioth_coap_client_set(
+            client,
+            path_prefix,
+            path,
+            COAP_MEDIATYPE_APPLICATION_CBOR,
+            cbor_data,
+            cbor_data_len,
+            callback,
+            callback_arg,
+            is_synchronous,
+            timeout_s);
+}
+
 int32_t golioth_payload_as_int(const uint8_t* payload, size_t payload_size) {
     // Copy payload to a NULL-terminated string
     char value[12] = {};
@@ -732,6 +755,43 @@ golioth_status_t golioth_lightdb_stream_set_json_sync(
             path,
             json_str,
             json_str_len,
+            true,
+            timeout_s,
+            NULL,
+            NULL);
+}
+
+golioth_status_t golioth_lightdb_stream_set_cbor_async(
+        golioth_client_t client,
+        const char* path,
+        const uint8_t* cbor_data,
+        size_t cbor_data_len,
+        golioth_set_cb_fn callback,
+        void* callback_arg) {
+    return golioth_lightdb_set_cbor_internal(
+            client,
+            GOLIOTH_LIGHTDB_STREAM_PATH_PREFIX,
+            path,
+            cbor_data,
+            cbor_data_len,
+            false,
+            GOLIOTH_WAIT_FOREVER,
+            callback,
+            callback_arg);
+}
+
+golioth_status_t golioth_lightdb_stream_set_cbor_sync(
+        golioth_client_t client,
+        const char* path,
+        const uint8_t* cbor_data,
+        size_t cbor_data_len,
+        int32_t timeout_s) {
+    return golioth_lightdb_set_cbor_internal(
+            client,
+            GOLIOTH_LIGHTDB_STREAM_PATH_PREFIX,
+            path,
+            cbor_data,
+            cbor_data_len,
             true,
             timeout_s,
             NULL,
