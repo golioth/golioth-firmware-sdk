@@ -2,7 +2,7 @@
 #include <fff.h>
 #include <stdint.h>
 
-#include "ringbuf.h"
+#include "golioth_ringbuf.h"
 
 void setUp(void) {}
 void tearDown(void) {}
@@ -74,16 +74,25 @@ void can_reset(void) {
 
 void array_wraparound(void) {
     // Verify the size is reported correctly when the write pointer wraps
-    // around in the internal array
+    // around in the internal array.
     //
     // To force wraparound, fill the ringbuf, read an item, then write an item
     RINGBUF_DEFINE(rb, 1, 2);
-    uint8_t item = 0;
-    TEST_ASSERT_TRUE(ringbuf_put(&rb, &item));
-    TEST_ASSERT_TRUE(ringbuf_put(&rb, &item));
-    TEST_ASSERT_TRUE(ringbuf_get(&rb, &item));
-    TEST_ASSERT_TRUE(ringbuf_put(&rb, &item));
-    TEST_ASSERT_EQUAL(2, ringbuf_size(&rb));
+    uint8_t item1 = 1;
+    uint8_t item2 = 2;
+    uint8_t item3 = 3;
+    uint8_t rd_item;
+    TEST_ASSERT_TRUE(ringbuf_put(&rb, &item1));
+    TEST_ASSERT_TRUE(ringbuf_put(&rb, &item2));
+    TEST_ASSERT_TRUE(ringbuf_is_full(&rb));
+    TEST_ASSERT_TRUE(ringbuf_get(&rb, &rd_item));
+    TEST_ASSERT_EQUAL(1, rd_item);
+    TEST_ASSERT_TRUE(ringbuf_put(&rb, &item3));
+    TEST_ASSERT_TRUE(ringbuf_get(&rb, &rd_item));
+    TEST_ASSERT_EQUAL(2, rd_item);
+    TEST_ASSERT_TRUE(ringbuf_get(&rb, &rd_item));
+    TEST_ASSERT_EQUAL(3, rd_item);
+    TEST_ASSERT_TRUE(ringbuf_is_empty(&rb));
 }
 
 void put_when_null_item_fails(void) {
