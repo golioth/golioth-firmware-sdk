@@ -24,7 +24,7 @@ set(root_dir ..)
 #
 set(test_name "test_ringbuf")
 add_executable(${test_name}
-    ${root_dir}/src/ringbuf.c
+    ${root_dir}/src/golioth_ringbuf.c
     test_ringbuf.c
 )
 target_include_directories(${test_name} PRIVATE

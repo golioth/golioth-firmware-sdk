@@ -1,4 +1,4 @@
-#include "ringbuf.h"
+#include "golioth_ringbuf.h"
 #include <string.h>
 
 /// When ringbuf is empty, write_index == read_index.
