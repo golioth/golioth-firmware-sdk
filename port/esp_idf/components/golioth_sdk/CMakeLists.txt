@@ -48,6 +48,7 @@ idf_component_register(
     SRCS
         "${libcoap_srcs}"
         "${sdk_idf_port}/fw_update_esp_idf.c"
+        "${sdk_idf_port}/serial_tap_esp_idf.c"
         "${sdk_src}/golioth_status.c"
         "${sdk_src}/golioth_coap_client.c"
         "${sdk_src}/golioth_log.c"
@@ -58,9 +59,12 @@ idf_component_register(
         "${sdk_src}/golioth_fw_update.c"
         "${sdk_src}/golioth_statistics.c"
         "${sdk_src}/golioth_settings.c"
-        "${sdk_src}/ringbuf.c")
+        "${sdk_src}/golioth_remote_shell.c"
+        "${sdk_src}/golioth_ringbuf.c")
 
 component_compile_options(${EXTRA_C_FLAGS_LIST})
 
 target_compile_definitions(${COMPONENT_LIB} PUBLIC WITH_POSIX)
-
+# target_link_libraries(${COMPONENT_LIB} INTERFACE "-Wl,--wrap=vprintf -u __wrap_vprintf")
+target_link_libraries(${COMPONENT_LIB} INTERFACE
+    "-Wl,--wrap=uart_hal_write_txfifo -u __wrap_uart_hal_write_txfifo")

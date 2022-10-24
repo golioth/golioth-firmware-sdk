@@ -18,6 +18,10 @@
 
 #define TAG "golioth_example"
 
+void on_line_input(const char* line, size_t line_len) {
+    shell_input_line(line, line_len);
+}
+
 void app_main(void) {
     // Initialize NVS first. For this example, it is assumed that WiFi and Golioth
     // PSK credentials are stored in NVS.
@@ -71,6 +75,11 @@ void app_main(void) {
                     }}};
     golioth_client_t client = golioth_client_create(&config);
     assert(client);
+
+    // For remote shell, register a callback function that will be
+    // called when a line of input text is received from Golioth, which will
+    // be fed into the device shell for processing.
+    golioth_remote_shell_set_line_input_handler(on_line_input);
 
     // golioth_basics will interact with each Golioth service and enter an endless loop.
     golioth_basics(client);

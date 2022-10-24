@@ -26,3 +26,11 @@ Type `reset` to restart the app with the new credentials.
 Use the web app to provision:
 
 https://github.com/goliothlabs/ble_prov_web
+
+### Remote shell
+
+In `sdkconfig`, set `CONFIG_GOLIOTH_REMOTE_SHELL_ENABLE=1`.
+
+Use the remote shell web app (experimental) to interact with the device:
+
+https://github.com/goliothlabs/remote_shell_web
