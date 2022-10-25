@@ -15,6 +15,10 @@ Here is a minimal example that demonstrates how to connect to
 [Golioth cloud](https://docs.golioth.io/cloud) and send the message "Hello, Golioth!":
 
 ```c
+#include <stdbool.h>
+#include <stdint.h>
+#include <string.h>
+#include "nvs.h"
 #include "wifi.h"
 #include "golioth.h"
 
@@ -24,6 +28,7 @@ void app_main(void) {
     const char* golioth_psk_id = "device@project";
     const char* golioth_psk = "supersecret";
 
+    nvs_init();
     wifi_init(wifi_ssid, wifi_password);
     wifi_wait_for_connected();
 
