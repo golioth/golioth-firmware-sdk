@@ -9,8 +9,6 @@
 #include "golioth_sys.h"
 #include "golioth_fw_update.h"
 #include "golioth_statistics.h"
-#include <FreeRTOS.h>
-#include <task.h>
 
 #define TAG "golioth_fw_update"
 
@@ -114,7 +112,7 @@ static bool manifest_version_is_different(const golioth_ota_manifest_t* manifest
     return false;
 }
 
-static void fw_update_task(void* arg) {
+static void fw_update_thread(void* arg) {
     // If it's the first time booting a new OTA image,
     // wait for successful connection to Golioth.
     //
@@ -265,15 +263,14 @@ void golioth_fw_update_init(golioth_client_t client, const char* current_version
     _manifest_rcvd = golioth_sys_sem_create(1, 0);  // never destroyed
 
     if (!initialized) {
-        bool task_created = xTaskCreate(  // never freed
-                fw_update_task,
-                "fw_update",
-                4096,
-                NULL,  // task arg
-                3,     // pri
-                NULL);
-        if (!task_created) {
-            GLTH_LOGE(TAG, "Failed to create shell task");
+        golioth_sys_thread_t thread = golioth_sys_thread_create((golioth_sys_thread_config_t){
+                .name = "fw_update",
+                .fn = fw_update_thread,
+                .user_arg = NULL,
+                .stack_size = 4096,
+                .prio = 3});
+        if (!thread) {
+            GLTH_LOGE(TAG, "Failed to create shell thread");
         } else {
             initialized = true;
         }

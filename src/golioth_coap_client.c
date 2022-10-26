@@ -27,7 +27,7 @@ static bool _initialized;
 // TODO - document these
 typedef struct {
     QueueHandle_t request_queue;
-    TaskHandle_t coap_task_handle;
+    golioth_sys_thread_t coap_thread_handle;
     golioth_sys_sem_t run_sem;
     golioth_sys_timer_t keepalive_timer;
     bool is_running;
@@ -743,7 +743,7 @@ static golioth_status_t coap_io_loop_once(
             xEventGroupSetBits(request_msg.request_complete_event, RESPONSE_TIMEOUT_EVENT_BIT);
         }
 
-        // Wait for user task to receive the event.
+        // Wait for user thread to receive the event.
         golioth_sys_sem_take(request_msg.request_complete_ack_sem, GOLIOTH_SYS_WAIT_FOREVER);
 
         // Now it's safe to delete the event and semaphore.
@@ -816,8 +816,8 @@ bool golioth_client_is_running(golioth_client_t client) {
 }
 
 // Note: libcoap is not thread safe, so all rx/tx I/O for the session must be
-// done in this task.
-static void golioth_coap_client_task(void* arg) {
+// done in this thread.
+static void golioth_coap_client_thread(void* arg) {
     golioth_coap_client_t* client = (golioth_coap_client_t*)arg;
     assert(client);
 
@@ -901,8 +901,6 @@ static void golioth_coap_client_task(void* arg) {
         // Small delay before starting a new session
         golioth_sys_msleep(1000);
     }
-    vTaskDelete(NULL);
-    GSTATS_INC_FREE("coap_task_handle");
 }
 
 golioth_client_t golioth_client_create(const golioth_client_config_t* config) {
@@ -943,18 +941,18 @@ golioth_client_t golioth_client_create(const golioth_client_config_t* config) {
     }
     GSTATS_INC_ALLOC("request_queue");
 
-    bool task_created = xTaskCreate(
-            golioth_coap_client_task,
-            "coap_client",
-            CONFIG_GOLIOTH_COAP_TASK_STACK_SIZE_BYTES,
-            new_client,  // task arg
-            CONFIG_GOLIOTH_COAP_TASK_PRIORITY,
-            &new_client->coap_task_handle);
-    if (!task_created) {
-        GLTH_LOGE(TAG, "Failed to create client task");
+    new_client->coap_thread_handle = golioth_sys_thread_create((golioth_sys_thread_config_t){
+            .name = "coap_client",
+            .fn = golioth_coap_client_thread,
+            .user_arg = new_client,
+            .stack_size = CONFIG_GOLIOTH_COAP_TASK_STACK_SIZE_BYTES,
+            .prio = CONFIG_GOLIOTH_COAP_TASK_PRIORITY,
+    });
+    if (!new_client->coap_thread_handle) {
+        GLTH_LOGE(TAG, "Failed to create client thread");
         goto error;
     }
-    GSTATS_INC_ALLOC("coap_task_handle");
+    GSTATS_INC_ALLOC("coap_thread_handle");
 
     new_client->keepalive_timer = golioth_sys_timer_create((golioth_sys_timer_config_t){
             .name = "keepalive",
@@ -1016,9 +1014,9 @@ void golioth_client_destroy(golioth_client_t client) {
         golioth_sys_timer_destroy(c->keepalive_timer);
         GSTATS_INC_FREE("keepalive_timer");
     }
-    if (c->coap_task_handle) {
-        vTaskDelete(c->coap_task_handle);
-        GSTATS_INC_FREE("coap_task_handle");
+    if (c->coap_thread_handle) {
+        golioth_sys_thread_destroy(c->coap_thread_handle);
+        GSTATS_INC_FREE("coap_thread_handle");
     }
     // TODO: purge queue, free dyn mem for requests that have it
     if (c->request_queue) {
@@ -1066,7 +1064,7 @@ golioth_status_t golioth_coap_client_empty(
     };
 
     if (is_synchronous) {
-        // Created here, deleted by coap task (or here if fail to enqueue
+        // Created here, deleted by coap thread (or here if fail to enqueue
         request_msg.request_complete_event = xEventGroupCreate();
         GSTATS_INC_ALLOC("request_complete_event");
         request_msg.request_complete_ack_sem = golioth_sys_sem_create(1, 0);
@@ -1096,7 +1094,7 @@ golioth_status_t golioth_coap_client_empty(
                 pdFALSE,  // either bit can trigger
                 tmo_ticks);
 
-        // Notify CoAP task that we received the event
+        // Notify CoAP thread that we received the event
         golioth_sys_sem_give(request_msg.request_complete_ack_sem);
 
         if ((bits == 0) || (bits & RESPONSE_TIMEOUT_EVENT_BIT)) {
@@ -1133,7 +1131,7 @@ golioth_status_t golioth_coap_client_set(
         // We will allocate memory and copy the payload
         // to avoid payload lifetime and thread-safety issues.
         //
-        // This memory will be free'd by the CoAP task after handling the request,
+        // This memory will be free'd by the CoAP thread after handling the request,
         // or in this function if we fail to enqueue the request.
         request_payload = (uint8_t*)calloc(1, payload_size);
         if (!request_payload) {
@@ -1165,7 +1163,7 @@ golioth_status_t golioth_coap_client_set(
     strncpy(request_msg.path, path, sizeof(request_msg.path) - 1);
 
     if (is_synchronous) {
-        // Created here, deleted by coap task (or here if fail to enqueue
+        // Created here, deleted by coap thread (or here if fail to enqueue
         request_msg.request_complete_event = xEventGroupCreate();
         GSTATS_INC_ALLOC("request_complete_event");
         request_msg.request_complete_ack_sem = golioth_sys_sem_create(1, 0);
@@ -1199,7 +1197,7 @@ golioth_status_t golioth_coap_client_set(
                 pdFALSE,  // either bit can trigger
                 tmo_ticks);
 
-        // Notify CoAP task that we received the event
+        // Notify CoAP thread that we received the event
         golioth_sys_sem_give(request_msg.request_complete_ack_sem);
 
         if ((bits == 0) || (bits & RESPONSE_TIMEOUT_EVENT_BIT)) {
@@ -1245,7 +1243,7 @@ golioth_status_t golioth_coap_client_delete(
     strncpy(request_msg.path, path, sizeof(request_msg.path) - 1);
 
     if (is_synchronous) {
-        // Created here, deleted by coap task (or here if fail to enqueue
+        // Created here, deleted by coap thread (or here if fail to enqueue
         request_msg.request_complete_event = xEventGroupCreate();
         GSTATS_INC_ALLOC("request_complete_event");
         request_msg.request_complete_ack_sem = golioth_sys_sem_create(1, 0);
@@ -1275,7 +1273,7 @@ golioth_status_t golioth_coap_client_delete(
                 pdFALSE,  // either bit can trigger
                 tmo_ticks);
 
-        // Notify CoAP task that we received the event
+        // Notify CoAP thread that we received the event
         golioth_sys_sem_give(request_msg.request_complete_ack_sem);
 
         if ((bits == 0) || (bits & RESPONSE_TIMEOUT_EVENT_BIT)) {
@@ -1313,7 +1311,7 @@ static golioth_status_t golioth_coap_client_get_internal(
     request_msg.path_prefix = path_prefix;
     strncpy(request_msg.path, path, sizeof(request_msg.path) - 1);
     if (is_synchronous) {
-        // Created here, deleted by coap task (or here if fail to enqueue
+        // Created here, deleted by coap thread (or here if fail to enqueue
         request_msg.request_complete_event = xEventGroupCreate();
         GSTATS_INC_ALLOC("request_complete_event");
         request_msg.request_complete_ack_sem = golioth_sys_sem_create(1, 0);
@@ -1350,7 +1348,7 @@ static golioth_status_t golioth_coap_client_get_internal(
                 pdFALSE,  // either bit can trigger
                 tmo_ticks);
 
-        // Notify CoAP task that we received the event
+        // Notify CoAP thread that we received the event
         golioth_sys_sem_give(request_msg.request_complete_ack_sem);
 
         if ((bits == 0) || (bits & RESPONSE_TIMEOUT_EVENT_BIT)) {
@@ -1463,14 +1461,6 @@ void golioth_client_register_event_callback(
     c->event_callback_arg = arg;
 }
 
-uint32_t golioth_client_task_stack_min_remaining(golioth_client_t client) {
-    golioth_coap_client_t* c = (golioth_coap_client_t*)client;
-    if (!c) {
-        return 0;
-    }
-    return uxTaskGetStackHighWaterMark(c->coap_task_handle);
-}
-
 void golioth_client_set_packet_loss_percent(uint8_t percent) {
     if (percent > 100) {
         GLTH_LOGE(TAG, "Invalid percent %u, must be 0 to 100", percent);
@@ -1502,4 +1492,9 @@ golioth_settings_t* golioth_coap_client_get_settings(golioth_client_t client) {
 golioth_rpc_t* golioth_coap_client_get_rpc(golioth_client_t client) {
     golioth_coap_client_t* c = (golioth_coap_client_t*)client;
     return &c->rpc;
+}
+
+golioth_sys_thread_t golioth_client_get_thread(golioth_client_t client) {
+    golioth_coap_client_t* c = (golioth_coap_client_t*)client;
+    return c->coap_thread_handle;
 }

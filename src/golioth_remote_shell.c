@@ -9,6 +9,7 @@
 #include "golioth_lightdb.h"
 #include "golioth_rpc.h"
 #include "golioth_config.h"
+#include "golioth_sys.h"
 #include "cJSON.h"
 #include <string.h>
 
@@ -23,7 +24,7 @@ size_t _bytes_read = 0;
 size_t _bytes_dropped = 0;
 RINGBUF_DEFINE(_log_ringbuf, 1, CONFIG_GOLIOTH_REMOTE_SHELL_BUF_SIZE);
 
-static void remote_shell_task(void* arg) {
+static void remote_shell_thread(void* arg) {
     const uint16_t max_bytes_to_read = 512;
     char buf[max_bytes_to_read * 2];     // encoded, this is what is sent to Golioth
     char logstr[max_bytes_to_read + 1];  // raw bytes, read from _log_ringbuf, plus NULL
@@ -105,16 +106,15 @@ static golioth_rpc_status_t on_line_input(
 }
 
 static void init(void) {
-    // Create task that will pull items out of _log_ringbuf
-    bool task_created = xTaskCreate(
-            remote_shell_task,
-            "remote_shell",
-            4096,
-            NULL,  // task arg
-            CONFIG_GOLIOTH_COAP_TASK_PRIORITY,
-            NULL);  // task handle (not used)
-    if (!task_created) {
-        GLTH_LOGE(TAG, "Failed to create remote shell task");
+    // Create thread that will pull items out of _log_ringbuf
+    golioth_sys_thread_t thread = golioth_sys_thread_create((golioth_sys_thread_config_t){
+            .name = "remote_shell",
+            .fn = remote_shell_thread,
+            .user_arg = NULL,
+            .stack_size = 4096,
+            .prio = CONFIG_GOLIOTH_COAP_TASK_PRIORITY});
+    if (!thread) {
+        GLTH_LOGE(TAG, "Failed to create remote shell thread");
         return;
     }
 }

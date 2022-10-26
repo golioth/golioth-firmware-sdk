@@ -117,3 +117,14 @@ void golioth_sys_timer_destroy(golioth_sys_timer_t timer) {
 /*--------------------------------------------------
  * Threads
  *------------------------------------------------*/
+
+golioth_sys_thread_t golioth_sys_thread_create(golioth_sys_thread_config_t config) {
+    TaskHandle_t task_handle = NULL;
+    xTaskCreate(
+            config.fn, config.name, config.stack_size, config.user_arg, config.prio, &task_handle);
+    return (golioth_sys_thread_t)task_handle;
+}
+
+void golioth_sys_thread_destroy(golioth_sys_thread_t thread) {
+    vTaskDelete((TaskHandle_t)thread);
+}

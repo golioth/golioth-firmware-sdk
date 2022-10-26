@@ -9,6 +9,7 @@
 #include <stdlib.h>
 #include <stdint.h>
 #include "golioth_status.h"
+#include "golioth_sys.h"
 
 /// @defgroup golioth_client golioth_client
 /// Functions for creating a Golioth client and managing client lifetime.
@@ -240,15 +241,6 @@ void golioth_client_register_event_callback(
         golioth_client_event_cb_fn callback,
         void* arg);
 
-/// How much RTOS task stack is unused by the Golioth client task, in bytes
-///
-/// Primarily intended to be used for troubleshooting and diagnosis purposes.
-///
-/// @param client The client handle
-///
-/// @return The amount of unused task stack. A value of 0 would mean stack overflow.
-uint32_t golioth_client_task_stack_min_remaining(golioth_client_t client);
-
 /// The number of items currently in the client task request queue.
 ///
 /// Will be a number between 0 and GOLIOTH_COAP_REQUEST_QUEUE_MAX_ITEMS.
@@ -273,5 +265,12 @@ void golioth_client_set_packet_loss_percent(uint8_t percent);
 /// @return true There is at least one allocation leak (turn on debug logs to see which ones)
 /// @return false There are no allocation leaks
 bool golioth_client_has_allocation_leaks(void);
+
+/// Return the thread handle of the client thread.
+///
+/// @param client The client handle
+///
+/// @return The thread handle of the client thread
+golioth_sys_thread_t golioth_client_get_thread(golioth_client_t client);
 
 /// @}
