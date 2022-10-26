@@ -8,6 +8,7 @@
 /*--------------------------------------------------
  * Time
  *------------------------------------------------*/
+
 uint64_t golioth_sys_now_ms() {
     return xTaskGetTickCount() * portTICK_PERIOD_MS;
 }
@@ -19,6 +20,7 @@ void golioth_sys_msleep(uint32_t ms) {
 /*--------------------------------------------------
  * Semaphores
  *------------------------------------------------*/
+
 golioth_sys_sem_t golioth_sys_sem_create(uint32_t sem_max_count, uint32_t sem_initial_count) {
     SemaphoreHandle_t sem = xSemaphoreCreateCounting(sem_max_count, sem_initial_count);
     return (golioth_sys_sem_t)sem;

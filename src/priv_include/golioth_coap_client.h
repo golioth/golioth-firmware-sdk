@@ -5,10 +5,6 @@
  */
 #pragma once
 
-#include <FreeRTOS.h>
-#include <task.h>
-#include <timers.h>
-#include <event_groups.h>
 #include <coap3/coap.h>  // COAP_MEDIATYPE_*
 #include "golioth_client.h"
 #include "golioth_lightdb.h"
@@ -16,6 +12,7 @@
 #include "golioth_rpc.h"
 #include "golioth_config.h"
 #include "golioth_sys.h"
+#include "golioth_event_group.h"
 
 /// Event group bits for request_complete_event
 #define RESPONSE_RECEIVED_EVENT_BIT (1 << 0)
@@ -97,7 +94,7 @@ typedef struct {
     ///
     /// Bit 0: response received
     /// Bit 1: timeout
-    EventGroupHandle_t request_complete_event;
+    golioth_event_group_t request_complete_event;
 
     /// (sync request only) Notification from user sync function to coap task, acknowledge it
     /// received request_complete_event.
