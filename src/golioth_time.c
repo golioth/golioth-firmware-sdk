@@ -4,13 +4,12 @@
  * SPDX-License-Identifier: Apache-2.0
  */
 #include "golioth_time.h"
-#include <FreeRTOS.h>
-#include <task.h>
+#include "golioth_sys.h"
 
 uint64_t golioth_time_millis() {
-    return xTaskGetTickCount() * portTICK_PERIOD_MS;
+    return golioth_sys_now_ms();
 }
 
 void golioth_time_delay_ms(uint32_t ms) {
-    vTaskDelay(ms / portTICK_PERIOD_MS);
+    return golioth_sys_msleep(ms);
 }

@@ -183,6 +183,7 @@ endif
 
 SOURCES+=\
     $(wildcard $(GOLIOTHSDK_PATH)/src/*.c)\
+    $(wildcard $(GOLIOTHSDK_PATH)/port/freertos/*.c)\
     $(wildcard $(GOLIOTHSDK_PATH)/port/modus_toolbox/*.c)\
     $(wildcard $(GOLIOTHSDK_PATH)/port/modus_toolbox/libcoap/*.c)\
     $(wildcard $(GOLIOTHSDK_PATH)/examples/common/*.c)

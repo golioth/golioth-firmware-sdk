@@ -4,8 +4,6 @@
  * SPDX-License-Identifier: Apache-2.0
  */
 #include <string.h>
-#include "freertos/FreeRTOS.h"
-#include "freertos/task.h"
 #include "esp_log.h"
 #include "nvs.h"
 #include "shell.h"
@@ -66,6 +64,6 @@ void app_main(void) {
     golioth_client_register_event_callback(client, on_client_event, NULL);
 
     while (1) {
-        vTaskDelay(1000 / portTICK_PERIOD_MS);
+        golioth_sys_msleep(1000);
     };
 }

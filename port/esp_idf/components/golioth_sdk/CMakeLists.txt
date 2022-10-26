@@ -1,6 +1,6 @@
 set(sdk_root ../../../..)
 set(sdk_src ${sdk_root}/src)
-set(sdk_idf_port ${sdk_root}/port/esp_idf)
+set(sdk_port ${sdk_root}/port)
 set(libcoap_dir ${sdk_root}/external/libcoap)
 
 set(libcoap_srcs
@@ -32,10 +32,10 @@ set(libcoap_srcs
 idf_component_register(
     INCLUDE_DIRS
         "${sdk_src}/include"
-        "${sdk_idf_port}"
+        "${sdk_port}/esp_idf"
     PRIV_INCLUDE_DIRS
         "${sdk_src}/priv_include"
-        "${sdk_idf_port}/libcoap/include"
+        "${sdk_port}/esp_idf/libcoap/include"
         "${libcoap_dir}/include"
         "${idf_path}/components/freertos/include/freertos"
     PRIV_REQUIRES
@@ -47,8 +47,9 @@ idf_component_register(
         "nvs_flash"
     SRCS
         "${libcoap_srcs}"
-        "${sdk_idf_port}/fw_update_esp_idf.c"
-        "${sdk_idf_port}/serial_tap_esp_idf.c"
+        "${sdk_port}/freertos//golioth_sys_freertos.c"
+        "${sdk_port}/esp_idf/fw_update_esp_idf.c"
+        "${sdk_port}/esp_idf/serial_tap_esp_idf.c"
         "${sdk_src}/golioth_status.c"
         "${sdk_src}/golioth_coap_client.c"
         "${sdk_src}/golioth_log.c"

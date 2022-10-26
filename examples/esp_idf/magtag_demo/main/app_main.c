@@ -6,7 +6,6 @@
 #include <string.h>
 #include <cJSON.h>
 #include "freertos/FreeRTOS.h"
-#include "freertos/task.h"
 #include "freertos/event_groups.h"
 #include "freertos/timers.h"
 #include "esp_log.h"
@@ -240,10 +239,10 @@ void app_main(void) {
 
     if (!nvs_credentials_are_set()) {
         while (1) {
-            vTaskDelay(1000 / portTICK_PERIOD_MS);
+            golioth_sys_msleep(1000);
             ESP_LOGW(TAG, "WiFi and golioth credentials are not set");
             ESP_LOGW(TAG, "Use the shell settings commands to set them, then restart");
-            vTaskDelay(portMAX_DELAY);
+            golioth_sys_msleep(UINT32_MAX);
         }
     }
 
