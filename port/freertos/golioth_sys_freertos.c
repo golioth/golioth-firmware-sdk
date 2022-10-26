@@ -2,6 +2,8 @@
 #include <FreeRTOS.h>
 #include <task.h>
 #include <semphr.h>
+#include <timers.h>
+#include <stdlib.h>
 
 /*--------------------------------------------------
  * Time
@@ -39,6 +41,78 @@ void golioth_sys_sem_destroy(golioth_sys_sem_t sem) {
 /*--------------------------------------------------
  * Software Timers
  *------------------------------------------------*/
+
+// Create a wrapper struct to workaround awkwardness of FreeRTOS
+// timer callbacks not having a separate user_arg param (it's
+// embedded inside of the TimerHandle_t as the "TimerID").
+//
+// This wrapped timer is the underlying type of opaque golioth_sys_timer_t.
+typedef struct {
+    TimerHandle_t timer;
+    golioth_sys_timer_fn_t fn;
+    void* user_arg;
+} wrapped_timer_t;
+
+// Same callback used for all timers. We extract the user arg from
+// the underlying freertos timer and call the callback with it.
+static void freertos_timer_callback(TimerHandle_t xTimer) {
+    wrapped_timer_t* wt = (wrapped_timer_t*)pvTimerGetTimerID(xTimer);
+    wt->fn(wt->timer, wt->user_arg);
+}
+
+static TickType_t ms_to_ticks(uint32_t ms) {
+    // Round to the nearest multiple of the tick period
+    uint32_t remainder = ms % portTICK_PERIOD_MS;
+    uint32_t rounded_ms = ms;
+    if (remainder != 0) {
+        rounded_ms = ms + portTICK_PERIOD_MS - remainder;
+    }
+    return (rounded_ms / portTICK_PERIOD_MS);
+}
+
+golioth_sys_timer_t golioth_sys_timer_create(golioth_sys_timer_config_t config) {
+    assert(config.fn);  // timer callback function is required
+
+    wrapped_timer_t* wrapped_timer = (wrapped_timer_t*)malloc(sizeof(wrapped_timer_t));
+
+    TimerHandle_t timer = xTimerCreate(
+            config.name,
+            ms_to_ticks(config.expiration_ms),
+            (config.type == GOLIOTH_SYS_TIMER_PERIODIC ? pdTRUE : pdFALSE),
+            wrapped_timer,
+            freertos_timer_callback);
+
+    wrapped_timer->timer = timer;
+    wrapped_timer->fn = config.fn;
+    wrapped_timer->user_arg = config.user_arg;
+
+    return wrapped_timer;
+}
+
+bool golioth_sys_timer_start(golioth_sys_timer_t timer) {
+    wrapped_timer_t* wt = (wrapped_timer_t*)timer;
+    if (!wt) {
+        return false;
+    }
+    return (pdPASS == xTimerStart((TimerHandle_t)wt->timer, 0));  // non-blocking
+}
+
+bool golioth_sys_timer_reset(golioth_sys_timer_t timer) {
+    wrapped_timer_t* wt = (wrapped_timer_t*)timer;
+    if (!wt) {
+        return false;
+    }
+    return (pdPASS == xTimerReset((TimerHandle_t)wt->timer, 0));  // non-blocking
+}
+
+void golioth_sys_timer_destroy(golioth_sys_timer_t timer) {
+    wrapped_timer_t* wt = (wrapped_timer_t*)timer;
+    if (!wt) {
+        return;
+    }
+    xTimerDelete(wt->timer, 0);  // non-blocking
+    free(wt);
+}
 
 /*--------------------------------------------------
  * Threads
