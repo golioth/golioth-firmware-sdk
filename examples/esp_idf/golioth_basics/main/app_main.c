@@ -3,8 +3,6 @@
  *
  * SPDX-License-Identifier: Apache-2.0
  */
-#include "freertos/FreeRTOS.h"
-#include "freertos/task.h"
 #include "esp_log.h"
 #include "nvs.h"
 #include "shell.h"
@@ -39,10 +37,10 @@ void app_main(void) {
     // to input them via the shell.
     if (!nvs_credentials_are_set()) {
         while (1) {
-            vTaskDelay(1000 / portTICK_PERIOD_MS);
+            golioth_sys_msleep(1000);
             ESP_LOGW(TAG, "WiFi and golioth credentials are not set");
             ESP_LOGW(TAG, "Use the shell settings commands to set them, then restart");
-            vTaskDelay(portMAX_DELAY);
+            golioth_sys_msleep(UINT32_MAX);
         }
     }
 

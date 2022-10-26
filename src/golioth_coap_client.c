@@ -15,6 +15,7 @@
 #include "golioth_time.h"
 #include "golioth_debug.h"
 #include "golioth_remote_shell.h"
+#include "golioth_sys.h"
 
 #define TAG "golioth_coap_client"
 
@@ -897,7 +898,7 @@ static void golioth_coap_client_task(void* arg) {
         coap_cleanup();
 
         // Small delay before starting a new session
-        vTaskDelay(1000 / portTICK_PERIOD_MS);
+        golioth_sys_msleep(1000);
     }
     vTaskDelete(NULL);
     GSTATS_INC_FREE("coap_task_handle");

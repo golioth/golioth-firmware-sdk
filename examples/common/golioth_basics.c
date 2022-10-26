@@ -6,7 +6,6 @@
 #include "golioth_basics.h"
 #include "golioth.h"
 #include "FreeRTOS.h"
-#include "task.h"
 #include "semphr.h"
 #include <stdint.h>
 #include <string.h>
@@ -206,7 +205,7 @@ void golioth_basics(golioth_client_t client) {
         golioth_lightdb_set_int_async(client, "counter", counter, NULL, NULL);
         GLTH_LOGI(TAG, "Sending hello! %" PRId32, counter);
         counter++;
-        vTaskDelay(_loop_delay_s * 1000 / portTICK_PERIOD_MS);
+        golioth_sys_msleep(_loop_delay_s * 1000);
     };
 
     // That pretty much covers the basics of this SDK!
