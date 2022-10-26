@@ -10,8 +10,6 @@
 #include "golioth_rpc.h"
 #include "golioth_config.h"
 #include "cJSON.h"
-#include <FreeRTOS.h>
-#include <semphr.h>
 #include <string.h>
 
 #define TAG "golioth_remote_shell"

@@ -6,16 +6,17 @@
 
 #include <string.h>
 #include <inttypes.h>
-#include "FreeRTOS.h"
-#include "semphr.h"
+#include "golioth_sys.h"
 #include "golioth_fw_update.h"
 #include "golioth_statistics.h"
+#include <FreeRTOS.h>
+#include <task.h>
 
 #define TAG "golioth_fw_update"
 
 static golioth_client_t _client;
 static const char* _current_version;
-static SemaphoreHandle_t _manifest_rcvd;
+static golioth_sys_sem_t _manifest_rcvd;
 static golioth_ota_manifest_t _ota_manifest;
 static uint8_t _ota_block_buffer[GOLIOTH_OTA_BLOCKSIZE + 1];
 static const golioth_ota_component_t* _main_component;
@@ -95,7 +96,7 @@ static void on_ota_manifest(
         GLTH_LOGE(TAG, "Failed to parse manifest: %s", golioth_status_to_str(status));
         return;
     }
-    xSemaphoreGive(_manifest_rcvd);
+    golioth_sys_sem_give(_manifest_rcvd);
 }
 
 static bool manifest_version_is_different(const golioth_ota_manifest_t* manifest) {
@@ -125,7 +126,7 @@ static void fw_update_task(void* arg) {
             if (golioth_client_is_connected(_client)) {
                 break;
             }
-            vTaskDelay(1000 / portTICK_PERIOD_MS);
+            golioth_sys_msleep(1000);
             seconds_elapsed++;
         }
 
@@ -167,7 +168,7 @@ static void fw_update_task(void* arg) {
 
     while (1) {
         GLTH_LOGI(TAG, "Waiting to receive OTA manifest");
-        xSemaphoreTake(_manifest_rcvd, portMAX_DELAY);
+        golioth_sys_sem_take(_manifest_rcvd, GOLIOTH_SYS_WAIT_FOREVER);
         GLTH_LOGI(TAG, "Received OTA manifest");
         if (!manifest_version_is_different(&_ota_manifest)) {
             GLTH_LOGI(TAG, "Manifest does not contain different firmware version. Nothing to do.");
@@ -247,7 +248,7 @@ static void fw_update_task(void* arg) {
         int countdown = 5;
         while (countdown > 0) {
             GLTH_LOGI(TAG, "Rebooting into new image in %d seconds", countdown);
-            vTaskDelay(1000 / portTICK_PERIOD_MS);
+            golioth_sys_msleep(1000);
             countdown--;
         }
         fw_update_reboot();
@@ -261,7 +262,7 @@ void golioth_fw_update_init(golioth_client_t client, const char* current_version
 
     _client = client;
     _current_version = current_version;
-    _manifest_rcvd = xSemaphoreCreateBinary();  // never freed
+    _manifest_rcvd = golioth_sys_sem_create(1, 0);  // never destroyed
 
     if (!initialized) {
         bool task_created = xTaskCreate(  // never freed

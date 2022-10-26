@@ -7,7 +7,6 @@
 
 #include <FreeRTOS.h>
 #include <task.h>
-#include <semphr.h>
 #include <timers.h>
 #include <event_groups.h>
 #include <coap3/coap.h>  // COAP_MEDIATYPE_*
@@ -16,6 +15,7 @@
 #include "golioth_settings.h"
 #include "golioth_rpc.h"
 #include "golioth_config.h"
+#include "golioth_sys.h"
 
 /// Event group bits for request_complete_event
 #define RESPONSE_RECEIVED_EVENT_BIT (1 << 0)
@@ -106,7 +106,7 @@ typedef struct {
     ///
     /// Used by the coap task to know when it's safe
     /// to delete request_complete_event and this semaphore.
-    SemaphoreHandle_t request_complete_ack_sem;
+    golioth_sys_sem_t request_complete_ack_sem;
 } golioth_coap_request_msg_t;
 
 typedef struct {

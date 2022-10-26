@@ -5,8 +5,6 @@
  */
 #include "golioth_basics.h"
 #include "golioth.h"
-#include "FreeRTOS.h"
-#include "semphr.h"
 #include <stdint.h>
 #include <string.h>
 #include <inttypes.h>
@@ -23,12 +21,12 @@ int32_t _my_config = 0;
 int32_t _loop_delay_s = 10;
 
 // Given if/when the we have a connection to Golioth
-static SemaphoreHandle_t _connected_sem;
+static golioth_sys_sem_t _connected_sem;
 
 static void on_client_event(golioth_client_t client, golioth_client_event_t event, void* arg) {
     bool is_connected = (event == GOLIOTH_CLIENT_EVENT_CONNECTED);
     if (is_connected) {
-        xSemaphoreGive(_connected_sem);
+        golioth_sys_sem_give(_connected_sem);
     }
     GLTH_LOGI(TAG, "Golioth client %s", is_connected ? "connected" : "disconnected");
 }
@@ -103,11 +101,11 @@ void golioth_basics(golioth_client_t client) {
     //
     // This is optional, but can be useful for synchronizing operations on connect/disconnect
     // events. For this example, the on_client_event callback will simply log a message.
-    _connected_sem = xSemaphoreCreateBinary();
+    _connected_sem = golioth_sys_sem_create(1, 0);
     golioth_client_register_event_callback(client, on_client_event, NULL);
 
     GLTH_LOGI(TAG, "Waiting for connection to Golioth...");
-    xSemaphoreTake(_connected_sem, portMAX_DELAY);
+    golioth_sys_sem_take(_connected_sem, GOLIOTH_SYS_WAIT_FOREVER);
 
     // At this point, we have a client that can be used to interact with Golioth services:
     //      Logging
