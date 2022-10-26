@@ -29,7 +29,7 @@ typedef struct {
     QueueHandle_t request_queue;
     TaskHandle_t coap_task_handle;
     golioth_sys_sem_t run_sem;
-    TimerHandle_t keepalive_timer;
+    golioth_sys_timer_t keepalive_timer;
     bool is_running;
     bool end_session;
     bool session_connected;
@@ -151,7 +151,7 @@ static coap_response_t coap_response_handler(
         req->got_response = true;
 
         if (CONFIG_GOLIOTH_COAP_KEEPALIVE_INTERVAL_S > 0) {
-            if (!xTimerReset(client->keepalive_timer, 0)) {
+            if (!golioth_sys_timer_reset(client->keepalive_timer)) {
                 GLTH_LOGW(TAG, "Failed to reset keepalive timer");
             }
         }
@@ -800,10 +800,9 @@ static golioth_status_t coap_io_loop_once(
     return GOLIOTH_OK;
 }
 
-static void on_keepalive(TimerHandle_t timer) {
-    golioth_coap_client_t* c = (golioth_coap_client_t*)pvTimerGetTimerID(timer);
+static void on_keepalive(golioth_sys_timer_t timer, void* arg) {
+    golioth_coap_client_t* c = (golioth_coap_client_t*)arg;
     if (c->is_running && golioth_client_num_items_in_request_queue(c) == 0 && !c->pending_req) {
-        GLTH_LOGD(TAG, "keepalive");
         golioth_coap_client_empty(c, false, GOLIOTH_WAIT_FOREVER);
     }
 }
@@ -957,12 +956,12 @@ golioth_client_t golioth_client_create(const golioth_client_config_t* config) {
     }
     GSTATS_INC_ALLOC("coap_task_handle");
 
-    new_client->keepalive_timer = xTimerCreate(
-            "keepalive",
-            max(1000, 1000 * CONFIG_GOLIOTH_COAP_KEEPALIVE_INTERVAL_S) / portTICK_PERIOD_MS,
-            pdTRUE,      // auto-reload
-            new_client,  // pvTimerID
-            on_keepalive);
+    new_client->keepalive_timer = golioth_sys_timer_create((golioth_sys_timer_config_t){
+            .name = "keepalive",
+            .type = GOLIOTH_SYS_TIMER_PERIODIC,
+            .expiration_ms = max(1000, 1000 * CONFIG_GOLIOTH_COAP_KEEPALIVE_INTERVAL_S),
+            .fn = on_keepalive,
+            .user_arg = new_client});
     if (!new_client->keepalive_timer) {
         GLTH_LOGE(TAG, "Failed to create keepalive timer");
         goto error;
@@ -970,7 +969,7 @@ golioth_client_t golioth_client_create(const golioth_client_config_t* config) {
     GSTATS_INC_ALLOC("keepalive_timer");
 
     if (CONFIG_GOLIOTH_COAP_KEEPALIVE_INTERVAL_S > 0) {
-        if (!xTimerStart(new_client->keepalive_timer, 0)) {
+        if (!golioth_sys_timer_start(new_client->keepalive_timer)) {
             GLTH_LOGE(TAG, "Failed to start keepalive timer");
             goto error;
         }
@@ -1014,7 +1013,7 @@ void golioth_client_destroy(golioth_client_t client) {
         return;
     }
     if (c->keepalive_timer) {
-        xTimerDelete(c->keepalive_timer, 0);
+        golioth_sys_timer_destroy(c->keepalive_timer);
         GSTATS_INC_FREE("keepalive_timer");
     }
     if (c->coap_task_handle) {
