@@ -174,3 +174,4 @@ golioth_status_t golioth_coap_client_observe_async(
 /// coap client struct.
 golioth_settings_t* golioth_coap_client_get_settings(golioth_client_t client);
 golioth_rpc_t* golioth_coap_client_get_rpc(golioth_client_t client);
+golioth_sys_thread_t golioth_coap_client_get_thread(golioth_client_t client);

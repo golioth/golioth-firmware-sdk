@@ -51,3 +51,19 @@ void golioth_sys_timer_destroy(golioth_sys_timer_t timer);
 /*--------------------------------------------------
  * Threads
  *------------------------------------------------*/
+
+// Opaque handle for threads
+typedef void* golioth_sys_thread_t;
+
+typedef void (*golioth_sys_thread_fn_t)(void* user_arg);
+
+typedef struct {
+    const char* name;
+    golioth_sys_thread_fn_t fn;
+    void* user_arg;
+    int32_t stack_size;  // in bytes
+    int32_t prio;        // large numbers == high priority
+} golioth_sys_thread_config_t;
+
+golioth_sys_thread_t golioth_sys_thread_create(golioth_sys_thread_config_t config);
+void golioth_sys_thread_destroy(golioth_sys_thread_t thread);

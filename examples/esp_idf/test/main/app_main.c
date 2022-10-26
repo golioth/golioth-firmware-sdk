@@ -334,7 +334,11 @@ static void test_lightdb_error_if_path_not_found(void) {
 }
 
 static void test_client_task_stack_min_remaining(void) {
-    uint32_t stack_unused = golioth_client_task_stack_min_remaining(_client);
+    // A bit of hack, but since we know the golioth_sys_thread_t is really
+    // a FreeRTOS TaskHandle_t, just cast it directly.
+    TaskHandle_t client_task = (TaskHandle_t)golioth_client_get_thread(_client);
+
+    uint32_t stack_unused = uxTaskGetStackHighWaterMark(client_task);
     uint32_t stack_used = CONFIG_GOLIOTH_COAP_TASK_STACK_SIZE_BYTES - stack_unused;
     ESP_LOGI(TAG, "Client task stack used = %u, unused = %u", stack_used, stack_unused);
 
