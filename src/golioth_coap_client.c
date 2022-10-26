@@ -9,6 +9,8 @@
 #include <netdb.h>      // struct addrinfo
 #include <sys/param.h>  // MIN
 #include <coap3/coap.h>
+#include <FreeRTOS.h>
+#include <queue.h>
 #include "golioth_coap_client.h"
 #include "golioth_statistics.h"
 #include "golioth_util.h"
@@ -26,7 +28,7 @@ static bool _initialized;
 typedef struct {
     QueueHandle_t request_queue;
     TaskHandle_t coap_task_handle;
-    SemaphoreHandle_t run_sem;
+    golioth_sys_sem_t run_sem;
     TimerHandle_t keepalive_timer;
     bool is_running;
     bool end_session;
@@ -651,7 +653,7 @@ static golioth_status_t coap_io_loop_once(
             assert(request_msg.request_complete_ack_sem);
             vEventGroupDelete(request_msg.request_complete_event);
             GSTATS_INC_FREE("request_complete_event");
-            vSemaphoreDelete(request_msg.request_complete_ack_sem);
+            golioth_sys_sem_destroy(request_msg.request_complete_ack_sem);
             GSTATS_INC_FREE("request_complete_ack_sem");
         }
         return GOLIOTH_OK;
@@ -742,12 +744,12 @@ static golioth_status_t coap_io_loop_once(
         }
 
         // Wait for user task to receive the event.
-        xSemaphoreTake(request_msg.request_complete_ack_sem, portMAX_DELAY);
+        golioth_sys_sem_take(request_msg.request_complete_ack_sem, GOLIOTH_SYS_WAIT_FOREVER);
 
         // Now it's safe to delete the event and semaphore.
         vEventGroupDelete(request_msg.request_complete_event);
         GSTATS_INC_FREE("request_complete_event");
-        vSemaphoreDelete(request_msg.request_complete_ack_sem);
+        golioth_sys_sem_destroy(request_msg.request_complete_ack_sem);
         GSTATS_INC_FREE("request_complete_ack_sem");
     }
 
@@ -829,8 +831,8 @@ static void golioth_coap_client_task(void* arg) {
 
         client->is_running = false;
         GLTH_LOGD(TAG, "Waiting for the \"run\" signal");
-        xSemaphoreTake(client->run_sem, portMAX_DELAY);
-        xSemaphoreGive(client->run_sem);
+        golioth_sys_sem_take(client->run_sem, GOLIOTH_SYS_WAIT_FOREVER);
+        golioth_sys_sem_give(client->run_sem);
         GLTH_LOGD(TAG, "Received \"run\" signal");
         client->is_running = true;
 
@@ -866,11 +868,11 @@ static void golioth_coap_client_task(void* arg) {
         int iteration = 0;
         while (!client->end_session) {
             // Check if we should still run (non-blocking)
-            if (!xSemaphoreTake(client->run_sem, 0)) {
+            if (!golioth_sys_sem_take(client->run_sem, 0)) {
                 GLTH_LOGI(TAG, "Stopping");
                 break;
             }
-            xSemaphoreGive(client->run_sem);
+            golioth_sys_sem_give(client->run_sem);
 
             if (coap_io_loop_once(client, coap_context, coap_session) != GOLIOTH_OK) {
                 client->end_session = true;
@@ -926,13 +928,13 @@ golioth_client_t golioth_client_create(const golioth_client_config_t* config) {
 
     new_client->config = *config;
 
-    new_client->run_sem = xSemaphoreCreateBinary();
+    new_client->run_sem = golioth_sys_sem_create(1, 0);
     if (!new_client->run_sem) {
         GLTH_LOGE(TAG, "Failed to create run semaphore");
         goto error;
     }
     GSTATS_INC_ALLOC("run_sem");
-    xSemaphoreGive(new_client->run_sem);
+    golioth_sys_sem_give(new_client->run_sem);
 
     new_client->request_queue = xQueueCreate(
             CONFIG_GOLIOTH_COAP_REQUEST_QUEUE_MAX_ITEMS, sizeof(golioth_coap_request_msg_t));
@@ -990,7 +992,7 @@ golioth_status_t golioth_client_start(golioth_client_t client) {
     if (!c) {
         return GOLIOTH_ERR_NULL;
     }
-    xSemaphoreGive(c->run_sem);
+    golioth_sys_sem_give(c->run_sem);
     return GOLIOTH_OK;
 }
 
@@ -999,7 +1001,7 @@ golioth_status_t golioth_client_stop(golioth_client_t client) {
     if (!c) {
         return GOLIOTH_ERR_NULL;
     }
-    if (!xSemaphoreTake(c->run_sem, 100 / portTICK_PERIOD_MS)) {
+    if (!golioth_sys_sem_take(c->run_sem, 100)) {
         GLTH_LOGE(TAG, "stop: failed to take run_sem");
         return GOLIOTH_ERR_TIMEOUT;
     }
@@ -1025,7 +1027,7 @@ void golioth_client_destroy(golioth_client_t client) {
         GSTATS_INC_FREE("request_queue");
     }
     if (c->run_sem) {
-        vSemaphoreDelete(c->run_sem);
+        golioth_sys_sem_destroy(c->run_sem);
         GSTATS_INC_FREE("run_sem");
     }
     free(c);
@@ -1068,7 +1070,7 @@ golioth_status_t golioth_coap_client_empty(
         // Created here, deleted by coap task (or here if fail to enqueue
         request_msg.request_complete_event = xEventGroupCreate();
         GSTATS_INC_ALLOC("request_complete_event");
-        request_msg.request_complete_ack_sem = xSemaphoreCreateBinary();
+        request_msg.request_complete_ack_sem = golioth_sys_sem_create(1, 0);
         GSTATS_INC_ALLOC("request_complete_ack_sem");
     }
 
@@ -1078,7 +1080,7 @@ golioth_status_t golioth_coap_client_empty(
         if (is_synchronous) {
             vEventGroupDelete(request_msg.request_complete_event);
             GSTATS_INC_FREE("request_complete_event");
-            vSemaphoreDelete(request_msg.request_complete_ack_sem);
+            golioth_sys_sem_destroy(request_msg.request_complete_ack_sem);
             GSTATS_INC_FREE("request_complete_ack_sem");
         }
         return GOLIOTH_ERR_QUEUE_FULL;
@@ -1096,7 +1098,7 @@ golioth_status_t golioth_coap_client_empty(
                 tmo_ticks);
 
         // Notify CoAP task that we received the event
-        xSemaphoreGive(request_msg.request_complete_ack_sem);
+        golioth_sys_sem_give(request_msg.request_complete_ack_sem);
 
         if ((bits == 0) || (bits & RESPONSE_TIMEOUT_EVENT_BIT)) {
             return GOLIOTH_ERR_TIMEOUT;
@@ -1167,7 +1169,7 @@ golioth_status_t golioth_coap_client_set(
         // Created here, deleted by coap task (or here if fail to enqueue
         request_msg.request_complete_event = xEventGroupCreate();
         GSTATS_INC_ALLOC("request_complete_event");
-        request_msg.request_complete_ack_sem = xSemaphoreCreateBinary();
+        request_msg.request_complete_ack_sem = golioth_sys_sem_create(1, 0);
         GSTATS_INC_ALLOC("request_complete_ack_sem");
     }
 
@@ -1181,7 +1183,7 @@ golioth_status_t golioth_coap_client_set(
         if (is_synchronous) {
             vEventGroupDelete(request_msg.request_complete_event);
             GSTATS_INC_FREE("request_complete_event");
-            vSemaphoreDelete(request_msg.request_complete_ack_sem);
+            golioth_sys_sem_destroy(request_msg.request_complete_ack_sem);
             GSTATS_INC_FREE("request_complete_ack_sem");
         }
         return GOLIOTH_ERR_QUEUE_FULL;
@@ -1199,7 +1201,7 @@ golioth_status_t golioth_coap_client_set(
                 tmo_ticks);
 
         // Notify CoAP task that we received the event
-        xSemaphoreGive(request_msg.request_complete_ack_sem);
+        golioth_sys_sem_give(request_msg.request_complete_ack_sem);
 
         if ((bits == 0) || (bits & RESPONSE_TIMEOUT_EVENT_BIT)) {
             return GOLIOTH_ERR_TIMEOUT;
@@ -1247,7 +1249,7 @@ golioth_status_t golioth_coap_client_delete(
         // Created here, deleted by coap task (or here if fail to enqueue
         request_msg.request_complete_event = xEventGroupCreate();
         GSTATS_INC_ALLOC("request_complete_event");
-        request_msg.request_complete_ack_sem = xSemaphoreCreateBinary();
+        request_msg.request_complete_ack_sem = golioth_sys_sem_create(1, 0);
         GSTATS_INC_ALLOC("request_complete_ack_sem");
     }
 
@@ -1257,7 +1259,7 @@ golioth_status_t golioth_coap_client_delete(
         if (is_synchronous) {
             vEventGroupDelete(request_msg.request_complete_event);
             GSTATS_INC_FREE("request_complete_event");
-            vSemaphoreDelete(request_msg.request_complete_ack_sem);
+            golioth_sys_sem_destroy(request_msg.request_complete_ack_sem);
             GSTATS_INC_FREE("request_complete_ack_sem");
         }
         return GOLIOTH_ERR_QUEUE_FULL;
@@ -1275,7 +1277,7 @@ golioth_status_t golioth_coap_client_delete(
                 tmo_ticks);
 
         // Notify CoAP task that we received the event
-        xSemaphoreGive(request_msg.request_complete_ack_sem);
+        golioth_sys_sem_give(request_msg.request_complete_ack_sem);
 
         if ((bits == 0) || (bits & RESPONSE_TIMEOUT_EVENT_BIT)) {
             return GOLIOTH_ERR_TIMEOUT;
@@ -1315,7 +1317,7 @@ static golioth_status_t golioth_coap_client_get_internal(
         // Created here, deleted by coap task (or here if fail to enqueue
         request_msg.request_complete_event = xEventGroupCreate();
         GSTATS_INC_ALLOC("request_complete_event");
-        request_msg.request_complete_ack_sem = xSemaphoreCreateBinary();
+        request_msg.request_complete_ack_sem = golioth_sys_sem_create(1, 0);
         GSTATS_INC_ALLOC("request_complete_ack_sem");
     }
     request_msg.ageout_ms = ageout_ms;
@@ -1332,7 +1334,7 @@ static golioth_status_t golioth_coap_client_get_internal(
         if (is_synchronous) {
             vEventGroupDelete(request_msg.request_complete_event);
             GSTATS_INC_FREE("request_complete_event");
-            vSemaphoreDelete(request_msg.request_complete_ack_sem);
+            golioth_sys_sem_destroy(request_msg.request_complete_ack_sem);
             GSTATS_INC_FREE("request_complete_ack_sem");
         }
         return GOLIOTH_ERR_QUEUE_FULL;
@@ -1350,7 +1352,7 @@ static golioth_status_t golioth_coap_client_get_internal(
                 tmo_ticks);
 
         // Notify CoAP task that we received the event
-        xSemaphoreGive(request_msg.request_complete_ack_sem);
+        golioth_sys_sem_give(request_msg.request_complete_ack_sem);
 
         if ((bits == 0) || (bits & RESPONSE_TIMEOUT_EVENT_BIT)) {
             return GOLIOTH_ERR_TIMEOUT;
