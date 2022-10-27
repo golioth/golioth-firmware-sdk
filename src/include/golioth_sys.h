@@ -5,30 +5,12 @@
 #include <stdlib.h>
 #include "golioth_config.h"
 
-// For functions that take a wait/timeout parameter, -1 will wait forever
-#define GOLIOTH_SYS_WAIT_FOREVER -1
-
-// Opaque handles for OS-specific data structures
-typedef void* golioth_sys_sem_t;
-typedef void* golioth_sys_timer_t;
-typedef void* golioth_sys_thread_t;
-
-/*--------------------------------------------------
- * Malloc/Free
- *------------------------------------------------*/
-
-// Can be overridden via golioth_{user,port}_config
-#ifndef golioth_sys_malloc
-#define golioth_sys_malloc(sz) malloc((sz))
-#endif
-
-#ifndef golioth_sys_free
-#define golioth_sys_free(ptr) free((ptr))
-#endif
-
 /*--------------------------------------------------
  * Time
  *------------------------------------------------*/
+
+// For functions that take a wait/timeout parameter, -1 will wait forever
+#define GOLIOTH_SYS_WAIT_FOREVER -1
 
 void golioth_sys_msleep(uint32_t ms);
 uint64_t golioth_sys_now_ms(void);
@@ -88,3 +70,69 @@ typedef struct {
 
 golioth_sys_thread_t golioth_sys_thread_create(golioth_sys_thread_config_t config);
 void golioth_sys_thread_destroy(golioth_sys_thread_t thread);
+
+/*--------------------------------------------------
+ * Malloc/Free
+ *------------------------------------------------*/
+
+// Can be overridden via golioth_{user,port}_config
+#ifndef golioth_sys_malloc
+#define golioth_sys_malloc(sz) malloc((sz))
+#endif
+
+#ifndef golioth_sys_free
+#define golioth_sys_free(ptr) free((ptr))
+#endif
+
+/*--------------------------------------------------
+ * Logging
+ *------------------------------------------------*/
+
+#if CONFIG_GOLIOTH_DEBUG_LOG_ENABLE
+
+#include <stdio.h>
+#include "golioth_debug.h"
+#define GLTH_LOGX(LEVEL, LEVEL_STR, TAG, ...) \
+    do { \
+        if ((LEVEL) <= golioth_debug_get_log_level()) { \
+            printf("%s (%lu) %s: ", LEVEL_STR, (uint32_t)golioth_time_millis(), TAG); \
+            printf(__VA_ARGS__); \
+            puts(""); \
+        } \
+    } while (0)
+
+// Logging macros can be overridden from golioth_{user,port}config.h
+#ifndef GLTH_LOGV
+#define GLTH_LOGV(TAG, ...) GLTH_LOGX(GOLIOTH_DEBUG_LOG_LEVEL_VERBOSE, "V", TAG, __VA_ARGS__)
+#endif
+
+#ifndef GLTH_LOGD
+#define GLTH_LOGD(TAG, ...) GLTH_LOGX(GOLIOTH_DEBUG_LOG_LEVEL_DEBUG, "D", TAG, __VA_ARGS__)
+#endif
+
+#ifndef GLTH_LOGI
+#define GLTH_LOGI(TAG, ...) GLTH_LOGX(GOLIOTH_DEBUG_LOG_LEVEL_INFO, "I", TAG, __VA_ARGS__)
+#endif
+
+#ifndef GLTH_LOGW
+#define GLTH_LOGW(TAG, ...) GLTH_LOGX(GOLIOTH_DEBUG_LOG_LEVEL_WARN, "W", TAG, __VA_ARGS__)
+#endif
+
+#ifndef GLTH_LOGE
+#define GLTH_LOGE(TAG, ...) GLTH_LOGX(GOLIOTH_DEBUG_LOG_LEVEL_ERROR, "E", TAG, __VA_ARGS__)
+#endif
+
+#ifndef GLTH_LOG_BUFFER_HEXDUMP
+#define GLTH_LOG_BUFFER_HEXDUMP(TAG, ...) /* TODO - default hexdump implementation */
+#endif
+
+#else /* CONFIG_GOLIOTH_DEBUG_LOG_ENABLE */
+
+#define GLTH_LOGV(TAG, ...)
+#define GLTH_LOGD(TAG, ...)
+#define GLTH_LOGI(TAG, ...)
+#define GLTH_LOGW(TAG, ...)
+#define GLTH_LOGE(TAG, ...)
+#define GLTH_LOG_BUFFER_HEXDUMP(TAG, ...)
+
+#endif /* CONFIG_GOLIOTH_DEBUG_LOG_ENABLE */
