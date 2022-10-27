@@ -213,7 +213,7 @@ static void on_settings(
             NULL,
             false,
             GOLIOTH_WAIT_FOREVER);
-    free(json_string);
+    golioth_sys_free(json_string);
     cJSON_Delete(report);
 
 cleanup:

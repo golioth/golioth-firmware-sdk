@@ -642,7 +642,7 @@ static golioth_status_t coap_io_loop_once(
                 (request_msg.path ? request_msg.path : "N/A"));
 
         if (request_msg.type == GOLIOTH_COAP_REQUEST_POST && request_msg.post.payload_size > 0) {
-            free(request_msg.post.payload);
+            golioth_sys_free(request_msg.post.payload);
             GSTATS_INC_FREE("request_payload");
         }
 
@@ -675,7 +675,7 @@ static golioth_status_t coap_io_loop_once(
             GLTH_LOGD(TAG, "Handle POST %s", request_msg.path);
             golioth_coap_post(&request_msg, session);
             assert(request_msg.post.payload);
-            free(request_msg.post.payload);
+            golioth_sys_free(request_msg.post.payload);
             GSTATS_INC_FREE("request_payload");
             break;
         case GOLIOTH_COAP_REQUEST_DELETE:
@@ -915,7 +915,8 @@ golioth_client_t golioth_client_create(const golioth_client_config_t* config) {
         _initialized = true;
     }
 
-    golioth_coap_client_t* new_client = calloc(1, sizeof(golioth_coap_client_t));
+    golioth_coap_client_t* new_client = golioth_sys_malloc(sizeof(golioth_coap_client_t));
+    memset(new_client, 0, sizeof(golioth_coap_client_t));
     if (!new_client) {
         GLTH_LOGE(TAG, "Failed to allocate memory for client");
         goto error;
@@ -1026,7 +1027,7 @@ void golioth_client_destroy(golioth_client_t client) {
         golioth_sys_sem_destroy(c->run_sem);
         GSTATS_INC_FREE("run_sem");
     }
-    free(c);
+    golioth_sys_free(c);
     GSTATS_INC_FREE("client");
 }
 
@@ -1132,7 +1133,8 @@ golioth_status_t golioth_coap_client_set(
         //
         // This memory will be free'd by the CoAP thread after handling the request,
         // or in this function if we fail to enqueue the request.
-        request_payload = (uint8_t*)calloc(1, payload_size);
+        request_payload = (uint8_t*)golioth_sys_malloc(payload_size);
+        memset(request_payload, 0, payload_size);
         if (!request_payload) {
             GLTH_LOGE(TAG, "Payload alloc failure");
             return GOLIOTH_ERR_MEM_ALLOC;
@@ -1173,7 +1175,7 @@ golioth_status_t golioth_coap_client_set(
     if (!sent) {
         GLTH_LOGW(TAG, "Failed to enqueue request, queue full");
         if (payload_size > 0) {
-            free(request_payload);
+            golioth_sys_free(request_payload);
             GSTATS_INC_FREE("request_payload");
         }
         if (is_synchronous) {

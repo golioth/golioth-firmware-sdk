@@ -10,7 +10,6 @@
 #include "golioth_config.h"
 #include <stdint.h>
 #include <stdbool.h>
-#include <stdlib.h>
 
 /// @defgroup golioth_settings golioth_settings
 /// Functions for interacting with the Golioth Settings service

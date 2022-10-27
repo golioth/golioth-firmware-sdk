@@ -1,8 +1,11 @@
 #include "golioth_event_group.h"
-#include <stdlib.h>
+#include "golioth_sys.h"
+#include <string.h>  // memset
 
 golioth_event_group_t golioth_event_group_create(void) {
-    golioth_event_group_t eg = (golioth_event_group_t)calloc(1, sizeof(struct golioth_event_group));
+    golioth_event_group_t eg =
+            (golioth_event_group_t)golioth_sys_malloc(sizeof(struct golioth_event_group));
+    memset(eg, 0, sizeof(struct golioth_event_group));
     eg->bitmap = 0;
     eg->bitmap_mutex = golioth_sys_sem_create(1, 1);
     eg->sem = golioth_sys_sem_create(1, 0);
@@ -60,5 +63,5 @@ void golioth_event_group_destroy(golioth_event_group_t eg) {
     }
     golioth_sys_sem_destroy(eg->bitmap_mutex);
     golioth_sys_sem_destroy(eg->sem);
-    free(eg);
+    golioth_sys_free(eg);
 }
