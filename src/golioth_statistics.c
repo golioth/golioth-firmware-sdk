@@ -7,7 +7,6 @@
 #include "golioth_statistics.h"
 #include "golioth_debug.h"
 #include <stdint.h>
-#include <stdlib.h>
 
 #define TAG "golioth_statistics"
 

@@ -2,13 +2,34 @@
 
 #include <stdint.h>
 #include <stdbool.h>
+#include <stdlib.h>
+#include "golioth_config.h"
 
 // For functions that take a wait/timeout parameter, -1 will wait forever
 #define GOLIOTH_SYS_WAIT_FOREVER -1
 
+// Opaque handles for OS-specific data structures
+typedef void* golioth_sys_sem_t;
+typedef void* golioth_sys_timer_t;
+typedef void* golioth_sys_thread_t;
+
+/*--------------------------------------------------
+ * Malloc/Free
+ *------------------------------------------------*/
+
+// Can be overridden via golioth_{user,port}_config
+#ifndef golioth_sys_malloc
+#define golioth_sys_malloc(sz) malloc((sz))
+#endif
+
+#ifndef golioth_sys_free
+#define golioth_sys_free(ptr) free((ptr))
+#endif
+
 /*--------------------------------------------------
  * Time
  *------------------------------------------------*/
+
 void golioth_sys_msleep(uint32_t ms);
 uint64_t golioth_sys_now_ms(void);
 

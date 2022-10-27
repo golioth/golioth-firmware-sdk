@@ -6,8 +6,8 @@
 #pragma once
 
 #include <stdbool.h>
-#include <stdlib.h>
 #include <stdint.h>
+#include <stdlib.h>  // size_t
 #include "golioth_status.h"
 #include "golioth_sys.h"
 

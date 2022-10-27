@@ -1,18 +1,21 @@
 #include "golioth_mbox.h"
 #include "golioth_debug.h"
+#include "golioth_sys.h"
 #include <assert.h>
-#include <stdlib.h>
+#include <string.h>  // memset
 
 #define TAG "golioth_mbox"
 
 golioth_mbox_t golioth_mbox_create(size_t num_items, size_t item_size) {
-    golioth_mbox_t new_mbox = (golioth_mbox_t)calloc(1, sizeof(struct golioth_mbox));
+    golioth_mbox_t new_mbox = (golioth_mbox_t)golioth_sys_malloc(sizeof(struct golioth_mbox));
     assert(new_mbox);
+    memset(new_mbox, 0, sizeof(struct golioth_mbox));
 
     // Allocate storage for the items in the ringbuffer
     size_t bufsize = RINGBUF_BUFFER_SIZE(item_size, num_items);
-    new_mbox->ringbuf.buffer = (uint8_t*)malloc(bufsize);
+    new_mbox->ringbuf.buffer = (uint8_t*)golioth_sys_malloc(bufsize);
     assert(new_mbox->ringbuf.buffer);
+    memset(new_mbox->ringbuf.buffer, 0, bufsize);
 
     new_mbox->ringbuf.buffer_size = bufsize;
     new_mbox->ringbuf.item_size = item_size;
@@ -63,9 +66,9 @@ bool golioth_mbox_recv(golioth_mbox_t mbox, void* item, int32_t timeout_ms) {
 void golioth_mbox_destroy(golioth_mbox_t mbox) {
     assert(mbox);
     // free stuff in the mbox
-    free(mbox->ringbuf.buffer);
+    golioth_sys_free(mbox->ringbuf.buffer);
     golioth_sys_sem_destroy(mbox->fill_count_sem);
     golioth_sys_sem_destroy(mbox->ringbuf_mutex);
     // free the mbox itself
-    free(mbox);
+    golioth_sys_free(mbox);
 }

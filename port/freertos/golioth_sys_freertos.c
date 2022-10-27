@@ -3,7 +3,7 @@
 #include <task.h>
 #include <semphr.h>
 #include <timers.h>
-#include <stdlib.h>
+#include <string.h>  // memset
 
 /*--------------------------------------------------
  * Time
@@ -75,7 +75,8 @@ static TickType_t ms_to_ticks(uint32_t ms) {
 golioth_sys_timer_t golioth_sys_timer_create(golioth_sys_timer_config_t config) {
     assert(config.fn);  // timer callback function is required
 
-    wrapped_timer_t* wrapped_timer = (wrapped_timer_t*)calloc(1, sizeof(wrapped_timer_t));
+    wrapped_timer_t* wrapped_timer = (wrapped_timer_t*)golioth_sys_malloc(sizeof(wrapped_timer_t));
+    memset(wrapped_timer, 0, sizeof(wrapped_timer_t));
 
     TimerHandle_t timer = xTimerCreate(
             config.name,
@@ -113,7 +114,7 @@ void golioth_sys_timer_destroy(golioth_sys_timer_t timer) {
         return;
     }
     xTimerDelete(wt->timer, 0);  // non-blocking
-    free(wt);
+    golioth_sys_free(wt);
 }
 
 /*--------------------------------------------------
