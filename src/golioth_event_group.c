@@ -2,7 +2,7 @@
 #include <stdlib.h>
 
 golioth_event_group_t golioth_event_group_create(void) {
-    golioth_event_group_t eg = (golioth_event_group_t)malloc(sizeof(struct golioth_event_group));
+    golioth_event_group_t eg = (golioth_event_group_t)calloc(1, sizeof(struct golioth_event_group));
     eg->bitmap = 0;
     eg->bitmap_mutex = golioth_sys_sem_create(1, 1);
     eg->sem = golioth_sys_sem_create(1, 0);

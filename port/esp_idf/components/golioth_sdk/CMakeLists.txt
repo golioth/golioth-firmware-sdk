@@ -63,6 +63,7 @@ idf_component_register(
         "${sdk_src}/golioth_remote_shell.c"
         "${sdk_src}/golioth_ringbuf.c"
         "${sdk_src}/golioth_event_group.c"
+        "${sdk_src}/golioth_mbox.c"
 )
 
 component_compile_options(${EXTRA_C_FLAGS_LIST})

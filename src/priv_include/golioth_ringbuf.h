@@ -17,7 +17,7 @@ typedef struct {
 
 #define RINGBUF_BUFFER_SIZE(item_sz, max_num_items) (item_sz * (max_num_items + 1))
 
-// Macro that defines two variables in the current scope:
+// Convenience macro that defines two variables in the current scope:
 //      uint8_t <name>_buffer; // internal use only
 //      ringbuf_t <name>;      // user's initialized ringbuf_t
 #define RINGBUF_DEFINE(name, item_sz, max_num_items) \

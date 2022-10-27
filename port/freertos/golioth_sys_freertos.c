@@ -75,7 +75,7 @@ static TickType_t ms_to_ticks(uint32_t ms) {
 golioth_sys_timer_t golioth_sys_timer_create(golioth_sys_timer_config_t config) {
     assert(config.fn);  // timer callback function is required
 
-    wrapped_timer_t* wrapped_timer = (wrapped_timer_t*)malloc(sizeof(wrapped_timer_t));
+    wrapped_timer_t* wrapped_timer = (wrapped_timer_t*)calloc(1, sizeof(wrapped_timer_t));
 
     TimerHandle_t timer = xTimerCreate(
             config.name,
