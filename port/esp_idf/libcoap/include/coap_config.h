@@ -36,6 +36,7 @@
 #define HAVE_STRNLEN 1
 
 #define HAVE_LIMITS_H
+#define HAVE_INTTYPES_H
 
 #define COAP_RESOURCES_NOHASH
 
