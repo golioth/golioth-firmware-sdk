@@ -39,13 +39,13 @@ config GOLIOTH_COAP_TASK_PRIORITY
     int "Golioth CoAP task priority"
     default 5
     help
-        FreeRTOS task priority of the Golioth CoAP task.
+        Task priority of the Golioth CoAP task.
 
 config GOLIOTH_COAP_TASK_STACK_SIZE_BYTES
     int "Golioth CoAP task stack size"
     default 6144
     help
-        FreeRTOS task stack size of the Golioth CoAP task, in bytes.
+        Task stack size of the Golioth CoAP task, in bytes.
 
 config GOLIOTH_COAP_KEEPALIVE_INTERVAL_S
     int "Golioth CoAP keepalive interval, in seconds"

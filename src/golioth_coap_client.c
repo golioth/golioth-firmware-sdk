@@ -9,8 +9,6 @@
 #include <netdb.h>      // struct addrinfo
 #include <sys/param.h>  // MIN
 #include <coap3/coap.h>
-#include <FreeRTOS.h>
-#include <queue.h>
 #include "golioth_coap_client.h"
 #include "golioth_statistics.h"
 #include "golioth_util.h"
@@ -18,6 +16,7 @@
 #include "golioth_debug.h"
 #include "golioth_remote_shell.h"
 #include "golioth_sys.h"
+#include "golioth_mbox.h"
 
 #define TAG "golioth_coap_client"
 
@@ -26,7 +25,7 @@ static bool _initialized;
 // This is the struct hidden by the opaque type golioth_client_t
 // TODO - document these
 typedef struct {
-    QueueHandle_t request_queue;
+    golioth_mbox_t request_queue;
     golioth_sys_thread_t coap_thread_handle;
     golioth_sys_sem_t run_sem;
     golioth_sys_timer_t keepalive_timer;
@@ -624,10 +623,8 @@ static golioth_status_t coap_io_loop_once(
     golioth_coap_request_msg_t request_msg = {};
 
     // Wait for request message, with timeout
-    bool got_request_msg = xQueueReceive(
-            client->request_queue,
-            &request_msg,
-            CONFIG_GOLIOTH_COAP_REQUEST_QUEUE_TIMEOUT_MS / portTICK_PERIOD_MS);
+    bool got_request_msg = golioth_mbox_recv(
+            client->request_queue, &request_msg, CONFIG_GOLIOTH_COAP_REQUEST_QUEUE_TIMEOUT_MS);
     if (!got_request_msg) {
         // No requests, so process other pending IO (e.g. observations)
         GLTH_LOGV(TAG, "Idle io process start");
@@ -935,7 +932,7 @@ golioth_client_t golioth_client_create(const golioth_client_config_t* config) {
     GSTATS_INC_ALLOC("run_sem");
     golioth_sys_sem_give(new_client->run_sem);
 
-    new_client->request_queue = xQueueCreate(
+    new_client->request_queue = golioth_mbox_create(
             CONFIG_GOLIOTH_COAP_REQUEST_QUEUE_MAX_ITEMS, sizeof(golioth_coap_request_msg_t));
     if (!new_client->request_queue) {
         GLTH_LOGE(TAG, "Failed to create request queue");
@@ -1022,7 +1019,7 @@ void golioth_client_destroy(golioth_client_t client) {
     }
     // TODO: purge queue, free dyn mem for requests that have it
     if (c->request_queue) {
-        vQueueDelete(c->request_queue);
+        golioth_mbox_destroy(c->request_queue);
         GSTATS_INC_FREE("request_queue");
     }
     if (c->run_sem) {
@@ -1073,7 +1070,7 @@ golioth_status_t golioth_coap_client_empty(
         GSTATS_INC_ALLOC("request_complete_ack_sem");
     }
 
-    BaseType_t sent = xQueueSend(c->request_queue, &request_msg, 0);
+    bool sent = golioth_mbox_try_send(c->request_queue, &request_msg);
     if (!sent) {
         GLTH_LOGW(TAG, "Failed to enqueue request, queue full");
         if (is_synchronous) {
@@ -1172,7 +1169,7 @@ golioth_status_t golioth_coap_client_set(
         GSTATS_INC_ALLOC("request_complete_ack_sem");
     }
 
-    BaseType_t sent = xQueueSend(c->request_queue, &request_msg, 0);
+    bool sent = golioth_mbox_try_send(c->request_queue, &request_msg);
     if (!sent) {
         GLTH_LOGW(TAG, "Failed to enqueue request, queue full");
         if (payload_size > 0) {
@@ -1252,7 +1249,7 @@ golioth_status_t golioth_coap_client_delete(
         GSTATS_INC_ALLOC("request_complete_ack_sem");
     }
 
-    BaseType_t sent = xQueueSend(c->request_queue, &request_msg, 0);
+    bool sent = golioth_mbox_try_send(c->request_queue, &request_msg);
     if (!sent) {
         GLTH_LOGW(TAG, "Failed to enqueue request, queue full");
         if (is_synchronous) {
@@ -1327,7 +1324,7 @@ static golioth_status_t golioth_coap_client_get_internal(
         request_msg.get = *(golioth_coap_get_params_t*)request_params;
     }
 
-    BaseType_t sent = xQueueSend(c->request_queue, &request_msg, 0);
+    bool sent = golioth_mbox_try_send(c->request_queue, &request_msg);
     if (!sent) {
         GLTH_LOGE(TAG, "Failed to enqueue request, queue full");
         if (is_synchronous) {
@@ -1442,7 +1439,7 @@ golioth_status_t golioth_coap_client_observe_async(
     };
     strncpy(request_msg.path, path, sizeof(request_msg.path) - 1);
 
-    BaseType_t sent = xQueueSend(c->request_queue, &request_msg, 0);
+    bool sent = golioth_mbox_try_send(c->request_queue, &request_msg);
     if (!sent) {
         GLTH_LOGW(TAG, "Failed to enqueue request, queue full");
         return GOLIOTH_ERR_QUEUE_FULL;
@@ -1479,7 +1476,7 @@ uint32_t golioth_client_num_items_in_request_queue(golioth_client_t client) {
     if (!c) {
         return 0;
     }
-    return uxQueueMessagesWaiting(c->request_queue);
+    return golioth_mbox_num_messages(c->request_queue);
 }
 
 bool golioth_client_has_allocation_leaks(void) {
