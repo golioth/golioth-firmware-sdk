@@ -47,3 +47,39 @@ https://github.com/golioth/golioth-esp-idf-external-app.git
 ## Integrating with Modus Toolbox Application
 
 TODO
+
+## Integrating with Linux Application
+
+The recommended way to integrate this SDK into an external application is to add it as a
+git submodule. For example:
+
+```
+cd your_project
+git submodule add https://github.com/golioth/golioth-firmware-sdk.git third_party/golioth-firmware-sdk
+git submodule update --init --recursive
+```
+
+You should not need to modify the files in the submodule at all.
+
+The SDK is packaged as a cmake library, so you will need to add this line
+to your project's CMakeLists.txt:
+
+```
+add_subdirectory(third_party/golioth-firmware-sdk/port/linux/golioth_sdk)
+```
+
+And you will need to link the `golioth_sdk` library into your executable:
+
+```
+target_link_libraries(my_exe_target golioth_sdk)
+```
+
+A typical project structure will look something like this:
+
+```
+your_project
+├── CMakeLists.txt
+├── main.c
+└── third_party
+    └── golioth-firmware-sdk (submodule)
+```
