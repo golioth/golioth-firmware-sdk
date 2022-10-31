@@ -72,6 +72,8 @@ The porting process is broken down into 2 main steps:
       - fw_update
 
 When in doubt, use the existing platform examples and ports as a reference.
+The existing `linux` port is the simplest to understand, so it may make sense
+to study that one first (`port/linux` and `examples/linux`).
 
 ## Create Hello, World project with golioth_sdk
 
@@ -108,7 +110,7 @@ and `port/linux/golioth_sdk`.
 When you try to compile your "Hello, World" project, you will get
 missing header files and unresolved references.
 
-You may need to create the following files:
+You will need to create the following files:
 
 ```
 touch port/<platform>/golioth_port_config.h
@@ -128,6 +130,39 @@ to properly link.
 
 These are all of the functions declared in `src/include/golioth_sys.h` and
 in `src/include/golioth_fw_update.h` (the ones with prefix `fw_update_`).
+
+golioth_sys required functions:
+```
+void golioth_sys_msleep(uint32_t ms);
+uint64_t golioth_sys_now_ms(void);
+golioth_sys_sem_t golioth_sys_sem_create(uint32_t sem_max_count, uint32_t sem_initial_count);
+bool golioth_sys_sem_take(golioth_sys_sem_t sem, int32_t ms_to_wait);
+bool golioth_sys_sem_give(golioth_sys_sem_t sem);
+void golioth_sys_sem_destroy(golioth_sys_sem_t sem);
+golioth_sys_timer_t golioth_sys_timer_create(golioth_sys_timer_config_t config);
+bool golioth_sys_timer_start(golioth_sys_timer_t timer);
+bool golioth_sys_timer_reset(golioth_sys_timer_t timer);
+void golioth_sys_timer_destroy(golioth_sys_timer_t timer);
+golioth_sys_thread_t golioth_sys_thread_create(golioth_sys_thread_config_t config);
+void golioth_sys_thread_destroy(golioth_sys_thread_t thread);
+```
+
+fw_update required functions:
+```
+bool fw_update_is_pending_verify(void);
+void fw_update_rollback(void);
+void fw_update_reboot(void);
+void fw_update_cancel_rollback(void);
+golioth_status_t fw_update_handle_block(
+        const uint8_t* block,
+        size_t block_size,
+        size_t offset,
+        size_t total_size);
+void fw_update_post_download(void);
+golioth_status_t fw_update_validate(void);
+golioth_status_t fw_update_change_boot_image(void);
+void fw_update_end(void);
+```
 
 ### Compile and Run Hello, World
 
