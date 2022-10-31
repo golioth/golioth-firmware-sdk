@@ -2,9 +2,8 @@ set(repo_root ../../..)
 set(sdk_src ${repo_root}/src)
 set(sdk_port ${repo_root}/port)
 
-find_package(OpenSSL REQUIRED)
-find_package(libcoap REQUIRED)
-find_package(cJSON REQUIRED)
+find_package(OpenSSL MODULE REQUIRED)
+find_package(libcoap CONFIG REQUIRED)
 
 set(sdk_srcs
     "${sdk_port}/linux//golioth_sys_linux.c"
@@ -31,7 +30,7 @@ target_include_directories(golioth_sdk
     PUBLIC
         ${sdk_src}/include
         ${sdk_port}/linux
-        ${CJSON_INCLUDE_DIRS}/cjson
+        /usr/include/cjson
     PRIVATE
         ${sdk_src}/priv_include
 )

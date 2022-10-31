@@ -11,6 +11,7 @@ sudo apt install libssl-dev libcson-dev
 We build from source in order to use a specific commit of `libcoap`.
 
 ```sh
+cd external/libcoap
 cmake -E remove_directory build
 cmake -E make_directory build
 cd build
@@ -24,7 +25,7 @@ sudo cmake --build . -- install
 Build:
 
 ```sh
-cd golioth_basics
+cd examples/linux/golioth_basics
 ./build.sh
 ```
 

@@ -6,7 +6,7 @@ on:
   pull_request:
 
 jobs:
-  lint_build_unit_test:
+  lint_and_unit_test:
     runs-on: ubuntu-latest
     steps:
     - name: Checkout repository and submodules
@@ -30,16 +30,62 @@ jobs:
       run: |
         cd test
         ./test.sh
-    - name: Build golioth_basics project
+
+  linux_build:
+    runs-on: ubuntu-latest
+    steps:
+    - name: Checkout repository and submodules
+      uses: actions/checkout@v2
+      with:
+        submodules: 'recursive'
+    - name: Setup Python
+      uses: actions/setup-python@v2
+      with:
+        python-version: 3.x
+        architecture: 'x64'
+    - name: Install Linux deps
+      shell: bash
+      run: |
+        sudo apt install libssl-dev libcjson-dev
+    - name: Build and install libcoap for Linux
+      shell: bash
+      run: |
+        cd external/libcoap
+        cmake -E remove_directory build
+        cmake -E make_directory build
+        cd build
+        cmake ..
+        cmake --build .
+        sudo cmake --build . -- install
+    - name: Build golioth_basics
+      shell: bash
+      run: |
+        cd examples/linux/golioth_basics
+        ./build.sh
+
+  esp_idf_build:
+    runs-on: ubuntu-latest
+    steps:
+    - name: Checkout repository and submodules
+      uses: actions/checkout@v2
+      with:
+        submodules: 'recursive'
+    - name: Setup Python
+      uses: actions/setup-python@v2
+      with:
+        python-version: 3.x
+        architecture: 'x64'
+    - name: Build ESP-IDF golioth_basics project
       uses: espressif/esp-idf-ci-action@v1
       with:
         esp_idf_version: v4.4.2
         target: esp32
         path: 'examples/esp_idf/golioth_basics'
-    - name: Build magtag_demo project
+    - name: Build ESP-IDF magtag_demo project
       uses: espressif/esp-idf-ci-action@v1
       with:
         esp_idf_version: v4.4.2
         target: esp32
         path: 'examples/esp_idf/magtag_demo'
-    # TODO - build ModusToolbox examples
+
+# TODO - modus_toolbox_build
