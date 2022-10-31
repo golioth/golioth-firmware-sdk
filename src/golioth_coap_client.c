@@ -956,7 +956,6 @@ golioth_client_t golioth_client_create(const golioth_client_config_t* config) {
 
     new_client->keepalive_timer = golioth_sys_timer_create((golioth_sys_timer_config_t){
             .name = "keepalive",
-            .type = GOLIOTH_SYS_TIMER_PERIODIC,
             .expiration_ms = max(1000, 1000 * CONFIG_GOLIOTH_COAP_KEEPALIVE_INTERVAL_S),
             .fn = on_keepalive,
             .user_arg = new_client});
