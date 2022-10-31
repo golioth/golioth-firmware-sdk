@@ -81,7 +81,7 @@ golioth_sys_timer_t golioth_sys_timer_create(golioth_sys_timer_config_t config) 
     TimerHandle_t timer = xTimerCreate(
             config.name,
             ms_to_ticks(config.expiration_ms),
-            (config.type == GOLIOTH_SYS_TIMER_PERIODIC ? pdTRUE : pdFALSE),
+            pdTRUE,  // periodic
             wrapped_timer,
             freertos_timer_callback);
 

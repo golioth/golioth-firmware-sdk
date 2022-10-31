@@ -1,6 +1,7 @@
 #pragma once
 
 #include <stdint.h>
+#include <inttypes.h>
 #include <stdbool.h>
 #include <stdlib.h>
 #include "golioth_config.h"
@@ -34,13 +35,10 @@ void golioth_sys_sem_destroy(golioth_sys_sem_t sem);
 // Opaque handle for timers
 typedef void* golioth_sys_timer_t;
 
-typedef enum { GOLIOTH_SYS_TIMER_ONE_SHOT, GOLIOTH_SYS_TIMER_PERIODIC } golioth_sys_timer_type_t;
-
 typedef void (*golioth_sys_timer_fn_t)(golioth_sys_timer_t timer, void* user_arg);
 
 typedef struct {
     const char* name;
-    golioth_sys_timer_type_t type;
     uint32_t expiration_ms;
     golioth_sys_timer_fn_t fn;
     void* user_arg;
@@ -92,34 +90,52 @@ void golioth_sys_thread_destroy(golioth_sys_thread_t thread);
 
 #include <stdio.h>
 #include "golioth_debug.h"
-#define GLTH_LOGX(LEVEL, LEVEL_STR, TAG, ...) \
+
+#define LOG_COLOR_RED "31"
+#define LOG_COLOR_GREEN "32"
+#define LOG_COLOR_BROWN "33"
+#define LOG_COLOR(COLOR) "\033[0;" COLOR "m"
+#define LOG_RESET_COLOR "\033[0m"
+#define LOG_COLOR_E LOG_COLOR(LOG_COLOR_RED)
+#define LOG_COLOR_W LOG_COLOR(LOG_COLOR_BROWN)
+#define LOG_COLOR_I LOG_COLOR(LOG_COLOR_GREEN)
+#define LOG_COLOR_D
+#define LOG_COLOR_V
+
+#define GLTH_LOGX(COLOR, LEVEL, LEVEL_STR, TAG, ...) \
     do { \
         if ((LEVEL) <= golioth_debug_get_log_level()) { \
-            printf("%s (%lu) %s: ", LEVEL_STR, (uint32_t)golioth_time_millis(), TAG); \
+            printf(COLOR "%s (%" PRIu64 ") %s: ", LEVEL_STR, golioth_time_millis(), TAG); \
             printf(__VA_ARGS__); \
+            printf(LOG_RESET_COLOR); \
             puts(""); \
         } \
     } while (0)
 
 // Logging macros can be overridden from golioth_{user,port}config.h
 #ifndef GLTH_LOGV
-#define GLTH_LOGV(TAG, ...) GLTH_LOGX(GOLIOTH_DEBUG_LOG_LEVEL_VERBOSE, "V", TAG, __VA_ARGS__)
+#define GLTH_LOGV(TAG, ...) \
+    GLTH_LOGX(LOG_COLOR_V, GOLIOTH_DEBUG_LOG_LEVEL_VERBOSE, "V", TAG, __VA_ARGS__)
 #endif
 
 #ifndef GLTH_LOGD
-#define GLTH_LOGD(TAG, ...) GLTH_LOGX(GOLIOTH_DEBUG_LOG_LEVEL_DEBUG, "D", TAG, __VA_ARGS__)
+#define GLTH_LOGD(TAG, ...) \
+    GLTH_LOGX(LOG_COLOR_D, GOLIOTH_DEBUG_LOG_LEVEL_DEBUG, "D", TAG, __VA_ARGS__)
 #endif
 
 #ifndef GLTH_LOGI
-#define GLTH_LOGI(TAG, ...) GLTH_LOGX(GOLIOTH_DEBUG_LOG_LEVEL_INFO, "I", TAG, __VA_ARGS__)
+#define GLTH_LOGI(TAG, ...) \
+    GLTH_LOGX(LOG_COLOR_I, GOLIOTH_DEBUG_LOG_LEVEL_INFO, "I", TAG, __VA_ARGS__)
 #endif
 
 #ifndef GLTH_LOGW
-#define GLTH_LOGW(TAG, ...) GLTH_LOGX(GOLIOTH_DEBUG_LOG_LEVEL_WARN, "W", TAG, __VA_ARGS__)
+#define GLTH_LOGW(TAG, ...) \
+    GLTH_LOGX(LOG_COLOR_W, GOLIOTH_DEBUG_LOG_LEVEL_WARN, "W", TAG, __VA_ARGS__)
 #endif
 
 #ifndef GLTH_LOGE
-#define GLTH_LOGE(TAG, ...) GLTH_LOGX(GOLIOTH_DEBUG_LOG_LEVEL_ERROR, "E", TAG, __VA_ARGS__)
+#define GLTH_LOGE(TAG, ...) \
+    GLTH_LOGX(LOG_COLOR_E, GOLIOTH_DEBUG_LOG_LEVEL_ERROR, "E", TAG, __VA_ARGS__)
 #endif
 
 #ifndef GLTH_LOG_BUFFER_HEXDUMP
