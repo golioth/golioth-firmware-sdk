@@ -69,6 +69,5 @@ idf_component_register(
 component_compile_options(${EXTRA_C_FLAGS_LIST})
 
 target_compile_definitions(${COMPONENT_LIB} PUBLIC WITH_POSIX)
-# target_link_libraries(${COMPONENT_LIB} INTERFACE "-Wl,--wrap=vprintf -u __wrap_vprintf")
 target_link_libraries(${COMPONENT_LIB} INTERFACE
     "-Wl,--wrap=uart_hal_write_txfifo -u __wrap_uart_hal_write_txfifo")
