@@ -5,6 +5,15 @@ set(sdk_port ${repo_root}/port)
 find_package(OpenSSL MODULE REQUIRED)
 find_package(libcoap CONFIG REQUIRED)
 
+# Build cJSON from source
+set(cjson_dir "${repo_root}/external/cJSON")
+add_library(cjson
+    "${cjson_dir}/cJSON.c"
+    "${cjson_dir}/cJSON_Utils.c"
+)
+target_include_directories(cjson PUBLIC "${cjson_dir}")
+
+# Build Golioth SDK
 set(sdk_srcs
     "${sdk_port}/linux//golioth_sys_linux.c"
     "${sdk_port}/linux/fw_update_linux.c"
@@ -30,10 +39,9 @@ target_include_directories(golioth_sdk
     PUBLIC
         ${sdk_src}/include
         ${sdk_port}/linux
-        /usr/include/cjson
     PRIVATE
         ${sdk_src}/priv_include
 )
 target_link_libraries(golioth_sdk
     PUBLIC cjson
-    PRIVATE libcoap::coap-3)
+    PRIVATE libcoap::coap-3 pthread rt)

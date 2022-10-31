@@ -3,7 +3,7 @@
 ## Install System Dependencies
 
 ```sh
-sudo apt install libssl-dev libcson-dev
+sudo apt install libssl-dev
 ```
 
 ## Build and install libcoap

@@ -3,6 +3,5 @@
 set -Eeuo pipefail
 mkdir -p build
 cd build
-# cmake ..
-cmake -D CMAKE_FIND_DEBUG_MODE=ON ..
+cmake ..
 make -j8
