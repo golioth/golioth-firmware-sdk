@@ -27,10 +27,10 @@ golioth_mbox_t golioth_mbox_create(size_t num_items, size_t item_size) {
 
     GLTH_LOGI(
             TAG,
-            "Mbox created, bufsize: %u, num_items: %u, item_size: %u",
-            bufsize,
-            num_items,
-            item_size);
+            "Mbox created, bufsize: %" PRIu32 ", num_items: %" PRIu32 ", item_size: %" PRIu32,
+            (uint32_t)bufsize,
+            (uint32_t)num_items,
+            (uint32_t)item_size);
 
     return new_mbox;
 }

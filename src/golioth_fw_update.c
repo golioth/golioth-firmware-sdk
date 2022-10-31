@@ -6,6 +6,7 @@
 
 #include <string.h>
 #include <inttypes.h>
+#include <assert.h>
 #include "golioth_sys.h"
 #include "golioth_fw_update.h"
 #include "golioth_statistics.h"
@@ -31,7 +32,12 @@ static golioth_status_t download_and_write_flash(void) {
     for (size_t i = 0; /* empty */; i++) {
         size_t block_nbytes = 0;
 
-        GLTH_LOGI(TAG, "Getting block index %d (%d/%d)", i, i + 1, nblocks);
+        GLTH_LOGI(
+                TAG,
+                "Getting block index %" PRIu32 " (%" PRIu32 "/%" PRIu32 ")",
+                (uint32_t)i,
+                (uint32_t)i + 1,
+                (uint32_t)nblocks);
 
         bool is_last_block = false;
         golioth_status_t status = golioth_ota_get_block_sync(
@@ -44,7 +50,11 @@ static golioth_status_t download_and_write_flash(void) {
                 &is_last_block,
                 GOLIOTH_WAIT_FOREVER);
         if (status != GOLIOTH_OK) {
-            GLTH_LOGE(TAG, "Failed to get block index %d (%s)", i, golioth_status_to_str(status));
+            GLTH_LOGE(
+                    TAG,
+                    "Failed to get block index %" PRIu32 " (%s)",
+                    (uint32_t)i,
+                    golioth_status_to_str(status));
             break;
         }
 
@@ -52,7 +62,7 @@ static golioth_status_t download_and_write_flash(void) {
 
         status = fw_update_handle_block(_ota_block_buffer, block_nbytes, bytes_written, main_size);
         if (status != GOLIOTH_OK) {
-            GLTH_LOGE(TAG, "Failed to handle block index %d", i);
+            GLTH_LOGE(TAG, "Failed to handle block index %" PRIu32, (uint32_t)i);
             return status;
         }
 
@@ -80,7 +90,7 @@ static void on_ota_manifest(
         return;
     }
 
-    GLTH_LOGD(TAG, "Received OTA manifest: %.*s", payload_size, payload);
+    GLTH_LOGD(TAG, "Received OTA manifest: %.*s", (int)payload_size, payload);
 
     golioth_ota_state_t state = golioth_ota_get_state();
     if (state == GOLIOTH_OTA_STATE_DOWNLOADING) {
