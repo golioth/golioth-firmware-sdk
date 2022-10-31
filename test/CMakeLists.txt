@@ -17,18 +17,16 @@ target_include_directories(fff INTERFACE ${repo_root}/external/fff)
 
 enable_testing()
 
-set(root_dir ..)
-
 #
 # Test executables
 #
 set(test_name "test_ringbuf")
 add_executable(${test_name}
-    ${root_dir}/src/golioth_ringbuf.c
+    ${repo_root}/src/golioth_ringbuf.c
     test_ringbuf.c
 )
 target_include_directories(${test_name} PRIVATE
-    ${root_dir}/src/priv_include
+    ${repo_root}/src/priv_include
 )
 target_link_libraries(${test_name} unity fff)
 add_test(NAME ${test_name} COMMAND "./${test_name}")

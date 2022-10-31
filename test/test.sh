@@ -6,7 +6,7 @@ set -Eeuo pipefail
 mkdir -p build
 cd build
 cmake ..
-make
+make -j8
 
 # Code coverage
 LCOV_ENABLED=${CODECOV:-0}
