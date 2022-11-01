@@ -11,7 +11,7 @@ The structural architecture of the SDK is depicted below:
 There are 4 main layers in the SDK:
 
 1. User API: These are the header files in `src/include` that represent the entire
-   surface are of the user-facing API (types and functions the user can call).
+   surface area of the user-facing API (types and functions the user can call).
 2. SDK core: The `.c` files in `src`. Contains a CoAP client implementation (based
    on `libcoap`), and implements the User API layer. This is where most of the
    actual work is happening in the SDK.
@@ -61,15 +61,16 @@ test/                         # Unit tests
 The porting process is broken down into 2 main steps:
 
 1. Get a basic "Hello, World" project compiling and running
-  - Contains minimal `main.c` that includes Golioth SDK.
-  - Port layer will be entirely stubs and empty files, just enough
-    to get the app to compile and run.
-  - Will need to include libcoap in the project, so header
-    files can be resolved (Golioth SDK depends on libcoap headers).
+    - Contains minimal `main.c` that includes Golioth SDK.
+    - Port layer will be entirely stubs and empty files, just enough
+      to get the app to compile and run.
+    - Will need to include libcoap in the project, so header
+      files can be resolved (Golioth SDK depends on libcoap headers).
+
 2. Get the `golioth_basics` example compiling and running
-  - Full implementation of port layer
-      - golioth_sys
-      - fw_update
+    - Full implementation of port layer
+        - golioth_sys
+        - fw_update
 
 When in doubt, use the existing platform examples and ports as a reference.
 The existing `linux` port is the simplest to understand, so it may make sense
@@ -123,9 +124,9 @@ your platform. For instance, if your platform has support for FreeRTOS, then
 you could use `port/freertos/golioth_sys_freertos.c`. Likewise, if your platform
 supports MCUboot, you could use `port/modus_toolbox/fw_update_mcuboot.c`.
 
-### Stubs for golioth_sys_<platform> and fw_update_<platform>
+### Stubs for `golioth_sys_<platform>` and `fw_update_<platform>`
 
-Create stub implementation of the required functions to get the project
+Create stub implementations of the required functions to get the project
 to properly link.
 
 These are all of the functions declared in `src/include/golioth_sys.h` and
