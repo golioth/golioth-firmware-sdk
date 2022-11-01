@@ -93,11 +93,12 @@ This SDK currently supports the following platforms:
 * Linux (or POSIX-like)
 
 The following table lists which SDK features (rows) are support for each platform (columns).
-The :x:'s indicate a feature that is planned to be implemented in the future.
+The :soon:'s indicate a feature that is planned to be implemented in the future, and
+the :x:'s indicate a feature that is not planned (or not applicable).
 
 | Feature | ESP-IDF | ModusToolbox | Linux |
 | --- | --- | --- | --- |
-| OTA FW Update | :heavy_check_mark: | :heavy_check_mark: | :x: |
+| OTA FW Update | :heavy_check_mark: | :heavy_check_mark: | :soon: |
 | Cloud Logging | :heavy_check_mark: | :heavy_check_mark: | :heavy_check_mark: |
 | LightDB State | :heavy_check_mark: | :heavy_check_mark: | :heavy_check_mark: |
 | LightDB Stream | :heavy_check_mark: | :heavy_check_mark: | :heavy_check_mark: |
@@ -105,12 +106,12 @@ The :x:'s indicate a feature that is planned to be implemented in the future.
 | Settings | :heavy_check_mark: | :heavy_check_mark: | :heavy_check_mark: |
 | CoAP/DTLS Client | :heavy_check_mark: | :heavy_check_mark: | :heavy_check_mark: |
 | PSK Auth | :heavy_check_mark: | :heavy_check_mark: | :heavy_check_mark: |
-| Sign+Verify OTA images | :x: | :heavy_check_mark: | :x: |
-| Terminal shell | :heavy_check_mark: | :x: | :x: |
-| Remote Shell | :heavy_check_mark: | :x: | :x: |
-| Serial Provisioning | :heavy_check_mark: | :x: | :x: |
-| BLE Provisioning | :heavy_check_mark: | :x: | :x: |
-| Certificate Auth | :heavy_check_mark: | :x: | :x: |
+| Sign+Verify OTA images | :soon: | :heavy_check_mark: | :soon: |
+| Terminal shell | :heavy_check_mark: | :soon: | :x: |
+| Remote Shell | :heavy_check_mark: | :soon: | :soon: |
+| Serial Provisioning | :heavy_check_mark: | :soon: | :x: |
+| BLE Provisioning | :heavy_check_mark: | :soon: | :x: |
+| Certificate Auth | :heavy_check_mark: | :soon: | :soon: |
 
 ## Verified Devices
 
