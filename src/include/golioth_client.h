@@ -192,9 +192,7 @@ golioth_status_t golioth_client_start(golioth_client_t client);
 /// state where no packets will be sent or received with Golioth, and the client task will be in
 /// a blocked state.
 ///
-/// This function returns within 100 milliseconds, but there
-/// may be a further delay before the client task is actually stopped, depending on whether
-/// there is a pending request that needs to complete.
+/// This function will block until the client thread is actually stopped.
 ///
 /// Does nothing if the client is already stopped.
 ///
@@ -202,7 +200,6 @@ golioth_status_t golioth_client_start(golioth_client_t client);
 ///
 /// @return GOLIOTH_OK Client stopped
 /// @return GOLIOTH_ERR_NULL Client handle invalid
-/// @return GOLIOTH_ERR_TIMEOUT Failed to stop
 golioth_status_t golioth_client_stop(golioth_client_t client);
 
 /// Destroy a Golioth client

@@ -132,15 +132,6 @@ static void test_request_dropped_if_client_not_running(void) {
     TEST_ASSERT_EQUAL(GOLIOTH_OK, golioth_client_stop(_client));
     TEST_ASSERT_EQUAL(pdTRUE, xSemaphoreTake(_disconnected_sem, 3000 / portTICK_PERIOD_MS));
 
-    // Wait for client to be fully stopped
-    uint64_t timeout_ms = golioth_time_millis() + 2000;
-    while (golioth_time_millis() < timeout_ms) {
-        if (!golioth_client_is_running(_client)) {
-            break;
-        }
-        golioth_time_delay_ms(100);
-    }
-
     // Verify each request type returns proper state
     TEST_ASSERT_EQUAL(
             GOLIOTH_ERR_INVALID_STATE, golioth_lightdb_set_int_async(_client, "a", 1, NULL, NULL));
@@ -349,15 +340,6 @@ static void test_client_task_stack_min_remaining(void) {
 static void test_client_destroy_and_no_memory_leaks(void) {
     TEST_ASSERT_EQUAL(GOLIOTH_OK, golioth_client_stop(_client));
     TEST_ASSERT_EQUAL(pdTRUE, xSemaphoreTake(_disconnected_sem, 3000 / portTICK_PERIOD_MS));
-
-    // Wait another 2 s for client to be fully stopped
-    uint64_t timeout_ms = golioth_time_millis() + 5000;
-    while (golioth_time_millis() < timeout_ms) {
-        if (!golioth_client_is_running(_client)) {
-            break;
-        }
-        golioth_time_delay_ms(100);
-    }
 
     // Request queue should be empty now
     TEST_ASSERT_EQUAL(0, golioth_client_num_items_in_request_queue(_client));
