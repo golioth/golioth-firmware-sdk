@@ -997,10 +997,16 @@ golioth_status_t golioth_client_stop(golioth_client_t client) {
     if (!c) {
         return GOLIOTH_ERR_NULL;
     }
-    if (!golioth_sys_sem_take(c->run_sem, 100)) {
-        GLTH_LOGE(TAG, "stop: failed to take run_sem");
-        return GOLIOTH_ERR_TIMEOUT;
+
+    GLTH_LOGI(TAG, "Stopping");
+    golioth_sys_sem_take(c->run_sem, GOLIOTH_WAIT_FOREVER);
+
+    // Wait for client to be fully stopped
+    uint64_t timeout_ms = golioth_time_millis() + 2000;
+    while (golioth_client_is_running(client)) {
+        golioth_time_delay_ms(100);
     }
+
     return GOLIOTH_OK;
 }
 
