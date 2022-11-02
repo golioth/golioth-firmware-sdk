@@ -4,6 +4,7 @@
 #include "golioth_time.h"
 
 typedef enum {
+    GOLIOTH_DEBUG_LOG_LEVEL_NONE,
     GOLIOTH_DEBUG_LOG_LEVEL_ERROR,
     GOLIOTH_DEBUG_LOG_LEVEL_WARN,
     GOLIOTH_DEBUG_LOG_LEVEL_INFO,
