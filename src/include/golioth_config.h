@@ -6,8 +6,8 @@
 // golioth_port_config.h, with user config taking priority
 // over port config.
 
-#ifdef GOLIOTH_USER_CONFIG_INCLUDE
-#include "golioth_user_config.h"
+#ifdef CONFIG_GOLIOTH_USER_CONFIG_INCLUDE
+#include CONFIG_GOLIOTH_USER_CONFIG_INCLUDE
 #endif
 
 #include "golioth_port_config.h"
