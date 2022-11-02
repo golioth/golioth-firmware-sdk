@@ -4,6 +4,8 @@
  * SPDX-License-Identifier: Apache-2.0
  */
 
+// TODO - fw_update_destroy, to clean up resources and stop thread
+
 #include <string.h>
 #include <inttypes.h>
 #include <assert.h>
