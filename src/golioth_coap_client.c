@@ -616,6 +616,19 @@ static golioth_status_t create_session(
     return GOLIOTH_OK;
 }
 
+static void purge_request_mbox(golioth_mbox_t request_mbox) {
+    golioth_coap_request_msg_t request_msg = {};
+    size_t num_messages = golioth_mbox_num_messages(request_mbox);
+
+    for (size_t i = 0; i < num_messages; i++) {
+        assert(golioth_mbox_recv(request_mbox, &request_msg, 0));
+        if (request_msg.type == GOLIOTH_COAP_REQUEST_POST) {
+            // free dynamically allocated user payload copy
+            golioth_sys_free(request_msg.post.payload);
+        }
+    }
+}
+
 static golioth_status_t coap_io_loop_once(
         golioth_coap_client_t* client,
         coap_context_t* context,
@@ -1023,8 +1036,8 @@ void golioth_client_destroy(golioth_client_t client) {
         golioth_sys_thread_destroy(c->coap_thread_handle);
         GSTATS_INC_FREE("coap_thread_handle");
     }
-    // TODO: purge queue, free dyn mem for requests that have it
     if (c->request_queue) {
+        purge_request_mbox(c->request_queue);
         golioth_mbox_destroy(c->request_queue);
         GSTATS_INC_FREE("request_queue");
     }
