@@ -809,7 +809,9 @@ static golioth_status_t coap_io_loop_once(
         client->event_callback(client, GOLIOTH_CLIENT_EVENT_CONNECTED, client->event_callback_arg);
     }
 
-    GLTH_LOGI(TAG, "Golioth CoAP client connected");
+    if (!client->session_connected) {
+        GLTH_LOGI(TAG, "Golioth CoAP client connected");
+    }
     client->session_connected = true;
     return GOLIOTH_OK;
 }
