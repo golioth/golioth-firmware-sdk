@@ -90,60 +90,90 @@ void golioth_sys_sem_destroy(golioth_sys_sem_t sem) {
  * Software Timers
  *------------------------------------------------*/
 
+// Wrap timer_t to also capture user's config
+typedef struct {
+    timer_t timer;
+    golioth_sys_timer_config_t config;
+} wrapped_timer_t;
+
+static void on_timer(int sig, siginfo_t* si, void* uc) {
+    wrapped_timer_t* wt = (wrapped_timer_t*)si->si_value.sival_ptr;
+    if (wt->config.fn) {
+        wt->config.fn(wt, wt->config.user_arg);
+    }
+}
+
 golioth_sys_timer_t golioth_sys_timer_create(golioth_sys_timer_config_t config) {
-    // Intentionally ignoring from config:
-    //      name
-    timer_t* timer = (timer_t*)golioth_sys_malloc(sizeof(timer_t));
+    static bool initialized = false;
+    const int signo = SIGRTMIN;
+
+    if (!initialized) {
+        // Install the signal handler
+        struct sigaction sa = {
+                .sa_flags = SA_SIGINFO,
+                .sa_sigaction = on_timer,
+        };
+        sigemptyset(&sa.sa_mask);
+        if (sigaction(signo, &sa, NULL) < 0) {
+            GLTH_LOGE(TAG, "sigaction errno: %d", errno);
+            return NULL;
+        }
+
+        initialized = true;
+    }
+
+    // Note: config.name is unused
+    wrapped_timer_t* wt = (wrapped_timer_t*)golioth_sys_malloc(sizeof(wrapped_timer_t));
+    wt->config = config;
     int err = timer_create(
             CLOCK_REALTIME,
             &(struct sigevent){
                     .sigev_notify = SIGEV_SIGNAL,
-                    .sigev_signo = SIGALRM,
+                    .sigev_signo = signo,
+                    .sigev_value.sival_ptr = wt,
             },
-            timer);
+            &wt->timer);
     if (err) {
         goto error;
     }
 
-    // Initially dormat, since we don't set .it_value
-    err = timer_settime(
-            *timer,
-            0,  // flags
-            &(struct itimerspec){
-                    .it_interval =
-                            {
-                                    .tv_sec = config.expiration_ms / 1000,
-                                    .tv_nsec = (config.expiration_ms % 1000) * 1000000,
-                            },
-            },
-            NULL);  // old_value
+    struct itimerspec spec = {
+            .it_interval =
+                    {
+                            .tv_sec = config.expiration_ms / 1000,
+                            .tv_nsec = (config.expiration_ms % 1000) * 1000000,
+                    },
+    };
+
+    err = timer_settime(wt->timer, 0, &spec, NULL);
     if (err) {
         goto error;
     }
 
-    return (golioth_sys_timer_t)timer;
+    return (golioth_sys_timer_t)wt;
 
 error:
-    golioth_sys_free(timer);
+    GLTH_LOGE(TAG, "timer_create errno: %d", errno);
+    golioth_sys_free(wt);
     return NULL;
 }
 
 bool golioth_sys_timer_start(golioth_sys_timer_t timer) {
-    timer_t* t = (timer_t*)timer;
+    wrapped_timer_t* wt = (wrapped_timer_t*)timer;
 
-    struct itimerspec current_spec;
-    timer_gettime(*t, &current_spec);
+    struct timespec spec = {
+            .tv_sec = wt->config.expiration_ms / 1000,
+            .tv_nsec = (wt->config.expiration_ms % 1000) * 1000000,
+    };
 
-    int err = timer_settime(
-            *t,
-            0,
-            &(struct itimerspec){
-                    .it_interval = current_spec.it_interval,
-                    // Copy it_interval to it_value to arm the timer
-                    .it_value = current_spec.it_interval,
-            },
-            NULL);  // old_value
+    struct itimerspec ispec = {
+            .it_interval = spec,
+            .it_value = spec,
+    };
+
+    int err = timer_settime(wt->timer, 0, &ispec, NULL);
     if (err) {
+        GLTH_LOGE(TAG, "timer_start errno: %d", errno);
         return false;
     }
 
@@ -151,32 +181,35 @@ bool golioth_sys_timer_start(golioth_sys_timer_t timer) {
 }
 
 bool golioth_sys_timer_reset(golioth_sys_timer_t timer) {
-    timer_t* t = (timer_t*)timer;
+    wrapped_timer_t* wt = (wrapped_timer_t*)timer;
 
-    struct itimerspec current_spec;
-    timer_gettime(*t, &current_spec);
+    struct timespec spec = {
+            .tv_sec = wt->config.expiration_ms / 1000,
+            .tv_nsec = (wt->config.expiration_ms % 1000) * 1000000,
+    };
 
-    int err = timer_settime(
-            *t,
-            0,
-            &(struct itimerspec){
-                    .it_interval = current_spec.it_interval,
-                    // Disarm by setting it_value to zeros
-            },
-            NULL);  // old_value
+    struct itimerspec ispec = {
+            .it_interval = spec,
+            // disarm by setting it_value to zero
+    };
+
+
+    int err = timer_settime(wt->timer, 0, &ispec, NULL);
     if (err) {
+        GLTH_LOGE(TAG, "timer_reset disarm errno: %d", errno);
         return false;
     }
 
-    return golioth_sys_timer_start(timer);
+    return golioth_sys_timer_start(wt);
 }
 
 void golioth_sys_timer_destroy(golioth_sys_timer_t timer) {
-    timer_t* t = (timer_t*)timer;
-    if (t) {
-        timer_delete(*t);
+    wrapped_timer_t* wt = (wrapped_timer_t*)timer;
+    if (!wt) {
+        return;
     }
-    golioth_sys_free(t);
+    timer_delete(wt->timer);
+    golioth_sys_free(wt);
 }
 
 /*--------------------------------------------------
