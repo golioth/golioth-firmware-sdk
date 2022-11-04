@@ -14,3 +14,4 @@ typedef enum {
 
 void golioth_debug_set_log_level(golioth_debug_log_level_t level);
 golioth_debug_log_level_t golioth_debug_get_log_level(void);
+void golioth_debug_hexdump(const char* tag, const void* addr, int len);

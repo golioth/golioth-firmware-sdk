@@ -131,6 +131,9 @@ static coap_response_t coap_response_handler(
                     req->path_prefix,
                     req->path,
                     (uint32_t)data_len);
+
+            // In case of 4.xx, the payload often has a useful error message
+            GLTH_LOG_BUFFER_HEXDUMP(TAG, data, min(data_len, 256), GOLIOTH_DEBUG_LOG_LEVEL_DEBUG);
         } else {
             GLTH_LOGD(
                     TAG,
@@ -175,7 +178,8 @@ static coap_response_t coap_response_handler(
                         (uint32_t)req->get_block.block_index,
                         (uint32_t)opt_block_index,
                         opt_block_index * 1024);
-                GLTH_LOG_BUFFER_HEXDUMP(TAG, data, min(32, data_len), GLTH_LOG_DEBUG);
+                GLTH_LOG_BUFFER_HEXDUMP(
+                        TAG, data, min(32, data_len), GOLIOTH_DEBUG_LOG_LEVEL_DEBUG);
 
                 bool is_last = (COAP_OPT_BLOCK_MORE(block_opt) == 0);
 
@@ -1019,7 +1023,6 @@ golioth_status_t golioth_client_stop(golioth_client_t client) {
     golioth_sys_sem_take(c->run_sem, GOLIOTH_WAIT_FOREVER);
 
     // Wait for client to be fully stopped
-    uint64_t timeout_ms = golioth_time_millis() + 2000;
     while (golioth_client_is_running(client)) {
         golioth_time_delay_ms(100);
     }

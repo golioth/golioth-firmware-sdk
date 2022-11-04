@@ -77,7 +77,7 @@ static void on_rpc(
         return;
     }
 
-    GLTH_LOG_BUFFER_HEXDUMP(TAG, payload, min(64, payload_size), GLTH_LOG_DEBUG);
+    GLTH_LOG_BUFFER_HEXDUMP(TAG, payload, min(64, payload_size), GOLIOTH_DEBUG_LOG_LEVEL_DEBUG);
 
     cJSON* json = cJSON_ParseWithLength((const char*)payload, payload_size);
     if (!json) {

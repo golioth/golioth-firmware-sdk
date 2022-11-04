@@ -61,6 +61,7 @@ idf_component_register(
         "${sdk_src}/golioth_statistics.c"
         "${sdk_src}/golioth_settings.c"
         "${sdk_src}/golioth_remote_shell.c"
+        "${sdk_src}/golioth_debug.c"
         "${sdk_src}/golioth_ringbuf.c"
         "${sdk_src}/golioth_event_group.c"
         "${sdk_src}/golioth_mbox.c"
