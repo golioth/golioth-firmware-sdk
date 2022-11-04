@@ -139,7 +139,12 @@ void golioth_sys_thread_destroy(golioth_sys_thread_t thread);
 #endif
 
 #ifndef GLTH_LOG_BUFFER_HEXDUMP
-#define GLTH_LOG_BUFFER_HEXDUMP(TAG, ...) /* TODO - default hexdump implementation */
+#define GLTH_LOG_BUFFER_HEXDUMP(TAG, payload, size, level) \
+    do { \
+        if ((level) <= golioth_debug_get_log_level()) { \
+            golioth_debug_hexdump(TAG, payload, size); \
+        } \
+    } while (0);
 #endif
 
 #else /* CONFIG_GOLIOTH_DEBUG_LOG_ENABLE */
