@@ -5,6 +5,9 @@
  */
 #pragma once
 
+#include <stdbool.h>
+#include <stdint.h>
+
 void wifi_init(const char* ssid, const char* password);
 void wifi_wait_for_connected(void);
 bool wifi_wait_for_connected_with_timeout(uint32_t timeout_s);
