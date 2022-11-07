@@ -4,6 +4,9 @@ on:
   push:
     branches: [ main ]
   pull_request:
+  schedule:
+    # Run workflow at the start of every day (12 AM UTC)
+    - cron: "0 0 * * *"
 
 jobs:
   build_for_hw_test:
