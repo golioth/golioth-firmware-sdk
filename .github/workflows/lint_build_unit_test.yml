@@ -46,17 +46,7 @@ jobs:
     - name: Install Linux deps
       shell: bash
       run: |
-        sudo apt install libssl-dev libcjson-dev
-    - name: Build and install libcoap for Linux
-      shell: bash
-      run: |
-        cd external/libcoap
-        cmake -E remove_directory build
-        cmake -E make_directory build
-        cd build
-        cmake ..
-        cmake --build .
-        sudo cmake --build . -- install
+        sudo apt install libssl-dev
     - name: Build golioth_basics
       shell: bash
       run: |

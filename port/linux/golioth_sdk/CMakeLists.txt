@@ -2,8 +2,11 @@ set(repo_root ../../..)
 set(sdk_src ${repo_root}/src)
 set(sdk_port ${repo_root}/port)
 
-find_package(OpenSSL MODULE REQUIRED)
-find_package(libcoap CONFIG REQUIRED)
+option(ENABLE_DOCS OFF)
+option(ENABLE_EXAMPLES OFF)
+option(ENABLE_SERVER_MODE OFF)
+option(ENABLE_TCP OFF)
+add_subdirectory("${repo_root}/external/libcoap" build)
 
 # Build cJSON from source
 set(cjson_dir "${repo_root}/external/cJSON")
@@ -44,4 +47,4 @@ target_include_directories(golioth_sdk
 )
 target_link_libraries(golioth_sdk
     PUBLIC cjson
-    PRIVATE libcoap::coap-3 pthread rt)
+    PRIVATE coap-3 pthread rt)
