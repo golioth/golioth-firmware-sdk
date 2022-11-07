@@ -13,11 +13,20 @@ order to provision Wi-Fi and Golioth credentials to the device:
 
 ```yaml
 settings:
-  wifi/ssid: MyWiFiSSID
-  wifi/psk: MyWiFiPassword
-  golioth/psk-id: device@project
-  golioth/psk: supersecret
+    wifi/ssid: MyWiFiSSID
+    wifi/psk: MyWiFiPassword
+    golioth/psk-id: device@project
+    golioth/psk: supersecret
+
+golioth_api:
+    api_url: https://api.golioth.io
+    project_id: project
+    device_id: <long_hex_number>
+    api_key: <api_key>
 ```
+
+The `golioth_api` object is used for the Settings and RPC test,
+to access the Golioth REST API.
 
 ### Install Pre-Requisities
 
