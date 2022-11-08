@@ -159,29 +159,7 @@ We recommend establishing the following in your discussion topic and description
 
 ## Style Guide
 
-Basic style is checked in CI using `clang-format` (e.g. where to put braces, indentation width,
-etc). If that check fails, the pull request can not merge.
-
-It's recommended to use an editor that supports [editorconfig](https://editorconfig.org/).
-
-You may optionally install a git pre-commit hook to warn you if there are formatting errors
-(see `scripts/git_hooks/install_hooks.sh`).
-
-Or, if you prefer, you can manually run clang-format:
-
-```
-cd scripts/lint
-./check_clang_format.sh
-```
-
-Apart from the basic formatting provided by `clang-format`, you should attempt to
-**maintain consistency** with existing code in the SDK. There are certain conventions, such
-as prepending `_` to global variables, that should generally be adhered to, but aren't
-checked by `clang-format`.
-
-If you have a style question that is not answerable from `clang-format` or
-existing SDK code, then you may default to
-[Linux kernel coding style](https://www.kernel.org/doc/html/latest/process/coding-style.html).
+Follow the guidelines in our [Style Guide](docs/Style_Guide.md).
 
 ## Commit Guide
 
