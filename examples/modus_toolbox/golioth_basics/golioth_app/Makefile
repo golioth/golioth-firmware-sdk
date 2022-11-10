@@ -220,6 +220,7 @@ DEFINES+=APP_VERSION_MAJOR=$(APP_VERSION_MAJOR) \
          APP_VERSION_BUILD=$(APP_VERSION_BUILD) \
          USER_APP_START=$(PRIMARY_IMG_START) \
          USER_APP_SIZE=$(SLOT_SIZE)
+DEFINES+=CONFIG_GOLIOTH_USER_CONFIG_INCLUDE='"golioth_user_config.h"'
 
 # Add defines to enable usage of external flash for secondary or both images (XIP)
 ifeq ($(USE_EXTERNAL_FLASH), 1)
