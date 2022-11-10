@@ -102,6 +102,7 @@ void golioth_sys_thread_destroy(golioth_sys_thread_t thread);
 #define LOG_COLOR_D
 #define LOG_COLOR_V
 
+#ifndef GLTH_LOGX
 #define GLTH_LOGX(COLOR, LEVEL, LEVEL_STR, TAG, ...) \
     do { \
         if ((LEVEL) <= golioth_debug_get_log_level()) { \
@@ -113,6 +114,7 @@ void golioth_sys_thread_destroy(golioth_sys_thread_t thread);
             puts(""); \
         } \
     } while (0)
+#endif
 
 // Logging macros can be overridden from golioth_{user,port}config.h
 #ifndef GLTH_LOGV
