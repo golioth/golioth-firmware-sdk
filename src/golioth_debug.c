@@ -1,7 +1,11 @@
 #include "golioth_debug.h"
+#include "golioth_log.h"
 #include <stdio.h>
+#include <stdarg.h>
+#include <stdlib.h>
 
 static golioth_debug_log_level_t _level = GOLIOTH_DEBUG_LOG_LEVEL_INFO;
+static golioth_client_t _client = NULL;
 
 void golioth_debug_set_log_level(golioth_debug_log_level_t level) {
     _level = level;
@@ -62,4 +66,75 @@ void golioth_debug_hexdump(const char* tag, const void* addr, int len) {
 
     // And print the final ASCII buffer.
     printf("  %s\n", buff);
+}
+
+void golioth_debug_printf(
+        uint64_t tstamp_ms,
+        golioth_debug_log_level_t level,
+        const char* tag,
+        const char* format,
+        ...) {
+    if (!_client) {
+        return;
+    }
+
+    // Avoid re-entering this function
+    static bool log_in_progress = false;
+    if (log_in_progress) {
+        return;
+    }
+
+    // Figure out how large of a char buffer we need to store this message
+    va_list args;
+    va_start(args, format);
+    int buffer_size = vsnprintf(NULL, 0, format, args) + 1;  // +1 for NULL
+    va_end(args);
+
+    if (buffer_size <= 0) {
+        return;
+    }
+
+    // Temporarily allocate a buffer to store the message
+    char* msg_buffer = malloc(buffer_size);
+    if (!msg_buffer) {
+        return;
+    }
+
+    va_start(args, format);
+    vsnprintf(msg_buffer, buffer_size, format, args);
+    va_end(args);
+
+    // Log to Golioth asynchronously.
+    //
+    // Setting the "in progress" flag ensures that we can't re-enter this function
+    // while calling the golioth_log_X_async functions, which might themselves
+    // use GLTH_LOGX statements (which would cause infinite re-entrance).
+    log_in_progress = true;
+    switch (level) {
+        case GOLIOTH_DEBUG_LOG_LEVEL_ERROR:
+            golioth_log_error_async(_client, tag, msg_buffer, NULL, NULL);
+            break;
+        case GOLIOTH_DEBUG_LOG_LEVEL_WARN:
+            golioth_log_warn_async(_client, tag, msg_buffer, NULL, NULL);
+            break;
+        case GOLIOTH_DEBUG_LOG_LEVEL_INFO:
+            golioth_log_info_async(_client, tag, msg_buffer, NULL, NULL);
+            break;
+        case GOLIOTH_DEBUG_LOG_LEVEL_VERBOSE:  // fallthrough
+        case GOLIOTH_DEBUG_LOG_LEVEL_DEBUG:
+            golioth_log_debug_async(_client, tag, msg_buffer, NULL, NULL);
+            break;
+        case GOLIOTH_DEBUG_LOG_LEVEL_NONE:  // fallthrough
+        default:
+            break;
+    }
+    log_in_progress = false;
+
+    // It's safe to free the message buffer, since the async log above
+    // makes a copy of the message.
+    free(msg_buffer);
+}
+
+void golioth_debug_set_client(golioth_client_t client) {
+    _client = client;
 }

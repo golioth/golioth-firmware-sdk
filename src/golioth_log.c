@@ -49,7 +49,6 @@ static golioth_status_t golioth_log_internal(
     GSTATS_INC_FREE("json");
 
     if (!printed) {
-        GLTH_LOGE(TAG, "Failed to serialize log: %s", logbuf);
         return GOLIOTH_ERR_SERIALIZE;
     }
 

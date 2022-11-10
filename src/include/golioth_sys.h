@@ -105,9 +105,11 @@ void golioth_sys_thread_destroy(golioth_sys_thread_t thread);
 #define GLTH_LOGX(COLOR, LEVEL, LEVEL_STR, TAG, ...) \
     do { \
         if ((LEVEL) <= golioth_debug_get_log_level()) { \
-            printf(COLOR "%s (%" PRIu64 ") %s: ", LEVEL_STR, golioth_time_millis(), TAG); \
+            uint64_t now_ms = golioth_time_millis(); \
+            printf(COLOR "%s (%" PRIu64 ") %s: ", LEVEL_STR, now_ms, TAG); \
             printf(__VA_ARGS__); \
-            printf(LOG_RESET_COLOR); \
+            golioth_debug_printf(now_ms, LEVEL, TAG, __VA_ARGS__); \
+            printf("%s", LOG_RESET_COLOR); \
             puts(""); \
         } \
     } while (0)
