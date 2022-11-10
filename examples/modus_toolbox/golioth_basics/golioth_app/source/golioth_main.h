@@ -43,22 +43,22 @@
 /*******************************************************************************
  * Macros
  ********************************************************************************/
-/* Wi-Fi Credentials: Modify WIFI_SSID, WIFI_PASSWORD and WIFI_SECURITY_TYPE
- * to match your Wi-Fi network credentials.
- * Note: Maximum length of the Wi-Fi SSID and password is set to
- * CY_WCM_MAX_SSID_LEN and CY_WCM_MAX_PASSPHRASE_LEN as defined in cy_wcm.h file.
- */
 
-#define WIFI_SSID "WiFiSSID"
-#define WIFI_PASSWORD "WiFiPassword"
+// Include user's WiFi and Golioth credentials.
+//
+// This is a required file, so if it doesn't exist, you will
+// need to create it and add the following:
+//
+//    #define WIFI_SSID "MySSID"
+//    #define WIFI_PASSWORD "MyPassword"
+//    #define GOLIOTH_PSK_ID "device@project"
+//    #define GOLIOTH_PSK "secret"
+//
+// The Golioth credentials can be found at:
+//
+//    console.golioth.io -> Devices -> (yourdevice) -> Credentials
 
-/*
- * Fill in with your Golioth credentials
- *
- * These can be found at console.golioth.io -> Devices -> (yourdevice) -> Credentials
- */
-#define GOLIOTH_PSK_ID "yourdevice@yourproject"
-#define GOLIOTH_PSK "supersecret"
+#include "credentials.inc"
 
 /* Security type of the Wi-Fi access point. See 'cy_wcm_security_t' structure
  * in "cy_wcm.h" for more details.

@@ -43,8 +43,9 @@ The flash layout is defined in
 
 The MCUboot upgrade strategy used is `MCUBOOT_OVERWRITE_ONLY`.
 
-Before compiling golioth_app, make sure to set the WiFi SSID and password as
-well as your Golioth PSK-ID and PSK, in `golioth_main.h`:
+Before compiling the golioth_app, create a file in
+`golioth_basics/golioth_app/source/credentials.inc`
+with your WiFi and Golioth credentials:
 
 ```c
 #define WIFI_SSID "WiFiSSID"
