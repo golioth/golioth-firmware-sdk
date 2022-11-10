@@ -5,18 +5,28 @@
 
 #define TAG "main"
 
-int main(void) {
-    const char* golioth_psk_id = "20221028174758-laptop@nicks-first-project";
-    const char* golioth_psk = "c3e1a88504de7b53c4e5cce1c28887ad";
+// Include user's Golioth credentials.
+//
+// This is a required file, so if it doesn't exist, you will
+// need to create it and add the following:
+//
+//    #define GOLIOTH_PSK_ID "device@project"
+//    #define GOLIOTH_PSK "secret"
+//
+// The Golioth credentials can be found at:
+//
+//    console.golioth.io -> Devices -> (yourdevice) -> Credentials
+#include "credentials.inc"
 
+int main(void) {
     golioth_client_config_t config = {
             .credentials = {
                     .auth_type = GOLIOTH_TLS_AUTH_TYPE_PSK,
                     .psk = {
-                            .psk_id = golioth_psk_id,
-                            .psk_id_len = strlen(golioth_psk_id),
-                            .psk = golioth_psk,
-                            .psk_len = strlen(golioth_psk),
+                            .psk_id = GOLIOTH_PSK_ID,
+                            .psk_id_len = strlen(GOLIOTH_PSK_ID),
+                            .psk = GOLIOTH_PSK,
+                            .psk_len = strlen(GOLIOTH_PSK),
                     }}};
 
     golioth_client_t client = golioth_client_create(&config);
