@@ -136,6 +136,26 @@ config GOLIOTH_DEBUG_LOG_ENABLE
         If set to 0 (disabled), then the GLTH_LOGX macros will
         be removed/undefined.
 
+config GOLIOTH_AUTO_LOG_TO_CLOUD
+    int "Enable automatic logging to Golioth"
+    default 0
+    help
+        Enable/disable automatic logging to Golioth for GLTH_LOGX statements
+
+        If enabled, GLTH_LOGX statements will log to stdout as well as to
+        Golioth. If disabled, they will only go to stdout.
+
+        Enabling can result is a large amount of data transmitted to Golioth,
+        so use with caution.
+
+        If you enable this, it might be a good idea to increase
+        GOLIOTH_COAP_REQUEST_QUEUE_MAX_ITEMS, since there will be many
+        more CoAP requests (one per GLTH_LOGX statement). Otherwise you
+        will see warnings like "Failed to enqueue request, queue full".
+
+        There is an internal feature flag that is set by default to the value of this
+        configuration item. The flag can also be set at runtime.
+
 config GOLIOTH_REMOTE_SHELL_ENABLE
     int "(Experimental) Enable remote shell"
     default 0
