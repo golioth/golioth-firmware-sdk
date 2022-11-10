@@ -15,7 +15,7 @@ jobs:
     if: ${{ github.event.pull_request.head.repo.full_name == github.event.pull_request.base.repo.full_name }}
     steps:
     - name: Checkout repository and submodules
-      uses: actions/checkout@v2
+      uses: actions/checkout@v3
       with:
         submodules: 'recursive'
     - name: Setup Python
@@ -108,7 +108,7 @@ jobs:
 
     steps:
     - name: Checkout repository without submodules
-      uses: actions/checkout@v2
+      uses: actions/checkout@v3
     - name: Download build tarball
       uses: actions/download-artifact@v3
       with:
