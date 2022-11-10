@@ -2,6 +2,7 @@
 
 #include "golioth_config.h"
 #include "golioth_time.h"
+#include <stdbool.h>
 
 typedef void* golioth_client_t;
 
@@ -18,6 +19,7 @@ void golioth_debug_set_log_level(golioth_debug_log_level_t level);
 golioth_debug_log_level_t golioth_debug_get_log_level(void);
 void golioth_debug_hexdump(const char* tag, const void* addr, int len);
 void golioth_debug_set_client(golioth_client_t client);
+void golioth_debug_set_cloud_log_enabled(bool enable);
 void golioth_debug_printf(
         uint64_t tstamp_ms,
         golioth_debug_log_level_t level,

@@ -6,6 +6,7 @@
 
 static golioth_debug_log_level_t _level = GOLIOTH_DEBUG_LOG_LEVEL_INFO;
 static golioth_client_t _client = NULL;
+static bool _cloud_log_enabled = CONFIG_GOLIOTH_AUTO_LOG_TO_CLOUD;
 
 void golioth_debug_set_log_level(golioth_debug_log_level_t level) {
     _level = level;
@@ -74,6 +75,10 @@ void golioth_debug_printf(
         const char* tag,
         const char* format,
         ...) {
+    if (!_cloud_log_enabled) {
+        return;
+    }
+
     if (!_client) {
         return;
     }
@@ -137,4 +142,8 @@ void golioth_debug_printf(
 
 void golioth_debug_set_client(golioth_client_t client) {
     _client = client;
+}
+
+void golioth_debug_set_cloud_log_enabled(bool enable) {
+    _cloud_log_enabled = enable;
 }
