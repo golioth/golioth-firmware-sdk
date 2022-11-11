@@ -113,19 +113,36 @@ void golioth_basics(golioth_client_t client) {
     //      LightDB state
     //      LightDB Stream
 
-    // We'll start by logging a message to Golioth.
+    // You can use any of the GLTH_LOGX macros (e.g. GLTH_LOGI, GLTH_LOGE),
+    // to log a message to stdout.
     //
-    // This is an "asynchronous" function, meaning that this log message will be
-    // copied into a queue for later transmission by the client task, and this function
-    // will return immediately. Any functions provided by this SDK ending in _async
-    // will have the same meaning.
-    //
-    // The last two arguments are for an optional callback, in case the user wants to
-    // be notified of when the log has been received by the Golioth server. In this
-    // case we set them to NULL, which makes this a "fire-and-forget" log request.
-    golioth_log_info_async(client, "app_main", "Hello, World!", NULL, NULL);
+    // If you've set CONFIG_GOLIOTH_AUTO_LOG_TO_CLOUD to 1, then the message
+    // will also be uploaded to the Golioth Logging Service, which you can
+    // view at console.golioth.io.
+    GLTH_LOGI(TAG, "Hello, Golioth!");
 
-    // We can also log messages "synchronously", meaning the function will block
+
+    // For OTA, we will spawn a background task that will listen for firmware
+    // updates from Golioth and automatically update firmware on the device
+    golioth_fw_update_init(client, _current_version);
+
+    // There are a number of different functions you can call to get and set values in
+    // LightDB state, based on the type of value (e.g. int, bool, float, string, JSON).
+    //
+    // This is an "asynchronous" function, meaning that the function will return
+    // immediately and the integer will be sent to Golioth at a later time.
+    // Internally, the request is added to a queue which is processed
+    // by the Golioth client task.
+    //
+    // Any functions provided by this SDK ending in _async behave the same way.
+    //
+    // The last two arguments are for an optional callback function and argument,
+    // in case the user wants to be notified when the set request has completed
+    // and received acknowledgement from the Golioth server. In this case
+    // we set them to NULL, which makes this a "fire-and-forget" request.
+    golioth_lightdb_set_int_async(client, "my_int", 42, NULL, NULL);
+
+    // We can also send requests "synchronously", meaning the function will block
     // until one of 3 things happen (whichever comes first):
     //
     //  1. We receive a response to the request from the server
@@ -136,19 +153,7 @@ void golioth_basics(golioth_client_t client) {
     // We'll check the return code to know whether a timeout happened.
     //
     // Any function provided by this SDK ending in _sync will have the same meaning.
-    golioth_status_t status = golioth_log_warn_sync(client, "app_main", "Sync log", 5);
-    if (status != GOLIOTH_OK) {
-        GLTH_LOGE(TAG, "Error in golioth_log_warn_sync: %s", golioth_status_to_str(status));
-    }
-
-    // For OTA, we will spawn a background task that will listen for firmware
-    // updates from Golioth and automatically update firmware on the device
-    golioth_fw_update_init(client, _current_version);
-
-    // There are a number of different functions you can call to get and set values in
-    // LightDB state, based on the type of value (e.g. int, bool, float, string, JSON).
-    golioth_lightdb_set_int_async(client, "my_int", 42, NULL, NULL);
-    status = golioth_lightdb_set_string_sync(client, "my_string", "asdf", 4, 5);
+    golioth_status_t status = golioth_lightdb_set_string_sync(client, "my_string", "asdf", 4, 5);
     if (status != GOLIOTH_OK) {
         GLTH_LOGE(TAG, "Error setting string: %s", golioth_status_to_str(status));
     }

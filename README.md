@@ -45,7 +45,7 @@ void app_main(void) {
     };
 
     golioth_client_t client = golioth_client_create(&config);
-    golioth_log_info_sync(client, "app_main", "Hello, Golioth!", 5.0);
+    GLTH_LOGI(client, "app_main", "Hello, Golioth!");
 }
 ```
 
