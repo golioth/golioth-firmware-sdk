@@ -51,6 +51,8 @@ jobs:
       shell: bash
       run: |
         cd examples/linux/golioth_basics
+        echo "#define GOLIOTH_PSK_ID \"device@project\"" > credentials.inc
+        echo "#define GOLIOTH_PSK \"secret\"" >> credentials.inc
         ./build.sh
 
   esp_idf_build:
