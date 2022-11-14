@@ -458,6 +458,8 @@ void app_main(void) {
     _connected_sem = xSemaphoreCreateBinary();
     _disconnected_sem = xSemaphoreCreateBinary();
 
+    golioth_debug_set_log_level(GOLIOTH_DEBUG_LOG_LEVEL_DEBUG);
+
     esp_console_cmd_t built_in_test_cmd = {
             .command = "built_in_test",
             .help = "Run the built-in Unity tests",
