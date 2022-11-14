@@ -1,7 +1,13 @@
 # Golioth Firmware SDK
 
-A software development kit for connecting Espressif devices to the
+A software development kit for connecting embedded devices to the
 [Golioth](https://golioth.io) IoT cloud.
+
+This SDK can be used on the following firmware platforms (a.k.a. ecosystems):
+
+* Espressif ESP-IDF
+* Infineon ModusToolbox
+* Linux (or POSIX-like)
 
 SDK source: https://github.com/golioth/golioth-firmware-sdk
 
@@ -85,12 +91,6 @@ The `docs` folder contains additional documentation, such as a platform
 integration guide and a platform porting guide.
 
 ## Features Supported by Platform
-
-This SDK currently supports the following platforms:
-
-* Espressif ESP-IDF
-* Infineon ModusToolbox
-* Linux (or POSIX-like)
 
 The following table lists which SDK features (rows) are support for each platform (columns).
 The :soon:'s indicate a feature that is planned to be implemented in the future, and
