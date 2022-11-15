@@ -46,3 +46,10 @@ idf.py build
 idf.py flash
 idf.py monitor
 ```
+
+### USB serial configuration for Adafruit ESP32-S2/S3 Feather Boards
+
+If you're using an Adafruit Feather board with a USB-C connector,
+you will need to set `CONFIG_ESP_CONSOLE_USB_SERIAL_JTAG` to `y` via
+`sdkconfig` or `idf.py menuconfig`. This is required in order to use
+the command-line shell that is integrated with the ESP-IDF examples.
