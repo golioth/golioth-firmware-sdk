@@ -89,7 +89,7 @@ golioth_status_t fw_update_handle_block(
                 _update_partition->address);
 
         GLTH_LOGI(TAG, "Erasing flash");
-        err = esp_ota_begin(_update_partition, total_size, &_update_handle);
+        err = esp_ota_begin(_update_partition, OTA_SIZE_UNKNOWN, &_update_handle);
         if (err != ESP_OK) {
             GLTH_LOGE(TAG, "esp_ota_begin failed (%s)", esp_err_to_name(err));
             esp_ota_abort(_update_handle);
