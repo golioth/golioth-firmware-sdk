@@ -26,6 +26,27 @@
 /// @param current_version The current firmware version (e.g. "1.2.3")
 void golioth_fw_update_init(golioth_client_t client, const char* current_version);
 
+/// Function callback type, for FW update state change listeners
+///
+/// @param state The new state being transitioned to
+/// @param reason The reason the state transition is happening
+/// @param user_arg Arbitraty user argument, can be NULL.
+typedef void (*golioth_fw_update_state_change_callback)(
+        golioth_ota_state_t state,
+        golioth_ota_reason_t reason,
+        void* user_arg);
+
+/// Register listener for FW update state changes.
+///
+/// This is useful if your app needs to react or track changes
+/// in the state of the FW update process (e.g. DOWNLOADING, DOWNLOADED, etc).
+///
+/// @param callback Function to be called when a state change happens
+/// @param user_arg Arbitraty user argument, can be NULL
+void golioth_fw_update_register_state_change_callback(
+    golioth_fw_update_state_change_callback callback,
+    void* user_arg);
+
 //---------------------------------------------------------------------------
 // Backend API for firmware updates. Required to be implemented by port.
 //---------------------------------------------------------------------------
