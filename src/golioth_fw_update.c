@@ -12,8 +12,15 @@
 #include "golioth_sys.h"
 #include "golioth_fw_update.h"
 #include "golioth_statistics.h"
+#include "golioth_util.h"
 
 #define TAG "golioth_fw_update"
+
+typedef struct {
+    uint32_t block_min_ms;
+    float block_ema_ms;
+    uint32_t block_max_ms;
+} block_latency_stats_t;
 
 static golioth_client_t _client;
 static const char* _current_version;
@@ -26,6 +33,12 @@ static golioth_status_t download_and_write_flash(void) {
     assert(_main_component);
 
     int32_t main_size = _main_component->size;
+    block_latency_stats_t stats = {
+        .block_min_ms = UINT32_MAX,
+        .block_ema_ms = 0.0f,
+        .block_max_ms = 0,
+    };
+    uint64_t start_time_ms = golioth_sys_now_ms();
 
     // Handle blocks one at a time
     GLTH_LOGI(TAG, "Image size = %" PRIu32, main_size);
@@ -42,6 +55,8 @@ static golioth_status_t download_and_write_flash(void) {
                 (uint32_t)nblocks);
 
         bool is_last_block = false;
+
+        uint64_t block_start_ms = golioth_sys_now_ms();
         golioth_status_t status = golioth_ota_get_block_sync(
                 _client,
                 _main_component->package,
@@ -51,6 +66,15 @@ static golioth_status_t download_and_write_flash(void) {
                 &block_nbytes,
                 &is_last_block,
                 GOLIOTH_WAIT_FOREVER);
+        uint64_t block_latency_ms = golioth_sys_now_ms() - block_start_ms;
+
+        // Update block latency statistics
+        const float alpha = 0.01f;
+        stats.block_min_ms = min(stats.block_min_ms, block_latency_ms);
+        stats.block_ema_ms =
+            alpha * (float)block_latency_ms + (1.0f - alpha) * stats.block_ema_ms;
+        stats.block_max_ms = max(stats.block_max_ms, block_latency_ms);
+
         if (status != GOLIOTH_OK) {
             GLTH_LOGE(
                     TAG,
@@ -75,6 +99,12 @@ static golioth_status_t download_and_write_flash(void) {
         }
     }
 
+    uint64_t elapsed_ms = golioth_sys_now_ms() - start_time_ms;
+    GLTH_LOGI(TAG, "Download took %"PRIu64" ms", elapsed_ms);
+    GLTH_LOGI(TAG, "Block Latency Stats:");
+    GLTH_LOGI(TAG, "   Min: %d ms", stats.block_min_ms);
+    GLTH_LOGI(TAG, "   Ave: %.3f ms", stats.block_ema_ms);
+    GLTH_LOGI(TAG, "   Max: %d ms", stats.block_max_ms);
     GLTH_LOGI(TAG, "Total bytes written: %" PRIu32, (uint32_t)bytes_written);
     fw_update_post_download();
 
