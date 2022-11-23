@@ -28,6 +28,8 @@ static golioth_sys_sem_t _manifest_rcvd;
 static golioth_ota_manifest_t _ota_manifest;
 static uint8_t _ota_block_buffer[GOLIOTH_OTA_BLOCKSIZE + 1];
 static const golioth_ota_component_t* _main_component;
+static golioth_fw_update_state_change_callback _state_callback;
+static void* _state_callback_arg;
 
 static golioth_status_t download_and_write_flash(void) {
     assert(_main_component);
@@ -111,6 +113,28 @@ static golioth_status_t download_and_write_flash(void) {
     return GOLIOTH_OK;
 }
 
+static golioth_status_t golioth_fw_update_report_state_sync(
+        golioth_client_t client,
+        golioth_ota_state_t state,
+        golioth_ota_reason_t reason,
+        const char* package,
+        const char* current_version,
+        const char* target_version,
+        int32_t timeout_s) {
+    if (_state_callback) {
+        _state_callback(state, reason, _state_callback_arg);
+    }
+
+    return golioth_ota_report_state_sync(
+            client,
+            state,
+            reason,
+            package,
+            current_version,
+            target_version,
+            timeout_s);
+}
+
 static void on_ota_manifest(
         golioth_client_t client,
         const golioth_response_t* response,
@@ -184,7 +208,7 @@ static void fw_update_thread(void* arg) {
             fw_update_cancel_rollback();
 
             GLTH_LOGI(TAG, "State = Idle");
-            golioth_ota_report_state_sync(
+            golioth_fw_update_report_state_sync(
                     _client,
                     GOLIOTH_OTA_STATE_UPDATING,
                     GOLIOTH_OTA_REASON_FIRMWARE_UPDATED_SUCCESSFULLY,
@@ -195,7 +219,7 @@ static void fw_update_thread(void* arg) {
         }
     }
 
-    golioth_ota_report_state_sync(
+    golioth_fw_update_report_state_sync(
             _client,
             GOLIOTH_OTA_STATE_IDLE,
             GOLIOTH_OTA_REASON_READY,
@@ -216,7 +240,7 @@ static void fw_update_thread(void* arg) {
         }
 
         GLTH_LOGI(TAG, "State = Downloading");
-        golioth_ota_report_state_sync(
+        golioth_fw_update_report_state_sync(
                 _client,
                 GOLIOTH_OTA_STATE_DOWNLOADING,
                 GOLIOTH_OTA_REASON_READY,
@@ -230,7 +254,7 @@ static void fw_update_thread(void* arg) {
             fw_update_end();
 
             GLTH_LOGI(TAG, "State = Idle");
-            golioth_ota_report_state_sync(
+            golioth_fw_update_report_state_sync(
                     _client,
                     GOLIOTH_OTA_STATE_IDLE,
                     GOLIOTH_OTA_REASON_FIRMWARE_UPDATE_FAILED,
@@ -247,7 +271,7 @@ static void fw_update_thread(void* arg) {
             fw_update_end();
 
             GLTH_LOGI(TAG, "State = Idle");
-            golioth_ota_report_state_sync(
+            golioth_fw_update_report_state_sync(
                     _client,
                     GOLIOTH_OTA_STATE_IDLE,
                     GOLIOTH_OTA_REASON_INTEGRITY_CHECK_FAILURE,
@@ -260,7 +284,7 @@ static void fw_update_thread(void* arg) {
         }
 
         GLTH_LOGI(TAG, "State = Downloaded");
-        golioth_ota_report_state_sync(
+        golioth_fw_update_report_state_sync(
                 _client,
                 GOLIOTH_OTA_STATE_DOWNLOADED,
                 GOLIOTH_OTA_REASON_READY,
@@ -270,7 +294,7 @@ static void fw_update_thread(void* arg) {
                 GOLIOTH_WAIT_FOREVER);
 
         GLTH_LOGI(TAG, "State = Updating");
-        golioth_ota_report_state_sync(
+        golioth_fw_update_report_state_sync(
                 _client,
                 GOLIOTH_OTA_STATE_UPDATING,
                 GOLIOTH_OTA_REASON_READY,
@@ -317,4 +341,11 @@ void golioth_fw_update_init(golioth_client_t client, const char* current_version
             initialized = true;
         }
     }
+}
+
+void golioth_fw_update_register_state_change_callback(
+        golioth_fw_update_state_change_callback callback,
+        void* user_arg) {
+    _state_callback = callback;
+    _state_callback_arg = user_arg;
 }
