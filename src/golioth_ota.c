@@ -145,6 +145,9 @@ golioth_status_t golioth_ota_payload_as_manifest(
             goto cleanup;
         }
         c->size = size->valueint;
+
+        // TODO - detect whether component is compressed or not
+        c->is_compressed = false;
     }
 
 cleanup:

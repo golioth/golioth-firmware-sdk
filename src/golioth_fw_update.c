@@ -9,12 +9,17 @@
 #include <string.h>
 #include <inttypes.h>
 #include <assert.h>
+#include <heatshrink_decoder.h>
 #include "golioth_sys.h"
 #include "golioth_fw_update.h"
 #include "golioth_statistics.h"
 #include "golioth_util.h"
 
 #define TAG "golioth_fw_update"
+
+#define HEATSHRINK_WINDOW_SZ2 8
+#define HEATSHRINK_LOOKAHEAD_SZ2 4
+#define HEATSHRINK_DECODE_BUFFER_SIZE 512
 
 typedef struct {
     uint32_t block_min_ms;
@@ -35,15 +40,26 @@ static golioth_status_t download_and_write_flash(void) {
     assert(_main_component);
 
     int32_t main_size = _main_component->size;
+    GLTH_LOGI(TAG, "Image size = %" PRIu32, main_size);
+
+    heatshrink_decoder* hsd = NULL;
+
+    if (_main_component->is_compressed) {
+        GLTH_LOGI(TAG, "Compressed image detected");
+        hsd = heatshrink_decoder_alloc(
+                GOLIOTH_OTA_BLOCKSIZE,  // input_buffer_size
+                HEATSHRINK_WINDOW_SZ2,
+                HEATSHRINK_LOOKAHEAD_SZ2);
+    }
+
     block_latency_stats_t stats = {
-        .block_min_ms = UINT32_MAX,
-        .block_ema_ms = 0.0f,
-        .block_max_ms = 0,
+            .block_min_ms = UINT32_MAX,
+            .block_ema_ms = 0.0f,
+            .block_max_ms = 0,
     };
     uint64_t start_time_ms = golioth_sys_now_ms();
 
     // Handle blocks one at a time
-    GLTH_LOGI(TAG, "Image size = %" PRIu32, main_size);
     size_t nblocks = golioth_ota_size_to_nblocks(main_size);
     size_t bytes_written = 0;
     for (size_t i = 0; /* empty */; i++) {
@@ -73,8 +89,7 @@ static golioth_status_t download_and_write_flash(void) {
         // Update block latency statistics
         const float alpha = 0.01f;
         stats.block_min_ms = min(stats.block_min_ms, block_latency_ms);
-        stats.block_ema_ms =
-            alpha * (float)block_latency_ms + (1.0f - alpha) * stats.block_ema_ms;
+        stats.block_ema_ms = alpha * (float)block_latency_ms + (1.0f - alpha) * stats.block_ema_ms;
         stats.block_max_ms = max(stats.block_max_ms, block_latency_ms);
 
         if (status != GOLIOTH_OK) {
@@ -88,13 +103,51 @@ static golioth_status_t download_and_write_flash(void) {
 
         assert(block_nbytes <= GOLIOTH_OTA_BLOCKSIZE);
 
-        status = fw_update_handle_block(_ota_block_buffer, block_nbytes, bytes_written, main_size);
-        if (status != GOLIOTH_OK) {
-            GLTH_LOGE(TAG, "Failed to handle block index %" PRIu32, (uint32_t)i);
-            return status;
-        }
+        if (hsd) {  // compression
+            // Sink the compressed data
+            size_t sunk = 0;
+            HSD_sink_res sink_res =
+                    heatshrink_decoder_sink(hsd, _ota_block_buffer, block_nbytes, &sunk);
+            if (sink_res != HSDR_SINK_OK) {
+                GLTH_LOGE(TAG, "sink error: %d, sunk = %" PRIu32, sink_res, (uint32_t)sunk);
+            }
 
-        bytes_written += block_nbytes;
+            // Pull the uncompressed data out of the decoder
+            HSD_poll_res pres;
+            uint8_t decode_buffer[HEATSHRINK_DECODE_BUFFER_SIZE];
+            do {
+                size_t poll_sz = 0;
+                pres = heatshrink_decoder_poll(hsd, decode_buffer, sizeof(decode_buffer), &poll_sz);
+                if (pres < 0) {
+                    GLTH_LOGE(TAG, "poll error: %d", pres);
+                }
+
+                status = fw_update_handle_block(decode_buffer, poll_sz, bytes_written, main_size);
+                if (status != GOLIOTH_OK) {
+                    GLTH_LOGE(TAG, "Failed to handle block index %" PRIu32, (uint32_t)i);
+                    heatshrink_decoder_free(hsd);
+                    return status;
+                }
+
+                bytes_written += poll_sz;
+            } while (pres == HSDR_POLL_MORE);
+
+            if (is_last_block) {
+                HSD_finish_res hsd_finish_res = heatshrink_decoder_finish(hsd);
+                if (hsd_finish_res != HSDR_FINISH_DONE) {
+                    GLTH_LOGE(TAG, "finish error: %d", hsd_finish_res);
+                }
+            }
+        } else {  // no compression
+            status = fw_update_handle_block(
+                    _ota_block_buffer, block_nbytes, bytes_written, main_size);
+            if (status != GOLIOTH_OK) {
+                GLTH_LOGE(TAG, "Failed to handle block index %" PRIu32, (uint32_t)i);
+                return status;
+            }
+
+            bytes_written += block_nbytes;
+        }
 
         if (is_last_block) {
             break;
@@ -102,12 +155,18 @@ static golioth_status_t download_and_write_flash(void) {
     }
 
     uint64_t elapsed_ms = golioth_sys_now_ms() - start_time_ms;
-    GLTH_LOGI(TAG, "Download took %"PRIu64" ms", elapsed_ms);
+    GLTH_LOGI(TAG, "Download took %" PRIu64 " ms", elapsed_ms);
     GLTH_LOGI(TAG, "Block Latency Stats:");
     GLTH_LOGI(TAG, "   Min: %d ms", stats.block_min_ms);
     GLTH_LOGI(TAG, "   Ave: %.3f ms", stats.block_ema_ms);
     GLTH_LOGI(TAG, "   Max: %d ms", stats.block_max_ms);
     GLTH_LOGI(TAG, "Total bytes written: %" PRIu32, (uint32_t)bytes_written);
+
+    if (hsd) {
+        GLTH_LOGI(TAG, "Compression saved %" PRId32 " bytes", (int)bytes_written - (int)main_size);
+        heatshrink_decoder_free(hsd);
+    }
+
     fw_update_post_download();
 
     return GOLIOTH_OK;
@@ -126,13 +185,7 @@ static golioth_status_t golioth_fw_update_report_state_sync(
     }
 
     return golioth_ota_report_state_sync(
-            client,
-            state,
-            reason,
-            package,
-            current_version,
-            target_version,
-            timeout_s);
+            client, state, reason, package, current_version, target_version, timeout_s);
 }
 
 static void on_ota_manifest(

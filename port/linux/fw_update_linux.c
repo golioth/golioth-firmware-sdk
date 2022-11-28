@@ -32,8 +32,12 @@ golioth_status_t fw_update_handle_block(
     if (!_fp) {
         _fp = fopen(DOWNLOADED_FILE_NAME, "w");
     }
-    GLTH_LOGD(TAG, "block_size 0x%08lX, offset 0x%08lX, total_size 0x%08lX",
-            block_size, offset, total_size);
+    GLTH_LOGD(
+            TAG,
+            "block_size 0x%08lX, offset 0x%08lX, total_size 0x%08lX",
+            block_size,
+            offset,
+            total_size);
     fwrite(block, block_size, 1, _fp);
     return GOLIOTH_OK;
 }

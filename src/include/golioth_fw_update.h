@@ -44,8 +44,8 @@ typedef void (*golioth_fw_update_state_change_callback)(
 /// @param callback Function to be called when a state change happens
 /// @param user_arg Arbitraty user argument, can be NULL
 void golioth_fw_update_register_state_change_callback(
-    golioth_fw_update_state_change_callback callback,
-    void* user_arg);
+        golioth_fw_update_state_change_callback callback,
+        void* user_arg);
 
 //---------------------------------------------------------------------------
 // Backend API for firmware updates. Required to be implemented by port.
