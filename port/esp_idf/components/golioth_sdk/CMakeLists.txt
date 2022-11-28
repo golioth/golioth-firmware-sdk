@@ -11,6 +11,7 @@ idf_component_register(
         "${idf_path}/components/freertos/include/freertos"
     PRIV_REQUIRES
         "libcoap"
+        "heatshrink"
         "json"
         "lwip"
         "mbedtls"

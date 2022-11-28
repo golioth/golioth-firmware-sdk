@@ -1,6 +1,7 @@
 set(repo_root ../../..)
 set(sdk_src ${repo_root}/src)
 set(sdk_port ${repo_root}/port)
+set(heatshrink_dir ${repo_root}/external/heatshrink)
 
 option(ENABLE_DOCS OFF)
 option(ENABLE_EXAMPLES OFF)
@@ -15,6 +16,10 @@ add_library(cjson
     "${cjson_dir}/cJSON_Utils.c"
 )
 target_include_directories(cjson PUBLIC "${cjson_dir}")
+
+set(heatshrink_srcs
+    "${heatshrink_dir}/heatshrink_decoder.c"
+)
 
 # Build Golioth SDK
 set(sdk_srcs
@@ -37,12 +42,16 @@ set(sdk_srcs
     "${sdk_src}/golioth_debug.c"
 )
 
-add_library(golioth_sdk ${sdk_srcs})
+add_library(golioth_sdk
+    ${heatshrink_srcs}
+    ${sdk_srcs}
+)
 target_include_directories(golioth_sdk
     PUBLIC
         ${sdk_src}/include
         ${sdk_port}/linux
     PRIVATE
+        ${heatshrink_dir}
         ${sdk_src}/priv_include
 )
 target_link_libraries(golioth_sdk
