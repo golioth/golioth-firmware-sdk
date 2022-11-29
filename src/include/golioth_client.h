@@ -175,6 +175,16 @@ typedef void (*golioth_set_cb_fn)(
 /// @return NULL There was an error creating the client
 golioth_client_t golioth_client_create(const golioth_client_config_t* config);
 
+/// Wait (block) until connected to Golioth, or timeout occurs.
+///
+/// If timeout_ms set to -1, it will wait forever until connected.
+///
+/// @param client The client handle
+/// @param timeout_ms How long to wait, in milliseconds, or -1 to wait forever
+///
+/// @return True, if connected, false otherwise.
+bool golioth_client_wait_for_connect(golioth_client_t client, int timeout_ms);
+
 /// Start the Golioth client
 ///
 /// Does nothing if the client is already started. The client is started after calling

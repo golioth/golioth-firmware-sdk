@@ -1020,7 +1020,7 @@ golioth_status_t golioth_client_stop(golioth_client_t client) {
         return GOLIOTH_ERR_NULL;
     }
 
-    GLTH_LOGI(TAG, "Stopping");
+    GLTH_LOGI(TAG, "Attempting to stop client");
     golioth_sys_sem_take(c->run_sem, GOLIOTH_WAIT_FOREVER);
 
     // Wait for client to be fully stopped
@@ -1524,4 +1524,24 @@ golioth_rpc_t* golioth_coap_client_get_rpc(golioth_client_t client) {
 golioth_sys_thread_t golioth_client_get_thread(golioth_client_t client) {
     golioth_coap_client_t* c = (golioth_coap_client_t*)client;
     return c->coap_thread_handle;
+}
+
+bool golioth_client_wait_for_connect(golioth_client_t client, int timeout_ms) {
+    const uint32_t poll_period_ms = 100;
+
+    if (timeout_ms == -1) {
+        while (!golioth_client_is_connected(client)) {
+            golioth_sys_msleep(poll_period_ms);
+        }
+        return true;
+    }
+
+    const uint32_t max_iterations = timeout_ms / poll_period_ms + 1;
+    for (uint32_t i = 0; i < max_iterations; i++) {
+        if (golioth_client_is_connected(client)) {
+            return true;
+        }
+        golioth_sys_msleep(poll_period_ms);
+    }
+    return false;
 }
