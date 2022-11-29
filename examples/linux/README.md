@@ -11,12 +11,12 @@ sudo apt install libssl-dev
 Build:
 
 ```sh
-cd examples/linux/golioth_basics
+cd examples/linux/<example>
 ./build.sh
 ```
 
 Run:
 
 ```sh
-build/golioth_basics
+build/<example>
 ```

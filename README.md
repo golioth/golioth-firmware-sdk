@@ -106,12 +106,12 @@ the :x:'s indicate a feature that is not planned (or not applicable).
 | Settings | :heavy_check_mark: | :heavy_check_mark: | :heavy_check_mark: |
 | CoAP/DTLS Client | :heavy_check_mark: | :heavy_check_mark: | :heavy_check_mark: |
 | PSK Auth | :heavy_check_mark: | :heavy_check_mark: | :heavy_check_mark: |
+| Certificate Auth | :heavy_check_mark: | :soon: | :heavy_check_mark: |
 | Sign+Verify OTA images | :soon: | :heavy_check_mark: | :soon: |
 | Terminal shell | :heavy_check_mark: | :soon: | :x: |
 | Remote Shell | :heavy_check_mark: | :soon: | :soon: |
 | Serial Provisioning | :heavy_check_mark: | :soon: | :x: |
 | BLE Provisioning | :heavy_check_mark: | :soon: | :x: |
-| Certificate Auth | :heavy_check_mark: | :soon: | :soon: |
 
 ## Verified Devices
 
