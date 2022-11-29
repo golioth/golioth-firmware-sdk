@@ -7,3 +7,5 @@ credentials.inc
 .vscode
 firebase-debug.log
 mtb_shared
+*.key
+*.pem
