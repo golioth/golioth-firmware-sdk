@@ -54,6 +54,11 @@ jobs:
         echo "#define GOLIOTH_PSK_ID \"device@project\"" > credentials.inc
         echo "#define GOLIOTH_PSK \"secret\"" >> credentials.inc
         ./build.sh
+    - name: Build certificate_auth
+      shell: bash
+      run: |
+        cd examples/linux/certificate_auth
+        ./build.sh
 
   esp_idf_build:
     runs-on: ubuntu-latest
