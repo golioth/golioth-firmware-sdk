@@ -10,10 +10,10 @@
 #include "wifi.h"
 #include "golioth.h"
 
-#define TAG "golioth_example"
+#define TAG "certificate_auth"
 
-extern const uint8_t ca_pem_start[] asm("_binary_ca_pem_start");
-extern const uint8_t ca_pem_end[] asm("_binary_ca_pem_end");
+extern const uint8_t ca_pem_start[] asm("_binary_root_ca_pem_start");
+extern const uint8_t ca_pem_end[] asm("_binary_root_ca_pem_end");
 extern const uint8_t client_pem_start[] asm("_binary_client_pem_start");
 extern const uint8_t client_pem_end[] asm("_binary_client_pem_end");
 extern const uint8_t client_key_start[] asm("_binary_client_key_start");
@@ -63,7 +63,10 @@ void app_main(void) {
     // events. For this example, the on_client_event callback will simply log a message.
     golioth_client_register_event_callback(client, on_client_event, NULL);
 
+    int counter = 0;
     while (1) {
-        golioth_sys_msleep(1000);
+        GLTH_LOGI(TAG, "Counter = %d", counter);
+        counter++;
+        golioth_sys_msleep(5000);
     };
 }

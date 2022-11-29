@@ -15,7 +15,7 @@ idf_component_register(
         "driver"
         "esp_hw_support"
     EMBED_TXTFILES
-        certs/ca.pem
+        root_ca.pem
         certs/client.pem
         certs/client.key
 )
