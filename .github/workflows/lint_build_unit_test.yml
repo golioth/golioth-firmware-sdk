@@ -78,6 +78,21 @@ jobs:
         esp_idf_version: v4.4.2
         target: esp32
         path: 'examples/esp_idf/golioth_basics'
+    - name: Create empty certs/keys required by certificate_auth project
+      shell: bash
+      run: |
+        cd examples/esp_idf/certificate_auth
+        mkdir -p main/certs
+        cd main
+        touch certs/client.key
+        touch certs/client.pem
+        touch root_ca.pem
+    - name: Build ESP-IDF certificate_auth project
+      uses: espressif/esp-idf-ci-action@v1
+      with:
+        esp_idf_version: v4.4.2
+        target: esp32
+        path: 'examples/esp_idf/certificate_auth'
     - name: Build ESP-IDF magtag_demo project
       uses: espressif/esp-idf-ci-action@v1
       with:
