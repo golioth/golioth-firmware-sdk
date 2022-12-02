@@ -316,7 +316,10 @@ static void golioth_coap_add_path(coap_pdu_t* request, const char* path_prefix, 
     size_t buflen = sizeof(buf);
     int nsegments = coap_split_path((const uint8_t*)fullpath, fullpathlen, pbuf, &buflen);
     while (nsegments--) {
-        coap_add_option(request, COAP_OPTION_URI_PATH, coap_opt_length(pbuf), coap_opt_value(pbuf));
+        if (coap_opt_length(pbuf) > 0) {
+            coap_add_option(
+                    request, COAP_OPTION_URI_PATH, coap_opt_length(pbuf), coap_opt_value(pbuf));
+        }
         pbuf += coap_opt_size(pbuf);
     }
 }
