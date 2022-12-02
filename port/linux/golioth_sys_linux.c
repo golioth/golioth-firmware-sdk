@@ -14,7 +14,9 @@
  *------------------------------------------------*/
 
 void golioth_sys_msleep(uint32_t ms) {
-    usleep(ms * 1000);
+    struct timespec to_sleep = {ms / 1000, (ms % 1000) * 1000000};
+    while ((nanosleep(&to_sleep, &to_sleep) == -1) && (errno == EINTR))
+        ;
 }
 
 uint64_t golioth_sys_now_ms(void) {
