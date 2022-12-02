@@ -333,6 +333,15 @@ static void golioth_coap_add_content_type(coap_pdu_t* request, uint32_t content_
             typebuf);
 }
 
+static void golioth_coap_add_accept(coap_pdu_t* request, uint32_t content_type) {
+    unsigned char typebuf[4];
+    coap_add_option(
+            request,
+            COAP_OPTION_ACCEPT,
+            coap_encode_var_safe(typebuf, sizeof(typebuf), content_type),
+            typebuf);
+}
+
 static void golioth_coap_add_block2(coap_pdu_t* request, size_t block_index, size_t block_size) {
     size_t szx = 6;  // 1024 bytes
     coap_block_t block = {
@@ -377,7 +386,7 @@ static void golioth_coap_get(golioth_coap_request_msg_t* req, coap_session_t* se
 
     golioth_coap_add_token(req_pdu, req, session);
     golioth_coap_add_path(req_pdu, req->path_prefix, req->path);
-    golioth_coap_add_content_type(req_pdu, req->get.content_type);
+    golioth_coap_add_accept(req_pdu, req->get.content_type);
     coap_send(session, req_pdu);
     GSTATS_INC_FREE("get_pdu");
 }
@@ -486,7 +495,7 @@ static void golioth_coap_observe(
             optbuf);
 
     golioth_coap_add_path(req_pdu, req->path_prefix, req->path);
-    golioth_coap_add_content_type(req_pdu, req->observe.content_type);
+    golioth_coap_add_accept(req_pdu, req->observe.content_type);
 
     coap_send(session, req_pdu);
     GSTATS_INC_FREE("observe_pdu");
