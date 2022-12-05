@@ -67,7 +67,7 @@ jobs:
         export GOLIOTH_API_URL=https://api.golioth.dev
         export GOLIOTH_PROJECT_ID=ci
         goliothctl login --apiUrl $GOLIOTH_API_URL --projectId $GOLIOTH_PROJECT_ID --apiKey $GOLIOTH_API_KEY
-        goliothctl dfu --apiUrl $GOLIOTH_API_URL --projectId $GOLIOTH_PROJECT_ID release delete 1.2.99 || echo "release not found"
+        goliothctl dfu --apiUrl $GOLIOTH_API_URL --projectId $GOLIOTH_PROJECT_ID release delete --release-tags 1.2.99 || echo "release not found"
         goliothctl dfu --apiUrl $GOLIOTH_API_URL --projectId $GOLIOTH_PROJECT_ID artifact delete 1.2.99 || echo "artifact not found"
         goliothctl dfu --apiUrl $GOLIOTH_API_URL --projectId $GOLIOTH_PROJECT_ID artifact create build/test.bin --version 1.2.99
         goliothctl dfu --apiUrl $GOLIOTH_API_URL --projectId $GOLIOTH_PROJECT_ID release create --release-tags 1.2.99 --components main@1.2.99 --rollout true
