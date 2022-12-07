@@ -577,6 +577,8 @@ static golioth_status_t create_session(
     if (auth_type == GOLIOTH_TLS_AUTH_TYPE_PSK) {
         golioth_psk_credentials_t psk_creds = client->config.credentials.psk;
 
+        GLTH_LOGI(TAG, "Session PSK-ID: %.*s", psk_creds.psk_id_len, psk_creds.psk_id);
+
         coap_dtls_cpsk_t dtls_psk = {
                 .version = COAP_DTLS_CPSK_SETUP_VERSION,
                 .client_sni = client_sni,
