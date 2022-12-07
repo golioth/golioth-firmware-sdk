@@ -821,13 +821,15 @@ static golioth_status_t coap_io_loop_once(
         return GOLIOTH_ERR_TIMEOUT;
     }
 
-    if (client->event_callback && !client->session_connected) {
-        client->event_callback(client, GOLIOTH_CLIENT_EVENT_CONNECTED, client->event_callback_arg);
+    if (!client->session_connected) {
+        // Transitioned from not connected to connected
+        GLTH_LOGI(TAG, "Golioth CoAP client connected");
+        if (client->event_callback) {
+            client->event_callback(
+                    client, GOLIOTH_CLIENT_EVENT_CONNECTED, client->event_callback_arg);
+        }
     }
 
-    if (!client->session_connected) {
-        GLTH_LOGI(TAG, "Golioth CoAP client connected");
-    }
     client->session_connected = true;
     return GOLIOTH_OK;
 }
