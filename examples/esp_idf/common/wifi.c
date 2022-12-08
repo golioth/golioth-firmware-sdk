@@ -58,6 +58,9 @@ void wifi_init(const char* ssid, const char* password) {
     _ssid = ssid;
     _password = password;
 
+    // wifi is pretty chatty during initialization, so reduce the log level to warn
+    esp_log_level_set("wifi", ESP_LOG_WARN);
+
     s_wifi_event_group = xEventGroupCreate();
     ESP_ERROR_CHECK(esp_netif_init());
     ESP_ERROR_CHECK(esp_event_loop_create_default());
