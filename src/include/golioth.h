@@ -5,6 +5,10 @@
  */
 #pragma once
 
+#ifdef __cplusplus
+extern "C" {
+#endif
+
 #include "golioth_status.h"
 #include "golioth_client.h"
 #include "golioth_log.h"
@@ -17,3 +21,7 @@
 #include "golioth_debug.h"
 #include "golioth_remote_shell.h"
 #include "golioth_sys.h"
+
+#ifdef __cplusplus
+}
+#endif
