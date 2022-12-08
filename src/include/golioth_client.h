@@ -47,9 +47,9 @@ typedef struct {
     ///      GOLIOTH_ERR_FAIL (anything other than 2.XX)
     golioth_status_t status;
     /// the 2 in 2.XX
-    uint8_t class;
+    uint8_t status_class;
     /// the 03 in 4.03
-    uint8_t code;
+    uint8_t status_code;
 } golioth_response_t;
 
 /// TLS authentication type

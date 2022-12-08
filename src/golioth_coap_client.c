@@ -101,8 +101,8 @@ static coap_response_t coap_response_handler(
 
     golioth_response_t response = {
             .status = (class == 2 ? GOLIOTH_OK : GOLIOTH_ERR_FAIL),
-            .class = class,
-            .code = code,
+            .status_class = class,
+            .status_code = code,
     };
 
     assert(session);
