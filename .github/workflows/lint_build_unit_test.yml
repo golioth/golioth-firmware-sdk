@@ -78,6 +78,12 @@ jobs:
         esp_idf_version: v4.4.2
         target: esp32
         path: 'examples/esp_idf/golioth_basics'
+    - name: Build ESP-IDF cpp project
+      uses: espressif/esp-idf-ci-action@v1
+      with:
+        esp_idf_version: v4.4.2
+        target: esp32
+        path: 'examples/esp_idf/cpp'
     - name: Create empty certs/keys required by certificate_auth project
       shell: bash
       run: |
