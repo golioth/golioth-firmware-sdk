@@ -221,8 +221,8 @@ static void test_lightdb_set_get_async(void) {
     }
     TEST_ASSERT_TRUE(_on_set_test_int2_called);
     TEST_ASSERT_EQUAL(GOLIOTH_OK, set_async_response.status);
-    TEST_ASSERT_EQUAL(2, set_async_response.class);  // success
-    TEST_ASSERT_EQUAL(4, set_async_response.code);   // changed
+    TEST_ASSERT_EQUAL(2, set_async_response.status_class);  // success
+    TEST_ASSERT_EQUAL(4, set_async_response.status_code);   // changed
 
     // Delay for a bit. This is done because the value may not have been written to
     // the database on the back end yet.
@@ -245,8 +245,8 @@ static void test_lightdb_set_get_async(void) {
     }
     TEST_ASSERT_TRUE(_on_get_test_int2_called);
     TEST_ASSERT_EQUAL(GOLIOTH_OK, get_async_response.status);
-    TEST_ASSERT_EQUAL(2, get_async_response.class);  // success
-    TEST_ASSERT_EQUAL(5, get_async_response.code);   // content
+    TEST_ASSERT_EQUAL(2, get_async_response.status_class);  // success
+    TEST_ASSERT_EQUAL(5, get_async_response.status_code);   // content
     TEST_ASSERT_EQUAL(randint, _test_int2_value);
 }
 
