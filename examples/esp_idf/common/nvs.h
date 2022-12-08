@@ -5,6 +5,10 @@
  */
 #pragma once
 
+#ifdef __cplusplus
+extern "C" {
+#endif
+
 #include <stdlib.h>
 #include <stdbool.h>
 
@@ -32,3 +36,7 @@ bool nvs_write_str(const char* key, const char* str);
 bool nvs_erase_str(const char* key);
 
 bool nvs_credentials_are_set(void);
+
+#ifdef __cplusplus
+}
+#endif
