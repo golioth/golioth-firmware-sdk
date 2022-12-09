@@ -186,7 +186,8 @@ SOURCES+=\
     $(wildcard $(GOLIOTHSDK_PATH)/port/freertos/*.c)\
     $(wildcard $(GOLIOTHSDK_PATH)/port/modus_toolbox/*.c)\
     $(wildcard $(GOLIOTHSDK_PATH)/port/modus_toolbox/libcoap/*.c)\
-    $(wildcard $(GOLIOTHSDK_PATH)/examples/common/*.c)
+    $(wildcard $(GOLIOTHSDK_PATH)/examples/common/*.c)\
+    $(GOLIOTHSDK_PATH)/external/heatshrink/heatshrink_decoder.c
 
 # Like SOURCES, but for include directories. Value should be paths to
 # directories (without a leading -I).
@@ -210,6 +211,7 @@ INCLUDES+=\
     $(GOLIOTHSDK_PATH)/src/priv_include\
     $(GOLIOTHSDK_PATH)/port/modus_toolbox\
     $(GOLIOTHSDK_PATH)/port/modus_toolbox/libcoap/include\
+    $(GOLIOTHSDK_PATH)/external/heatshrink\
     $(GOLIOTHSDK_PATH)/examples/common
 
 # Add additional defines to the build process (without a leading -D).
