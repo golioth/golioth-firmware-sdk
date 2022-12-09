@@ -157,13 +157,16 @@ static golioth_status_t download_and_write_flash(void) {
     uint64_t elapsed_ms = golioth_sys_now_ms() - start_time_ms;
     GLTH_LOGI(TAG, "Download took %" PRIu64 " ms", elapsed_ms);
     GLTH_LOGI(TAG, "Block Latency Stats:");
-    GLTH_LOGI(TAG, "   Min: %d ms", stats.block_min_ms);
+    GLTH_LOGI(TAG, "   Min: %" PRIu32 " ms", stats.block_min_ms);
     GLTH_LOGI(TAG, "   Ave: %.3f ms", stats.block_ema_ms);
-    GLTH_LOGI(TAG, "   Max: %d ms", stats.block_max_ms);
+    GLTH_LOGI(TAG, "   Max: %" PRIu32 " ms", stats.block_max_ms);
     GLTH_LOGI(TAG, "Total bytes written: %" PRIu32, (uint32_t)bytes_written);
 
     if (hsd) {
-        GLTH_LOGI(TAG, "Compression saved %" PRId32 " bytes", (int)bytes_written - (int)main_size);
+        GLTH_LOGI(
+                TAG,
+                "Compression saved %" PRId32 " bytes",
+                (int32_t)bytes_written - (int32_t)main_size);
         heatshrink_decoder_free(hsd);
     }
 
