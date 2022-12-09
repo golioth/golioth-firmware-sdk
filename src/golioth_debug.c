@@ -4,7 +4,7 @@
 #include <stdarg.h>
 #include <stdlib.h>
 
-static golioth_debug_log_level_t _level = GOLIOTH_DEBUG_LOG_LEVEL_INFO;
+static golioth_debug_log_level_t _level = CONFIG_GOLIOTH_DEBUG_DEFAULT_LOG_LEVEL;
 static golioth_client_t _client = NULL;
 static bool _cloud_log_enabled = CONFIG_GOLIOTH_AUTO_LOG_TO_CLOUD;
 
