@@ -145,9 +145,7 @@ golioth_status_t golioth_ota_payload_as_manifest(
             goto cleanup;
         }
         c->size = size->valueint;
-
-        // TODO - detect whether component is compressed or not
-        c->is_compressed = false;
+        c->is_compressed = CONFIG_GOLIOTH_OTA_DECOMPRESSION_ENABLE;
     }
 
 cleanup:
@@ -202,6 +200,11 @@ golioth_status_t golioth_ota_get_block_sync(
             .block_nbytes = block_nbytes,
             .is_last = is_last,
     };
+
+    // TODO - use Content-Format 10742 (application/octet-stream with heatshink encoding)
+    //        once it is supported by the cloud.
+    //
+    // Ref: https://golioth.atlassian.net/wiki/spaces/EN/pages/262275073/OTA+Compressed+Artifacts
 
     golioth_status_t status = GOLIOTH_OK;
     status = golioth_coap_client_get_block(

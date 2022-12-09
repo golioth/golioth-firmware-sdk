@@ -84,6 +84,16 @@ config GOLIOTH_OTA_MAX_NUM_COMPONENTS
     help
         Maximum number of components in an OTA manifest
 
+config GOLIOTH_OTA_DECOMPRESSION_ENABLE
+    int "Feature flag for OTA artifact decompression"
+    default 0
+    help
+        If set to 1, the Golioth client will request compressed artifacts from the
+        server and decompress each downloaded block of the OTA artifact using
+        the heatshrink algorithm.
+
+        This is an experimental feature, so only enable if you know what you're doing.
+
 config GOLIOTH_COAP_MAX_PATH_LEN
     int "Golioth maximum CoAP path length"
     default 39
