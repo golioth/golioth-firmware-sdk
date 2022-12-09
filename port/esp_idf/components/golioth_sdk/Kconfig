@@ -186,5 +186,20 @@ config GOLIOTH_REMOTE_SHELL_TASK_DELAY_MS
         A smaller value results in lower latency, but more packets sent
         (less log data per packet).
 
+config GOLIOTH_DEBUG_DEFAULT_LOG_LEVEL
+    int "Default log level for Golioth SDK"
+    default 3
+    help
+        The default log level, which is used to filter GLTH_LOGX statements.
+
+        0: None
+        1: Error
+        2: Warn
+        3: Info
+        4: Debug
+        5: Verbose
+
+        This value can be overriden at runtime with golioth_debug_set_log_level().
+
 endmenu
 
