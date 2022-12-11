@@ -3,10 +3,10 @@ set(sdk_src ${repo_root}/src)
 set(sdk_port ${repo_root}/port)
 set(heatshrink_dir ${repo_root}/external/heatshrink)
 
-option(ENABLE_DOCS OFF)
-option(ENABLE_EXAMPLES OFF)
-option(ENABLE_SERVER_MODE OFF)
-option(ENABLE_TCP OFF)
+option(ENABLE_DOCS "" OFF)
+option(ENABLE_EXAMPLES "" OFF)
+option(ENABLE_SERVER_MODE "" OFF)
+option(ENABLE_TCP "" OFF)
 add_subdirectory("${repo_root}/external/libcoap" build)
 
 # Build cJSON from source
