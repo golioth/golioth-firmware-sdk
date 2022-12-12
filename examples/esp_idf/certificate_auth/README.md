@@ -3,9 +3,6 @@
 Demonstrates how to connect to the Golioth server using PKI (Public Key Infrastructure)
 certificates.
 
-Since PKI auth is not yet supported by the production Golioth server (coap.golioth.io),
-this example is intended primarily for internal Golioth developers.
-
 ## Generate project root certificate authority and key
 
 To connect to Golioth, you will need to generate and upload a
@@ -32,7 +29,7 @@ Anyone who has it can sign authentic-looking device certificates.
 
 Upload `golioth.crt.pem` to the Golioth console:
 
-* Go to `console.golioth.dev`
+* Go to `console.golioth.io`
 * In the sidebar, click `Certificates`
 * Click `Add Client Certificate Authority` button
 * Leave Type as `Root`, upload the `golioth.crt.pem` file
