@@ -18,9 +18,6 @@ CONFIG_BOOTLOADER_APP_ROLLBACK_ENABLE=y
 CONFIG_ESP_SYSTEM_PANIC_PRINT_HALT=y
 CONFIG_LOG_DEFAULT_LEVEL_DEBUG=y
 
-# Certificate auth only supported with Golioth dev server
-CONFIG_GOLIOTH_COAP_HOST_URI="coaps://coap.golioth.dev"
-
 # GLTH_LOGX statements will automatically upload to Golioth Logs service
 CONFIG_GOLIOTH_AUTO_LOG_TO_CLOUD=1
 CONFIG_GOLIOTH_COAP_REQUEST_QUEUE_MAX_ITEMS=20
