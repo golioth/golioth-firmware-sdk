@@ -9,15 +9,16 @@ idf_component_register(
     PRIV_INCLUDE_DIRS
         "${sdk_src}/priv_include"
         "${idf_path}/components/freertos/include/freertos"
+    REQUIRES
+        "json"
+        "nvs_flash"
     PRIV_REQUIRES
         "libcoap"
         "heatshrink"
-        "json"
         "lwip"
         "mbedtls"
         "app_update"
         "esp_timer"
-        "nvs_flash"
     SRCS
         "${sdk_port}/freertos//golioth_sys_freertos.c"
         "${sdk_port}/esp_idf/fw_update_esp_idf.c"
