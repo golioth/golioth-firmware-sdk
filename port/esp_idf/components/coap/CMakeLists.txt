@@ -1,3 +1,5 @@
+# Note: this overrides ESP-IDF's coap component
+
 set(sdk_root ../../../..)
 set(sdk_port ${sdk_root}/port)
 set(libcoap_dir ${sdk_root}/external/libcoap)

@@ -13,7 +13,7 @@ idf_component_register(
         "json"
         "nvs_flash"
     PRIV_REQUIRES
-        "libcoap"
+        "coap"
         "heatshrink"
         "lwip"
         "mbedtls"
