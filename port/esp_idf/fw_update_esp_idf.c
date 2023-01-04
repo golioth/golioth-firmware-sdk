@@ -85,7 +85,7 @@ golioth_status_t fw_update_handle_block(
         assert(_update_partition);
         GLTH_LOGI(
                 TAG,
-                "Writing to partition subtype %d at offset 0x%x",
+                "Writing to partition subtype %d at offset 0x%" PRIx32,
                 _update_partition->subtype,
                 _update_partition->address);
 
