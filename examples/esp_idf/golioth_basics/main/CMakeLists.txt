@@ -4,7 +4,6 @@ set(examples_common "../../../common")
 set(includes
     "${esp_idf_common}"
     "${examples_common}"
-    "${idf_path}/components/freertos/include/freertos"
 )
 
 set(srcs
