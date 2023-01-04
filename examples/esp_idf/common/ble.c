@@ -521,11 +521,13 @@ static void ble_host_task(void* param) {
 }
 
 void ble_init(const char* device_name) {
+#if ESP_IDF_VERSION_MAJOR == 4
     esp_err_t err = esp_nimble_hci_and_controller_init();
     if (err != ESP_OK) {
         ESP_LOGE(TAG, "esp_nimble_hci_and_controller_init error: %d", err);
         return;
     }
+#endif
 
     nimble_port_init();
 
