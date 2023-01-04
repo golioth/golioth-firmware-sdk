@@ -14,6 +14,7 @@ idf_component_register(
         "json"
         "driver"
         "esp_hw_support"
+        "esp_wifi"
     EMBED_TXTFILES
         root_ca.pem
         certs/client.pem
