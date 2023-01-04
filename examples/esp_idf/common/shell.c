@@ -10,6 +10,7 @@
 #include "esp_console.h"
 #include "esp_vfs_dev.h"
 #include "esp_chip_info.h"
+#include "esp_flash.h"
 #include "driver/uart.h"
 #include "linenoise/linenoise.h"
 #include "argtable3/argtable3.h"
@@ -83,25 +84,32 @@ static esp_console_cmd_t _custom_cmds[MAX_NUM_CUSTOM_COMMANDS];
 static size_t _num_custom_cmds;
 
 static int heap(int argc, char** argv) {
-    printf("Free: %d, Free low watermark: %d\n",
+    printf("Free: %" PRIu32 ", Free low watermark: %" PRIu32 "\n",
            esp_get_free_heap_size(),
-           heap_caps_get_minimum_free_size(MALLOC_CAP_DEFAULT));
+           (uint32_t)heap_caps_get_minimum_free_size(MALLOC_CAP_DEFAULT));
     return 0;
 }
 
 static int version(int argc, char** argv) {
     esp_chip_info_t info;
     esp_chip_info(&info);
+
+    uint32_t flash_size;
+    if (esp_flash_get_size(NULL, &flash_size) != ESP_OK) {
+        printf("Get flash size failed");
+        return 1;
+    }
+
     printf("IDF Version:%s\r\n", esp_get_idf_version());
     printf("Chip info:\r\n");
     printf("\tmodel:%s\r\n", info.model == CHIP_ESP32 ? "ESP32" : "Unknown");
     printf("\tcores:%d\r\n", info.cores);
-    printf("\tfeature:%s%s%s%s%d%s\r\n",
+    printf("\tfeature:%s%s%s%s%" PRIu32 "%s\r\n",
            info.features & CHIP_FEATURE_WIFI_BGN ? "/802.11bgn" : "",
            info.features & CHIP_FEATURE_BLE ? "/BLE" : "",
            info.features & CHIP_FEATURE_BT ? "/BT" : "",
            info.features & CHIP_FEATURE_EMB_FLASH ? "/Embedded-Flash:" : "/External-Flash:",
-           spi_flash_get_chip_size() / (1024 * 1024),
+           flash_size / (1024 * 1024),
            " MB");
     printf("\trevision number:%d\r\n", info.revision);
     return 0;
@@ -137,7 +145,7 @@ static void cmd_ping_on_ping_success(esp_ping_handle_t hdl, void* args) {
     esp_ping_get_profile(hdl, ESP_PING_PROF_IPADDR, &target_addr, sizeof(target_addr));
     esp_ping_get_profile(hdl, ESP_PING_PROF_SIZE, &recv_len, sizeof(recv_len));
     esp_ping_get_profile(hdl, ESP_PING_PROF_TIMEGAP, &elapsed_time, sizeof(elapsed_time));
-    printf("%d bytes from %s icmp_seq=%d ttl=%d time=%d ms\n",
+    printf("%" PRIu32 " bytes from %s icmp_seq=%" PRIu16 " ttl=%" PRIu8 " time=%" PRIu32 " ms\n",
            recv_len,
            ipaddr_ntoa((ip_addr_t*)&target_addr),
            seqno,
@@ -150,7 +158,7 @@ static void cmd_ping_on_ping_timeout(esp_ping_handle_t hdl, void* args) {
     ip_addr_t target_addr;
     esp_ping_get_profile(hdl, ESP_PING_PROF_SEQNO, &seqno, sizeof(seqno));
     esp_ping_get_profile(hdl, ESP_PING_PROF_IPADDR, &target_addr, sizeof(target_addr));
-    printf("From %s icmp_seq=%d timeout\n", ipaddr_ntoa((ip_addr_t*)&target_addr), seqno);
+    printf("From %s icmp_seq=%" PRIu16 " timeout\n", ipaddr_ntoa((ip_addr_t*)&target_addr), seqno);
 }
 
 static void cmd_ping_on_ping_end(esp_ping_handle_t hdl, void* args) {
@@ -168,7 +176,8 @@ static void cmd_ping_on_ping_end(esp_ping_handle_t hdl, void* args) {
     } else {
         printf("\n--- %s ping statistics ---\n", inet6_ntoa(*ip_2_ip6(&target_addr)));
     }
-    printf("%d packets transmitted, %d received, %d%% packet loss, time %dms\n",
+    printf("%" PRIu32 " packets transmitted, %" PRIu32 " received, %" PRIu32
+           "%% packet loss, time %" PRIu32 "ms\n",
            transmitted,
            received,
            loss,
