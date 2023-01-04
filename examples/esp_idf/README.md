@@ -2,11 +2,11 @@
 
 This repo contains a set of examples intended to build
 and run in the latest release of esp-idf
-(currently [4.4.2](https://github.com/espressif/esp-idf/releases/tag/v4.4.2)).
+(currently [5.0](https://github.com/espressif/esp-idf/releases/tag/v5.0)).
 
 ### Install esp-idf
 
-Install version 4.4.2 of esp-idf using the
+Install version 5.0 of esp-idf using the
 [installation directions from Espressif](https://docs.espressif.com/projects/esp-idf/en/latest/esp32/get-started/index.html#installation).
 This is the version of esp-idf this SDK is tested against.
 
@@ -18,7 +18,7 @@ mkdir -p ~/esp
 cd ~/esp
 git clone --recursive https://github.com/espressif/esp-idf.git
 cd esp-idf
-git checkout v4.4.2
+git checkout v5.0
 git submodule update --init --recursive
 ./install.sh all
 ```
