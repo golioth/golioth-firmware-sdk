@@ -2,13 +2,19 @@ set(sdk_root ../../../..)
 set(sdk_src ${sdk_root}/src)
 set(sdk_port ${sdk_root}/port)
 
+if(${IDF_VERSION_MAJOR} EQUAL "5")
+    set(freertos_include_dir "${idf_path}/components/freertos/FreeRTOS-Kernel/include/freertos")
+else()
+    set(freertos_include_dir "${idf_path}/components/freertos/include/freertos")
+endif()
+
 idf_component_register(
     INCLUDE_DIRS
         "${sdk_src}/include"
         "${sdk_port}/esp_idf"
     PRIV_INCLUDE_DIRS
         "${sdk_src}/priv_include"
-        "${idf_path}/components/freertos/include/freertos"
+        "${freertos_include_dir}"
     REQUIRES
         "json"
         "nvs_flash"

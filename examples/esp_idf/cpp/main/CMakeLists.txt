@@ -2,7 +2,6 @@ set(esp_idf_common "../../common")
 
 set(includes
     "${esp_idf_common}"
-    "${idf_path}/components/freertos/include/freertos"
 )
 
 set(srcs
