@@ -135,7 +135,7 @@ static void set_led_from_json(uint32_t led_index, const cJSON* json) {
     }
 
     uint32_t color = (uint32_t)strtoul(&color_str[1], NULL, 16);
-    ESP_LOGI(TAG, "Setting LED index %d to color 0x%06X", led_index, color);
+    ESP_LOGI(TAG, "Setting LED index %" PRIu32 " to color 0x%06" PRIx32, led_index, color);
     leds_set_led_immediate(led_index, color);
     _app_state.leds[led_index] = color;
 }
@@ -177,7 +177,7 @@ static const char* led_color_to_str(uint32_t color) {
     snprintf(
             buf,
             sizeof(buf),
-            "#%02X%02X%02X",
+            "#%02" PRIx32 "%02" PRIx32 "%02" PRIx32,
             (color & 0xFF0000) >> 16,
             (color & 0x00FF00) >> 8,
             (color & 0x0000FF));
@@ -304,7 +304,7 @@ void app_main(void) {
                         _app_state.accel.z_mps2);
 
                 _app_state.light_mV = light_sensor_read_mV();
-                ESP_LOGI(TAG, "light sensor = %d mV", _app_state.light_mV);
+                ESP_LOGI(TAG, "light sensor = %" PRIu32 " mV", _app_state.light_mV);
 
                 if (golioth_client_is_connected(client)) {
                     publish_state(client);

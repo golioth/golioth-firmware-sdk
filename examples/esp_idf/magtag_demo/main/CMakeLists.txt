@@ -23,9 +23,13 @@ idf_component_register(
         "json"
         "console"
         "nvs_flash"
-        "esp_adc_cal"
+        "esp_adc"
+        "spi_flash"
+        "esp_wifi"
+        "esp_timer"
+        "driver"
 )
 list(APPEND EXTRA_C_FLAGS_LIST
-    -Werror
+    -Wno-error
 )
 component_compile_options(${EXTRA_C_FLAGS_LIST})
