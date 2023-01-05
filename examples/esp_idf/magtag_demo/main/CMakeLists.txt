@@ -1,3 +1,9 @@
+if(${IDF_VERSION_MAJOR} EQUAL "5")
+    set(esp_adc_lib "esp_adc")
+else()
+    set(esp_adc_lib "esp_adc_cal")
+endif()
+
 idf_component_register(
     INCLUDE_DIRS
         "."
@@ -23,7 +29,7 @@ idf_component_register(
         "json"
         "console"
         "nvs_flash"
-        "esp_adc"
+        "${esp_adc_lib}"
         "spi_flash"
         "esp_wifi"
         "esp_timer"
