@@ -105,6 +105,19 @@ jobs:
         esp_idf_version: v5.0
         target: esp32
         path: 'examples/esp_idf/magtag_demo'
+
+  esp_idf_old_release_build:
+    runs-on: ubuntu-latest
+    steps:
+    - name: Checkout repository and submodules
+      uses: actions/checkout@v3
+      with:
+        submodules: 'recursive'
+    - name: Setup Python
+      uses: actions/setup-python@v2
+      with:
+        python-version: 3.x
+        architecture: 'x64'
     - name: Build ESP-IDF golioth_basics project with IDF 4.4.2
       uses: espressif/esp-idf-ci-action@v1
       with:
