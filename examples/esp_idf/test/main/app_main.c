@@ -10,6 +10,7 @@
 #include "freertos/task.h"
 #include "freertos/semphr.h"
 #include "esp_log.h"
+#include "esp_random.h"
 #include "unity.h"
 #include "nvs.h"
 #include "wifi.h"
@@ -108,7 +109,7 @@ static void test_connects_to_golioth(void) {
 static void test_golioth_client_heap_usage(void) {
     uint32_t post_connect_free_heap = esp_get_minimum_free_heap_size();
     int32_t golioth_heap_usage = _initial_free_heap - post_connect_free_heap;
-    ESP_LOGI(TAG, "Estimated heap usage by Golioth stack = %u", golioth_heap_usage);
+    ESP_LOGI(TAG, "Estimated heap usage by Golioth stack = %" PRIu32, golioth_heap_usage);
     TEST_ASSERT_TRUE(golioth_heap_usage < 50000);
 }
 
@@ -331,7 +332,11 @@ static void test_client_task_stack_min_remaining(void) {
 
     uint32_t stack_unused = uxTaskGetStackHighWaterMark(client_task);
     uint32_t stack_used = CONFIG_GOLIOTH_COAP_TASK_STACK_SIZE_BYTES - stack_unused;
-    ESP_LOGI(TAG, "Client task stack used = %u, unused = %u", stack_used, stack_unused);
+    ESP_LOGI(
+            TAG,
+            "Client task stack used = %" PRIu32 ", unused = %" PRIu32,
+            stack_used,
+            stack_unused);
 
     // Verify at least 25% stack was not used
     TEST_ASSERT_TRUE(stack_unused >= CONFIG_GOLIOTH_COAP_TASK_STACK_SIZE_BYTES / 4);

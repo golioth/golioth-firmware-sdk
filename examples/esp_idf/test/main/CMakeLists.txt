@@ -16,6 +16,7 @@ idf_component_register(
         "unity"
         "driver"
         "esp_hw_support"
+        "esp_wifi"
 )
 list(APPEND EXTRA_C_FLAGS_LIST
     -Werror
