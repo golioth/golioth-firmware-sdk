@@ -76,7 +76,7 @@ bool golioth_statistics_has_allocation_leaks(void) {
 
         GLTH_LOGD(
                 TAG,
-                "%-32s: %d %d%s",
+                "%-32s: %" PRId32 " %" PRId32 "%s",
                 a->name,
                 a->num_allocs,
                 a->num_frees,
