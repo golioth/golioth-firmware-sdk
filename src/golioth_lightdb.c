@@ -125,11 +125,11 @@ static golioth_status_t golioth_lightdb_set_string_internal(
     // TODO - is there a better way to handle this?
     size_t bufsize = str_len + 3;  // two " and a NULL
     char* buf = golioth_sys_malloc(bufsize);
-    memset(buf, 0, bufsize);
     if (!buf) {
         return GOLIOTH_ERR_MEM_ALLOC;
     }
     GSTATS_INC_ALLOC("buf");
+    memset(buf, 0, bufsize);
     snprintf(buf, bufsize, "\"%s\"", str);
 
     golioth_status_t status = golioth_coap_client_set(
