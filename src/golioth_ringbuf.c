@@ -17,8 +17,8 @@ bool ringbuf_is_empty(const ringbuf_t* ringbuf) {
 }
 
 bool ringbuf_is_full(const ringbuf_t* ringbuf) {
-    ringbuf_index_t next_write_index = (ringbuf->write_index + 1) % total_items(ringbuf);
-    return (next_write_index == ringbuf->read_index);
+    ringbuf_index_t next_wr_index = (ringbuf->write_index + 1) % total_items(ringbuf);
+    return (next_wr_index == ringbuf->read_index);
 }
 
 bool ringbuf_put(ringbuf_t* ringbuf, const void* item) {
