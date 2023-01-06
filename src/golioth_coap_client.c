@@ -953,12 +953,12 @@ golioth_client_t golioth_client_create(const golioth_client_config_t* config) {
     }
 
     golioth_coap_client_t* new_client = golioth_sys_malloc(sizeof(golioth_coap_client_t));
-    memset(new_client, 0, sizeof(golioth_coap_client_t));
     if (!new_client) {
         GLTH_LOGE(TAG, "Failed to allocate memory for client");
         goto error;
     }
     GSTATS_INC_ALLOC("client");
+    memset(new_client, 0, sizeof(golioth_coap_client_t));
 
     new_client->config = *config;
 
@@ -1176,12 +1176,12 @@ golioth_status_t golioth_coap_client_set(
         // This memory will be free'd by the CoAP thread after handling the request,
         // or in this function if we fail to enqueue the request.
         request_payload = (uint8_t*)golioth_sys_malloc(payload_size);
-        memset(request_payload, 0, payload_size);
         if (!request_payload) {
             GLTH_LOGE(TAG, "Payload alloc failure");
             return GOLIOTH_ERR_MEM_ALLOC;
         }
         GSTATS_INC_ALLOC("request_payload");
+        memset(request_payload, 0, payload_size);
         memcpy(request_payload, payload, payload_size);
     }
 
