@@ -69,6 +69,12 @@ void golioth_debug_hexdump(const char* tag, const void* addr, int len) {
     printf("  %s\n", buff);
 }
 
+// Important Note!
+//
+// Do not use GLTH_LOGX statements in this function, as it can cause an infinite
+// recursion with golioth_log_X_async().
+//
+// If you must log, use printf instead.
 void golioth_debug_printf(
         uint64_t tstamp_ms,
         golioth_debug_log_level_t level,
