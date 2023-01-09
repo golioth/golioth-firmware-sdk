@@ -22,8 +22,13 @@
 /// Will ignore any received OTA manifests where the firmware already
 /// matches current_version.
 ///
+/// The current_version parameter is assumed to be a static string and is therefore
+/// not copied (just a shallow copy of the pointer is stored internally).
+/// Calling code should ensure that current_version is not pointing to a string
+/// which might go out of scope.
+///
 /// @param client The client handle from @ref golioth_client_create
-/// @param current_version The current firmware version (e.g. "1.2.3")
+/// @param current_version The current firmware version (e.g. "1.2.3"), shallow copy
 void golioth_fw_update_init(golioth_client_t client, const char* current_version);
 
 /// Function callback type, for FW update state change listeners
