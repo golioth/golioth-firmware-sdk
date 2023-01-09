@@ -106,7 +106,7 @@ void golioth_debug_printf(
     }
 
     // Temporarily allocate a buffer to store the message
-    char* msg_buffer = malloc(buffer_size);
+    char* msg_buffer = golioth_sys_malloc(buffer_size);
     if (!msg_buffer) {
         return;
     }
@@ -143,7 +143,7 @@ void golioth_debug_printf(
 
     // It's safe to free the message buffer, since the async log above
     // makes a copy of the message.
-    free(msg_buffer);
+    golioth_sys_free(msg_buffer);
 }
 
 void golioth_debug_set_client(golioth_client_t client) {
