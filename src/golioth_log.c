@@ -13,6 +13,12 @@
 #define TAG "golioth_log"
 
 #define CONFIG_GOLIOTH_LOG_MAX_MESSAGE_LEN 100
+// Important Note!
+//
+// Do not use GLTH_LOGX statements in this file, as it can cause an infinite
+// recursion with golioth_debug_printf().
+//
+// If you must log, use printf instead.
 
 typedef enum {
     GOLIOTH_LOG_LEVEL_ERROR,
