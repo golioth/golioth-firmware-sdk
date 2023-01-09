@@ -12,7 +12,6 @@
 
 #define TAG "golioth_log"
 
-#define CONFIG_GOLIOTH_LOG_MAX_MESSAGE_LEN 100
 // Important Note!
 //
 // Do not use GLTH_LOGX statements in this file, as it can cause an infinite
@@ -44,32 +43,43 @@ static golioth_status_t golioth_log_internal(
         void* callback_arg) {
     assert(level <= GOLIOTH_LOG_LEVEL_DEBUG);
 
-    char logbuf[CONFIG_GOLIOTH_LOG_MAX_MESSAGE_LEN + 5] = {};
     cJSON* json = cJSON_CreateObject();
+    char* printed_str = NULL;
+    golioth_status_t status = GOLIOTH_OK;
+
     GSTATS_INC_ALLOC("json");
     cJSON_AddStringToObject(json, "level", _level_to_str[level]);
     cJSON_AddStringToObject(json, "module", tag);
     cJSON_AddStringToObject(json, "msg", log_message);
-    bool printed = cJSON_PrintPreallocated(json, logbuf, CONFIG_GOLIOTH_LOG_MAX_MESSAGE_LEN, false);
-    cJSON_Delete(json);
-    GSTATS_INC_FREE("json");
-
-    if (!printed) {
-        return GOLIOTH_ERR_SERIALIZE;
+    printed_str = cJSON_PrintUnformatted(json);
+    if (!printed_str) {
+        status = GOLIOTH_ERR_SERIALIZE;
+        goto cleanup;
     }
+    GSTATS_INC_ALLOC("printed_str");
 
-    size_t msg_len = strnlen(logbuf, CONFIG_GOLIOTH_LOG_MAX_MESSAGE_LEN);
-    return golioth_coap_client_set(
+    status = golioth_coap_client_set(
             client,
             "",  // path-prefix unused
             "logs",
             COAP_MEDIATYPE_APPLICATION_JSON,
-            (const uint8_t*)logbuf,
-            msg_len,
+            (const uint8_t*)printed_str,
+            strlen(printed_str),
             callback,
             callback_arg,
             is_synchronous,
             timeout_s);
+
+cleanup:
+    if (json) {
+        cJSON_Delete(json);
+        GSTATS_INC_FREE("json");
+    }
+    if (printed_str) {
+        free(printed_str);
+        GSTATS_INC_FREE("printed_str");
+    }
+    return status;
 }
 
 golioth_status_t golioth_log_error_async(
