@@ -28,13 +28,13 @@ typedef struct {
 } block_latency_stats_t;
 
 static golioth_client_t _client;
-static const char* _current_version;
 static golioth_sys_sem_t _manifest_rcvd;
 static golioth_ota_manifest_t _ota_manifest;
 static uint8_t _ota_block_buffer[GOLIOTH_OTA_BLOCKSIZE + 1];
 static const golioth_ota_component_t* _main_component;
 static golioth_fw_update_state_change_callback _state_callback;
 static void* _state_callback_arg;
+static golioth_fw_update_config_t _config;
 
 static golioth_status_t download_and_write_flash(void) {
     assert(_main_component);
@@ -222,13 +222,13 @@ static void on_ota_manifest(
 }
 
 static bool manifest_version_is_different(const golioth_ota_manifest_t* manifest) {
-    _main_component = golioth_ota_find_component(manifest, "main");
+    _main_component = golioth_ota_find_component(manifest, _config.fw_package_name);
     if (_main_component) {
-        if (0 != strcmp(_current_version, _main_component->version)) {
+        if (0 != strcmp(_config.current_version, _main_component->version)) {
             GLTH_LOGI(
                     TAG,
                     "Current version = %s, Target version = %s",
-                    _current_version,
+                    _config.current_version,
                     _main_component->version);
             return true;
         }
@@ -270,8 +270,8 @@ static void fw_update_thread(void* arg) {
                     _client,
                     GOLIOTH_OTA_STATE_UPDATING,
                     GOLIOTH_OTA_REASON_FIRMWARE_UPDATED_SUCCESSFULLY,
-                    "main",
-                    _current_version,
+                    _config.fw_package_name,
+                    _config.current_version,
                     NULL,
                     GOLIOTH_WAIT_FOREVER);
         }
@@ -281,8 +281,8 @@ static void fw_update_thread(void* arg) {
             _client,
             GOLIOTH_OTA_STATE_IDLE,
             GOLIOTH_OTA_REASON_READY,
-            "main",
-            _current_version,
+            _config.fw_package_name,
+            _config.current_version,
             NULL,
             GOLIOTH_WAIT_FOREVER);
 
@@ -302,8 +302,8 @@ static void fw_update_thread(void* arg) {
                 _client,
                 GOLIOTH_OTA_STATE_DOWNLOADING,
                 GOLIOTH_OTA_REASON_READY,
-                "main",
-                _current_version,
+                _config.fw_package_name,
+                _config.current_version,
                 _main_component->version,
                 GOLIOTH_WAIT_FOREVER);
 
@@ -316,8 +316,8 @@ static void fw_update_thread(void* arg) {
                     _client,
                     GOLIOTH_OTA_STATE_IDLE,
                     GOLIOTH_OTA_REASON_FIRMWARE_UPDATE_FAILED,
-                    "main",
-                    _current_version,
+                    _config.fw_package_name,
+                    _config.current_version,
                     _main_component->version,
                     GOLIOTH_WAIT_FOREVER);
 
@@ -333,8 +333,8 @@ static void fw_update_thread(void* arg) {
                     _client,
                     GOLIOTH_OTA_STATE_IDLE,
                     GOLIOTH_OTA_REASON_INTEGRITY_CHECK_FAILURE,
-                    "main",
-                    _current_version,
+                    _config.fw_package_name,
+                    _config.current_version,
                     _main_component->version,
                     GOLIOTH_WAIT_FOREVER);
 
@@ -346,8 +346,8 @@ static void fw_update_thread(void* arg) {
                 _client,
                 GOLIOTH_OTA_STATE_DOWNLOADED,
                 GOLIOTH_OTA_REASON_READY,
-                "main",
-                _current_version,
+                _config.fw_package_name,
+                _config.current_version,
                 _main_component->version,
                 GOLIOTH_WAIT_FOREVER);
 
@@ -356,8 +356,8 @@ static void fw_update_thread(void* arg) {
                 _client,
                 GOLIOTH_OTA_STATE_UPDATING,
                 GOLIOTH_OTA_REASON_READY,
-                "main",
-                _current_version,
+                _config.fw_package_name,
+                _config.current_version,
                 NULL,
                 GOLIOTH_WAIT_FOREVER);
 
@@ -378,13 +378,23 @@ static void fw_update_thread(void* arg) {
 }
 
 void golioth_fw_update_init(golioth_client_t client, const char* current_version) {
+    golioth_fw_update_config_t config = {
+            .current_version = current_version,
+            .fw_package_name = GOLIOTH_FW_UPDATE_DEFAULT_PACKAGE_NAME,
+    };
+    golioth_fw_update_init_with_config(client, &config);
+}
+
+void golioth_fw_update_init_with_config(
+        golioth_client_t client,
+        const golioth_fw_update_config_t* config) {
     static bool initialized = false;
 
-    GLTH_LOGI(TAG, "Current firmware version: %s", current_version);
-
     _client = client;
-    _current_version = current_version;
+    _config = *config;
     _manifest_rcvd = golioth_sys_sem_create(1, 0);  // never destroyed
+
+    GLTH_LOGI(TAG, "Current firmware version: %s", _config.current_version);
 
     if (!initialized) {
         golioth_sys_thread_t thread = golioth_sys_thread_create((golioth_sys_thread_config_t){
