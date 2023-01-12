@@ -4,6 +4,43 @@ All notable changes to this project will be documented in this file.
 The format is based on [Keep a Changelog](https://keepachangelog.com/en/1.0.0/),
 and this project adheres to [Semantic Versioning](https://semver.org/spec/v2.0.0.html).
 
+## [0.5.0] - 2023-01-12
+
+Highlights:
+
+- Support for ESP-IDF v5.0. This is the new recommended version. IDF 4.x is still supported.
+- Support for decompressing compressed OTA artifacts
+- Support for certificate authentication when connecting to Golioth
+- No breaking changes from prior release
+
+### Added
+- client: new API golioth_client_wait_for_connect(), to block until connected to Golioth
+- new submodule: heatshrink
+- fw_update: support for decompressing compressed OTA artifacts, using heatshrink library
+- fw_update: new API golioth_fw_update_state_change_callback(), notification of state changes
+- fw_update: new API golioth_fw_update_init_with_config(), for more detailed configuration
+- config: new configuration to enable/disable OTA decompression
+- config: new configuration to set the default log level of the Golioth SDK
+- linux: option to download OTA images and store as a file
+- scripts: generate project root and device certificates
+- support for using SDK in C++ projects, extern "C" in headers, new esp-idf example
+- examples/esp_idf: new example `cpp`, demonstrating usage of SDK in C++ project
+- examples/{esp_idf,linux}: new `certificate_auth` example
+- docs: new document, Flash_and_RAM_Usage.md
+### Changed
+- esp-idf: libcoap is a separate IDF component now
+- docs: improved integration guide for ESP-IDF
+- esp-idf: configuration optimizations to reduce total flash size of binary
+- wifi: reduce log level to WARN, to avoid spammy logs at init time
+### Fixed
+- Miscellaneous printf formatting warnings, e.g. converting `%d` to `PRId32`
+- examples,wifi: fix potential strncpy size issue, NULL termination
+- Where malloc is called, check for NULL before attempting to memset
+- log: dynamically allocate JSON serialized string, to avoid 100 character limit
+- linux: golioth_sys_msleep now sleeps the correct amount of time, uses nanosleep
+- coap_client: only add URI path option to packet if path length is > 0
+- coap_client: use the accept option on all GET requests (was incorrectly using content-type)
+
 ## [0.4.0] - 2022-11-18
 
 ### Breaking Changes
