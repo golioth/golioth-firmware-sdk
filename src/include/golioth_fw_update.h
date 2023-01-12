@@ -8,6 +8,16 @@
 #include "golioth.h"
 #include <stdbool.h>
 
+#define GOLIOTH_FW_UPDATE_DEFAULT_PACKAGE_NAME "main"
+
+typedef struct {
+    /// The current firmware version, NULL-terminated, shallow-copied from user. (e.g. "1.2.3")
+    const char* current_version;
+    /// The name of the package in the manifest for the main firmware, NULL-terminated,
+    /// shallow-copied from user (e.g. "main").
+    const char* fw_package_name;
+} golioth_fw_update_config_t;
+
 /// @defgroup golioth_fw_update golioth_fw_update
 /// Create a background task that will execute Over-the-Air (OTA) updates
 ///
@@ -28,8 +38,17 @@
 /// which might go out of scope.
 ///
 /// @param client The client handle from @ref golioth_client_create
-/// @param current_version The current firmware version (e.g. "1.2.3"), shallow copy
+/// @param current_version The current firmware version (e.g. "1.2.3"), shallow copy, must be
+///     NULL-terminated
 void golioth_fw_update_init(golioth_client_t client, const char* current_version);
+
+/// Same as golioth_fw_update_init, but with additional configuration specified via struct.
+///
+/// @param client The client handle from @ref golioth_client_create
+/// @param config The configuration struct (see @ref golioth_fw_update_config_t).
+void golioth_fw_update_init_with_config(
+        golioth_client_t client,
+        const golioth_fw_update_config_t* config);
 
 /// Function callback type, for FW update state change listeners
 ///
@@ -54,6 +73,7 @@ void golioth_fw_update_register_state_change_callback(
 
 //---------------------------------------------------------------------------
 // Backend API for firmware updates. Required to be implemented by port.
+// Not intended to be called by user code.
 //---------------------------------------------------------------------------
 
 /// Returns true if this is the first boot of a new candidate image
