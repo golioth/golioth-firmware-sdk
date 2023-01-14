@@ -394,7 +394,11 @@ void golioth_fw_update_init_with_config(
     _config = *config;
     _manifest_rcvd = golioth_sys_sem_create(1, 0);  // never destroyed
 
-    GLTH_LOGI(TAG, "Current firmware version: %s", _config.current_version);
+    GLTH_LOGI(
+            TAG,
+            "Current firmware version: %s - %s",
+            _config.fw_package_name,
+            _config.current_version);
 
     if (!initialized) {
         golioth_sys_thread_t thread = golioth_sys_thread_create((golioth_sys_thread_config_t){
