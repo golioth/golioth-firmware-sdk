@@ -1,5 +1,6 @@
 $(SEARCH_mcuboot)
 
+$(if $(SEARCH_libcoap),
 $(SEARCH_libcoap)/examples
 $(SEARCH_libcoap)/tests
 $(SEARCH_libcoap)/ext
@@ -8,8 +9,9 @@ $(SEARCH_libcoap)/src/coap_io_lwip.c
 $(SEARCH_libcoap)/src/coap_io_riot.c
 $(SEARCH_libcoap)/src/coap_gnutls.c
 $(SEARCH_libcoap)/src/coap_tinydtls.c
-$(SEARCH_libcoap)/src/coap_openssl.c
+$(SEARCH_libcoap)/src/coap_openssl.c,)
 
+$(if $(SEARCH_cJSON),
 $(SEARCH_cJSON)/fuzzing
 $(SEARCH_cJSON)/tests
-$(SEARCH_cJSON)/test.c
+$(SEARCH_cJSON)/test.c,)

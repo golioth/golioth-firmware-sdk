@@ -125,4 +125,38 @@ jobs:
         target: esp32
         path: 'examples/esp_idf/golioth_basics'
 
-# TODO - modus_toolbox_build
+  modus_toolbox_build:
+    runs-on: ubuntu-latest
+    env:
+      MTB_VERSION: 2.4.0.5972
+      MTB_TOOLS_VERSION: 2.4
+      MTB_DOWNLOAD_ID: 1x_YeXR4XSjaf-NZimKxQ8MIyDGo72yHt
+    steps:
+    - name: Checkout repository and submodules
+      uses: actions/checkout@v3
+      with:
+        submodules: 'recursive'
+    - name: Setup Python
+      uses: actions/setup-python@v2
+      with:
+        python-version: 3.x
+        architecture: 'x64'
+    - name: Download and install ModusToolbox 2.4
+      shell: bash
+      run: |
+        pip install click gdown cryptography intelhex cbor
+        gdown $MTB_DOWNLOAD_ID -O /tmp/ModusToolbox_$MTB_VERSION-linux-install.tar.gz
+        tar -C $HOME -zxf /tmp/ModusToolbox_$MTB_VERSION-linux-install.tar.gz
+        rm /tmp/ModusToolbox_$MTB_VERSION-linux-install.tar.gz
+        $HOME/ModusToolbox/tools_$MTB_TOOLS_VERSION/modus-shell/postinstall
+    - name: Build MTB golioth_basics project
+      shell: bash
+      run: |
+        # Ref: https://community.infineon.com/t5/ModusToolbox-General/ModusToolbox-Project-Creator-and-Library-Manager-report-no-Internet-connection/td-p/347593
+        export CyRemoteManifestOverride=https://github.com/cypresssemiconductorco/mtb-super-manifest/raw/v2.X/mtb-super-manifest-fv2.xml
+        export CY_TOOLS_PATHS=$HOME/ModusToolbox/tools_$MTB_TOOLS_VERSION
+
+        cd examples/modus_toolbox/golioth_basics/golioth_app
+        cp source/credentials.inc.template source/credentials.inc
+        make getlibs
+        make build -j8
