@@ -37,17 +37,18 @@ static golioth_settings_status_t on_loop_delay_setting(int32_t new_value, void* 
     return GOLIOTH_SETTINGS_SUCCESS;
 }
 
-static golioth_rpc_status_t on_double(
+static golioth_rpc_status_t on_multiply(
         const char* method,
         const cJSON* params,
         uint8_t* detail,
         size_t detail_size,
         void* callback_arg) {
-    if (cJSON_GetArraySize(params) != 1) {
+    if (cJSON_GetArraySize(params) != 2) {
         return RPC_INVALID_ARGUMENT;
     }
-    int num_to_double = cJSON_GetArrayItem(params, 0)->valueint;
-    snprintf((char*)detail, detail_size, "{ \"value\": %d }", 2 * num_to_double);
+    int a = cJSON_GetArrayItem(params, 0)->valueint;
+    int b = cJSON_GetArrayItem(params, 1)->valueint;
+    snprintf((char*)detail, detail_size, "{ \"value\": %d }", a * b);
     return RPC_OK;
 }
 
@@ -192,9 +193,9 @@ void golioth_basics(golioth_client_t client) {
     // We can register Remote Procedure Call (RPC) methods. RPCs allow
     // remote users to "call a function" on the device.
     //
-    // In this case, the device provides a "double" method, which takes an integer input param,
-    // doubles it, then returns the resulting value.
-    golioth_rpc_register(client, "double", on_double, NULL);
+    // In this case, the device provides a "multiply" method, which takes two integer
+    // input parameters and multiplies them, returning the resulting value.
+    golioth_rpc_register(client, "multiply", on_multiply, NULL);
 
     // We can register a callback for persistent settings. The Settings service
     // allows remote users to manage and push settings to devices.
