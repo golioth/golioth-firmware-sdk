@@ -45,6 +45,21 @@ static struct {
     struct arg_end* end;
 } _ping_args;
 
+typedef struct {
+    const char* shell_key;
+    const char* nvs_key;
+} shell_to_nvs_key_map_t;
+
+// Map from CLI key to internal NVS keys.
+// Can't use CLI keys directly in NVS due to character length
+// limitation in NVS.
+static const shell_to_nvs_key_map_t _key_map[4] = {
+        {"wifi/ssid", NVS_WIFI_SSID_KEY},
+        {"wifi/psk", NVS_WIFI_PASS_KEY},
+        {"golioth/psk-id", NVS_GOLIOTH_PSK_ID_KEY},
+        {"golioth/psk", NVS_GOLIOTH_PSK_KEY},
+};
+
 static const esp_console_cmd_t _cmds[] = {
         {
                 .command = "heap",
@@ -258,21 +273,14 @@ static int ping(int argc, char** argv) {
     return 0;
 }
 
-// Map from CLI key to internal NVS keys.
-// Can't use CLI keys directly in NVS due to character length
-// limitation in NVS.
+
 static const char* cli_key_to_nvs_key(const char* key) {
-    if (0 == strcmp(key, "wifi/ssid")) {
-        return NVS_WIFI_SSID_KEY;
-    } else if (0 == strcmp(key, "wifi/psk")) {
-        return NVS_WIFI_PASS_KEY;
-    } else if (0 == strcmp(key, "golioth/psk-id")) {
-        return NVS_GOLIOTH_PSK_ID_KEY;
-    } else if (0 == strcmp(key, "golioth/psk")) {
-        return NVS_GOLIOTH_PSK_KEY;
-    } else {
-        return "unknown";
+    for (int i = 0; i < COUNT_OF(_key_map); i++) {
+        if (strcmp(key, _key_map[i].shell_key) == 0) {
+            return _key_map[i].nvs_key;
+        }
     }
+    return NULL;
 }
 
 static int settings(int argc, char** argv) {
@@ -290,6 +298,15 @@ static int settings(int argc, char** argv) {
     const char* command = argv[1];
     const char* cli_key = argv[2];
     const char* nvs_key = cli_key_to_nvs_key(cli_key);
+
+    if (!nvs_key) {
+        printf("Unknown key: %s\n", cli_key);
+        printf("Key must be one of:\n");
+        for (int i = 0; i < COUNT_OF(_key_map); i++) {
+            printf("   %s\n", _key_map[i].shell_key);
+        }
+        return 1;
+    }
 
     if (0 == strcmp(command, "get")) {
         char valuebuf[128] = {};
