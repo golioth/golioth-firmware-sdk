@@ -64,7 +64,10 @@ bool golioth_sys_sem_take(golioth_sys_sem_t sem, int32_t ms_to_wait) {
                 .tv_sec = abs_timeout_ms / 1000,
                 .tv_nsec = (abs_timeout_ms % 1000) * 1000000,
         };
-        err = sem_timedwait(sem, &abs_timeout);
+
+        while ((err = sem_timedwait(sem, &abs_timeout)) == -1 && errno == EINTR) {
+            continue;  // Restart if interrupt by signal
+        }
     } else {
         err = sem_wait(sem);
     }
