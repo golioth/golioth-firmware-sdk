@@ -276,10 +276,12 @@ static golioth_status_t get_coap_dst_address(const coap_uri_t* host_uri, coap_ad
         case AF_INET:
             memcpy(&dst_addr->addr.sin, ainfo->ai_addr, sizeof(dst_addr->addr.sin));
             dst_addr->addr.sin.sin_port = htons(host_uri->port);
+            dst_addr->size = sizeof(dst_addr->addr.sin);
             break;
         case AF_INET6:
             memcpy(&dst_addr->addr.sin6, ainfo->ai_addr, sizeof(dst_addr->addr.sin6));
             dst_addr->addr.sin6.sin6_port = htons(host_uri->port);
+            dst_addr->size = sizeof(dst_addr->addr.sin6);
             break;
         default:
             GLTH_LOGE(TAG, "DNS lookup response failed");
