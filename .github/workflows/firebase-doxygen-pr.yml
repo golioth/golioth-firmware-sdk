@@ -12,8 +12,6 @@ jobs:
           cd docs/doxygen
           doxygen
       - name: Deploy docs to dev
-        # The 'if' will prevent running this step if in a fork pull request
-        if: ${{ github.event.pull_request.head.repo.full_name == github.event.pull_request.base.repo.full_name }}
         uses: FirebaseExtended/action-hosting-deploy@v0
         with:
           repoToken: '${{ secrets.GITHUB_TOKEN }}'

@@ -11,8 +11,6 @@ on:
 jobs:
   build_for_hw_test:
     runs-on: ubuntu-latest
-    # The 'if' will prevent running this job if from a fork pull request
-    if: ${{ github.event.pull_request.head.repo.full_name == github.event.pull_request.base.repo.full_name }}
     steps:
     - name: Checkout repository and submodules
       uses: actions/checkout@v3
