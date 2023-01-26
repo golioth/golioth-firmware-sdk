@@ -5,7 +5,6 @@
  */
 #include <stdbool.h>
 #include <string.h>
-#include <sys/socket.h>
 #include <netdb.h>      // struct addrinfo
 #include <sys/param.h>  // MIN
 #include <time.h>
