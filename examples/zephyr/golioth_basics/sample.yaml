@@ -1,0 +1,19 @@
+sample:
+  name: Golioth Basics Example
+common:
+  harness: console
+  harness_config:
+    type: multi_line
+    ordered: true
+    regex:
+      - "(.*)Hello, Golioth!"
+      - "(.*)Golioth client connected"
+      - "(.*)Synchronously got my_int = 42"
+      - "(.*)Entering endless loop"
+      - "(.*)Sending hello! 0"
+      - "(.*)Callback got my_int = 42"
+  tags: golioth socket
+tests:
+  sample.golioth.basics:
+    platform_allow: >
+      qemu_x86
