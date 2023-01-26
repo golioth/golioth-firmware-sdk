@@ -240,11 +240,11 @@ static void nack_handler(
 }
 
 static void coap_log_handler(coap_log_t level, const char* message) {
-    if (level <= LOG_ERR) {
+    if (level <= COAP_LOG_ERR) {
         GLTH_LOGE("libcoap", "%s", message);
-    } else if (level <= LOG_WARNING) {
+    } else if (level <= COAP_LOG_WARN) {
         GLTH_LOGW("libcoap", "%s", message);
-    } else if (level <= LOG_INFO) {
+    } else if (level <= COAP_LOG_INFO) {
         GLTH_LOGI("libcoap", "%s", message);
     } else {
         GLTH_LOGD("libcoap", "%s", message);
