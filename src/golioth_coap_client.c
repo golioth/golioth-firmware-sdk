@@ -8,6 +8,7 @@
 #include <sys/socket.h>
 #include <netdb.h>      // struct addrinfo
 #include <sys/param.h>  // MIN
+#include <time.h>
 #include <coap3/coap.h>
 #include "golioth_coap_client.h"
 #include "golioth_statistics.h"
