@@ -16,10 +16,8 @@ For Linux users, you can install esp-idf with these commands:
 sudo apt-get install git wget flex bison gperf python3 python3-venv cmake ninja-build ccache libffi-dev libssl-dev dfu-util libusb-1.0-0
 mkdir -p ~/esp
 cd ~/esp
-git clone --recursive https://github.com/espressif/esp-idf.git
+git clone --recursive https://github.com/espressif/esp-idf.git -b v5.0
 cd esp-idf
-git checkout v5.0
-git submodule update --init --recursive
 ./install.sh all
 ```
 
