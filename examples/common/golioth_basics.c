@@ -46,9 +46,9 @@ static golioth_rpc_status_t on_multiply(
     if (cJSON_GetArraySize(params) != 2) {
         return RPC_INVALID_ARGUMENT;
     }
-    int a = cJSON_GetArrayItem(params, 0)->valueint;
-    int b = cJSON_GetArrayItem(params, 1)->valueint;
-    snprintf((char*)detail, detail_size, "{ \"value\": %d }", a * b);
+    double a = cJSON_GetArrayItem(params, 0)->valuedouble;
+    double b = cJSON_GetArrayItem(params, 1)->valuedouble;
+    snprintf((char*)detail, detail_size, "{ \"value\": %lf }", a * b);
     return RPC_OK;
 }
 
@@ -193,7 +193,7 @@ void golioth_basics(golioth_client_t client) {
     // We can register Remote Procedure Call (RPC) methods. RPCs allow
     // remote users to "call a function" on the device.
     //
-    // In this case, the device provides a "multiply" method, which takes two integer
+    // In this case, the device provides a "multiply" method, which takes two floating point
     // input parameters and multiplies them, returning the resulting value.
     golioth_rpc_register(client, "multiply", on_multiply, NULL);
 
