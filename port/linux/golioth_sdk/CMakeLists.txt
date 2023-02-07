@@ -40,6 +40,7 @@ set(sdk_srcs
     "${sdk_src}/golioth_event_group.c"
     "${sdk_src}/golioth_mbox.c"
     "${sdk_src}/golioth_debug.c"
+    "${sdk_src}/golioth_decompressor.c"
 )
 
 add_library(golioth_sdk
