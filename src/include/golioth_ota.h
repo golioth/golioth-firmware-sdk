@@ -63,8 +63,6 @@ typedef struct {
     char version[CONFIG_GOLIOTH_OTA_MAX_VERSION_LEN + 1];
     /// Size of the artifact, in bytes
     int32_t size;
-    /// Whether the component is compressed with the heatshrink algorithm
-    bool is_compressed;
 } golioth_ota_component_t;
 
 /// An OTA manifest, composed of multiple components/artifacts

@@ -145,7 +145,6 @@ golioth_status_t golioth_ota_payload_as_manifest(
             goto cleanup;
         }
         c->size = size->valueint;
-        c->is_compressed = CONFIG_GOLIOTH_OTA_DECOMPRESSION_ENABLE;
     }
 
 cleanup:
