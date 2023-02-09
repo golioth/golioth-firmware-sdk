@@ -239,6 +239,7 @@ static void nack_handler(
     }
 }
 
+#if GOLIOTH_OVERRIDE_LIBCOAP_LOG_HANDLER
 static void coap_log_handler(coap_log_t level, const char* message) {
     if (level <= COAP_LOG_ERR) {
         GLTH_LOGE("libcoap", "%s", message);
@@ -250,6 +251,7 @@ static void coap_log_handler(coap_log_t level, const char* message) {
         GLTH_LOGD("libcoap", "%s", message);
     }
 }
+#endif /* GOLIOTH_OVERRIDE_LIBCOAP_LOG_HANDLER */
 
 // DNS lookup of host_uri
 static golioth_status_t get_coap_dst_address(const coap_uri_t* host_uri, coap_address_t* dst_addr) {
@@ -943,9 +945,11 @@ static void golioth_coap_client_thread(void* arg) {
 
 golioth_client_t golioth_client_create(const golioth_client_config_t* config) {
     if (!_initialized) {
+#if GOLIOTH_OVERRIDE_LIBCOAP_LOG_HANDLER
         // Connect logs from libcoap to the ESP logger
         coap_set_log_handler(coap_log_handler);
         coap_set_log_level(COAP_LOG_INFO);
+#endif /* GOLIOTH_OVERRIDE_LIBCOAP_LOG_HANDLER */
 
         // Seed the random number generator. Used for token generation.
         time_t t;
