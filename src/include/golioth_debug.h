@@ -4,6 +4,18 @@
 #include "golioth_time.h"
 #include <stdbool.h>
 
+#ifndef __UNUSED
+#if defined(__GNUC__) || defined(__clang__)
+#define __UNUSED __attribute__((unused))
+#else /* defined(__GNUC__) || defined(__clang__) */
+#define __UNUSED
+#endif /* defined(__GNUC__) || defined(__clang__) */
+#endif /* __UNUSED */
+
+#ifndef LOG_TAG_DEFINE
+#define LOG_TAG_DEFINE(tag) static __UNUSED const char* TAG = #tag
+#endif
+
 typedef void* golioth_client_t;
 
 typedef enum {
