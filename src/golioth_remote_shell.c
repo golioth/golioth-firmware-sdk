@@ -13,7 +13,7 @@
 #include "cJSON.h"
 #include <string.h>
 
-#define TAG "golioth_remote_shell"
+LOG_TAG_DEFINE(golioth_remote_shell);
 
 static bool _initialized;
 static bool _enable = true;

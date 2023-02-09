@@ -4,7 +4,7 @@
 #include <assert.h>
 #include <string.h>  // memset
 
-#define TAG "golioth_mbox"
+LOG_TAG_DEFINE(golioth_mbox);
 
 golioth_mbox_t golioth_mbox_create(size_t num_items, size_t item_size) {
     golioth_mbox_t new_mbox = (golioth_mbox_t)golioth_sys_malloc(sizeof(struct golioth_mbox));

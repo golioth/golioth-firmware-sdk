@@ -9,7 +9,7 @@
 #include <string.h>
 #include <inttypes.h>
 
-#define TAG "golioth_basics"
+LOG_TAG_DEFINE(golioth_basics);
 
 // Current firmware version
 static const char* _current_version = "1.2.5";

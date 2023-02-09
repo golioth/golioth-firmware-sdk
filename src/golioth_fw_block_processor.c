@@ -9,7 +9,7 @@
 #include <string.h>
 #include <assert.h>
 
-#define TAG "fw_block_processor"
+LOG_TAG_DEFINE(fw_block_processor);
 
 static void block_stats_init(block_latency_stats_t* stats) {
     stats->block_min_ms = UINT32_MAX;
