@@ -36,7 +36,7 @@
 
 #if (CONFIG_GOLIOTH_SETTINGS_ENABLE == 1)
 
-#define TAG "golioth_settings"
+LOG_TAG_DEFINE(golioth_settings);
 
 #define SETTINGS_PATH_PREFIX ".c/"
 #define SETTINGS_STATUS_PATH "status"

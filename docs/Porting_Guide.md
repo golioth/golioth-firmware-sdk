@@ -90,7 +90,7 @@ Add a `main.c` file with the following contents:
 #include "golioth.h"
 #include <stdio.h>
 
-#define TAG "main"
+LOG_TAG_DEFINE(main);
 
 int main(void) {
     GLTH_LOGI(TAG, "Hello, World!");
@@ -198,7 +198,7 @@ Change your `main.c` file to match this:
 #include <stdio.h>
 #include <string.h>
 
-#define TAG "main"
+LOG_TAG_DEFINE(main);
 
 int main(void) {
     const char* wifi_ssid = "SSID";

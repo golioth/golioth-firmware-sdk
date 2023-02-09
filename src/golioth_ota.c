@@ -10,7 +10,7 @@
 #include "golioth_statistics.h"
 #include "golioth_debug.h"
 
-#define TAG "golioth_ota"
+LOG_TAG_DEFINE(golioth_ota);
 
 #define GOLIOTH_OTA_MANIFEST_PATH ".u/desired"
 #define GOLIOTH_OTA_COMPONENT_PATH_PREFIX ".u/c/"

@@ -12,7 +12,7 @@
 #include "golioth_statistics.h"
 #include "golioth_debug.h"
 
-#define TAG "golioth_rpc"
+LOG_TAG_DEFINE(golioth_rpc);
 
 // Request:
 //

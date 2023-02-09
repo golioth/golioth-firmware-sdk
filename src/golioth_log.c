@@ -10,7 +10,7 @@
 #include "golioth_statistics.h"
 #include "golioth_debug.h"
 
-#define TAG "golioth_log"
+LOG_TAG_DEFINE(golioth_log);
 
 // Important Note!
 //

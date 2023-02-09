@@ -11,7 +11,7 @@
 #include "golioth_statistics.h"
 #include "golioth_sys.h"
 
-#define TAG "golioth_lightdb"
+LOG_TAG_DEFINE(golioth_lightdb);
 
 #define GOLIOTH_LIGHTDB_STATE_PATH_PREFIX ".d/"
 #define GOLIOTH_LIGHTDB_STREAM_PATH_PREFIX ".s/"

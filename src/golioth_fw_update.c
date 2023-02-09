@@ -14,7 +14,7 @@
 #include "golioth_statistics.h"
 #include "golioth_fw_block_processor.h"
 
-#define TAG "golioth_fw_update"
+LOG_TAG_DEFINE(golioth_fw_update);
 
 static golioth_client_t _client;
 static golioth_sys_sem_t _manifest_rcvd;

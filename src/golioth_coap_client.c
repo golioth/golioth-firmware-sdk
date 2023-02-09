@@ -18,7 +18,7 @@
 #include "golioth_sys.h"
 #include "golioth_mbox.h"
 
-#define TAG "golioth_coap_client"
+LOG_TAG_DEFINE(golioth_coap_client);
 
 static bool _initialized;
 

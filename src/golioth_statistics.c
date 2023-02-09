@@ -8,7 +8,7 @@
 #include "golioth_sys.h"
 #include <stdint.h>
 
-#define TAG "golioth_statistics"
+LOG_TAG_DEFINE(golioth_statistics);
 
 #if (CONFIG_GOLIOTH_ALLOCATION_TRACKING == 1)
 
