@@ -39,8 +39,7 @@ static golioth_fw_update_config_t _config;
 static golioth_status_t download_and_write_flash(void) {
     assert(_main_component);
 
-    int32_t main_size = _main_component->size;
-    GLTH_LOGI(TAG, "Image size = %" PRIu32, main_size);
+    GLTH_LOGI(TAG, "Image size = %" PRIu32, _main_component->size);
 
     heatshrink_decoder* hsd = NULL;
 
@@ -60,7 +59,7 @@ static golioth_status_t download_and_write_flash(void) {
     uint64_t start_time_ms = golioth_sys_now_ms();
 
     // Handle blocks one at a time
-    size_t nblocks = golioth_ota_size_to_nblocks(main_size);
+    size_t nblocks = golioth_ota_size_to_nblocks(_main_component->size);
     size_t bytes_written = 0;
     for (size_t i = 0; /* empty */; i++) {
         size_t block_nbytes = 0;
@@ -122,7 +121,8 @@ static golioth_status_t download_and_write_flash(void) {
                     GLTH_LOGE(TAG, "poll error: %d", pres);
                 }
 
-                status = fw_update_handle_block(decode_buffer, poll_sz, bytes_written, main_size);
+                status = fw_update_handle_block(
+                        decode_buffer, poll_sz, bytes_written, _main_component->size);
                 if (status != GOLIOTH_OK) {
                     GLTH_LOGE(TAG, "Failed to handle block index %" PRIu32, (uint32_t)i);
                     heatshrink_decoder_free(hsd);
@@ -140,7 +140,7 @@ static golioth_status_t download_and_write_flash(void) {
             }
         } else {  // no compression
             status = fw_update_handle_block(
-                    _ota_block_buffer, block_nbytes, bytes_written, main_size);
+                    _ota_block_buffer, block_nbytes, bytes_written, _main_component->size);
             if (status != GOLIOTH_OK) {
                 GLTH_LOGE(TAG, "Failed to handle block index %" PRIu32, (uint32_t)i);
                 return status;
@@ -169,7 +169,7 @@ static golioth_status_t download_and_write_flash(void) {
         GLTH_LOGI(
                 TAG,
                 "Compression saved %" PRId32 " bytes",
-                (int32_t)bytes_written - (int32_t)main_size);
+                (int32_t)bytes_written - (int32_t)_main_component->size);
     }
 
     fw_update_post_download();
