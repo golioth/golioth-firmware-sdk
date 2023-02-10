@@ -36,6 +36,19 @@ static golioth_fw_update_state_change_callback _state_callback;
 static void* _state_callback_arg;
 static golioth_fw_update_config_t _config;
 
+static void block_stats_init(block_latency_stats_t* stats) {
+    stats->block_min_ms = UINT32_MAX;
+    stats->block_ema_ms = 0.0f;
+    stats->block_max_ms = 0;
+}
+
+static void block_stats_update(block_latency_stats_t* stats, uint32_t block_latency_ms) {
+    const float alpha = 0.01f;
+    stats->block_min_ms = min(stats->block_min_ms, block_latency_ms);
+    stats->block_ema_ms = alpha * (float)block_latency_ms + (1.0f - alpha) * stats->block_ema_ms;
+    stats->block_max_ms = max(stats->block_max_ms, block_latency_ms);
+}
+
 static golioth_status_t download_and_write_flash(void) {
     assert(_main_component);
 
@@ -51,11 +64,9 @@ static golioth_status_t download_and_write_flash(void) {
                 HEATSHRINK_LOOKAHEAD_SZ2);
     }
 
-    block_latency_stats_t stats = {
-            .block_min_ms = UINT32_MAX,
-            .block_ema_ms = 0.0f,
-            .block_max_ms = 0,
-    };
+    block_latency_stats_t stats;
+    block_stats_init(&stats);
+
     uint64_t start_time_ms = golioth_sys_now_ms();
 
     // Handle blocks one at a time
@@ -83,13 +94,7 @@ static golioth_status_t download_and_write_flash(void) {
                 &block_nbytes,
                 &is_last_block,
                 GOLIOTH_WAIT_FOREVER);
-        uint64_t block_latency_ms = golioth_sys_now_ms() - block_start_ms;
-
-        // Update block latency statistics
-        const float alpha = 0.01f;
-        stats.block_min_ms = min(stats.block_min_ms, block_latency_ms);
-        stats.block_ema_ms = alpha * (float)block_latency_ms + (1.0f - alpha) * stats.block_ema_ms;
-        stats.block_max_ms = max(stats.block_max_ms, block_latency_ms);
+        block_stats_update(&stats, golioth_sys_now_ms() - block_start_ms);
 
         if (status != GOLIOTH_OK) {
             GLTH_LOGE(
