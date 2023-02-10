@@ -154,8 +154,7 @@ static golioth_status_t download_and_write_flash(void) {
         }
     }
 
-    uint64_t elapsed_ms = golioth_sys_now_ms() - start_time_ms;
-    GLTH_LOGI(TAG, "Download took %" PRIu64 " ms", elapsed_ms);
+    GLTH_LOGI(TAG, "Download took %" PRIu64 " ms", golioth_sys_now_ms() - start_time_ms);
     GLTH_LOGI(TAG, "Block Latency Stats:");
     GLTH_LOGI(TAG, "   Min: %" PRIu32 " ms", stats.block_min_ms);
     GLTH_LOGI(TAG, "   Ave: %.3f ms", stats.block_ema_ms);
