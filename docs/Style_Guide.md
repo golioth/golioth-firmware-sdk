@@ -298,6 +298,15 @@ If an exception to clang-format is needed, you can wrap your code like this:
 
 ## Simple Types and Variables
 
+* As a guideline, limit the number of variables to 7 or less.
+  A good quote from https://www.kernel.org/doc/html/v4.10/process/coding-style.html#functions:
+
+> Another measure of the function is the number of local variables. They shouldn’t exceed 5-10,
+> or you’re doing something wrong. Re-think the function, and split it into smaller pieces.
+> A human brain can generally easily keep track of about 7 different things, anything more and
+> it gets confused. You know you’re brilliant, but maybe you’d like to understand what you
+> did 2 weeks from now.
+
 * Variable declarations should be initialized to a default value
 * Do not put multiple variable declarations on a single line
 
