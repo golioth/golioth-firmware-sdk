@@ -27,6 +27,8 @@ typedef struct {
     uint32_t block_max_ms;
 } block_latency_stats_t;
 
+typedef golioth_status_t (*process_fn)(const uint8_t* in, size_t in_size, void* arg);
+
 typedef struct {
     /// Index of current block to download
     size_t block_index;
@@ -38,6 +40,9 @@ typedef struct {
     block_latency_stats_t block_stats;
     /// OTA component to download
     const golioth_ota_component_t* ota_component;
+    /// Function to call when output is available
+    process_fn output_fn;
+    void* output_fn_arg;
 } download_ctx_t;
 
 typedef struct {
@@ -94,7 +99,8 @@ static golioth_status_t download_block(download_ctx_t* ctx, uint8_t* output_buf)
     assert(ctx->block_bytes_downloaded <= GOLIOTH_OTA_BLOCKSIZE);
     block_stats_update(&ctx->block_stats, golioth_sys_now_ms() - download_start_ms);
 
-    return GOLIOTH_OK;
+    assert(ctx->output_fn);
+    return ctx->output_fn(output_buf, ctx->block_bytes_downloaded, ctx->output_fn_arg);
 }
 
 static void decompress_init(decompress_ctx_t* ctx, bool enable_decompression) {
@@ -109,9 +115,10 @@ static void decompress_init(decompress_ctx_t* ctx, bool enable_decompression) {
 }
 
 static golioth_status_t decompress_and_handle(
-        decompress_ctx_t* ctx,
-        uint8_t* in_data,
-        size_t in_data_size) {
+        const uint8_t* in_data,
+        size_t in_data_size,
+        void* arg) {
+    decompress_ctx_t* ctx = (decompress_ctx_t*)arg;
     ctx->bytes_in += in_data_size;
 
     if (!ctx->hsd) {
@@ -128,7 +135,8 @@ static golioth_status_t decompress_and_handle(
 
     // Sink the compressed data
     size_t sunk = 0;
-    HSD_sink_res sink_res = heatshrink_decoder_sink(ctx->hsd, in_data, in_data_size, &sunk);
+    HSD_sink_res sink_res =
+            heatshrink_decoder_sink(ctx->hsd, (uint8_t*)in_data, in_data_size, &sunk);
     if (sink_res != HSDR_SINK_OK) {
         GLTH_LOGE(TAG, "sink error: %d, sunk = %" PRIu32, sink_res, (uint32_t)sunk);
         return GOLIOTH_ERR_FAIL;
@@ -177,6 +185,9 @@ static golioth_status_t download_and_write_flash(void) {
     decompress_ctx_t decompress_ctx;
     decompress_init(&decompress_ctx, _main_component->is_compressed);
 
+    download_ctx.output_fn = decompress_and_handle;
+    download_ctx.output_fn_arg = &decompress_ctx;
+
     // Note: total_num_blocks is an estimate of the number of blocks required to download,
     // based on the size of the main component reported in the manifest.
     //
@@ -198,12 +209,6 @@ static golioth_status_t download_and_write_flash(void) {
                 (uint32_t)total_num_blocks);
 
         golioth_status_t status = download_block(&download_ctx, _ota_block_buffer);
-        if (status != GOLIOTH_OK) {
-            break;
-        }
-
-        status = decompress_and_handle(
-                &decompress_ctx, _ota_block_buffer, download_ctx.block_bytes_downloaded);
         if (status != GOLIOTH_OK) {
             break;
         }
