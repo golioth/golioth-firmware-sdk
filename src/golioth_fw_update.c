@@ -44,6 +44,8 @@ typedef struct {
     block_latency_stats_t block_stats;
     /// OTA component to download
     const golioth_ota_component_t* ota_component;
+    /// Buffer where downloaded blocks will be copied to
+    uint8_t* download_buf;
     /// Function to call when output is available
     process_fn output_fn;
     void* output_fn_arg;
@@ -100,11 +102,15 @@ static void block_stats_update(block_latency_stats_t* stats, uint32_t block_late
 static void download_init(
         download_ctx_t* ctx,
         golioth_client_t client,
-        const golioth_ota_component_t* ota_component) {
+        const golioth_ota_component_t* ota_component,
+        uint8_t* download_buf) {
     memset(ctx, 0, sizeof(*ctx));
     block_stats_init(&ctx->block_stats);
     ctx->ota_component = ota_component;
     ctx->client = client;
+
+    assert(download_buf);
+    ctx->download_buf = download_buf;
 
     // Note: total_num_blocks is an estimate of the number of blocks required to download,
     // based on the size of the component reported in the manifest.
@@ -114,7 +120,7 @@ static void download_init(
     ctx->total_num_blocks = golioth_ota_size_to_nblocks(ota_component->size);
 }
 
-static golioth_status_t download_block(download_ctx_t* ctx, uint8_t* output_buf) {
+static golioth_status_t download_block(download_ctx_t* ctx) {
     if (ctx->is_last_block) {
         // We've already downloaded the last block
         return GOLIOTH_ERR_NO_MORE_DATA;
@@ -134,7 +140,7 @@ static golioth_status_t download_block(download_ctx_t* ctx, uint8_t* output_buf)
             ctx->ota_component->package,
             ctx->ota_component->version,
             ctx->block_index,
-            output_buf,
+            ctx->download_buf,
             &ctx->block_bytes_downloaded,
             &ctx->is_last_block,
             GOLIOTH_WAIT_FOREVER));
@@ -145,7 +151,7 @@ static golioth_status_t download_block(download_ctx_t* ctx, uint8_t* output_buf)
     ctx->block_index++;
 
     assert(ctx->output_fn);
-    return ctx->output_fn(output_buf, ctx->block_bytes_downloaded, ctx->output_fn_arg);
+    return ctx->output_fn(ctx->download_buf, ctx->block_bytes_downloaded, ctx->output_fn_arg);
 }
 
 static void decompress_init(decompress_ctx_t* ctx, bool enable_decompression) {
@@ -229,8 +235,9 @@ static void decompress_deinit(decompress_ctx_t* ctx) {
 static void block_processor_init(
         block_processor_ctx_t* ctx,
         golioth_client_t client,
-        const golioth_ota_component_t* component) {
-    download_init(&ctx->download, client, component);
+        const golioth_ota_component_t* component,
+        uint8_t* download_buf) {
+    download_init(&ctx->download, client, component, download_buf);
     decompress_init(&ctx->decompress, component->is_compressed);
     handle_block_init(&ctx->handle_block, component->size);
 
@@ -245,7 +252,7 @@ static void block_processor_init(
 
 static golioth_status_t block_processor_process(block_processor_ctx_t* ctx) {
     // Call the first function in the block processing chain.
-    return download_block(&ctx->download, _ota_block_buffer);
+    return download_block(&ctx->download);
 }
 
 static void block_processor_log_results(const block_processor_ctx_t* ctx) {
@@ -271,7 +278,7 @@ static golioth_status_t download_and_write_flash(void) {
     GLTH_LOGI(TAG, "Image size = %" PRIu32, _main_component->size);
 
     block_processor_ctx_t block_processor;
-    block_processor_init(&block_processor, _client, _main_component);
+    block_processor_init(&block_processor, _client, _main_component, _ota_block_buffer);
 
     const uint64_t start_time_ms = golioth_sys_now_ms();
 
