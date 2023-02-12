@@ -63,6 +63,12 @@ typedef struct {
     int32_t bytes_handled;
 } handle_block_ctx_t;
 
+typedef struct {
+    download_ctx_t download;
+    decompress_ctx_t decompress;
+    handle_block_ctx_t handle_block;
+} block_processor_ctx_t;
+
 static golioth_client_t _client;
 static golioth_sys_sem_t _manifest_rcvd;
 static golioth_ota_manifest_t _ota_manifest;
@@ -188,25 +194,36 @@ static void decompress_deinit(decompress_ctx_t* ctx) {
     }
 }
 
+static void block_processor_init(block_processor_ctx_t* ctx) {
+    download_init(&ctx->download, _main_component);
+    decompress_init(&ctx->decompress, _main_component->is_compressed);
+    handle_block_init(&ctx->handle_block);
+
+    // Connect output of download to input of decompress
+    ctx->download.output_fn = decompress;
+    ctx->download.output_fn_arg = &ctx->decompress;
+
+    // Connect output of decompress to input of handle_block
+    ctx->decompress.output_fn = handle_block;
+    ctx->decompress.output_fn_arg = &ctx->handle_block;
+}
+
+static golioth_status_t block_processor_process(block_processor_ctx_t* ctx) {
+    // Call the first function in the block processing chain.
+    return download_block(&ctx->download, _ota_block_buffer);
+}
+
+static void block_processor_deinit(block_processor_ctx_t* ctx) {
+    decompress_deinit(&ctx->decompress);
+}
+
 static golioth_status_t download_and_write_flash(void) {
     assert(_main_component);
 
     GLTH_LOGI(TAG, "Image size = %" PRIu32, _main_component->size);
 
-    download_ctx_t download_ctx;
-    download_init(&download_ctx, _main_component);
-
-    decompress_ctx_t decompress_ctx;
-    decompress_init(&decompress_ctx, _main_component->is_compressed);
-
-    handle_block_ctx_t handle_block_ctx;
-    handle_block_init(&handle_block_ctx);
-
-    download_ctx.output_fn = decompress;
-    download_ctx.output_fn_arg = &decompress_ctx;
-
-    decompress_ctx.output_fn = handle_block;
-    decompress_ctx.output_fn_arg = &handle_block_ctx;
+    block_processor_ctx_t block_processor;
+    block_processor_init(&block_processor);
 
     // Note: total_num_blocks is an estimate of the number of blocks required to download,
     // based on the size of the main component reported in the manifest.
@@ -220,15 +237,16 @@ static golioth_status_t download_and_write_flash(void) {
 
     // Handle blocks one at a time
     const uint64_t start_time_ms = golioth_sys_now_ms();
-    for (download_ctx.block_index = 0; !download_ctx.is_last_block; download_ctx.block_index++) {
+    for (block_processor.download.block_index = 0; !block_processor.download.is_last_block;
+         block_processor.download.block_index++) {
         GLTH_LOGI(
                 TAG,
                 "Getting block index %" PRIu32 " (%" PRIu32 "/%" PRIu32 ")",
-                (uint32_t)download_ctx.block_index,
-                (uint32_t)download_ctx.block_index + 1,
+                (uint32_t)block_processor.download.block_index,
+                (uint32_t)block_processor.download.block_index + 1,
                 (uint32_t)total_num_blocks);
 
-        golioth_status_t status = download_block(&download_ctx, _ota_block_buffer);
+        golioth_status_t status = block_processor_process(&block_processor);
         if (status != GOLIOTH_OK) {
             break;
         }
@@ -236,17 +254,21 @@ static golioth_status_t download_and_write_flash(void) {
 
     GLTH_LOGI(TAG, "Download took %" PRIu64 " ms", golioth_sys_now_ms() - start_time_ms);
     GLTH_LOGI(TAG, "Block Latency Stats:");
-    GLTH_LOGI(TAG, "   Min: %" PRIu32 " ms", download_ctx.block_stats.block_min_ms);
-    GLTH_LOGI(TAG, "   Ave: %.3f ms", download_ctx.block_stats.block_ema_ms);
-    GLTH_LOGI(TAG, "   Max: %" PRIu32 " ms", download_ctx.block_stats.block_max_ms);
-    GLTH_LOGI(TAG, "Total bytes written: %" PRIu32, (uint32_t)handle_block_ctx.bytes_handled);
+    GLTH_LOGI(TAG, "   Min: %" PRIu32 " ms", block_processor.download.block_stats.block_min_ms);
+    GLTH_LOGI(TAG, "   Ave: %.3f ms", block_processor.download.block_stats.block_ema_ms);
+    GLTH_LOGI(TAG, "   Max: %" PRIu32 " ms", block_processor.download.block_stats.block_max_ms);
+    GLTH_LOGI(
+            TAG,
+            "Total bytes written: %" PRIu32,
+            (uint32_t)block_processor.handle_block.bytes_handled);
 
-    int32_t decompress_delta = decompress_ctx.bytes_out - decompress_ctx.bytes_in;
+    int32_t decompress_delta =
+            block_processor.decompress.bytes_out - block_processor.decompress.bytes_in;
     if (decompress_delta > 0) {
         GLTH_LOGI(TAG, "Compression saved %" PRId32 " bytes", decompress_delta);
     }
 
-    decompress_deinit(&decompress_ctx);
+    block_processor_deinit(&block_processor);
     fw_update_post_download();
 
     return GOLIOTH_OK;
