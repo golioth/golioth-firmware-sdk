@@ -53,7 +53,15 @@ typedef struct {
     /// Number of bytes output from the decompressor. If decompression
     /// is enabled, this number will be higher than bytes_in.
     int32_t bytes_out;
+    /// Function to call when output is available
+    process_fn output_fn;
+    void* output_fn_arg;
 } decompress_ctx_t;
+
+typedef struct {
+    /// Number of bytes forwarded to fw_update_handle_block()
+    int32_t bytes_handled;
+} handle_block_ctx_t;
 
 static golioth_client_t _client;
 static golioth_sys_sem_t _manifest_rcvd;
@@ -114,21 +122,32 @@ static void decompress_init(decompress_ctx_t* ctx, bool enable_decompression) {
     }
 }
 
-static golioth_status_t decompress_and_handle(
-        const uint8_t* in_data,
-        size_t in_data_size,
-        void* arg) {
+static void handle_block_init(handle_block_ctx_t* ctx) {
+    memset(ctx, 0, sizeof(*ctx));
+}
+
+static golioth_status_t handle_block(const uint8_t* in_data, size_t in_data_size, void* arg) {
+    handle_block_ctx_t* ctx = (handle_block_ctx_t*)arg;
+
+    golioth_status_t status = fw_update_handle_block(
+            in_data,
+            in_data_size,
+            ctx->bytes_handled,  // offset
+            _main_component->size);
+
+    ctx->bytes_handled += in_data_size;
+    return status;
+}
+
+static golioth_status_t decompress(const uint8_t* in_data, size_t in_data_size, void* arg) {
     decompress_ctx_t* ctx = (decompress_ctx_t*)arg;
+    assert(ctx->output_fn);
+
     ctx->bytes_in += in_data_size;
 
     if (!ctx->hsd) {
         // no decompression required
-        GOLIOTH_STATUS_RETURN_IF_ERROR(fw_update_handle_block(
-                in_data,
-                in_data_size,
-                ctx->bytes_out,  // offset
-                _main_component->size));
-
+        GOLIOTH_STATUS_RETURN_IF_ERROR(ctx->output_fn(in_data, in_data_size, ctx->output_fn_arg));
         ctx->bytes_out += in_data_size;
         return GOLIOTH_OK;
     }
@@ -153,12 +172,7 @@ static golioth_status_t decompress_and_handle(
             return GOLIOTH_ERR_FAIL;
         }
 
-        GOLIOTH_STATUS_RETURN_IF_ERROR(fw_update_handle_block(
-                decode_buffer,
-                poll_sz,
-                ctx->bytes_out,  // offset
-                _main_component->size));
-
+        GOLIOTH_STATUS_RETURN_IF_ERROR(ctx->output_fn(decode_buffer, poll_sz, ctx->output_fn_arg));
         ctx->bytes_out += poll_sz;
     } while (pres == HSDR_POLL_MORE);
 
@@ -185,8 +199,14 @@ static golioth_status_t download_and_write_flash(void) {
     decompress_ctx_t decompress_ctx;
     decompress_init(&decompress_ctx, _main_component->is_compressed);
 
-    download_ctx.output_fn = decompress_and_handle;
+    handle_block_ctx_t handle_block_ctx;
+    handle_block_init(&handle_block_ctx);
+
+    download_ctx.output_fn = decompress;
     download_ctx.output_fn_arg = &decompress_ctx;
+
+    decompress_ctx.output_fn = handle_block;
+    decompress_ctx.output_fn_arg = &handle_block_ctx;
 
     // Note: total_num_blocks is an estimate of the number of blocks required to download,
     // based on the size of the main component reported in the manifest.
@@ -219,7 +239,7 @@ static golioth_status_t download_and_write_flash(void) {
     GLTH_LOGI(TAG, "   Min: %" PRIu32 " ms", download_ctx.block_stats.block_min_ms);
     GLTH_LOGI(TAG, "   Ave: %.3f ms", download_ctx.block_stats.block_ema_ms);
     GLTH_LOGI(TAG, "   Max: %" PRIu32 " ms", download_ctx.block_stats.block_max_ms);
-    GLTH_LOGI(TAG, "Total bytes written: %" PRIu32, (uint32_t)decompress_ctx.bytes_out);
+    GLTH_LOGI(TAG, "Total bytes written: %" PRIu32, (uint32_t)handle_block_ctx.bytes_handled);
 
     int32_t decompress_delta = decompress_ctx.bytes_out - decompress_ctx.bytes_in;
     if (decompress_delta > 0) {
