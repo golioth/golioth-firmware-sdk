@@ -30,6 +30,8 @@ typedef struct {
 typedef golioth_status_t (*process_fn)(const uint8_t* in, size_t in_size, void* arg);
 
 typedef struct {
+    /// Golioth client used for downloading
+    golioth_client_t client;
     /// Estimate of the total number blocks to download
     size_t total_num_blocks;
     /// Index of current block to download
@@ -95,10 +97,14 @@ static void block_stats_update(block_latency_stats_t* stats, uint32_t block_late
     stats->block_max_ms = max(stats->block_max_ms, block_latency_ms);
 }
 
-static void download_init(download_ctx_t* ctx, const golioth_ota_component_t* ota_component) {
+static void download_init(
+        download_ctx_t* ctx,
+        golioth_client_t client,
+        const golioth_ota_component_t* ota_component) {
     memset(ctx, 0, sizeof(*ctx));
-    ctx->ota_component = ota_component;
     block_stats_init(&ctx->block_stats);
+    ctx->ota_component = ota_component;
+    ctx->client = client;
 
     // Note: total_num_blocks is an estimate of the number of blocks required to download,
     // based on the size of the component reported in the manifest.
@@ -124,7 +130,7 @@ static golioth_status_t download_block(download_ctx_t* ctx, uint8_t* output_buf)
             (uint32_t)ctx->total_num_blocks);
 
     GOLIOTH_STATUS_RETURN_IF_ERROR(golioth_ota_get_block_sync(
-            _client,
+            ctx->client,
             ctx->ota_component->package,
             ctx->ota_component->version,
             ctx->block_index,
@@ -220,10 +226,13 @@ static void decompress_deinit(decompress_ctx_t* ctx) {
     }
 }
 
-static void block_processor_init(block_processor_ctx_t* ctx) {
-    download_init(&ctx->download, _main_component);
-    decompress_init(&ctx->decompress, _main_component->is_compressed);
-    handle_block_init(&ctx->handle_block, _main_component->size);
+static void block_processor_init(
+        block_processor_ctx_t* ctx,
+        golioth_client_t client,
+        const golioth_ota_component_t* component) {
+    download_init(&ctx->download, client, component);
+    decompress_init(&ctx->decompress, component->is_compressed);
+    handle_block_init(&ctx->handle_block, component->size);
 
     // Connect output of download to input of decompress
     ctx->download.output_fn = decompress;
@@ -262,7 +271,7 @@ static golioth_status_t download_and_write_flash(void) {
     GLTH_LOGI(TAG, "Image size = %" PRIu32, _main_component->size);
 
     block_processor_ctx_t block_processor;
-    block_processor_init(&block_processor);
+    block_processor_init(&block_processor, _client, _main_component);
 
     const uint64_t start_time_ms = golioth_sys_now_ms();
 
