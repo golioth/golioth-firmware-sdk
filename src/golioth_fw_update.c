@@ -63,6 +63,8 @@ typedef struct {
 typedef struct {
     /// Number of bytes forwarded to fw_update_handle_block()
     int32_t bytes_handled;
+    /// Size of the OTA component being handled
+    size_t component_size;
 } handle_block_ctx_t;
 
 typedef struct {
@@ -151,8 +153,9 @@ static void decompress_init(decompress_ctx_t* ctx, bool enable_decompression) {
     }
 }
 
-static void handle_block_init(handle_block_ctx_t* ctx) {
+static void handle_block_init(handle_block_ctx_t* ctx, size_t component_size) {
     memset(ctx, 0, sizeof(*ctx));
+    ctx->component_size = component_size;
 }
 
 static golioth_status_t handle_block(const uint8_t* in_data, size_t in_data_size, void* arg) {
@@ -162,7 +165,7 @@ static golioth_status_t handle_block(const uint8_t* in_data, size_t in_data_size
             in_data,
             in_data_size,
             ctx->bytes_handled,  // offset
-            _main_component->size);
+            ctx->component_size);
 
     ctx->bytes_handled += in_data_size;
     return status;
@@ -220,7 +223,7 @@ static void decompress_deinit(decompress_ctx_t* ctx) {
 static void block_processor_init(block_processor_ctx_t* ctx) {
     download_init(&ctx->download, _main_component);
     decompress_init(&ctx->decompress, _main_component->is_compressed);
-    handle_block_init(&ctx->handle_block);
+    handle_block_init(&ctx->handle_block, _main_component->size);
 
     // Connect output of download to input of decompress
     ctx->download.output_fn = decompress;
