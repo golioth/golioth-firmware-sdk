@@ -30,6 +30,8 @@ typedef struct {
 typedef golioth_status_t (*process_fn)(const uint8_t* in, size_t in_size, void* arg);
 
 typedef struct {
+    /// Estimate of the total number blocks to download
+    size_t total_num_blocks;
     /// Index of current block to download
     size_t block_index;
     /// Number of bytes downloaded for the current block
@@ -95,10 +97,29 @@ static void download_init(download_ctx_t* ctx, const golioth_ota_component_t* ot
     memset(ctx, 0, sizeof(*ctx));
     ctx->ota_component = ota_component;
     block_stats_init(&ctx->block_stats);
+
+    // Note: total_num_blocks is an estimate of the number of blocks required to download,
+    // based on the size of the component reported in the manifest.
+    //
+    // Due to the way this size is populated in the manifest on the server, the actual
+    // number of blocks may be different.
+    ctx->total_num_blocks = golioth_ota_size_to_nblocks(ota_component->size);
 }
 
 static golioth_status_t download_block(download_ctx_t* ctx, uint8_t* output_buf) {
+    if (ctx->is_last_block) {
+        // We've already downloaded the last block
+        return GOLIOTH_ERR_NO_MORE_DATA;
+    }
+
     const uint64_t download_start_ms = golioth_sys_now_ms();
+
+    GLTH_LOGI(
+            TAG,
+            "Downloading block index %" PRIu32 " (%" PRIu32 "/%" PRIu32 ")",
+            (uint32_t)ctx->block_index,
+            (uint32_t)ctx->block_index + 1,
+            (uint32_t)ctx->total_num_blocks);
 
     GOLIOTH_STATUS_RETURN_IF_ERROR(golioth_ota_get_block_sync(
             _client,
@@ -112,6 +133,8 @@ static golioth_status_t download_block(download_ctx_t* ctx, uint8_t* output_buf)
 
     assert(ctx->block_bytes_downloaded <= GOLIOTH_OTA_BLOCKSIZE);
     block_stats_update(&ctx->block_stats, golioth_sys_now_ms() - download_start_ms);
+
+    ctx->block_index++;
 
     assert(ctx->output_fn);
     return ctx->output_fn(output_buf, ctx->block_bytes_downloaded, ctx->output_fn_arg);
@@ -225,31 +248,11 @@ static golioth_status_t download_and_write_flash(void) {
     block_processor_ctx_t block_processor;
     block_processor_init(&block_processor);
 
-    // Note: total_num_blocks is an estimate of the number of blocks required to download,
-    // based on the size of the main component reported in the manifest.
-    //
-    // Due to the way this size is populated in the manifest on the server, the actual
-    // number of blocks may be different.
-    //
-    // Therefore, the loop below will terminate when the last block is received, not
-    // when total_num_blocks is reached.
-    size_t total_num_blocks = golioth_ota_size_to_nblocks(_main_component->size);
-
-    // Handle blocks one at a time
     const uint64_t start_time_ms = golioth_sys_now_ms();
-    for (block_processor.download.block_index = 0; !block_processor.download.is_last_block;
-         block_processor.download.block_index++) {
-        GLTH_LOGI(
-                TAG,
-                "Getting block index %" PRIu32 " (%" PRIu32 "/%" PRIu32 ")",
-                (uint32_t)block_processor.download.block_index,
-                (uint32_t)block_processor.download.block_index + 1,
-                (uint32_t)total_num_blocks);
 
-        golioth_status_t status = block_processor_process(&block_processor);
-        if (status != GOLIOTH_OK) {
-            break;
-        }
+    // Process blocks one at a time until there are no more blocks (GOLIOTH_ERR_NO_MORE_DATA),
+    // or an error occurs.
+    while (block_processor_process(&block_processor) == GOLIOTH_OK) {
     }
 
     GLTH_LOGI(TAG, "Download took %" PRIu64 " ms", golioth_sys_now_ms() - start_time_ms);
