@@ -59,3 +59,4 @@ target_include_directories(golioth_sdk
 target_link_libraries(golioth_sdk
     PUBLIC cjson
     PRIVATE coap-3 pthread rt)
+target_compile_definitions(golioth_sdk PRIVATE -DHEATSHRINK_DYNAMIC_ALLOC=0)

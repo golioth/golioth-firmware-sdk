@@ -11,9 +11,7 @@
 
 #define TAG "fw_block_processor"
 
-#define HEATSHRINK_WINDOW_SZ2 8
-#define HEATSHRINK_LOOKAHEAD_SZ2 4
-#define HEATSHRINK_DECODE_BUFFER_SIZE 512
+#define HEATSHRINK_DECODE_BUFFER_SIZE HEATSHRINK_STATIC_INPUT_BUFFER_SIZE
 
 static void block_stats_init(block_latency_stats_t* stats) {
     stats->block_min_ms = UINT32_MAX;
@@ -85,12 +83,10 @@ static golioth_status_t download_block(download_ctx_t* ctx) {
 
 static void decompress_init(decompress_ctx_t* ctx, bool enable_decompression) {
     memset(ctx, 0, sizeof(*ctx));
-    if (enable_decompression) {
+    ctx->is_enabled = enable_decompression;
+    heatshrink_decoder_reset(&ctx->hsd);
+    if (ctx->is_enabled) {
         GLTH_LOGI(TAG, "Compressed image detected");
-        ctx->hsd = heatshrink_decoder_alloc(
-                GOLIOTH_OTA_BLOCKSIZE,  // input_buffer_size
-                HEATSHRINK_WINDOW_SZ2,
-                HEATSHRINK_LOOKAHEAD_SZ2);
     }
 }
 
@@ -118,47 +114,47 @@ static golioth_status_t decompress(const uint8_t* in_data, size_t in_data_size, 
 
     ctx->bytes_in += in_data_size;
 
-    if (!ctx->hsd) {
+    if (!ctx->is_enabled) {
         // no decompression required
         GOLIOTH_STATUS_RETURN_IF_ERROR(ctx->output_fn(in_data, in_data_size, ctx->output_fn_arg));
         ctx->bytes_out += in_data_size;
         return GOLIOTH_OK;
     }
 
-    // Sink the compressed data
-    size_t sunk = 0;
-    HSD_sink_res sink_res =
-            heatshrink_decoder_sink(ctx->hsd, (uint8_t*)in_data, in_data_size, &sunk);
-    if (sink_res != HSDR_SINK_OK) {
-        GLTH_LOGE(TAG, "sink error: %d, sunk = %" PRIu32, sink_res, (uint32_t)sunk);
-        return GOLIOTH_ERR_FAIL;
-    }
-
-    // Pull the uncompressed data out of the decoder
-    HSD_poll_res pres;
-    uint8_t decode_buffer[HEATSHRINK_DECODE_BUFFER_SIZE];
-    do {
-        size_t poll_sz = 0;
-        pres = heatshrink_decoder_poll(ctx->hsd, decode_buffer, sizeof(decode_buffer), &poll_sz);
-        if (pres < 0) {
-            GLTH_LOGE(TAG, "poll error: %d", pres);
+    size_t total_sunk = 0;
+    while (total_sunk < in_data_size) {
+        // Sink the compressed data
+        size_t sunk = 0;
+        HSD_sink_res sink_res = heatshrink_decoder_sink(
+                &ctx->hsd, (uint8_t*)&in_data[total_sunk], in_data_size - total_sunk, &sunk);
+        if (sink_res != HSDR_SINK_OK) {
+            GLTH_LOGE(TAG, "sink error: %d, sunk = %" PRIu32, sink_res, (uint32_t)sunk);
             return GOLIOTH_ERR_FAIL;
         }
+        total_sunk += sunk;
 
-        GOLIOTH_STATUS_RETURN_IF_ERROR(ctx->output_fn(decode_buffer, poll_sz, ctx->output_fn_arg));
-        ctx->bytes_out += poll_sz;
-    } while (pres == HSDR_POLL_MORE);
+        // Pull the uncompressed data out of the decoder
+        HSD_poll_res pres;
+        uint8_t decode_buffer[HEATSHRINK_DECODE_BUFFER_SIZE];
+        do {
+            size_t poll_sz = 0;
+            pres = heatshrink_decoder_poll(
+                    &ctx->hsd, decode_buffer, sizeof(decode_buffer), &poll_sz);
+            if (pres < 0) {
+                GLTH_LOGE(TAG, "poll error: %d", pres);
+                return GOLIOTH_ERR_FAIL;
+            }
+
+            GOLIOTH_STATUS_RETURN_IF_ERROR(
+                    ctx->output_fn(decode_buffer, poll_sz, ctx->output_fn_arg));
+            ctx->bytes_out += poll_sz;
+        } while (pres == HSDR_POLL_MORE);
+    }
 
     // TODO - compare decompressed size with size from the manifest
     // TODO - compute sha256 of decompressed image and verify it matches manifest
 
     return GOLIOTH_OK;
-}
-
-static void decompress_deinit(decompress_ctx_t* ctx) {
-    if (ctx->hsd) {
-        heatshrink_decoder_free(ctx->hsd);
-    }
 }
 
 void fw_block_processor_init(
@@ -195,8 +191,4 @@ void fw_block_processor_log_results(const fw_block_processor_ctx_t* ctx) {
     if (decompress_delta > 0) {
         GLTH_LOGI(TAG, "Compression saved %" PRId32 " bytes", decompress_delta);
     }
-}
-
-void fw_block_processor_deinit(fw_block_processor_ctx_t* ctx) {
-    decompress_deinit(&ctx->decompress);
 }

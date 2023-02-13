@@ -8,3 +8,4 @@ idf_component_register(
     SRCS
         "${heatshrink_dir}/src/heatshrink_decoder.c"
 )
+target_compile_definitions(${COMPONENT_LIB} PUBLIC -DHEATSHRINK_DYNAMIC_ALLOC=0)

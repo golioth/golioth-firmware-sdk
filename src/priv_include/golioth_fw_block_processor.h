@@ -42,8 +42,10 @@ typedef struct {
 } download_ctx_t;
 
 typedef struct {
-    /// Dynamically allocated heatshrink decoder
-    heatshrink_decoder* hsd;
+    /// If true, enables decompression
+    bool is_enabled;
+    /// Statically allocated heatshrink decoder
+    heatshrink_decoder hsd;
     /// Number of bytes input to the decompressor
     int32_t bytes_in;
     /// Number of bytes output from the decompressor. If decompression
@@ -74,4 +76,3 @@ void fw_block_processor_init(
         uint8_t* download_buf);
 golioth_status_t fw_block_processor_process(fw_block_processor_ctx_t* ctx);
 void fw_block_processor_log_results(const fw_block_processor_ctx_t* ctx);
-void fw_block_processor_deinit(fw_block_processor_ctx_t* ctx);

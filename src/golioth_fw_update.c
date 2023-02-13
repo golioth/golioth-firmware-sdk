@@ -43,7 +43,6 @@ static golioth_status_t download_and_write_flash(void) {
     GLTH_LOGI(TAG, "Download took %" PRIu64 " ms", golioth_sys_now_ms() - start_time_ms);
 
     fw_block_processor_log_results(&fw_block_processor);
-    fw_block_processor_deinit(&fw_block_processor);
 
     fw_update_post_download();
 
