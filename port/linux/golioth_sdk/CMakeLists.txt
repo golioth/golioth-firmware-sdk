@@ -18,7 +18,7 @@ add_library(cjson
 target_include_directories(cjson PUBLIC "${cjson_dir}")
 
 set(heatshrink_srcs
-    "${heatshrink_dir}/heatshrink_decoder.c"
+    "${heatshrink_dir}/src/heatshrink_decoder.c"
 )
 
 # Build Golioth SDK
@@ -52,7 +52,8 @@ target_include_directories(golioth_sdk
         ${sdk_src}/include
         ${sdk_port}/linux
     PRIVATE
-        ${heatshrink_dir}
+        ${heatshrink_dir}/include
+        ${heatshrink_dir}/src
         ${sdk_src}/priv_include
 )
 target_link_libraries(golioth_sdk
