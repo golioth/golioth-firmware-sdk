@@ -110,6 +110,13 @@ config GOLIOTH_OTA_DECOMPRESS_METHOD_ZLIB
 
 endchoice
 
+config GOLIOTH_OTA_PATCH
+    bool "Enable OTA artifact patching"
+    help
+        If enabled, the Golioth client will interpret downloaded OTA firmware artifacts
+        as patches, and will apply the bsdiff patching algorithm to them, using the currently
+        running firmware image as the old/base version.
+
 config GOLIOTH_COAP_MAX_PATH_LEN
     int "Golioth maximum CoAP path length"
     default 39
