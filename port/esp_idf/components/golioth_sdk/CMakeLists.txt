@@ -22,6 +22,7 @@ idf_component_register(
         "coap"
         "heatshrink"
         "miniz"
+        "bsdiff"
         "lwip"
         "mbedtls"
         "app_update"

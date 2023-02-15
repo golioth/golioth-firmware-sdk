@@ -188,7 +188,8 @@ SOURCES+=\
     $(wildcard $(GOLIOTHSDK_PATH)/port/modus_toolbox/libcoap/*.c)\
     $(wildcard $(GOLIOTHSDK_PATH)/examples/common/*.c)\
     $(GOLIOTHSDK_PATH)/external/heatshrink/src/heatshrink_decoder.c\
-    $(GOLIOTHSDK_PATH)/external/miniz/miniz_tinfl.c
+    $(GOLIOTHSDK_PATH)/external/miniz/miniz_tinfl.c\
+    $(GOLIOTHSDK_PATH)/external/bsdiff/bspatch.c
 
 # Like SOURCES, but for include directories. Value should be paths to
 # directories (without a leading -I).
@@ -216,6 +217,7 @@ INCLUDES+=\
     $(GOLIOTHSDK_PATH)/external/heatshrink/src\
     $(GOLIOTHSDK_PATH)/external/miniz\
     $(GOLIOTHSDK_PATH)/port/common/miniz\
+    $(GOLIOTHSDK_PATH)/external/bsdiff\
     $(GOLIOTHSDK_PATH)/examples/common
 
 # Add additional defines to the build process (without a leading -D).

@@ -3,6 +3,7 @@ set(sdk_src ${repo_root}/src)
 set(sdk_port ${repo_root}/port)
 set(heatshrink_dir ${repo_root}/external/heatshrink)
 set(miniz_dir ${repo_root}/external/miniz)
+set(bsdiff_dir ${repo_root}/external/bsdiff)
 
 option(ENABLE_DOCS "" OFF)
 option(ENABLE_EXAMPLES "" OFF)
@@ -24,6 +25,10 @@ set(heatshrink_srcs
 
 set(miniz_srcs
     "${miniz_dir}/miniz_tinfl.c"
+)
+
+set(bsdiff_srcs
+    "${bsdiff_dir}/bspatch.c"
 )
 
 # Build Golioth SDK
@@ -51,6 +56,7 @@ set(sdk_srcs
 add_library(golioth_sdk
     ${heatshrink_srcs}
     ${miniz_srcs}
+    ${bsdiff_srcs}
     ${sdk_srcs}
 )
 target_include_directories(golioth_sdk
@@ -58,6 +64,7 @@ target_include_directories(golioth_sdk
         ${sdk_src}/include
         ${sdk_port}/linux
     PRIVATE
+        ${bsdiff_dir}
         ${heatshrink_dir}/include
         ${heatshrink_dir}/src
         ${miniz_dir}
