@@ -162,6 +162,8 @@ void fw_block_processor_init(
         golioth_client_t client,
         const golioth_ota_component_t* component,
         uint8_t* download_buf) {
+    memset(ctx, 0, sizeof(*ctx));
+
     download_init(&ctx->download, client, component, download_buf);
     decompress_init(&ctx->decompress, component->is_compressed);
     handle_block_init(&ctx->handle_block, component->size);
