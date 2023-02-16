@@ -21,6 +21,7 @@ idf_component_register(
     PRIV_REQUIRES
         "coap"
         "heatshrink"
+        "miniz"
         "lwip"
         "mbedtls"
         "app_update"

@@ -2,6 +2,7 @@ set(repo_root ../../..)
 set(sdk_src ${repo_root}/src)
 set(sdk_port ${repo_root}/port)
 set(heatshrink_dir ${repo_root}/external/heatshrink)
+set(miniz_dir ${repo_root}/external/miniz)
 
 option(ENABLE_DOCS "" OFF)
 option(ENABLE_EXAMPLES "" OFF)
@@ -19,6 +20,10 @@ target_include_directories(cjson PUBLIC "${cjson_dir}")
 
 set(heatshrink_srcs
     "${heatshrink_dir}/src/heatshrink_decoder.c"
+)
+
+set(miniz_srcs
+    "${miniz_dir}/miniz_tinfl.c"
 )
 
 # Build Golioth SDK
@@ -45,6 +50,7 @@ set(sdk_srcs
 
 add_library(golioth_sdk
     ${heatshrink_srcs}
+    ${miniz_srcs}
     ${sdk_srcs}
 )
 target_include_directories(golioth_sdk
@@ -54,6 +60,8 @@ target_include_directories(golioth_sdk
     PRIVATE
         ${heatshrink_dir}/include
         ${heatshrink_dir}/src
+        ${miniz_dir}
+        ${sdk_port}/common/miniz
         ${sdk_src}/priv_include
 )
 target_link_libraries(golioth_sdk
