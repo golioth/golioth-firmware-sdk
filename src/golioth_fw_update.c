@@ -24,25 +24,25 @@ static const golioth_ota_component_t* _main_component;
 static golioth_fw_update_state_change_callback _state_callback;
 static void* _state_callback_arg;
 static golioth_fw_update_config_t _config;
+static fw_block_processor_ctx_t _fw_block_processor;
 
 static golioth_status_t download_and_write_flash(void) {
     assert(_main_component);
 
     GLTH_LOGI(TAG, "Image size = %" PRIu32, _main_component->size);
 
-    fw_block_processor_ctx_t fw_block_processor;
-    fw_block_processor_init(&fw_block_processor, _client, _main_component, _ota_block_buffer);
+    fw_block_processor_init(&_fw_block_processor, _client, _main_component, _ota_block_buffer);
 
     const uint64_t start_time_ms = golioth_sys_now_ms();
 
     // Process blocks one at a time until there are no more blocks (GOLIOTH_ERR_NO_MORE_DATA),
     // or an error occurs.
-    while (fw_block_processor_process(&fw_block_processor) == GOLIOTH_OK) {
+    while (fw_block_processor_process(&_fw_block_processor) == GOLIOTH_OK) {
     }
 
     GLTH_LOGI(TAG, "Download took %" PRIu64 " ms", golioth_sys_now_ms() - start_time_ms);
 
-    fw_block_processor_log_results(&fw_block_processor);
+    fw_block_processor_log_results(&_fw_block_processor);
 
     fw_update_post_download();
 
