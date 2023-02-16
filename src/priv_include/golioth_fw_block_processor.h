@@ -8,6 +8,7 @@
 #include "golioth_client.h"
 #include "golioth_ota.h"
 #include "golioth_status.h"
+#include <bspatch.h>
 #include <heatshrink_decoder.h>
 #include <miniz_tinfl.h>
 #include <stdint.h>
@@ -65,6 +66,18 @@ typedef struct {
 } decompress_ctx_t;
 
 typedef struct {
+    /// Context struct for calls into bspatch()
+    struct bspatch_ctx bspatch_ctx;
+    /// Input stream, required by bspatch()
+    struct bspatch_stream_i old_stream;
+    /// Output stream, required by bspatch()
+    struct bspatch_stream_n new_stream;
+    /// Function to call when output is available
+    process_fn output_fn;
+    void* output_fn_arg;
+} patch_ctx_t;
+
+typedef struct {
     /// Number of bytes forwarded to fw_update_handle_block()
     int32_t bytes_handled;
     /// Size of the OTA component being handled
@@ -74,6 +87,7 @@ typedef struct {
 typedef struct {
     download_ctx_t download;
     decompress_ctx_t decompress;
+    patch_ctx_t patch;
     handle_block_ctx_t handle_block;
 } fw_block_processor_ctx_t;
 
