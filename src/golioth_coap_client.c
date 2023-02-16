@@ -168,8 +168,12 @@ static coap_response_t coap_response_handler(
             } else if (req->type == GOLIOTH_COAP_REQUEST_GET_BLOCK) {
                 coap_opt_iterator_t opt_iter;
                 coap_opt_t* block_opt = coap_check_option(received, COAP_OPTION_BLOCK2, &opt_iter);
-                assert(block_opt);
-                uint32_t opt_block_index = coap_opt_block_num(block_opt);
+
+                // Note: If there's only one block, then the server will not include the BLOCK2
+                // option in the response. So block_opt may be NULL here.
+
+                uint32_t opt_block_index = block_opt ? coap_opt_block_num(block_opt) : 0;
+                bool is_last = block_opt ? (COAP_OPT_BLOCK_MORE(block_opt) == 0) : true;
 
                 GLTH_LOGD(
                         TAG,
@@ -180,8 +184,6 @@ static coap_response_t coap_response_handler(
                         opt_block_index * 1024);
                 GLTH_LOG_BUFFER_HEXDUMP(
                         TAG, data, min(32, data_len), GOLIOTH_DEBUG_LOG_LEVEL_DEBUG);
-
-                bool is_last = (COAP_OPT_BLOCK_MORE(block_opt) == 0);
 
                 if (req->get_block.callback) {
                     req->get_block.callback(
