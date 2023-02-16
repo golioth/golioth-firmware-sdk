@@ -91,6 +91,37 @@ static void decompress_init(decompress_ctx_t* ctx) {
 #endif
 }
 
+static int patch_old_read(const struct bspatch_stream_i* stream, void* buffer, int pos, int len) {
+    golioth_status_t status = fw_update_read_current_image_at_offset(buffer, len, pos);
+    if (status != GOLIOTH_OK) {
+        return -1;
+    }
+    return 0;
+}
+
+static int patch_new_write(const struct bspatch_stream_n* stream, const void* buffer, int length) {
+    patch_ctx_t* ctx = (patch_ctx_t*)stream->opaque;
+    assert(ctx->output_fn);
+    golioth_status_t status = ctx->output_fn(buffer, length, ctx->output_fn_arg);
+    if (status != GOLIOTH_OK) {
+        return -1;
+    }
+    return 0;
+}
+
+static void patch_init(patch_ctx_t* ctx) {
+    memset(ctx, 0, sizeof(*ctx));
+
+    ctx->old_stream.read = patch_old_read;
+    ctx->old_stream.opaque = ctx;
+    ctx->new_stream.write = patch_new_write;
+    ctx->new_stream.opaque = ctx;
+
+#if CONFIG_GOLIOTH_OTA_PATCH
+    GLTH_LOGI(TAG, "Patching enabled");
+#endif
+}
+
 static void handle_block_init(handle_block_ctx_t* ctx, size_t component_size) {
     memset(ctx, 0, sizeof(*ctx));
     ctx->component_size = component_size;
@@ -223,6 +254,25 @@ static golioth_status_t decompress(const uint8_t* in_data, size_t in_data_size, 
     // TODO - compute sha256 of decompressed image and verify it matches manifest
 }
 
+static golioth_status_t patch(const uint8_t* in_data, size_t in_data_size, void* arg) {
+    patch_ctx_t* ctx = (patch_ctx_t*)arg;
+    assert(ctx->output_fn);
+
+#if CONFIG_GOLIOTH_OTA_PATCH == 0
+    // no patching required
+    return ctx->output_fn(in_data, in_data_size, ctx->output_fn_arg);
+#endif
+
+    // Note: bspatch() will write data to new_stream, which calls patch_new_write()
+    int err = bspatch(&ctx->bspatch_ctx, &ctx->old_stream, &ctx->new_stream, in_data, in_data_size);
+    if (err != BSPATCH_SUCCESS) {
+        GLTH_LOGE(TAG, "patch error: %d", err);
+        return GOLIOTH_ERR_FAIL;
+    }
+
+    return GOLIOTH_OK;
+}
+
 void fw_block_processor_init(
         fw_block_processor_ctx_t* ctx,
         golioth_client_t client,
@@ -232,15 +282,20 @@ void fw_block_processor_init(
 
     download_init(&ctx->download, client, component, download_buf);
     decompress_init(&ctx->decompress);
+    patch_init(&ctx->patch);
     handle_block_init(&ctx->handle_block, component->size);
 
     // Connect output of download to input of decompress
     ctx->download.output_fn = decompress;
     ctx->download.output_fn_arg = &ctx->decompress;
 
-    // Connect output of decompress to input of handle_block
-    ctx->decompress.output_fn = handle_block;
-    ctx->decompress.output_fn_arg = &ctx->handle_block;
+    // Connect output of decompress to input of patch
+    ctx->decompress.output_fn = patch;
+    ctx->decompress.output_fn_arg = &ctx->patch;
+
+    // Connect output of patch to input of handle_block
+    ctx->patch.output_fn = handle_block;
+    ctx->patch.output_fn_arg = &ctx->handle_block;
 }
 
 golioth_status_t fw_block_processor_process(fw_block_processor_ctx_t* ctx) {
