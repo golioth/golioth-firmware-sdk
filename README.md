@@ -108,6 +108,8 @@ the :x:'s indicate a feature that is not planned (or not applicable).
 | PSK Auth | :heavy_check_mark: | :heavy_check_mark: | :heavy_check_mark: |
 | Certificate Auth | :heavy_check_mark: | :soon: | :heavy_check_mark: |
 | Sign+Verify OTA images | :soon: | :heavy_check_mark: | :soon: |
+| OTA FW compression | :heavy_check_mark: | :heavy_check_mark: | :heavy_check_mark: |
+| OTA FW delta update | :heavy_check_mark: | :heavy_check_mark: | :heavy_check_mark: |
 | Terminal shell | :heavy_check_mark: | :soon: | :x: |
 | Remote Shell | :heavy_check_mark: | :soon: | :soon: |
 | Serial Provisioning | :heavy_check_mark: | :soon: | :x: |
