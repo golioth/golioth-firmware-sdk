@@ -79,13 +79,13 @@ static golioth_status_t download_block(download_ctx_t* ctx) {
     return ctx->output_fn(ctx->download_buf, ctx->block_bytes_downloaded, ctx->output_fn_arg);
 }
 
-static void decompress_init(decompress_ctx_t* ctx, bool enable_decompression) {
+static void decompress_init(decompress_ctx_t* ctx) {
     memset(ctx, 0, sizeof(*ctx));
-    ctx->is_enabled = enable_decompression;
+
+#if CONFIG_GOLIOTH_OTA_DECOMPRESS_METHOD_HEATSHRINK
+    GLTH_LOGI(TAG, "Enabling heatshrink decompression");
     heatshrink_decoder_reset(&ctx->hsd);
-    if (ctx->is_enabled) {
-        GLTH_LOGI(TAG, "Compressed image detected");
-    }
+#endif
 }
 
 static void handle_block_init(handle_block_ctx_t* ctx, size_t component_size) {
@@ -112,7 +112,7 @@ static golioth_status_t decompress(const uint8_t* in_data, size_t in_data_size, 
 
     ctx->bytes_in += in_data_size;
 
-    if (!ctx->is_enabled) {
+    if (!CONFIG_GOLIOTH_OTA_DECOMPRESS_METHOD_HEATSHRINK) {
         // no decompression required
         GOLIOTH_STATUS_RETURN_IF_ERROR(ctx->output_fn(in_data, in_data_size, ctx->output_fn_arg));
         ctx->bytes_out += in_data_size;
@@ -163,7 +163,7 @@ void fw_block_processor_init(
     memset(ctx, 0, sizeof(*ctx));
 
     download_init(&ctx->download, client, component, download_buf);
-    decompress_init(&ctx->decompress, component->is_compressed);
+    decompress_init(&ctx->decompress);
     handle_block_init(&ctx->handle_block, component->size);
 
     // Connect output of download to input of decompress
