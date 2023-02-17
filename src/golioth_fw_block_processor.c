@@ -11,8 +11,6 @@
 
 #define TAG "fw_block_processor"
 
-#define HEATSHRINK_DECODE_BUFFER_SIZE HEATSHRINK_STATIC_INPUT_BUFFER_SIZE
-
 static void block_stats_init(block_latency_stats_t* stats) {
     stats->block_min_ms = UINT32_MAX;
     stats->block_ema_ms = 0.0f;
@@ -135,7 +133,7 @@ static golioth_status_t decompress(const uint8_t* in_data, size_t in_data_size, 
 
         // Pull the uncompressed data out of the decoder
         HSD_poll_res pres;
-        uint8_t decode_buffer[HEATSHRINK_DECODE_BUFFER_SIZE];
+        uint8_t decode_buffer[HEATSHRINK_STATIC_INPUT_BUFFER_SIZE];
         do {
             size_t poll_sz = 0;
             pres = heatshrink_decoder_poll(
