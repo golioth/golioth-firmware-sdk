@@ -42,8 +42,6 @@ typedef struct {
 } download_ctx_t;
 
 typedef struct {
-    /// If true, enables decompression
-    bool is_enabled;
     /// Statically allocated heatshrink decoder
     heatshrink_decoder hsd;
     /// Number of bytes input to the decompressor
