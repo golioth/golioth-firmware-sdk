@@ -159,6 +159,10 @@ golioth_status_t fw_update_handle_block(
         size_t block_size,
         size_t offset,
         size_t total_size);
+golioth_status_t fw_update_read_current_image_at_offset(
+        uint8_t* buf,
+        size_t bufsize,
+        size_t offset);
 void fw_update_post_download(void);
 golioth_status_t fw_update_validate(void);
 golioth_status_t fw_update_change_boot_image(void);

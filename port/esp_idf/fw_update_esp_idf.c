@@ -107,3 +107,22 @@ void fw_update_end(void) {
         esp_ota_end(_update_handle);
     }
 }
+
+golioth_status_t fw_update_read_current_image_at_offset(
+        uint8_t* buf,
+        size_t bufsize,
+        size_t offset) {
+    const esp_partition_t* current_partition = esp_ota_get_running_partition();
+    if (!current_partition) {
+        GLTH_LOGE(TAG, "current_partition invalid");
+        return GOLIOTH_ERR_FAIL;
+    }
+
+    esp_err_t read_status = esp_partition_read(current_partition, offset, buf, bufsize);
+    if (read_status != ESP_OK) {
+        GLTH_LOGE(TAG, "esp_partition_read error: %s", esp_err_to_name(read_status));
+        return GOLIOTH_ERR_FAIL;
+    }
+
+    return GOLIOTH_OK;
+}
