@@ -45,6 +45,7 @@ golioth_status_t fw_update_handle_block(
 void fw_update_post_download(void) {
     if (_fp) {
         fclose(_fp);
+        _fp = NULL;
     }
 }
 #else
