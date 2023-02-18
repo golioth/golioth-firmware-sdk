@@ -110,6 +110,23 @@ golioth_status_t fw_update_handle_block(
         size_t offset,
         size_t total_size);
 
+/// Copy bufsize bytes of the currently running image at a specific offset
+/// into buf.
+///
+/// This is only called if CONFIG_GOLIOTH_OTA_PATCH == 1. The data
+/// of the current image is used as the base of the patch operation.
+///
+/// @param buf Output buffer, populated with bufsize bytes of the current image
+/// @param bufsize How many bytes to copy
+/// @param offset The byte offset from the start of the currently running image to start reading
+///
+/// @return GOLIOTH_OK - copied bufsize bytes into buf
+/// @return Otherwise - error copying bytes, abort firmware update
+golioth_status_t fw_update_read_current_image_at_offset(
+        uint8_t* buf,
+        size_t bufsize,
+        size_t offset);
+
 /// Post-download hook.
 ///
 /// Called by golioth_fw_update.c after downloading the full image.

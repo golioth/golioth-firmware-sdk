@@ -5,6 +5,7 @@
 
 #define TAG "fw_update_mcuboot"
 
+static const struct flash_area* _primary_flash_area;
 static const struct flash_area* _secondary_flash_area;
 
 bool fw_update_is_pending_verify(void) {
@@ -84,8 +85,14 @@ golioth_status_t fw_update_handle_block(
 }
 
 void fw_update_post_download(void) {
+    if (_primary_flash_area) {
+        flash_area_close(_primary_flash_area);
+        _primary_flash_area = NULL;
+    }
+
     if (_secondary_flash_area) {
         flash_area_close(_secondary_flash_area);
+        _secondary_flash_area = NULL;
     }
 }
 
@@ -116,4 +123,30 @@ golioth_status_t fw_update_change_boot_image(void) {
 
 void fw_update_end(void) {
     // Nothing to do
+}
+
+golioth_status_t fw_update_read_current_image_at_offset(
+        uint8_t* buf,
+        size_t bufsize,
+        size_t offset) {
+    int status = 0;
+
+    if (!_primary_flash_area) {
+        // Open primary flash area (the currently running image)
+        int primary_id = flash_area_id_from_image_slot(0);
+        status = flash_area_open(primary_id, &_primary_flash_area);
+        if (status != 0) {
+            GLTH_LOGE(TAG, "flash_area_open error: %d", status);
+            return GOLIOTH_ERR_FAIL;
+        }
+    }
+
+    // Read from primary flash
+    status = flash_area_read(_primary_flash_area, offset, buf, bufsize);
+    if (status != 0) {
+        GLTH_LOGE(TAG, "flash_area_read error: %d", status);
+        return GOLIOTH_ERR_FAIL;
+    }
+
+    return GOLIOTH_OK;
 }
