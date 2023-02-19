@@ -21,13 +21,6 @@ jobs:
       with:
         python-version: 3.x
         architecture: 'x64'
-    - name: Install goliothctl and coap-cli
-      run: |
-        echo "deb [trusted=yes] https://repos.golioth.io/apt/ /" | sudo tee /etc/apt/sources.list.d/golioth.list
-        sudo apt update
-        sudo apt install goliothctl coap
-        goliothctl version
-        coap version
     - name: Build test project
       uses: espressif/esp-idf-ci-action@v1
       with:
@@ -57,18 +50,15 @@ jobs:
         esp_idf_version: v5.0
         target: esp32s3
         path: 'examples/esp_idf/test'
-    - name: Create and rollout new OTA release using goliothctl
-      env:
-        GOLIOTH_API_KEY: ${{ secrets.GOLIOTH_API_KEY }}
+    - name: Copy test.bin to test_new.bin
       run: |
         cd examples/esp_idf/test
-        export GOLIOTH_API_URL=https://api.golioth.dev
-        export GOLIOTH_PROJECT_ID=ci
-        goliothctl login --apiUrl $GOLIOTH_API_URL --projectId $GOLIOTH_PROJECT_ID --apiKey $GOLIOTH_API_KEY
-        goliothctl dfu --apiUrl $GOLIOTH_API_URL --projectId $GOLIOTH_PROJECT_ID release delete --release-tags 1.2.99 || echo "release not found"
-        goliothctl dfu --apiUrl $GOLIOTH_API_URL --projectId $GOLIOTH_PROJECT_ID artifact delete 1.2.99 || echo "artifact not found"
-        goliothctl dfu --apiUrl $GOLIOTH_API_URL --projectId $GOLIOTH_PROJECT_ID artifact create build/test.bin --version 1.2.99
-        goliothctl dfu --apiUrl $GOLIOTH_API_URL --projectId $GOLIOTH_PROJECT_ID release create --release-tags 1.2.99 --components main@1.2.99 --rollout true
+        cp build/test.bin test_new.bin
+    - name: Upload 1.2.99 binary
+      uses: actions/upload-artifact@v3
+      with:
+        name: test_new.bin
+        path: examples/esp_idf/test/test_new.bin
 
   # Assumptions made about the self-hosted runner:
   #
@@ -116,11 +106,27 @@ jobs:
       run: |
         cd examples/esp_idf/test
         tar xvf build.tar.gz
+    - name: Download 1.2.99 binary
+      uses: actions/download-artifact@v3
+      with:
+        name: test_new.bin
+        path: examples/esp_idf/test
     - name: Install python packages
       run: python -m pip install esptool requests
     - name: Copy credentials_esp32s3.yml to examples/esp_idf/test
       run: |
         cp $HOME/credentials_esp32s3.yml examples/esp_idf/test/credentials.yml
+    - name: Create and rollout new 1.2.99 OTA release using goliothctl
+      run: |
+        cd examples/esp_idf/test
+        export GOLIOTH_API_URL=$(cat credentials.yml | grep api_url | awk '{print $2}')
+        export GOLIOTH_PROJECT_ID=$(cat credentials.yml | grep project_id | awk '{print $2}')
+        export GOLIOTH_API_KEY=$(cat credentials.yml | grep api_key | awk '{print $2}')
+        goliothctl login --apiUrl $GOLIOTH_API_URL --projectId $GOLIOTH_PROJECT_ID --apiKey $GOLIOTH_API_KEY
+        goliothctl dfu --apiUrl $GOLIOTH_API_URL --projectId $GOLIOTH_PROJECT_ID release delete --release-tags 1.2.99 || echo "release not found"
+        goliothctl dfu --apiUrl $GOLIOTH_API_URL --projectId $GOLIOTH_PROJECT_ID artifact delete 1.2.99 || echo "artifact not found"
+        goliothctl dfu --apiUrl $GOLIOTH_API_URL --projectId $GOLIOTH_PROJECT_ID artifact create test_new.bin --version 1.2.99
+        goliothctl dfu --apiUrl $GOLIOTH_API_URL --projectId $GOLIOTH_PROJECT_ID release create --release-tags 1.2.99 --components main@1.2.99 --rollout true
     - name: Flash and Verify Serial Output
       run: |
         cd examples/esp_idf/test
