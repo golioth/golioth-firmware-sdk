@@ -10,6 +10,9 @@
 
 #define TAG "nvs"
 
+#define WIFI_MAX_NUM_CHARS 32
+#define PSK_MAX_NUM_CHARS 127
+
 static const char* read_nvs_key_or_default(
         const char* key,
         char* out,
@@ -35,22 +38,22 @@ void nvs_init(void) {
 }
 
 const char* nvs_read_wifi_ssid(void) {
-    static char buf[32];
+    static char buf[WIFI_MAX_NUM_CHARS + 1];
     return read_nvs_key_or_default(NVS_WIFI_SSID_KEY, buf, sizeof(buf), NVS_DEFAULT_STR);
 }
 
 const char* nvs_read_wifi_password(void) {
-    static char buf[32];
+    static char buf[WIFI_MAX_NUM_CHARS + 1];
     return read_nvs_key_or_default(NVS_WIFI_PASS_KEY, buf, sizeof(buf), NVS_DEFAULT_STR);
 }
 
 const char* nvs_read_golioth_psk_id(void) {
-    static char buf[128];
+    static char buf[PSK_MAX_NUM_CHARS + 1];
     return read_nvs_key_or_default(NVS_GOLIOTH_PSK_ID_KEY, buf, sizeof(buf), NVS_DEFAULT_STR);
 }
 
 const char* nvs_read_golioth_psk(void) {
-    static char buf[128];
+    static char buf[PSK_MAX_NUM_CHARS + 1];
     return read_nvs_key_or_default(NVS_GOLIOTH_PSK_KEY, buf, sizeof(buf), NVS_DEFAULT_STR);
 }
 
