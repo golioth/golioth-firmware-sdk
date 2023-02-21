@@ -103,7 +103,9 @@ static void test_golioth_client_create(void) {
 static void test_connects_to_golioth(void) {
     TEST_ASSERT_NOT_NULL(_client);
     TEST_ASSERT_EQUAL(GOLIOTH_OK, golioth_client_start(_client));
-    TEST_ASSERT_EQUAL(pdTRUE, xSemaphoreTake(_connected_sem, 10000 / portTICK_PERIOD_MS));
+    TEST_ASSERT_EQUAL(
+            pdTRUE,
+            xSemaphoreTake(_connected_sem, TEST_RESPONSE_TIMEOUT_S * 1000 / portTICK_PERIOD_MS));
 }
 
 static void test_golioth_client_heap_usage(void) {
