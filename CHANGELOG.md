@@ -4,6 +4,34 @@ All notable changes to this project will be documented in this file.
 The format is based on [Keep a Changelog](https://keepachangelog.com/en/1.0.0/),
 and this project adheres to [Semantic Versioning](https://semver.org/spec/v2.0.0.html).
 
+## [0.6.0] - 2023-02-24
+
+Highlights:
+
+- New feature: OTA zlib decompression (alternative to heatshrink)
+- New feature: OTA delta updates (bsdiff + zlib)
+
+### Added
+- .gitmodules: add miniz library
+- .gitmodules: add bsdiff library
+- .github: build modus_toolbox project in CI
+- port: add read_current_image_at_offset() function, required to implement by ports
+- fw_update: new option to decompress using zlib algorithm
+- fw_update: new feature, delta FW updates
+- scripts: add OTA scripts to compress and generate patch files
+- docs: add Modus Toolbox to integration guide
+### Changed
+- golioth_basics: change RPC method from "double" to "multiply"
+- libcoap: update to tip of develop branch
+- heatshrink: update to tip of develop branch, build without dyn mem allocation
+- fw_update: internal restructuring, process blocks through a chain of functions
+- config: for decompression, must select either heatshrink or zlib algorithm
+### Fixed
+- shell: verify key is correct before accessing NVS
+- port/linux: handle EINTR correctly in golioth_sys_sem_take()
+- coap_client: allow for no block2 option in block req response, fixes single-block downloads
+- examples/esp_idf: allow for up to 32 chars for wifi creds (was 31)
+
 ## [0.5.0] - 2023-01-12
 
 Highlights:
