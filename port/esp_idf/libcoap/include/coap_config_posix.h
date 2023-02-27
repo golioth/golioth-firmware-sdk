@@ -22,6 +22,7 @@
 
 #include <sys/socket.h>
 #include <net/if.h>
+#include <sys/un.h>
 
 #define HAVE_SYS_SOCKET_H
 #define HAVE_MALLOC

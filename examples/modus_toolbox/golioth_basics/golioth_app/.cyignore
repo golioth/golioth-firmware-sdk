@@ -6,6 +6,7 @@ $(SEARCH_libcoap)/tests
 $(SEARCH_libcoap)/ext
 $(SEARCH_libcoap)/man
 $(SEARCH_libcoap)/src/oscore
+$(SEARCH_libcoap)/src/coap_io_contiki.c
 $(SEARCH_libcoap)/src/coap_io_lwip.c
 $(SEARCH_libcoap)/src/coap_io_riot.c
 $(SEARCH_libcoap)/src/coap_gnutls.c

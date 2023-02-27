@@ -17,6 +17,7 @@
 #define HAVE_STRNLEN 1
 #define HAVE_LIMITS_H
 #define HAVE_NETINET_IN_H
+#define HAVE_RANDOM
 #define _POSIX_TIMERS 1
 
 #define COAP_CONSTRAINED_STACK 1
@@ -49,6 +50,9 @@ struct in6_pktinfo {
 #define IPV6_PKTINFO IPV6_CHECKSUM
 #define IN6_IS_ADDR_MULTICAST(a) false
 #define IPV6_MULTICAST_HOPS 18
+
+/* Workaround for undefined AF_UNIX and no sys/un.h header */
+#define AF_UNIX 6
 
 /*
  * Stubs for X509 file-oriented functions.
