@@ -38,6 +38,8 @@
 #define HAVE_LIMITS_H
 #define HAVE_INTTYPES_H
 
+#define HAVE_GETRANDOM
+
 #define COAP_RESOURCES_NOHASH
 
 #endif /* _CONFIG_H_ */

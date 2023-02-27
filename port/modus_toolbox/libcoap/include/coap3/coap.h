@@ -17,16 +17,16 @@ extern "C" {
 #include "coap3/coap_encode.h"
 #include "coap3/coap_event.h"
 #include "coap3/coap_io.h"
-#include "coap3/coap_prng.h"
+#include "coap3/coap_mem.h"
+#include "coap3/coap_net.h"
 #include "coap3/coap_option.h"
+#include "coap3/coap_prng.h"
 #include "coap3/coap_str.h"
 #include "coap3/coap_subscribe.h"
 #include "coap3/coap_time.h"
-#include "coap3/mem.h"
-#include "coap3/net.h"
+#include "coap3/coap_uri.h"
 #include "coap3/pdu.h"
 #include "coap3/resource.h"
-#include "coap3/uri.h"
 
 #ifdef __cplusplus
 }
