@@ -22,7 +22,6 @@
 
 #define COAP_CONSTRAINED_STACK 1
 #define COAP_DISABLE_TCP 1
-#define COAP_RESOURCES_NOHASH
 #define ESPIDF_VERSION /* hack for net.c, to avoid usage of SIOCGIFADDR, which is not defined */
 // #define WITH_LWIP 1 /* compilation error related to MEMP macros */
 
