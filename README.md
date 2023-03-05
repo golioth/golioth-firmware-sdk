@@ -98,7 +98,7 @@ the :x:'s indicate a feature that is not planned (or not applicable).
 
 | Feature | ESP-IDF | ModusToolbox | Linux |
 | --- | --- | --- | --- |
-| OTA FW Update | :heavy_check_mark: | :heavy_check_mark: | :soon: |
+| OTA FW Update | :heavy_check_mark: | :heavy_check_mark: | :heavy_check_mark: <sup>1</sup> |
 | Cloud Logging | :heavy_check_mark: | :heavy_check_mark: | :heavy_check_mark: |
 | LightDB State | :heavy_check_mark: | :heavy_check_mark: | :heavy_check_mark: |
 | LightDB Stream | :heavy_check_mark: | :heavy_check_mark: | :heavy_check_mark: |
@@ -114,6 +114,9 @@ the :x:'s indicate a feature that is not planned (or not applicable).
 | Remote Shell | :heavy_check_mark: | :soon: | :soon: |
 | Serial Provisioning | :heavy_check_mark: | :soon: | :x: |
 | BLE Provisioning | :heavy_check_mark: | :soon: | :x: |
+
+<sup>1</sup>: partially implemented, downloads new image to file, but doesn't swap
+out the currently running image
 
 ## Verified Devices
 
