@@ -32,6 +32,8 @@
 #define HAVE_NETINET_IN_H
 #define HAVE_STRUCT_CMSGHDR
 #define COAP_DISABLE_TCP 0
+#define HAVE_PTHREAD_H
+#define HAVE_PTHREAD_MUTEX_LOCK
 
 #define ipi_spec_dst ipi_addr
 struct in6_pktinfo {
