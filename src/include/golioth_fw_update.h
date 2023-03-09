@@ -19,14 +19,14 @@ typedef struct {
 } golioth_fw_update_config_t;
 
 /// @defgroup golioth_fw_update golioth_fw_update
-/// Create a background task that will execute Over-the-Air (OTA) updates
+/// Create a background thread that will execute Over-the-Air (OTA) updates
 ///
 /// https://docs.golioth.io/reference/protocols/coap/ota
 /// @{
 
-/// Create a task that will perform firmware updates.
+/// Create a thread that will perform firmware updates.
 ///
-/// The task will observe OTA manifests then execute the OTA update,
+/// The thread will observe OTA manifests then execute the OTA update,
 /// including state reporting to Golioth and updating firmware on the device.
 ///
 /// Will ignore any received OTA manifests where the firmware already

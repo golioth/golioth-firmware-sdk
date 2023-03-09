@@ -16,7 +16,7 @@
 
 /// Callback for handling a line of input text from Golioth
 ///
-/// It is intended that this callback feed the line to the shell task
+/// It is intended that this callback feed the line to the shell thread
 /// for execution.
 ///
 /// @param line The line of text (is NULL-terminated)

@@ -97,7 +97,7 @@ static void on_my_config(
 
 
 void golioth_basics(golioth_client_t client) {
-    // Register a callback function that will be called by the client task when
+    // Register a callback function that will be called by the client thread when
     // connect and disconnect events happen.
     //
     // This is optional, but can be useful for synchronizing operations on connect/disconnect
@@ -123,7 +123,7 @@ void golioth_basics(golioth_client_t client) {
     GLTH_LOGI(TAG, "Hello, Golioth!");
 
 
-    // For OTA, we will spawn a background task that will listen for firmware
+    // For OTA, we will spawn a background thread that will listen for firmware
     // updates from Golioth and automatically update firmware on the device
     golioth_fw_update_init(client, _current_version);
 
@@ -133,7 +133,7 @@ void golioth_basics(golioth_client_t client) {
     // This is an "asynchronous" function, meaning that the function will return
     // immediately and the integer will be sent to Golioth at a later time.
     // Internally, the request is added to a queue which is processed
-    // by the Golioth client task.
+    // by the Golioth client thread.
     //
     // Any functions provided by this SDK ending in _async behave the same way.
     //
@@ -148,7 +148,7 @@ void golioth_basics(golioth_client_t client) {
     //
     //  1. We receive a response to the request from the server
     //  2. The user-provided timeout expires
-    //  3. The default client task timeout expires (GOLIOTH_COAP_RESPONSE_TIMEOUT_S)
+    //  3. The default client thread timeout expires (GOLIOTH_COAP_RESPONSE_TIMEOUT_S)
     //
     // In this case, we will block for up to 2 seconds waiting for the server response.
     // We'll check the return code to know whether a timeout happened.

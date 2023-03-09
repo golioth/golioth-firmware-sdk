@@ -84,7 +84,7 @@ static void remote_shell_thread(void* arg) {
             }
         }
         GLTH_LOGD(TAG, "wr = %u, rd = %u, drop = %u", _bytes_written, _bytes_read, _bytes_dropped);
-        golioth_time_delay_ms(CONFIG_GOLIOTH_REMOTE_SHELL_TASK_DELAY_MS);
+        golioth_time_delay_ms(CONFIG_GOLIOTH_REMOTE_SHELL_THREAD_DELAY_MS);
     };
 }
 
@@ -112,7 +112,7 @@ static void init(void) {
             .fn = remote_shell_thread,
             .user_arg = NULL,
             .stack_size = 4096,
-            .prio = CONFIG_GOLIOTH_COAP_TASK_PRIORITY});
+            .prio = CONFIG_GOLIOTH_COAP_THREAD_PRIORITY});
     if (!thread) {
         GLTH_LOGE(TAG, "Failed to create remote shell thread");
         return;

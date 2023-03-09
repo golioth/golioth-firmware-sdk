@@ -166,7 +166,7 @@ typedef void (*golioth_set_cb_fn)(
 /// Dynamically creates a client and returns an opaque handle to the client.
 /// The handle is a required parameter for most other Golioth SDK functions.
 ///
-/// An RTOS task and request queue is created and the client is automatically started (no
+/// An RTOS thread and request queue is created and the client is automatically started (no
 /// need to call @ref golioth_client_start).
 ///
 /// @param config Client configuration
@@ -199,7 +199,7 @@ golioth_status_t golioth_client_start(golioth_client_t client);
 /// Stop the Golioth client
 ///
 /// Client will finish the current request (if there is one), then enter a dormant
-/// state where no packets will be sent or received with Golioth, and the client task will be in
+/// state where no packets will be sent or received with Golioth, and the client thread will be in
 /// a blocked state.
 ///
 /// This function will block until the client thread is actually stopped.
@@ -248,13 +248,13 @@ void golioth_client_register_event_callback(
         golioth_client_event_cb_fn callback,
         void* arg);
 
-/// The number of items currently in the client task request queue.
+/// The number of items currently in the client thread request queue.
 ///
 /// Will be a number between 0 and GOLIOTH_COAP_REQUEST_QUEUE_MAX_ITEMS.
 ///
 /// @param client The client handle
 ///
-/// @return The number of items currently in the client task request queue.
+/// @return The number of items currently in the client thread request queue.
 uint32_t golioth_client_num_items_in_request_queue(golioth_client_t client);
 
 /// Simulate packet loss at a particular percentage (0 to 100).

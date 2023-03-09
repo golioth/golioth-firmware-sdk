@@ -16,14 +16,14 @@ config GOLIOTH_COAP_RESPONSE_TIMEOUT_S
     int "CoAP response timeout"
     default 10
     help
-        Maximum time, in seconds, the CoAP task will block while waiting
+        Maximum time, in seconds, the CoAP thread will block while waiting
         for a response from the server.
 
 config GOLIOTH_COAP_REQUEST_QUEUE_TIMEOUT_MS
     int "CoAP request queue timeout"
     default 1000
     help
-        Maximum time, in milliseconds, the CoAP task will block while
+        Maximum time, in milliseconds, the CoAP thread will block while
         waiting for something to arrive in the request queue.
         This is also how often to poll for received observations.
 
@@ -31,21 +31,21 @@ config GOLIOTH_COAP_REQUEST_QUEUE_MAX_ITEMS
     int "CoAP request queue max num items"
     default 10
     help
-        The size, in items, of the CoAP task request queue.
+        The size, in items, of the CoAP thread request queue.
         If the queue is full, any attempts to queue new messages
         will fail.
 
-config GOLIOTH_COAP_TASK_PRIORITY
-    int "Golioth CoAP task priority"
+config GOLIOTH_COAP_THREAD_PRIORITY
+    int "Golioth CoAP thread priority"
     default 5
     help
-        Task priority of the Golioth CoAP task.
+        Thread priority of the Golioth CoAP thread.
 
-config GOLIOTH_COAP_TASK_STACK_SIZE_BYTES
-    int "Golioth CoAP task stack size"
+config GOLIOTH_COAP_THREAD_STACK_SIZE
+    int "Golioth CoAP thread stack size"
     default 6144
     help
-        Task stack size of the Golioth CoAP task, in bytes.
+        Thread stack size of the Golioth CoAP thread, in bytes.
 
 config GOLIOTH_COAP_KEEPALIVE_INTERVAL_S
     int "Golioth CoAP keepalive interval, in seconds"
@@ -195,7 +195,7 @@ config GOLIOTH_REMOTE_SHELL_ENABLE
     help
         Enable/disable golioth_remote_shell feature.
 
-        If enabled, an additional RTOS task will be created along
+        If enabled, an additional RTOS thread will be created along
         with a ringbuffer to queue device output log data.
 
 config GOLIOTH_REMOTE_SHELL_BUF_SIZE
@@ -209,11 +209,11 @@ config GOLIOTH_REMOTE_SHELL_BUF_SIZE
         early boot logs. If this is not important, it can be set
         to a much smaller value, like 512.
 
-config GOLIOTH_REMOTE_SHELL_TASK_DELAY_MS
-    int "Remote shell task delay"
+config GOLIOTH_REMOTE_SHELL_THREAD_DELAY_MS
+    int "Remote shell thread delay"
     default 500
     help
-        How often the remote shell task will process the log output ringbuffer.
+        How often the remote shell thread will process the log output ringbuffer.
 
         A larger value results in more latency when viewing logs remotely.
         A smaller value results in lower latency, but more packets sent
