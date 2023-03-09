@@ -333,7 +333,7 @@ static void test_client_task_stack_min_remaining(void) {
     TaskHandle_t client_task = (TaskHandle_t)golioth_client_get_thread(_client);
 
     uint32_t stack_unused = uxTaskGetStackHighWaterMark(client_task);
-    uint32_t stack_used = CONFIG_GOLIOTH_COAP_TASK_STACK_SIZE_BYTES - stack_unused;
+    uint32_t stack_used = CONFIG_GOLIOTH_COAP_THREAD_STACK_SIZE - stack_unused;
     ESP_LOGI(
             TAG,
             "Client task stack used = %" PRIu32 ", unused = %" PRIu32,
@@ -341,7 +341,7 @@ static void test_client_task_stack_min_remaining(void) {
             stack_unused);
 
     // Verify at least 25% stack was not used
-    TEST_ASSERT_TRUE(stack_unused >= CONFIG_GOLIOTH_COAP_TASK_STACK_SIZE_BYTES / 4);
+    TEST_ASSERT_TRUE(stack_unused >= CONFIG_GOLIOTH_COAP_THREAD_STACK_SIZE / 4);
 }
 
 static void test_client_destroy_and_no_memory_leaks(void) {

@@ -984,8 +984,8 @@ golioth_client_t golioth_client_create(const golioth_client_config_t* config) {
             .name = "coap_client",
             .fn = golioth_coap_client_thread,
             .user_arg = new_client,
-            .stack_size = CONFIG_GOLIOTH_COAP_TASK_STACK_SIZE_BYTES,
-            .prio = CONFIG_GOLIOTH_COAP_TASK_PRIORITY,
+            .stack_size = CONFIG_GOLIOTH_COAP_THREAD_STACK_SIZE,
+            .prio = CONFIG_GOLIOTH_COAP_THREAD_PRIORITY,
     });
     if (!new_client->coap_thread_handle) {
         GLTH_LOGE(TAG, "Failed to create client thread");

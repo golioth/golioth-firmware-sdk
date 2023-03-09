@@ -13,5 +13,5 @@
 /// Time since boot, in milliseconds
 uint64_t golioth_time_millis(void);
 
-/// Delay the current RTOS task by a certain number of milliseconds.
+/// Delay the current RTOS thread by a certain number of milliseconds.
 void golioth_time_delay_ms(uint32_t ms);

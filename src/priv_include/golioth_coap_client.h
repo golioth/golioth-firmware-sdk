@@ -88,20 +88,20 @@ typedef struct {
     uint64_t ageout_ms;
     bool got_response;
 
-    /// (sync request only) Notification from coap task to user sync function that
+    /// (sync request only) Notification from coap thread to user sync function that
     /// request is completed.
-    /// Created in user sync function, deleted by coap task.
+    /// Created in user sync function, deleted by coap thread.
     ///
     /// Bit 0: response received
     /// Bit 1: timeout
     golioth_event_group_t request_complete_event;
 
-    /// (sync request only) Notification from user sync function to coap task, acknowledge it
+    /// (sync request only) Notification from user sync function to coap thread, acknowledge it
     /// received request_complete_event.
     ///
-    /// Created in user sync function, deleted by coap task.
+    /// Created in user sync function, deleted by coap thread.
     ///
-    /// Used by the coap task to know when it's safe
+    /// Used by the coap thread to know when it's safe
     /// to delete request_complete_event and this semaphore.
     golioth_sys_sem_t request_complete_ack_sem;
 } golioth_coap_request_msg_t;
