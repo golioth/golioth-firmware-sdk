@@ -190,8 +190,7 @@ config GOLIOTH_AUTO_LOG_TO_CLOUD
         configuration item. The flag can also be set at runtime.
 
 config GOLIOTH_REMOTE_SHELL_ENABLE
-    int "(Experimental) Enable remote shell"
-    default 0
+    bool "(Experimental) Enable remote shell"
     help
         Enable/disable golioth_remote_shell feature.
 
