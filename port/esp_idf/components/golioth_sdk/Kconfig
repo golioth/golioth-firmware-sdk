@@ -64,6 +64,12 @@ config GOLIOTH_MAX_NUM_OBSERVATIONS
     help
         The maximum number of CoAP paths which can be simultaneously observed.
 
+config GOLIOTH_OTA_THREAD_STACK_SIZE
+    int "Golioth OTA thread stack size"
+    default 4096
+    help
+        Stack size of thread handling OTA updates.
+
 config GOLIOTH_OTA_MAX_PACKAGE_NAME_LEN
     int "Golioth maximum OTA component package name length"
     default 64

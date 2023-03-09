@@ -277,7 +277,7 @@ void golioth_fw_update_init_with_config(
                 .name = "fw_update",
                 .fn = fw_update_thread,
                 .user_arg = NULL,
-                .stack_size = 4096,
+                .stack_size = CONFIG_GOLIOTH_OTA_THREAD_STACK_SIZE,
                 .prio = 3});
         if (!thread) {
             GLTH_LOGE(TAG, "Failed to create shell thread");
