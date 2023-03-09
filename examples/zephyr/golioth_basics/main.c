@@ -3,6 +3,8 @@
 #include <string.h>
 #include <assert.h>
 
+#include <samples/common/net_connect.h>
+
 int main(void) {
     golioth_client_config_t config = {
             .credentials = {
@@ -13,6 +15,8 @@ int main(void) {
                             .psk = CONFIG_GOLIOTH_PSK,
                             .psk_len = strlen(CONFIG_GOLIOTH_PSK),
                     }}};
+
+    net_connect();
 
     golioth_client_t client = golioth_client_create(&config);
     assert(client);
