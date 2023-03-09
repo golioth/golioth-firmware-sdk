@@ -187,6 +187,7 @@ jobs:
       run: >
         zephyr/scripts/twister
         -b
+        -p nrf52840dk_nrf52840
         -p qemu_x86
         -o reports
         -T modules/lib/golioth-firmware-sdk

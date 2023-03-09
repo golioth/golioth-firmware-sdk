@@ -16,4 +16,5 @@ common:
 tests:
   sample.golioth.basics:
     platform_allow: >
+      nrf52840dk_nrf52840
       qemu_x86
