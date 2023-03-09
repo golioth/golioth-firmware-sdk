@@ -203,6 +203,12 @@ config GOLIOTH_REMOTE_SHELL_ENABLE
         If enabled, an additional RTOS thread will be created along
         with a ringbuffer to queue device output log data.
 
+config GOLIOTH_REMOTE_SHELL_THREAD_STACK_SIZE
+    int "Remote shell thread stack size"
+    default 4096
+    help
+        Stack size of thread handling remote shell.
+
 config GOLIOTH_REMOTE_SHELL_BUF_SIZE
     int "Remote shell buffer size"
     default 8192

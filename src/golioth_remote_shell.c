@@ -111,7 +111,7 @@ static void init(void) {
             .name = "remote_shell",
             .fn = remote_shell_thread,
             .user_arg = NULL,
-            .stack_size = 4096,
+            .stack_size = CONFIG_GOLIOTH_REMOTE_SHELL_THREAD_STACK_SIZE,
             .prio = CONFIG_GOLIOTH_COAP_THREAD_PRIORITY});
     if (!thread) {
         GLTH_LOGE(TAG, "Failed to create remote shell thread");
