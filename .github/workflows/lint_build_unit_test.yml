@@ -160,3 +160,41 @@ jobs:
         cp source/credentials.inc.template source/credentials.inc
         make getlibs
         make build -j8
+
+  zephyr_build:
+    container:
+      image: zephyrprojectrtos/ci:v0.24.2
+    env:
+      ZEPHYR_SDK_INSTALL_DIR: /opt/toolchains/zephyr-sdk-0.15.0
+    runs-on: ubuntu-latest
+    steps:
+    - name: Checkout repository and submodules
+      uses: actions/checkout@v3
+      with:
+        path: modules/lib/golioth-firmware-sdk
+        submodules: 'recursive'
+    - name: Init and update west
+      run: |
+        mkdir -p .west
+        cat <<EOF > .west/config
+        [manifest]
+        path = modules/lib/golioth-firmware-sdk
+        file = west-zephyr.yml
+        EOF
+
+        west update -o=--depth=1 -n
+    - name: Run twister
+      run: >
+        zephyr/scripts/twister
+        -b
+        -p qemu_x86
+        -o reports
+        -T modules/lib/golioth-firmware-sdk
+    - name: Upload artifacts
+      uses: actions/upload-artifact@v2
+      if: ${{ always() }}
+      with:
+        name: twister-artifacts
+        path: |
+          reports/*
+          twister-out/**/build.log

@@ -13,7 +13,7 @@ Follow [Zephyr Getting Started Guide](https://docs.zephyrproject.org/latest/deve
 cd ~/golioth-workspace
 west init -m https://github.com/golioth/golioth-firmware-sdk.git --mf west-zephyr.yml
 west update
-(cd modules/lib/golioth-firmware-sdk && git submodule update --init --recursive)
+cd modules/lib/golioth-firmware-sdk && git submodule update --init --recursive
 ```
 
 ### Configure PSK and PSK-ID credentials
