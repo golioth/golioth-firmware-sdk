@@ -4,6 +4,7 @@
 menuconfig GOLIOTH_FIRMWARE_SDK
 	bool "Golioth Firmware SDK"
 	select POSIX_API # libcoap
+	select REBOOT if BOOTLOADER_MCUBOOT
 	select REQUIRES_FULL_LIBC # cJSON, libcoap
 
 if GOLIOTH_FIRMWARE_SDK
