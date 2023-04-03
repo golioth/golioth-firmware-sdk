@@ -18,3 +18,7 @@ tests:
     platform_allow: >
       nrf52840dk_nrf52840
       qemu_x86
+  sample.golioth.basics.sysbuild:
+    sysbuild: true
+    platform_allow: >
+      nrf52840dk_nrf52840
