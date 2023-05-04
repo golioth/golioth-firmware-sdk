@@ -27,7 +27,7 @@ static void libcoap_log_handler(coap_log_t level, const char* msg) {
     }
 }
 
-static int libcoap_init(const struct device* dev) {
+static int libcoap_init(void) {
     coap_set_log_handler(libcoap_log_handler);
     coap_set_log_level(COAP_LOG_INFO);
 
