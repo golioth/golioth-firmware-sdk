@@ -139,31 +139,22 @@ static void on_settings(
                 add_error_to_array(errors, key, setting_status);
             }
         } else if (cJSON_IsNumber(setting)) {
-            // Use modf to determine if this number is an int or a float
-            // TODO - is there a more efficient way to do this?
-            bool is_float = false;
-            double int_part = 0;
-            double fractional_part = modf(setting->valuedouble, &int_part);
-            const double epsilon = 0.000001f;
-            if (fractional_part > epsilon) {
-                is_float = true;
-            }
-
-            if (is_float) {
-                if (registered_setting->type != GOLIOTH_SETTINGS_VALUE_TYPE_FLOAT) {
-                    add_error_to_array(errors, key, GOLIOTH_SETTINGS_VALUE_FORMAT_NOT_VALID);
-                    goto next_setting;
-                }
-
+            if (registered_setting->type == GOLIOTH_SETTINGS_VALUE_TYPE_FLOAT) {
                 assert(registered_setting->float_cb);
+
                 golioth_settings_status_t setting_status = registered_setting->float_cb(
                         (float)setting->valuedouble, registered_setting->cb_arg);
-
                 if (setting_status != GOLIOTH_SETTINGS_SUCCESS) {
                     add_error_to_array(errors, key, setting_status);
                 }
-            } else {  // integer
-                if (registered_setting->type != GOLIOTH_SETTINGS_VALUE_TYPE_INT) {
+            } else if (registered_setting->type == GOLIOTH_SETTINGS_VALUE_TYPE_INT) {
+                // Use modf to determine if this number is an int or a float
+                // TODO - is there a more efficient way to do this?
+                double int_part = 0;
+                double fractional_part = modf(setting->valuedouble, &int_part);
+                const double epsilon = 0.000001f;
+                if (fractional_part > epsilon) {
+                    // Registered type is integer, but received float
                     add_error_to_array(errors, key, GOLIOTH_SETTINGS_VALUE_FORMAT_NOT_VALID);
                     goto next_setting;
                 }
@@ -183,6 +174,10 @@ static void on_settings(
                 if (setting_status != GOLIOTH_SETTINGS_SUCCESS) {
                     add_error_to_array(errors, key, setting_status);
                 }
+            } else {
+                // Received Number, but registered type is neither integer nor float
+                add_error_to_array(errors, key, GOLIOTH_SETTINGS_VALUE_FORMAT_NOT_VALID);
+                goto next_setting;
             }
         } else {
             GLTH_LOGW(TAG, "Setting with key %s has unknown type", key);
