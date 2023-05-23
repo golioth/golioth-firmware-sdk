@@ -132,14 +132,14 @@ golioth_status_t golioth_settings_register_int_with_range(
         golioth_int_setting_cb callback,
         void* callback_arg);
 
-/// Same as @ref golioth_settings_register_bool, but for type bool.
+/// Same as @ref golioth_settings_register_int, but for type bool.
 golioth_status_t golioth_settings_register_bool(
         golioth_client_t client,
         const char* setting_name,
         golioth_bool_setting_cb callback,
         void* callback_arg);
 
-/// Same as @ref golioth_settings_register_bool, but for type float.
+/// Same as @ref golioth_settings_register_int, but for type float.
 golioth_status_t golioth_settings_register_float(
         golioth_client_t client,
         const char* setting_name,
