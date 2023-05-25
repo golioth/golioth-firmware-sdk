@@ -27,6 +27,8 @@ static golioth_fw_update_config_t _config;
 static fw_block_processor_ctx_t _fw_block_processor;
 
 static golioth_status_t download_and_write_flash(void) {
+    golioth_status_t status;
+
     assert(_main_component);
 
     GLTH_LOGI(TAG, "Image size = %" PRIu32, _main_component->size);
@@ -37,7 +39,14 @@ static golioth_status_t download_and_write_flash(void) {
 
     // Process blocks one at a time until there are no more blocks (GOLIOTH_ERR_NO_MORE_DATA),
     // or an error occurs.
-    while (fw_block_processor_process(&_fw_block_processor) == GOLIOTH_OK) {
+    do {
+        status = fw_block_processor_process(&_fw_block_processor);
+    } while (status == GOLIOTH_OK);
+
+    if (status != GOLIOTH_OK &&
+        status != GOLIOTH_ERR_NO_MORE_DATA) {
+        GLTH_LOGE(TAG, "FW block process with status: %d", (int) status);
+        return status;
     }
 
     GLTH_LOGI(TAG, "Download took %" PRIu64 " ms", golioth_sys_now_ms() - start_time_ms);
