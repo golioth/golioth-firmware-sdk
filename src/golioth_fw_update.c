@@ -26,14 +26,20 @@ static void* _state_callback_arg;
 static golioth_fw_update_config_t _config;
 static fw_block_processor_ctx_t _fw_block_processor;
 
+static void download_and_write_init(void) {
+    fw_block_processor_init(&_fw_block_processor, _client, _ota_block_buffer);
+}
+
 static golioth_status_t download_and_write_flash(void) {
     golioth_status_t status;
 
     assert(_main_component);
 
-    GLTH_LOGI(TAG, "Image size = %" PRIu32, _main_component->size);
+    _fw_block_processor.download.ota_component = _main_component;
+    _fw_block_processor.download.total_num_blocks = golioth_ota_size_to_nblocks(_main_component->size);
+    _fw_block_processor.handle_block.component_size = _main_component->size;
 
-    fw_block_processor_init(&_fw_block_processor, _client, _main_component, _ota_block_buffer);
+    GLTH_LOGI(TAG, "Image size = %" PRIu32, _main_component->size);
 
     const uint64_t start_time_ms = golioth_sys_now_ms();
 
@@ -118,6 +124,8 @@ static bool manifest_version_is_different(const golioth_ota_manifest_t* manifest
 }
 
 static void fw_update_thread(void* arg) {
+    golioth_status_t status;
+
     // If it's the first time booting a new OTA image,
     // wait for successful connection to Golioth.
     //
@@ -169,6 +177,8 @@ static void fw_update_thread(void* arg) {
 
     golioth_ota_observe_manifest_async(_client, on_ota_manifest, NULL);
 
+    download_and_write_init();
+
     while (1) {
         GLTH_LOGI(TAG, "Waiting to receive OTA manifest");
         golioth_sys_sem_take(_manifest_rcvd, GOLIOTH_SYS_WAIT_FOREVER);
@@ -188,8 +198,9 @@ static void fw_update_thread(void* arg) {
                 _main_component->version,
                 GOLIOTH_WAIT_FOREVER);
 
-        if (download_and_write_flash() != GOLIOTH_OK) {
-            GLTH_LOGE(TAG, "Firmware download failed");
+        status = download_and_write_flash();
+        if (status != GOLIOTH_OK) {
+            GLTH_LOGE(TAG, "Firmware download failed %d", (int) status);
             fw_update_end();
 
             GLTH_LOGI(TAG, "State = Idle");

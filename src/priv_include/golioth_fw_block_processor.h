@@ -94,7 +94,6 @@ typedef struct {
 void fw_block_processor_init(
         fw_block_processor_ctx_t* ctx,
         golioth_client_t client,
-        const golioth_ota_component_t* component,
         uint8_t* download_buf);
 golioth_status_t fw_block_processor_process(fw_block_processor_ctx_t* ctx);
 void fw_block_processor_log_results(const fw_block_processor_ctx_t* ctx);
