@@ -168,7 +168,7 @@ golioth_status_t fw_update_handle_block(
     int err;
 
     if (!IS_ENABLED(CONFIG_BOOTLOADER_MCUBOOT)) {
-        return GOLIOTH_ERR_NOT_IMPLEMENTED;
+        return GOLIOTH_OK;
     }
 
     if (offset == 0) {
@@ -201,10 +201,6 @@ void fw_update_post_download(void) {
 }
 
 golioth_status_t fw_update_validate(void) {
-    if (!IS_ENABLED(CONFIG_BOOTLOADER_MCUBOOT)) {
-        return GOLIOTH_ERR_NOT_IMPLEMENTED;
-    }
-
     return GOLIOTH_OK;
 }
 
