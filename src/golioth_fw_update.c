@@ -280,7 +280,7 @@ void golioth_fw_update_init_with_config(
                 .stack_size = CONFIG_GOLIOTH_OTA_THREAD_STACK_SIZE,
                 .prio = 3});
         if (!thread) {
-            GLTH_LOGE(TAG, "Failed to create shell thread");
+            GLTH_LOGE(TAG, "Failed to create firmware update thread");
         } else {
             initialized = true;
         }
