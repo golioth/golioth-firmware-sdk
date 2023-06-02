@@ -80,7 +80,7 @@ then
         echo ""
         echo "To fix the offending files (i.e. format them in-place), try:"
         echo "cd $REPO_ROOT &&"
-        for file in $changed_c_h_files; do
+        for file in $diff_files; do
             echo "  clang-format -i $file &&"
         done
         echo "  cd -"
