@@ -17,7 +17,7 @@ LOG_TAG_DEFINE(golioth_rpc);
 // Request:
 //
 // {
-//      "id": "id_string,
+//      "id": "id_string",
 //      "method": "method_name_string",
 //      "params": [...]
 // }
@@ -127,6 +127,7 @@ static void on_rpc(
         }
     }
     if (!method_found) {
+        GLTH_LOGW(TAG, "Method %s not registered", rpc_method->valuestring);
         golioth_rpc_ack_internal(client, call_id, RPC_UNAVAILABLE, detail, 0);
     }
 
