@@ -54,6 +54,11 @@ if [ "$LCOV_ENABLED" -eq 1 ]; then
         '*test/*' \
         '*unity/*' \
         '*fff/*' \
+        '*external/*' \
+        '*math.h*' \
+        '*openssl*' \
+        '*libkern/arm*' \
+        '*sys/_types*' \
         -o build/total_filtered.info
 
     # Generate HTML report
