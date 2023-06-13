@@ -4,6 +4,38 @@ All notable changes to this project will be documented in this file.
 The format is based on [Keep a Changelog](https://keepachangelog.com/en/1.0.0/),
 and this project adheres to [Semantic Versioning](https://semver.org/spec/v2.0.0.html).
 
+## [0.7.0] - 2023-06-15
+
+Highlights:
+
+- Initial support for Zephyr targets
+
+### Added:
+- rpc: add unit tests
+- zephyr: add Zephyr port
+- zephyr: add DFU support
+- examples: add golioth_basics example for Zephyr
+- golioth_coap_client: introduce GOLIOTH_OVERRIDE_LIBCOAP_LOG_HANDLER
+- remote_shell: add CONFIG_GOLIOTH_REMOTE_SHELL_THREAD_STACK_SIZE
+- ota: add CONFIG_GOLIOTH_OTA_THREAD_STACK_SIZE
+
+### Changed:
+- treewide: change 'task' nomenclature to thread
+- treewide: replace '#define TAG ...' with LOG_TAG_DEFINE(...)
+- esp_idf: convert GOLIOTH_REMOTE_SHELL_ENABLE to bool
+- port: modus_toolbox: define HAVE_PTHREAD_{H,MUTEX_LOCK}
+- port: esp_idf: define HAVE_PTHREAD_{H,MUTEX_LOCK}
+- port: remove COAP_RESOURCES_NOHASH definition
+- README: clarify the support for OTA on Linux
+- libcoap: bump to tip of develop branch
+
+### Fixed:
+- settings: allow float type settings to be whole numbers
+- settings: update device_settings_register_bool docstring
+- ota: fix typo in error message when creating thread
+- scripts: only suggest running clang-format on noncompliant files
+- rpc: fixed typos in doc strings
+
 ## [0.6.0] - 2023-02-24
 
 Highlights:
