@@ -96,24 +96,21 @@ The following table lists which SDK features (rows) are support for each platfor
 The :soon:'s indicate a feature that is planned to be implemented in the future, and
 the :x:'s indicate a feature that is not planned (or not applicable).
 
-| Feature | ESP-IDF | ModusToolbox | Linux |
-| --- | --- | --- | --- |
-| OTA FW Update | :heavy_check_mark: | :heavy_check_mark: | :heavy_check_mark: <sup>1</sup> |
-| Cloud Logging | :heavy_check_mark: | :heavy_check_mark: | :heavy_check_mark: |
-| LightDB State | :heavy_check_mark: | :heavy_check_mark: | :heavy_check_mark: |
-| LightDB Stream | :heavy_check_mark: | :heavy_check_mark: | :heavy_check_mark: |
-| Remote Procedure Call | :heavy_check_mark: | :heavy_check_mark: | :heavy_check_mark: |
-| Settings | :heavy_check_mark: | :heavy_check_mark: | :heavy_check_mark: |
-| CoAP/DTLS Client | :heavy_check_mark: | :heavy_check_mark: | :heavy_check_mark: |
-| PSK Auth | :heavy_check_mark: | :heavy_check_mark: | :heavy_check_mark: |
-| Certificate Auth | :heavy_check_mark: | :soon: | :heavy_check_mark: |
-| Sign+Verify OTA images | :soon: | :heavy_check_mark: | :soon: |
-| OTA FW compression | :heavy_check_mark: | :heavy_check_mark: | :heavy_check_mark: |
-| OTA FW delta update | :heavy_check_mark: | :heavy_check_mark: | :heavy_check_mark: |
-| Terminal shell | :heavy_check_mark: | :soon: | :x: |
-| Remote Shell | :heavy_check_mark: | :soon: | :soon: |
-| Serial Provisioning | :heavy_check_mark: | :soon: | :x: |
-| BLE Provisioning | :heavy_check_mark: | :soon: | :x: |
+| Feature | ESP-IDF | ModusToolbox | Linux | Zephyr |
+| --- | --- | --- | --- | --- |
+| OTA FW Update | :heavy_check_mark: | :heavy_check_mark: | :heavy_check_mark: <sup>1</sup> | :heavy_check_mark: |
+| Cloud Logging | :heavy_check_mark: | :heavy_check_mark: | :heavy_check_mark: | :soon: |
+| LightDB State | :heavy_check_mark: | :heavy_check_mark: | :heavy_check_mark: | :heavy_check_mark: |
+| LightDB Stream | :heavy_check_mark: | :heavy_check_mark: | :heavy_check_mark: | :heavy_check_mark: |
+| Remote Procedure Call | :heavy_check_mark: | :heavy_check_mark: | :heavy_check_mark: | :heavy_check_mark: |
+| Settings | :heavy_check_mark: | :heavy_check_mark: | :heavy_check_mark: | :heavy_check_mark: |
+| CoAP/DTLS Client | :heavy_check_mark: | :heavy_check_mark: | :heavy_check_mark: | :heavy_check_mark: |
+| PSK Auth | :heavy_check_mark: | :heavy_check_mark: | :heavy_check_mark: | :heavy_check_mark: |
+| Certificate Auth | :heavy_check_mark: | :soon: | :heavy_check_mark: | :soon: |
+| Sign+Verify OTA images | :soon: | :heavy_check_mark: | :soon: | :soon: |
+| Terminal shell | :heavy_check_mark: | :soon: | :x: | :soon: |
+| Serial Provisioning | :heavy_check_mark: | :soon: | :x: | :soon: |
+| BLE Provisioning | :heavy_check_mark: | :soon: | :x: | :soon: |
 
 <sup>1</sup>: partially implemented, downloads new image to file, but doesn't swap
 out the currently running image
