@@ -3,7 +3,7 @@
  *
  * SPDX-License-Identifier: Apache-2.0
  */
-#include <cJSON.h>
+#include <zcbor_encode.h>
 #include "golioth_coap_client.h"
 #include "golioth_log.h"
 #include "golioth_time.h"
@@ -11,6 +11,8 @@
 #include "golioth_debug.h"
 
 LOG_TAG_DEFINE(golioth_log);
+
+#define CBOR_LOG_MAX_LEN 1024
 
 // Important Note!
 //
@@ -43,42 +45,49 @@ static golioth_status_t golioth_log_internal(
         void* callback_arg) {
     assert(level <= GOLIOTH_LOG_LEVEL_DEBUG);
 
-    cJSON* json = cJSON_CreateObject();
-    char* printed_str = NULL;
-    golioth_status_t status = GOLIOTH_OK;
+    uint8_t* cbor_buf = malloc(CBOR_LOG_MAX_LEN);
+    golioth_status_t status = GOLIOTH_ERR_SERIALIZE;
+    bool ok;
 
-    GSTATS_INC_ALLOC("json");
-    cJSON_AddStringToObject(json, "level", _level_to_str[level]);
-    cJSON_AddStringToObject(json, "module", tag);
-    cJSON_AddStringToObject(json, "msg", log_message);
-    printed_str = cJSON_PrintUnformatted(json);
-    if (!printed_str) {
-        status = GOLIOTH_ERR_SERIALIZE;
+    if (!cbor_buf) {
+        return GOLIOTH_ERR_MEM_ALLOC;
+    }
+
+    ZCBOR_STATE_E(zse, 1, cbor_buf, CBOR_LOG_MAX_LEN, 1);
+
+    ok = zcbor_map_start_encode(zse, 3);
+    if (!ok) {
         goto cleanup;
     }
-    GSTATS_INC_ALLOC("printed_str");
+
+    GSTATS_INC_ALLOC("cbor_buf");
+    ok = zcbor_tstr_put_lit(zse, "level") && zcbor_tstr_put_term(zse, _level_to_str[level])
+            && zcbor_tstr_put_lit(zse, "module") && zcbor_tstr_put_term(zse, tag)
+            && zcbor_tstr_put_lit(zse, "msg") && zcbor_tstr_put_term(zse, log_message);
+    if (!ok) {
+        goto cleanup;
+    }
+
+    ok = zcbor_map_end_encode(zse, 3);
+    if (!ok) {
+        goto cleanup;
+    }
 
     status = golioth_coap_client_set(
             client,
             "",  // path-prefix unused
             "logs",
-            COAP_MEDIATYPE_APPLICATION_JSON,
-            (const uint8_t*)printed_str,
-            strlen(printed_str),
+            COAP_MEDIATYPE_APPLICATION_CBOR,
+            cbor_buf,
+            zse->payload - cbor_buf,
             callback,
             callback_arg,
             is_synchronous,
             timeout_s);
 
 cleanup:
-    if (json) {
-        cJSON_Delete(json);
-        GSTATS_INC_FREE("json");
-    }
-    if (printed_str) {
-        free(printed_str);
-        GSTATS_INC_FREE("printed_str");
-    }
+    free(cbor_buf);
+    GSTATS_INC_FREE("cbor_buf");
     return status;
 }
 
