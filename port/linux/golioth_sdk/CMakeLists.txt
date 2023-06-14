@@ -58,6 +58,7 @@ set(sdk_srcs
     "${sdk_src}/golioth_mbox.c"
     "${sdk_src}/golioth_debug.c"
     "${sdk_src}/golioth_fw_block_processor.c"
+    "${sdk_src}/zcbor_utils.c"
 )
 
 add_library(golioth_sdk
