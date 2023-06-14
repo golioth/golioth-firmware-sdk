@@ -3,23 +3,46 @@
  *
  * SPDX-License-Identifier: Apache-2.0
  */
+#include <errno.h>
 #include <string.h>
-#include <cJSON.h>
+#include <zcbor_decode.h>
+#include <zcbor_encode.h>
 #include "golioth_ota.h"
 #include "golioth_coap_client.h"
 #include "golioth_statistics.h"
 #include "golioth_debug.h"
+#include "golioth_util.h"
+#include "zcbor_utils.h"
 
 LOG_TAG_DEFINE(golioth_ota);
 
 #define GOLIOTH_OTA_MANIFEST_PATH ".u/desired"
 #define GOLIOTH_OTA_COMPONENT_PATH_PREFIX ".u/c/"
 
+enum {
+    MANIFEST_KEY_SEQUENCE_NUMBER = 1,
+    MANIFEST_KEY_HASH = 2,
+    MANIFEST_KEY_COMPONENTS = 3,
+};
+
+enum {
+    COMPONENT_KEY_PACKAGE = 1,
+    COMPONENT_KEY_VERSION = 2,
+    COMPONENT_KEY_HASH = 3,
+    COMPONENT_KEY_SIZE = 4,
+    COMPONENT_KEY_URI = 5,
+};
+
 typedef struct {
     uint8_t* buf;
     size_t* block_nbytes;
     bool* is_last;
 } block_get_output_params_t;
+
+struct component_tstr_value {
+    char* value;
+    size_t value_len;
+};
 
 static golioth_ota_state_t _state = GOLIOTH_OTA_STATE_IDLE;
 
@@ -52,7 +75,7 @@ golioth_status_t golioth_ota_observe_manifest_async(
         golioth_get_cb_fn callback,
         void* arg) {
     return golioth_coap_client_observe_async(
-            client, "", GOLIOTH_OTA_MANIFEST_PATH, COAP_MEDIATYPE_APPLICATION_JSON, callback, arg);
+            client, "", GOLIOTH_OTA_MANIFEST_PATH, COAP_MEDIATYPE_APPLICATION_CBOR, callback, arg);
 }
 
 golioth_status_t golioth_ota_report_state_sync(
@@ -63,99 +86,165 @@ golioth_status_t golioth_ota_report_state_sync(
         const char* current_version,
         const char* target_version,
         int32_t timeout_s) {
-    char jsonbuf[128] = {};
-    cJSON* json = cJSON_CreateObject();
-    GSTATS_INC_ALLOC("json");
-    cJSON_AddNumberToObject(json, "state", state);
-    cJSON_AddNumberToObject(json, "reason", reason);
-    cJSON_AddStringToObject(json, "package", package);
-    if (current_version) {
-        cJSON_AddStringToObject(json, "version", current_version);
+    uint8_t encode_buf[64];
+    ZCBOR_STATE_E(zse, 1, encode_buf, sizeof(encode_buf), 1);
+    bool ok;
+
+    ok = zcbor_map_start_encode(zse, 1);
+    if (!ok) {
+        return GOLIOTH_ERR_MEM_ALLOC;
     }
-    if (target_version) {
-        cJSON_AddStringToObject(json, "target", target_version);
+
+    ok = zcbor_tstr_put_lit(zse, "s") && zcbor_uint32_put(zse, state);
+    if (!ok) {
+        return GOLIOTH_ERR_MEM_ALLOC;
     }
-    bool printed = cJSON_PrintPreallocated(json, jsonbuf, sizeof(jsonbuf) - 5, false);
-    assert(printed);
-    cJSON_Delete(json);
-    GSTATS_INC_FREE("json");
+
+    ok = zcbor_tstr_put_lit(zse, "r") && zcbor_uint32_put(zse, reason);
+    if (!ok) {
+        return GOLIOTH_ERR_MEM_ALLOC;
+    }
+
+    ok = zcbor_tstr_put_lit(zse, "pkg") && zcbor_tstr_put_term(zse, package);
+    if (!ok) {
+        return GOLIOTH_ERR_MEM_ALLOC;
+    }
+
+    if (current_version && current_version[0] != '\0') {
+        ok = zcbor_tstr_put_lit(zse, "v") && zcbor_tstr_put_term(zse, current_version);
+        if (!ok) {
+            return GOLIOTH_ERR_MEM_ALLOC;
+        }
+    }
+
+    if (target_version && target_version[0] != '\0') {
+        ok = zcbor_tstr_put_lit(zse, "t") && zcbor_tstr_put_term(zse, target_version);
+        if (!ok) {
+            return GOLIOTH_ERR_MEM_ALLOC;
+        }
+    }
+
+    ok = zcbor_map_end_encode(zse, 1);
+    if (!ok) {
+        return GOLIOTH_ERR_MEM_ALLOC;
+    }
 
     _state = state;
     return golioth_coap_client_set(
             client,
             GOLIOTH_OTA_COMPONENT_PATH_PREFIX,
             package,
-            COAP_MEDIATYPE_APPLICATION_JSON,
-            (const uint8_t*)jsonbuf,
-            strlen(jsonbuf),
+            COAP_MEDIATYPE_APPLICATION_CBOR,
+            encode_buf,
+            zse->payload - encode_buf,
             NULL,
             NULL,
             true,
             timeout_s);
 }
 
+static int component_entry_decode_value(zcbor_state_t* zsd, void* void_value) {
+    struct component_tstr_value* value = void_value;
+    struct zcbor_string tstr;
+    bool ok;
+
+    ok = zcbor_tstr_decode(zsd, &tstr);
+    if (!ok) {
+        return -EBADMSG;
+    }
+
+    if (tstr.len > value->value_len) {
+        GLTH_LOGE(TAG, "Not enough space to store");
+        return -ENOMEM;
+    }
+
+    memcpy(value->value, tstr.value, tstr.len);
+    value->value[tstr.len] = '\0';
+
+    return 0;
+}
+
+static int components_decode(zcbor_state_t* zsd, void* value) {
+    golioth_ota_manifest_t* manifest = value;
+    int err;
+    bool ok;
+
+    ok = zcbor_list_start_decode(zsd);
+    if (!ok) {
+        GLTH_LOGW(TAG, "Did not start CBOR list correctly");
+        return -EBADMSG;
+    }
+
+    for (size_t i = 0; i < ARRAY_SIZE(manifest->components) && !zcbor_list_or_map_end(zsd); i++) {
+        golioth_ota_component_t* component = &manifest->components[i];
+        struct component_tstr_value package = {
+                component->package,
+                sizeof(component->package) - 1,
+        };
+        struct component_tstr_value version = {
+                component->version,
+                sizeof(component->version) - 1,
+        };
+        int64_t component_size;
+        struct zcbor_map_entry map_entries[] = {
+                ZCBOR_U32_MAP_ENTRY(COMPONENT_KEY_PACKAGE, component_entry_decode_value, &package),
+                ZCBOR_U32_MAP_ENTRY(COMPONENT_KEY_VERSION, component_entry_decode_value, &version),
+                ZCBOR_U32_MAP_ENTRY(COMPONENT_KEY_SIZE, zcbor_map_int64_decode, &component_size),
+        };
+
+        err = zcbor_map_decode(zsd, map_entries, ARRAY_SIZE(map_entries));
+        if (err) {
+            GLTH_LOGE(TAG, "Failed to decode component number %zu", i);
+            return err;
+        }
+
+        component->size = component_size;
+        component->is_compressed =
+                (CONFIG_GOLIOTH_OTA_DECOMPRESS_METHOD_HEATSHRINK
+                 || CONFIG_GOLIOTH_OTA_DECOMPRESS_METHOD_ZLIB);
+
+        manifest->num_components++;
+    }
+
+    ok = zcbor_list_end_decode(zsd);
+    if (!ok) {
+        GLTH_LOGW(TAG, "Did not end CBOR list correctly");
+        return -EBADMSG;
+    }
+
+    return 0;
+}
+
 golioth_status_t golioth_ota_payload_as_manifest(
         const uint8_t* payload,
         size_t payload_size,
         golioth_ota_manifest_t* manifest) {
-    golioth_status_t ret = GOLIOTH_OK;
+    ZCBOR_STATE_D(zsd, 3, payload, payload_size, 1);
+    int64_t manifest_sequence_number;
+    struct zcbor_map_entry map_entries[] = {
+            ZCBOR_U32_MAP_ENTRY(
+                    MANIFEST_KEY_SEQUENCE_NUMBER,
+                    zcbor_map_int64_decode,
+                    &manifest_sequence_number),
+            ZCBOR_U32_MAP_ENTRY(MANIFEST_KEY_COMPONENTS, components_decode, manifest),
+    };
+    int err;
+
     memset(manifest, 0, sizeof(*manifest));
 
-    cJSON* json = cJSON_ParseWithLength((const char*)payload, payload_size);
-    if (!json) {
-        GLTH_LOGE(TAG, "Failed to parse manifest");
-        ret = GOLIOTH_ERR_INVALID_FORMAT;
-        goto cleanup;
-    }
-    GSTATS_INC_ALLOC("json");
-
-    const cJSON* seqnum = cJSON_GetObjectItemCaseSensitive(json, "sequenceNumber");
-    if (!seqnum || !cJSON_IsNumber(seqnum)) {
-        GLTH_LOGE(TAG, "Key sequenceNumber not found");
-        ret = GOLIOTH_ERR_INVALID_FORMAT;
-        goto cleanup;
-    }
-    manifest->seqnum = seqnum->valueint;
-
-    cJSON* components = cJSON_GetObjectItemCaseSensitive(json, "components");
-    cJSON* component = NULL;
-    cJSON_ArrayForEach(component, components) {
-        golioth_ota_component_t* c = &manifest->components[manifest->num_components++];
-
-        const cJSON* package = cJSON_GetObjectItemCaseSensitive(component, "package");
-        if (!package || !cJSON_IsString(package)) {
-            GLTH_LOGE(TAG, "Key package not found");
-            ret = GOLIOTH_ERR_INVALID_FORMAT;
-            goto cleanup;
-        }
-        strncpy(c->package, package->valuestring, CONFIG_GOLIOTH_OTA_MAX_PACKAGE_NAME_LEN);
-
-        const cJSON* version = cJSON_GetObjectItemCaseSensitive(component, "version");
-        if (!version || !cJSON_IsString(version)) {
-            GLTH_LOGE(TAG, "Key version not found");
-            ret = GOLIOTH_ERR_INVALID_FORMAT;
-            goto cleanup;
-        }
-        strncpy(c->version, version->valuestring, CONFIG_GOLIOTH_OTA_MAX_VERSION_LEN);
-
-        const cJSON* size = cJSON_GetObjectItemCaseSensitive(component, "size");
-        if (!size || !cJSON_IsNumber(size)) {
-            GLTH_LOGE(TAG, "Key size not found");
-            ret = GOLIOTH_ERR_INVALID_FORMAT;
-            goto cleanup;
-        }
-        c->size = size->valueint;
-        c->is_compressed =
-                (CONFIG_GOLIOTH_OTA_DECOMPRESS_METHOD_HEATSHRINK
-                 || CONFIG_GOLIOTH_OTA_DECOMPRESS_METHOD_ZLIB);
+    if (payload_size == 1 && payload[0] == 0xa0) {
+        return GOLIOTH_OK;
     }
 
-cleanup:
-    if (json) {
-        cJSON_Delete(json);
-        GSTATS_INC_FREE("json");
+    err = zcbor_map_decode(zsd, map_entries, ARRAY_SIZE(map_entries));
+    if (err) {
+        GLTH_LOGW(TAG, "Failed to decode desired map: %d", err);
+        return GOLIOTH_ERR_INVALID_FORMAT;
     }
-    return ret;
+
+    manifest->seqnum = manifest_sequence_number;
+
+    return GOLIOTH_OK;
 }
 
 static void on_block_rcvd(
