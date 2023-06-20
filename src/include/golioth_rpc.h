@@ -5,7 +5,8 @@
  */
 #pragma once
 
-#include <cJSON.h>
+#include <zcbor_decode.h>
+#include <zcbor_encode.h>
 #include "golioth_status.h"
 #include "golioth_client.h"
 #include "golioth_config.h"
@@ -37,43 +38,48 @@ typedef enum {
 
 /// Callback function type for remote procedure call
 ///
-/// Example of a callback function that implements the "double" method, which
-/// takes one integer parameter, and doubles it:
+/// Example of a callback function that implements the "multiply" method, which
+/// takes two float parameters, and multiplies them:
 ///
 /// @code{.c}
-/// static golioth_rpc_status_t on_double(
-///         const char* method,
-///         const cJSON* params,
-///         uint8_t* detail,
-///         size_t detail_size,
-///         void* callback_arg) {
-///     if (cJSON_GetArraySize(params) != 1) {
-///         return RPC_INVALID_ARGUMENT;
-///     }
-///     int num_to_double = cJSON_GetArrayItem(params, 0)->valueint;
-///     snprintf((char*)detail, detail_size, "{ \"value\": %d }", 2 * num_to_double);
-///     return RPC_OK;
+/// static golioth_rpc_status_t on_multiply(zcbor_state_t *request_params_array,
+///                                         zcbor_state_t *response_detail_map,
+///                                         void *callback_arg)
+/// {
+///      double a, b;
+///      double value;
+///      bool ok;
+///
+///      ok = zcbor_float_decode(request_params_array, &a) &&
+///           zcbor_float_decode(request_params_array, &b);
+///      if (!ok) {
+///            GLTH_LOGE(TAG, "Failed to decode array items");
+///            return RPC_INVALID_ARGUMENT;
+///      }
+///
+///      value = a * b;
+///
+///      ok = zcbor_tstr_put_lit(response_detail_map, "value") &&
+///           zcbor_float64_put(response_detail_map, value);
+///      if (!ok) {
+///            GLTH_LOGE(TAG, "Failed to encode value");
+///            return RPC_RESOURCE_EXHAUSTED;
+///      }
+///
+///      return RPC_OK;
 /// }
 /// @endcode
 ///
-/// @param method The RPC method name, NULL-terminated
-/// @param params A cJSON* handle of the "params" array. Callback functions
-///         can use cJSON_GetArrayItem(params, index)->valueX to extract individual
-///         parameters.
-/// @param detail Output buffer for additional JSON detail (optional).
-///         Can be populated with string-encoded JSON to return one or more
-///         values from the method.
-/// @param detail_size Size of the detail buffer, in bytes
+/// @param request_params_array zcbor decode state, inside of the RPC request params array
+/// @param response_detail_map zcbor encode state, inside of the RPC response detail map
 /// @param callback_arg callback_arg, unchanged from callback_arg of @ref golioth_rpc_register
 ///
 /// @return RPC_OK - if method was called successfully
 /// @return RPC_INVALID_ARGUMENT - if params were invalid
 /// @return otherwise - method failure
 typedef golioth_rpc_status_t (*golioth_rpc_cb_fn)(
-        const char* method,
-        const cJSON* params,
-        uint8_t* detail,
-        size_t detail_size,
+        zcbor_state_t* request_params_array,
+        zcbor_state_t* response_detail_map,
         void* callback_arg);
 
 /// Register an RPC method

@@ -10,9 +10,9 @@
 #include "golioth_rpc.h"
 #include "golioth_config.h"
 #include "golioth_sys.h"
-#include "cJSON.h"
 #include <assert.h>
 #include <string.h>
+#include <zcbor_encode.h>
 
 LOG_TAG_DEFINE(golioth_remote_shell);
 
@@ -27,8 +27,9 @@ RINGBUF_DEFINE(_log_ringbuf, 1, CONFIG_GOLIOTH_REMOTE_SHELL_BUF_SIZE);
 
 static void remote_shell_thread(void* arg) {
     const uint16_t max_bytes_to_read = 512;
-    char buf[max_bytes_to_read * 2];     // encoded, this is what is sent to Golioth
-    char logstr[max_bytes_to_read + 1];  // raw bytes, read from _log_ringbuf, plus NULL
+    uint8_t encode_buf[max_bytes_to_read + 8];  // encoded, this is what is sent to Golioth
+    char logstr[max_bytes_to_read];             // raw bytes, read from _log_ringbuf, plus NULL
+    bool ok;
 
     while (1) {
         if (_enable && _client) {
@@ -36,50 +37,48 @@ static void remote_shell_thread(void* arg) {
 
             // Pull bytes out of log queue, chunks at a time
             while (nbytes > 0) {
+                ZCBOR_STATE_E(zse, 1, encode_buf, sizeof(encode_buf), 1);
                 uint16_t bytes_to_read = min(nbytes, max_bytes_to_read);
 
-#if 0
-       // Copy bytes into buffer.
-       // The first 3 bytes are for CBOR encoding. The rest is for data.
-                uint8_t buf[bytes_to_read + 3];
-                buf[0] = 0x59;                  // major type = 2, short count = 25
-                buf[1] = (bytes_to_read >> 8);  // extended count (2 bytes)
-                buf[2] = bytes_to_read & 0xFF;
-
-                for (uint16_t i = 0; i < bytes_to_read; i++) {
-                    ringbuf_get(&_log_ringbuf, &buf[3 + i]);
-                    _bytes_read++;
-                }
-
-                // post to LightDB stream, path .s/shell
-                GLTH_LOGD(TAG, "Sending %u bytes to LightDB stream", sizeof(buf));
-                golioth_status_t status = golioth_lightdb_stream_set_cbor_sync(
-                        _client, "shell", buf, sizeof(buf), GOLIOTH_WAIT_FOREVER);
-                if (status != GOLIOTH_OK) {
-                    GLTH_LOGE(TAG, "Failed to post log data");
-                }
-#else  // JSON
-       // Copy bytes into buffer.
+                // Copy bytes into buffer.
                 for (uint16_t i = 0; i < bytes_to_read; i++) {
                     ringbuf_get(&_log_ringbuf, &logstr[i]);
                     _bytes_read++;
                 }
-                logstr[bytes_to_read] = 0;
 
-                cJSON* root = cJSON_CreateObject();
-                cJSON_AddStringToObject(root, "s", logstr);
-                assert(cJSON_PrintPreallocated(root, buf, sizeof(buf), false));
+                ok = zcbor_map_start_encode(zse, 1);
+                if (!ok) {
+                    GLTH_LOGE(TAG, "Failed to encode map");
+                    return;
+                }
+
+                ok = zcbor_tstr_put_lit(zse, "s")
+                        && zcbor_tstr_encode_ptr(zse, logstr, bytes_to_read);
+                if (!ok) {
+                    GLTH_LOGE(TAG, "Failed to encode log data");
+                    return;
+                }
+
+                ok = zcbor_map_end_encode(zse, 1);
+                if (!ok) {
+                    GLTH_LOGE(TAG, "Failed to encode end of map");
+                    return;
+                }
 
                 // post to LightDB stream, path .s/shell
-                size_t json_len = strlen(buf);
-                GLTH_LOGD(TAG, "Sending %u bytes to LightDB stream", json_len);
-                golioth_status_t status = golioth_lightdb_stream_set_json_sync(
-                        _client, "shell", buf, json_len, GOLIOTH_WAIT_FOREVER);
+                GLTH_LOGD(
+                        TAG,
+                        "Sending %zu bytes to LightDB stream",
+                        (size_t)(zse->payload - encode_buf));
+                golioth_status_t status = golioth_lightdb_stream_set_cbor_sync(
+                        _client,
+                        "shell",
+                        encode_buf,
+                        zse->payload - encode_buf,
+                        GOLIOTH_WAIT_FOREVER);
                 if (status != GOLIOTH_OK) {
                     GLTH_LOGE(TAG, "Failed to post log data");
                 }
-                cJSON_Delete(root);
-#endif
 
                 nbytes -= bytes_to_read;
             }
@@ -90,18 +89,16 @@ static void remote_shell_thread(void* arg) {
 }
 
 static golioth_rpc_status_t on_line_input(
-        const char* method,
-        const cJSON* params,
-        uint8_t* detail,
-        size_t detail_size,
+        zcbor_state_t* request_params_array,
+        zcbor_state_t* response_detail_map,
         void* callback_arg) {
-    if (cJSON_GetArraySize(params) != 1) {
-        return RPC_INVALID_ARGUMENT;
-    }
     if (_line_input_cb) {
-        const char* line = cJSON_GetArrayItem(params, 0)->valuestring;
-        size_t line_len = strlen(line);
-        _line_input_cb(line, line_len);
+        struct zcbor_string tstr;
+        bool ok = zcbor_tstr_decode(request_params_array, &tstr);
+        if (!ok) {
+            return RPC_INVALID_ARGUMENT;
+        }
+        _line_input_cb((char*)tstr.value, tstr.len);
     }
     return RPC_OK;
 }
