@@ -1,3 +1,6 @@
+#define _GNU_SOURCE
+
+#include <stdio.h>
 #include <unity.h>
 #include <fff.h>
 
@@ -18,17 +21,11 @@ static const char* last_wrn_msg = NULL;
 #include "fakes/golioth_time_fake.h"
 #include "../src/golioth_rpc.c"
 
-FAKE_VALUE_FUNC(
-        golioth_rpc_status_t,
-        test_rpc_method_fn,
-        const char*,
-        const cJSON*,
-        uint8_t*,
-        size_t,
-        void*);
+FAKE_VALUE_FUNC(golioth_rpc_status_t, test_rpc_method_fn, zcbor_state_t*, zcbor_state_t*, void*);
 
 golioth_rpc_t grpc_fake;
-char last_coap_payload_str[256];
+uint8_t last_coap_payload[256];
+size_t last_coap_payload_size;
 
 golioth_status_t golioth_coap_client_set_custom_fake(
         golioth_client_t client,
@@ -41,8 +38,8 @@ golioth_status_t golioth_coap_client_set_custom_fake(
         void* callback_arg,
         bool is_synchronous,
         int32_t timeout_s) {
-    memset(last_coap_payload_str, 0, sizeof(last_coap_payload_str));
-    strcpy(last_coap_payload_str, (const char*)payload);
+    memcpy(last_coap_payload, payload, payload_size);
+    last_coap_payload_size = payload_size;
 
     return GOLIOTH_OK;
 }
@@ -55,7 +52,7 @@ void setUp(void) {
 void tearDown(void) {
     last_err_msg = NULL;
     last_wrn_msg = NULL;
-    memset(last_coap_payload_str, 0, sizeof(last_coap_payload_str));
+    last_coap_payload_size = 0;
     RESET_FAKE(golioth_coap_client_get_rpc);
     RESET_FAKE(golioth_coap_client_observe_async);
     RESET_FAKE(golioth_coap_client_set);
@@ -94,84 +91,176 @@ void test_rpc_register_too_many(void) {
 }
 
 void test_rpc_call_not_json(void) {
-    const char* payload = "Not JSON";
+    const char* payload = "Not CBOR";
     on_rpc(NULL, NULL, NULL, (const uint8_t*)payload, strlen(payload), NULL);
 
     TEST_ASSERT_EQUAL(0, golioth_coap_client_set_fake.call_count);
 }
 
 void test_rpc_call_malformed(void) {
-    const char* payload = "{gobbledygook:";
-    on_rpc(NULL, NULL, NULL, (const uint8_t*)payload, strlen(payload), NULL);
+    const uint8_t payload[] = {
+            0xA1, /* map(1) */
+            0x6C, /* text(12) */
+            0x67,
+            0x6F,
+            0x62,
+            0x62,
+            0x6C,
+            0x65,
+            0x64,
+            0x79,
+            0x67,
+            0x6F,
+            0x6F,
+            0x6B, /* "gobbledygook" */
+    };
+    on_rpc(NULL, NULL, NULL, payload, sizeof(payload), NULL);
 
-    TEST_ASSERT_EQUAL_STRING("Failed to parse rpc call", last_err_msg);
+    TEST_ASSERT_EQUAL_STRING("Failed to parse tstr map", last_err_msg);
     TEST_ASSERT_EQUAL(0, golioth_coap_client_set_fake.call_count);
 }
 
 void test_rpc_call_no_id(void) {
-    const char* payload = "{\"method\":\"foo\", \"params\" : [] }";
-    on_rpc(NULL, NULL, NULL, (const uint8_t*)payload, strlen(payload), NULL);
+    const uint8_t payload[] = {
+            0xA2,                               /* map(2) */
+            0x66,                               /* text(6) */
+            0x6D, 0x65, 0x74, 0x68, 0x6F, 0x64, /* "method" */
+            0x63,                               /* text(3) */
+            0x66, 0x6F, 0x6F,                   /* "foo" */
+            0x66,                               /* text(6) */
+            0x70, 0x61, 0x72, 0x61, 0x6D, 0x73, /* "params" */
+            0x80,                               /* array(0) */
+    };
+    on_rpc(NULL, NULL, NULL, payload, sizeof(payload), NULL);
 
-    TEST_ASSERT_EQUAL_STRING("Key id not found", last_err_msg);
+    TEST_ASSERT_EQUAL_STRING("Failed to parse tstr map", last_err_msg);
     TEST_ASSERT_EQUAL(0, golioth_coap_client_set_fake.call_count);
 }
 
 void test_rpc_call_no_method(void) {
-    const char* payload = "{\"id\":\"123\", \"params\" : [] }";
-    on_rpc(NULL, NULL, NULL, (const uint8_t*)payload, strlen(payload), NULL);
+    const uint8_t payload[] = {
+            0xA2, /* map(2) */
+            0x62, /* text(2) */
+            0x69,
+            0x64, /* "id" */
+            0x63, /* text(3) */
+            0x31,
+            0x32,
+            0x33, /* "123" */
+            0x66, /* text(6) */
+            0x70,
+            0x61,
+            0x72,
+            0x61,
+            0x6D,
+            0x73, /* "params" */
+            0x80, /* array(0) */
+    };
+    on_rpc(NULL, NULL, NULL, payload, sizeof(payload), NULL);
 
-    TEST_ASSERT_EQUAL_STRING("Key method not found", last_err_msg);
+    TEST_ASSERT_EQUAL_STRING("Failed to parse tstr map", last_err_msg);
     TEST_ASSERT_EQUAL(0, golioth_coap_client_set_fake.call_count);
 }
 
 void test_rpc_call_no_params(void) {
-    const char* payload = "{\"method\":\"foo\", \"id\":\"123\"}";
-    on_rpc(NULL, NULL, NULL, (const uint8_t*)payload, strlen(payload), NULL);
+    const uint8_t payload[] = {
+            0xA2,                               /* map(2) */
+            0x66,                               /* text(6) */
+            0x6D, 0x65, 0x74, 0x68, 0x6F, 0x64, /* "method" */
+            0x63,                               /* text(3) */
+            0x66, 0x6F, 0x6F,                   /* "foo" */
+            0x62,                               /* text(2) */
+            0x69, 0x64,                         /* "id" */
+            0x63,                               /* text(3) */
+            0x31, 0x32, 0x33,                   /* "123" */
+    };
+    on_rpc(NULL, NULL, NULL, payload, sizeof(payload), NULL);
 
-    TEST_ASSERT_EQUAL_STRING("Key params not found", last_err_msg);
+    TEST_ASSERT_EQUAL_STRING("Failed to parse tstr map", last_err_msg);
     TEST_ASSERT_EQUAL(0, golioth_coap_client_set_fake.call_count);
 }
 
 void test_rpc_call_not_registered(void) {
-    const char* payload = "{\"method\":\"foo\", \"id\":\"123\", \"params\" : [] }";
-    on_rpc(NULL, NULL, NULL, (const uint8_t*)payload, strlen(payload), NULL);
+    const uint8_t payload[] = {
+            0xA3,                               /* map(3) */
+            0x66,                               /* text(6) */
+            0x6D, 0x65, 0x74, 0x68, 0x6F, 0x64, /* "method" */
+            0x63,                               /* text(3) */
+            0x66, 0x6F, 0x6F,                   /* "foo" */
+            0x62,                               /* text(2) */
+            0x69, 0x64,                         /* "id" */
+            0x63,                               /* text(3) */
+            0x31, 0x32, 0x33,                   /* "123" */
+            0x66,                               /* text(6) */
+            0x70, 0x61, 0x72, 0x61, 0x6D, 0x73, /* "params" */
+            0x80,                               /* array(0) */
+    };
+    on_rpc(NULL, NULL, NULL, payload, sizeof(payload), NULL);
 
-    TEST_ASSERT_EQUAL_STRING("Method %s not registered", last_wrn_msg);
+    TEST_ASSERT_EQUAL_STRING("Method %.*s not registered", last_wrn_msg);
     TEST_ASSERT_EQUAL(1, golioth_coap_client_set_fake.call_count);
-    TEST_ASSERT_EQUAL_STRING("{ \"id\": \"123\", \"statusCode\": 14 }", last_coap_payload_str);
+
+    const uint8_t expected[] = {
+            0xBF,                                                       /* map(*) */
+            0x62,                                                       /* text(2) */
+            0x69, 0x64,                                                 /* "id" */
+            0x63,                                                       /* text(3) */
+            0x31, 0x32, 0x33,                                           /* "123" */
+            0x6A,                                                       /* text(10) */
+            0x73, 0x74, 0x61, 0x74, 0x75, 0x73, 0x43, 0x6F, 0x64, 0x65, /* "statusCode" */
+            0x02,                                                       /* unsigned(2) */
+            0xFF,                                                       /* primitive(*) */
+    };
+    TEST_ASSERT_EQUAL(sizeof(expected), last_coap_payload_size);
+    TEST_ASSERT_EQUAL_MEMORY(expected, last_coap_payload, last_coap_payload_size);
 }
 
 void test_rpc_call_one(void) {
     golioth_status_t ret = golioth_rpc_register(NULL, "test", test_rpc_method_fn, NULL);
     TEST_ASSERT_EQUAL(GOLIOTH_OK, ret);
 
-    const char* payload = "{\"method\":\"test\", \"id\":\"123\", \"params\" : [] }";
-    on_rpc(NULL, NULL, NULL, (const uint8_t*)payload, strlen(payload), NULL);
+    const uint8_t payload[] = {
+            0xA3,                               /* map(3) */
+            0x66,                               /* text(6) */
+            0x6D, 0x65, 0x74, 0x68, 0x6F, 0x64, /* "method" */
+            0x64,                               /* text(4) */
+            0x74, 0x65, 0x73, 0x74,             /* "test" */
+            0x62,                               /* text(2) */
+            0x69, 0x64,                         /* "id" */
+            0x63,                               /* text(3) */
+            0x31, 0x32, 0x33,                   /* "123" */
+            0x66,                               /* text(6) */
+            0x70, 0x61, 0x72, 0x61, 0x6D, 0x73, /* "params" */
+            0x80,                               /* array(0) */
+    };
+    on_rpc(NULL, NULL, NULL, payload, sizeof(payload), NULL);
 
     TEST_ASSERT_EQUAL(1, test_rpc_method_fn_fake.call_count);
 }
 
-char last_received_method_name[10];
+/** Extract the major type, i.e. the first 3 bits of the header byte. */
+#define ZCBOR_MAJOR_TYPE(header_byte) ((zcbor_major_type_t)(((header_byte) >> 5) & 0x7))
 
 golioth_rpc_status_t rpc_method_fake(
-        const char* method,
-        const cJSON* params,
-        uint8_t* detail,
-        size_t detail_size,
+        zcbor_state_t* request_params_array,
+        zcbor_state_t* response_detail_map,
         void* callback_arg) {
-    strcpy(last_received_method_name, method);
-    strcpy((char*)detail, "{\"return_val\":\"foo\"}");
+    zcbor_tstr_put_lit(response_detail_map, "return_val");
+    zcbor_tstr_put_lit(response_detail_map, "foo");
 
     // callback_arg holds a boolean that indicates whether or not to verify the parameters
     if ((bool)callback_arg) {
-        TEST_ASSERT_TRUE(cJSON_IsArray(params));
-        TEST_ASSERT_EQUAL(2, cJSON_GetArraySize(params));
-        const cJSON* item = cJSON_GetArrayItem(params, 0);
-        TEST_ASSERT_TRUE(cJSON_IsString(item));
-        TEST_ASSERT_EQUAL_STRING("a", item->valuestring);
-        item = cJSON_GetArrayItem(params, 1);
-        TEST_ASSERT_TRUE(cJSON_IsNumber(item));
-        TEST_ASSERT_EQUAL(248, item->valueint);
+        bool ok;
+        struct zcbor_string param_1;
+        int32_t param_2;
+
+        ok = zcbor_tstr_decode(request_params_array, &param_1);
+        TEST_ASSERT_TRUE(ok);
+        TEST_ASSERT_EQUAL_STRING_LEN("a", param_1.value, param_1.len);
+
+        ok = zcbor_int32_decode(request_params_array, &param_2);
+        TEST_ASSERT_TRUE(ok);
+        TEST_ASSERT_EQUAL(248, param_2);
     }
 
     return RPC_OK;
@@ -182,13 +271,46 @@ void test_rpc_call_with_return(void) {
     golioth_status_t ret = golioth_rpc_register(NULL, "test", test_rpc_method_fn, NULL);
     TEST_ASSERT_EQUAL(GOLIOTH_OK, ret);
 
-    const char* payload = "{\"method\":\"test\", \"id\":\"123\", \"params\" : [] }";
-    on_rpc(NULL, NULL, NULL, (const uint8_t*)payload, strlen(payload), NULL);
+    const uint8_t payload[] = {
+            0xA3,                               /* map(3) */
+            0x66,                               /* text(6) */
+            0x6D, 0x65, 0x74, 0x68, 0x6F, 0x64, /* "method" */
+            0x64,                               /* text(4) */
+            0x74, 0x65, 0x73, 0x74,             /* "test" */
+            0x62,                               /* text(2) */
+            0x69, 0x64,                         /* "id" */
+            0x63,                               /* text(3) */
+            0x31, 0x32, 0x33,                   /* "123" */
+            0x66,                               /* text(6) */
+            0x70, 0x61, 0x72, 0x61, 0x6D, 0x73, /* "params" */
+            0x80,                               /* array(0) */
+    };
+    on_rpc(NULL, NULL, NULL, payload, sizeof(payload), NULL);
 
     TEST_ASSERT_EQUAL(1, test_rpc_method_fn_fake.call_count);
-    TEST_ASSERT_EQUAL_STRING(
-            "{ \"id\": \"123\", \"statusCode\": 0, \"detail\": {\"return_val\":\"foo\"} }",
-            last_coap_payload_str);
+
+    const uint8_t expected[] = {
+            0xBF,                                                       /* map(*) */
+            0x62,                                                       /* text(2) */
+            0x69, 0x64,                                                 /* "id" */
+            0x63,                                                       /* text(3) */
+            0x31, 0x32, 0x33,                                           /* "123" */
+            0x66,                                                       /* text(6) */
+            0x64, 0x65, 0x74, 0x61, 0x69, 0x6C,                         /* "detail" */
+            0xBF,                                                       /* map(*) */
+            0x6A,                                                       /* text(10) */
+            0x72, 0x65, 0x74, 0x75, 0x72, 0x6E, 0x5F, 0x76, 0x61, 0x6C, /* "return_val" */
+            0x63,                                                       /* text(3) */
+            0x66, 0x6F, 0x6F,                                           /* "foo" */
+            0xFF,                                                       /* primitive(*) */
+            0x6A,                                                       /* text(10) */
+            0x73, 0x74, 0x61, 0x74, 0x75, 0x73, 0x43, 0x6F, 0x64, 0x65, /* "statusCode" */
+            0x00,                                                       /* unsigned(0) */
+            0xFF,                                                       /* primitive(*) */
+    };
+
+    TEST_ASSERT_EQUAL(sizeof(expected), last_coap_payload_size);
+    TEST_ASSERT_EQUAL_MEMORY(expected, last_coap_payload, last_coap_payload_size);
 }
 
 void test_rpc_call_one_with_params(void) {
@@ -196,8 +318,24 @@ void test_rpc_call_one_with_params(void) {
     golioth_status_t ret = golioth_rpc_register(NULL, "test", test_rpc_method_fn, (void*)true);
     TEST_ASSERT_EQUAL(GOLIOTH_OK, ret);
 
-    const char* payload = "{\"method\":\"test\", \"id\":\"123\", \"params\" : [\"a\",248] }";
-    on_rpc(NULL, NULL, NULL, (const uint8_t*)payload, strlen(payload), NULL);
+    const uint8_t payload[] = {
+            0xA3,                               /* map(3) */
+            0x66,                               /* text(6) */
+            0x6D, 0x65, 0x74, 0x68, 0x6F, 0x64, /* "method" */
+            0x64,                               /* text(4) */
+            0x74, 0x65, 0x73, 0x74,             /* "test" */
+            0x62,                               /* text(2) */
+            0x69, 0x64,                         /* "id" */
+            0x63,                               /* text(3) */
+            0x31, 0x32, 0x33,                   /* "123" */
+            0x66,                               /* text(6) */
+            0x70, 0x61, 0x72, 0x61, 0x6D, 0x73, /* "params" */
+            0x82,                               /* array(2) */
+            0x61,                               /* text(1) */
+            0x61,                               /* "a" */
+            0x18, 0xF8,                         /* unsigned(248) */
+    };
+    on_rpc(NULL, NULL, NULL, payload, sizeof(payload), NULL);
 
     TEST_ASSERT_EQUAL(1, test_rpc_method_fn_fake.call_count);
 }
@@ -206,9 +344,23 @@ void test_rpc_call_same_multiple(void) {
     golioth_status_t ret = golioth_rpc_register(NULL, "test", test_rpc_method_fn, NULL);
     TEST_ASSERT_EQUAL(GOLIOTH_OK, ret);
 
-    const char* payload = "{\"method\":\"test\", \"id\":\"123\", \"params\" : [] }";
+    const uint8_t payload[] = {
+            0xA3,                               /* map(3) */
+            0x66,                               /* text(6) */
+            0x6D, 0x65, 0x74, 0x68, 0x6F, 0x64, /* "method" */
+            0x64,                               /* text(4) */
+            0x74, 0x65, 0x73, 0x74,             /* "test" */
+            0x62,                               /* text(2) */
+            0x69, 0x64,                         /* "id" */
+            0x63,                               /* text(3) */
+            0x31, 0x32, 0x33,                   /* "123" */
+            0x66,                               /* text(6) */
+            0x70, 0x61, 0x72, 0x61, 0x6D, 0x73, /* "params" */
+            0x80,                               /* array(0) */
+    };
+
     for (int i = 0; i < 100; i++) {
-        on_rpc(NULL, NULL, NULL, (const uint8_t*)payload, strlen(payload), NULL);
+        on_rpc(NULL, NULL, NULL, payload, sizeof(payload), NULL);
     }
 
     TEST_ASSERT_EQUAL(100, test_rpc_method_fn_fake.call_count);
@@ -224,14 +376,40 @@ void test_rpc_register_many_call_all(void) {
         TEST_ASSERT_EQUAL(GOLIOTH_OK, ret);
     }
     for (int i = 0; i < CONFIG_GOLIOTH_RPC_MAX_NUM_METHODS; i++) {
-        char* payload = NULL;
-        asprintf(
-                &payload, "{\"method\":\"%s\", \"id\":\"123\", \"params\" : [] }", method_names[i]);
-        on_rpc(NULL, NULL, NULL, (const uint8_t*)payload, strlen(payload), NULL);
+        const uint8_t payload[] = {
+                0xA3, /* map(3) */
+                0x66, /* text(6) */
+                0x6D,
+                0x65,
+                0x74,
+                0x68,
+                0x6F,
+                0x64,                           /* "method" */
+                0x60 + strlen(method_names[i]), /* text(...) */
+                0x74,
+                0x65,
+                0x73,
+                0x74,
+                method_names[i][4], /* "test%d" */
+                0x62,               /* text(2) */
+                0x69,
+                0x64, /* "id" */
+                0x63, /* text(3) */
+                0x31,
+                0x32,
+                0x33, /* "123" */
+                0x66, /* text(6) */
+                0x70,
+                0x61,
+                0x72,
+                0x61,
+                0x6D,
+                0x73, /* "params" */
+                0x80, /* array(0) */
+        };
+        on_rpc(NULL, NULL, NULL, payload, sizeof(payload), NULL);
 
         TEST_ASSERT_EQUAL(i + 1, test_rpc_method_fn_fake.call_count);
-        TEST_ASSERT_EQUAL_STRING(method_names[i], last_received_method_name);
-        free(payload);
         free(method_names[i]);
     }
 }
