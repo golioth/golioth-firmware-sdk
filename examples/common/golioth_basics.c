@@ -38,17 +38,31 @@ static golioth_settings_status_t on_loop_delay_setting(int32_t new_value, void* 
 }
 
 static golioth_rpc_status_t on_multiply(
-        const char* method,
-        const cJSON* params,
-        uint8_t* detail,
-        size_t detail_size,
+        zcbor_state_t* request_params_array,
+        zcbor_state_t* response_detail_map,
         void* callback_arg) {
-    if (cJSON_GetArraySize(params) != 2) {
+    double a, b;
+    double value;
+    bool ok;
+
+    ok = zcbor_float_decode(request_params_array, &a)
+            && zcbor_float_decode(request_params_array, &b);
+    if (!ok) {
+        GLTH_LOGE(TAG, "Failed to decode array items");
         return RPC_INVALID_ARGUMENT;
     }
-    int a = cJSON_GetArrayItem(params, 0)->valueint;
-    int b = cJSON_GetArrayItem(params, 1)->valueint;
-    snprintf((char*)detail, detail_size, "{ \"value\": %d }", a * b);
+
+    value = a * b;
+
+    GLTH_LOGD(TAG, "%lf * %lf = %lf", a, b, value);
+
+    ok = zcbor_tstr_put_lit(response_detail_map, "value")
+            && zcbor_float64_put(response_detail_map, value);
+    if (!ok) {
+        GLTH_LOGE(TAG, "Failed to encode value");
+        return RPC_RESOURCE_EXHAUSTED;
+    }
+
     return RPC_OK;
 }
 

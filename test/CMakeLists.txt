@@ -21,14 +21,18 @@ target_include_directories(unity PUBLIC ${repo_root}/external/unity/src .)
 add_library(fff INTERFACE)
 target_include_directories(fff INTERFACE ${repo_root}/external/fff)
 
-# Build cJSON
+# Build zcbor
 
-set(cjson_dir "${repo_root}/external/cJSON")
-add_library(cjson
-    "${cjson_dir}/cJSON.c"
-    "${cjson_dir}/cJSON_Utils.c"
+set(zcbor_dir "${repo_root}/external/zcbor")
+add_library(zcbor
+    "${zcbor_dir}/src/zcbor_common.c"
+    "${zcbor_dir}/src/zcbor_decode.c"
+    "${zcbor_dir}/src/zcbor_encode.c"
+    "${repo_root}/src/zcbor_utils.c"
 )
-target_include_directories(cjson PUBLIC "${cjson_dir}")
+target_include_directories(zcbor PUBLIC "${zcbor_dir}/include")
+target_include_directories(zcbor PUBLIC "${CMAKE_CURRENT_SOURCE_DIR}")
+target_compile_options(zcbor PRIVATE "-Wno-strict-aliasing" "-Wno-uninitialized")
 
 # Build libcoap
 
@@ -71,4 +75,4 @@ target_include_directories(test_golioth_rpc PRIVATE
     ${repo_root}/port/linux
     $<TARGET_PROPERTY:coap-3,INCLUDE_DIRECTORIES>
 )
-target_link_libraries(test_golioth_rpc cjson)
+target_link_libraries(test_golioth_rpc zcbor)

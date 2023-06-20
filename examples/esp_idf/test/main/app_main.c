@@ -5,7 +5,6 @@
  */
 #include <string.h>
 #include <inttypes.h>
-#include <cJSON.h>
 #include "freertos/FreeRTOS.h"
 #include "freertos/task.h"
 #include "freertos/semphr.h"
@@ -49,16 +48,27 @@ static void on_client_event(golioth_client_t client, golioth_client_event_t even
 }
 
 static golioth_rpc_status_t on_double(
-        const char* method,
-        const cJSON* params,
-        uint8_t* detail,
-        size_t detail_size,
+        zcbor_state_t* request_params_array,
+        zcbor_state_t* response_detail_map,
         void* callback_arg) {
-    if (cJSON_GetArraySize(params) != 1) {
+    double value;
+    bool ok;
+
+    ok = zcbor_float_decode(request_params_array, &value);
+    if (!ok) {
+        GLTH_LOGE(TAG, "Failed to decode value to be doubled");
         return RPC_INVALID_ARGUMENT;
     }
-    int num_to_double = cJSON_GetArrayItem(params, 0)->valueint;
-    snprintf((char*)detail, detail_size, "{ \"value\": %d }", 2 * num_to_double);
+
+    value *= 2;
+
+    ok = zcbor_tstr_put_lit(response_detail_map, "value")
+            && zcbor_float64_put(response_detail_map, value);
+    if (!ok) {
+        GLTH_LOGE(TAG, "Failed to encode value");
+        return RPC_RESOURCE_EXHAUSTED;
+    }
+
     return RPC_OK;
 }
 
