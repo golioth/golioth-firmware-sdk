@@ -11,6 +11,7 @@
 #include "golioth_config.h"
 #include "golioth_sys.h"
 #include "cJSON.h"
+#include <assert.h>
 #include <string.h>
 
 LOG_TAG_DEFINE(golioth_remote_shell);
