@@ -12,3 +12,7 @@
 #ifndef max
 #define max(a, b) ((a) > (b) ? (a) : (b))
 #endif
+
+#ifndef ARRAY_SIZE
+#define ARRAY_SIZE(array) (sizeof(array) / sizeof((array)[0]))
+#endif
