@@ -18,6 +18,7 @@ idf_component_register(
     REQUIRES
         "json"
         "nvs_flash"
+        "zcbor"
     PRIV_REQUIRES
         "coap"
         "heatshrink"

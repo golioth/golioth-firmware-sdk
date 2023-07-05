@@ -19,3 +19,6 @@
 [submodule "external/bsdiff"]
 	path = external/bsdiff
 	url = https://github.com/golioth/bsdiff.git
+[submodule "external/zcbor"]
+	path = external/zcbor
+	url = https://github.com/NordicSemiconductor/zcbor.git
