@@ -4,6 +4,7 @@ set(sdk_port ${repo_root}/port)
 set(heatshrink_dir ${repo_root}/external/heatshrink)
 set(miniz_dir ${repo_root}/external/miniz)
 set(bsdiff_dir ${repo_root}/external/bsdiff)
+set(zcbor_dir ${repo_root}/external/zcbor)
 
 option(ENABLE_DOCS "" OFF)
 option(ENABLE_EXAMPLES "" OFF)
@@ -29,6 +30,12 @@ set(miniz_srcs
 
 set(bsdiff_srcs
     "${bsdiff_dir}/bspatch.c"
+)
+
+set(zcbor_srcs
+    "${zcbor_dir}/src/zcbor_common.c"
+    "${zcbor_dir}/src/zcbor_decode.c"
+    "${zcbor_dir}/src/zcbor_encode.c"
 )
 
 # Build Golioth SDK
@@ -57,10 +64,13 @@ add_library(golioth_sdk
     ${heatshrink_srcs}
     ${miniz_srcs}
     ${bsdiff_srcs}
+    ${zcbor_srcs}
     ${sdk_srcs}
 )
+
 target_include_directories(golioth_sdk
     PUBLIC
+        ${zcbor_dir}/include
         ${sdk_src}/include
         ${sdk_port}/linux
     PRIVATE
@@ -68,6 +78,7 @@ target_include_directories(golioth_sdk
         ${heatshrink_dir}/include
         ${heatshrink_dir}/src
         ${miniz_dir}
+        ${zcbor_dir}
         ${sdk_port}/common/miniz
         ${sdk_src}/priv_include
 )
