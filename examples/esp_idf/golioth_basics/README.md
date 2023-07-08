@@ -29,7 +29,11 @@ https://github.com/goliothlabs/ble_prov_web
 
 ### Remote shell
 
-In `sdkconfig`, set `CONFIG_GOLIOTH_REMOTE_SHELL_ENABLE=1`.
+In `sdkconfig`, set the remote shell enable symbol:
+
+```
+CONFIG_GOLIOTH_REMOTE_SHELL_ENABLE=y
+```
 
 Use the remote shell web app (experimental) to interact with the device:
 
