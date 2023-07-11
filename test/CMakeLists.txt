@@ -32,6 +32,7 @@ target_include_directories(cjson PUBLIC "${cjson_dir}")
 
 # Build libcoap
 
+set(ENABLE_DOCS OFF)
 add_subdirectory("${repo_root}/external/libcoap" build)
 
 # Function for declaring unit tests
