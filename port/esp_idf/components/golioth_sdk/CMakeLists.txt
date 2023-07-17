@@ -29,7 +29,7 @@ idf_component_register(
         "app_update"
         "esp_timer"
     SRCS
-        "${sdk_port}/freertos//golioth_sys_freertos.c"
+        "${sdk_port}/freertos/golioth_sys_freertos.c"
         "${sdk_port}/esp_idf/fw_update_esp_idf.c"
         "${sdk_port}/esp_idf/serial_tap_esp_idf.c"
         "${sdk_src}/golioth_status.c"
