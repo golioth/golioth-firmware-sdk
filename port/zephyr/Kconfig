@@ -6,6 +6,16 @@ menuconfig GOLIOTH_FIRMWARE_SDK
 	select POSIX_API # libcoap
 	select REBOOT if BOOTLOADER_MCUBOOT
 	select REQUIRES_FULL_LIBC # libcoap
+	select MBEDTLS
+	select MBEDTLS_DTLS if MBEDTLS_BUILTIN
+	select NET_SOCKETS
+	select NET_UDP
+	select ZCBOR
+	imply DNS_RESOLVER if NET_NATIVE
+	imply NET_SOCKETS_SOCKOPT_TLS
+	imply NET_SOCKETS_ENABLE_DTLS
+	help
+	  Enable library for communication with Golioth cloud.
 
 if GOLIOTH_FIRMWARE_SDK
 
