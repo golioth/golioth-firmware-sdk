@@ -4,6 +4,7 @@ sdkconfig.old
 build.tar.gz
 credentials.yml
 credentials.inc
+.cache
 .vscode
 firebase-debug.log
 mtb_shared
