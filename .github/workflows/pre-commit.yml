@@ -1,0 +1,29 @@
+name: pre-commit
+
+on:
+  pull_request:
+
+  workflow_dispatch:
+
+jobs:
+  pre-commit:
+    runs-on: ubuntu-latest
+
+    container:
+      image: kiwicom/pre-commit:3.0.4
+
+    steps:
+      - uses: actions/checkout@v3
+        with:
+          fetch-depth: 0
+
+      - name: Run pre-commit
+        run: |
+          git config --global --add safe.directory $GITHUB_WORKSPACE
+          CODE=0 # run pre-commit
+          for CID in `git rev-list --reverse origin/$GITHUB_BASE_REF..`; do
+              git show $CID -s --format='    pre-commit %h ("%s")'
+              git checkout -f -q $CID
+              pre-commit run --color always --show-diff-on-failure --from-ref $CID^ --to-ref $CID || CODE=$?
+          done
+          exit $CODE
