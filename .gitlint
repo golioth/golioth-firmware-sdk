@@ -1,0 +1,7 @@
+[general]
+# Set the extra-path where gitlint will search for user defined rules
+# See http://jorisroovers.github.io/gitlint/user_defined_rules for details
+extra-path=scripts/gitlint
+
+[body-max-line-length]
+line-length=75
