@@ -23,6 +23,57 @@ menu "Golioth SDK Configuration"
 
 rsource '${ZEPHYR_GOLIOTH_FIRMWARE_SDK_MODULE_DIR}/src/Kconfig'
 
+choice GOLIOTH_AUTH_METHOD
+	prompt "Authentication method support"
+
+config GOLIOTH_AUTH_METHOD_PSK
+	bool "PSK-ID / PSK only"
+	imply GOLIOTH_AUTH_PSK_MBEDTLS_DEPS
+	help
+	  Only PSK based authentication will be supported.
+
+config GOLIOTH_AUTH_METHOD_CERT
+	bool "Certificate based only"
+	imply GOLIOTH_AUTH_CERT_MBEDTLS_DEPS
+	help
+	  Only certificate based authentication will be supported.
+
+endchoice
+
+config GOLIOTH_AUTH_PSK_MBEDTLS_DEPS
+	bool "mbedTLS dependencies for PSK auth"
+	depends on MBEDTLS_BUILTIN || NRF_SECURITY
+	# Select at least one server supported cipher
+	imply MBEDTLS_CIPHER_GCM_ENABLED if (MBEDTLS_BUILTIN && !MBEDTLS_CIPHER_CCM_ENABLED && !MBEDTLS_CIPHER_CBC_MODE_ENABLED)
+	imply MBEDTLS_GCM_C if (NRF_SECURITY && !MBEDTLS_CCM_C)
+	select MBEDTLS_KEY_EXCHANGE_PSK_ENABLED
+	# Satisfy build-time check of MBEDTLS_PK_C (needs MBEDTLS_ECP_C || MBEDTLS_RSA_C)
+	imply MBEDTLS_ECP_C if (NRF_SECURITY && !MBEDTLS_RSA_C)
+	help
+	  Select mbedTLS dependencies for PSK based authentication.
+
+	  This is a convenience option when using mbedTLS as a library to make
+	  (D)TLS connection with Golioth cloud.
+
+config GOLIOTH_AUTH_CERT_MBEDTLS_DEPS
+	bool "mbedTLS dependencies for certificate based auth"
+	depends on MBEDTLS_BUILTIN || NRF_SECURITY
+	# At least one ECP needs to be selected. This was chosen arbitrarily.
+	imply MBEDTLS_ECP_DP_SECP256R1_ENABLED
+	# Select at least one server supported cipher
+	imply MBEDTLS_CIPHER_GCM_ENABLED if (MBEDTLS_BUILTIN && !MBEDTLS_CIPHER_CCM_ENABLED)
+	select MBEDTLS_GCM_C if (NRF_SECURITY && !MBEDTLS_CCM_C)
+	select MBEDTLS_ECP_C
+	select MBEDTLS_ECDH_C
+	select MBEDTLS_ECDSA_C
+	select MBEDTLS_RSA_C
+	select MBEDTLS_KEY_EXCHANGE_ECDHE_ECDSA_ENABLED
+	help
+	  Select mbedTLS dependencies for certificate based authentication.
+
+	  This is a convenience option when using mbedTLS as a library to make
+	  (D)TLS connection with Golioth cloud.
+
 endmenu
 
 config GOLIOTH_ZEPHYR_THREAD_STACKS
