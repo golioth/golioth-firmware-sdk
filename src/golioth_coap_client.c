@@ -222,6 +222,10 @@ static void nack_handler(
         const coap_pdu_t* sent,
         const coap_nack_reason_t reason,
         const coap_mid_t id) {
+    coap_context_t* context = coap_session_get_context(session);
+    golioth_coap_client_t* client = coap_get_app_data(context);
+    golioth_coap_request_msg_t* req = client->pending_req;
+
     switch (reason) {
         case COAP_NACK_TOO_MANY_RETRIES:
             GLTH_LOGE(TAG, "Received nack reason: COAP_NACK_TOO_MANY_RETRIES");
@@ -234,6 +238,10 @@ static void nack_handler(
             break;
         default:
             GLTH_LOGE(TAG, "Received nack reason: %d", reason);
+    }
+
+    if (req) {
+        req->got_nack = true;
     }
 }
 
@@ -754,6 +762,9 @@ static golioth_status_t coap_io_loop_once(
             time_spent_waiting_ms += num_ms;
             if (request_msg.got_response) {
                 GLTH_LOGD(TAG, "Received response in %" PRId32 " ms", time_spent_waiting_ms);
+                break;
+            } else if (request_msg.got_nack) {
+                GLTH_LOGE(TAG, "Got NACKed request");
                 break;
             } else {
                 // During normal operation, there will be other kinds of IO to process,
