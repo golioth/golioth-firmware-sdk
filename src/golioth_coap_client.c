@@ -44,10 +44,8 @@ typedef struct {
     golioth_rpc_t rpc;
 } golioth_coap_client_t;
 
-static bool token_matches_request(
-        const golioth_coap_request_msg_t* req,
-        const coap_pdu_t* received) {
-    coap_bin_const_t rcvd_token = coap_pdu_get_token(received);
+static bool token_matches_request(const golioth_coap_request_msg_t* req, const coap_pdu_t* pdu) {
+    coap_bin_const_t rcvd_token = coap_pdu_get_token(pdu);
     bool len_matches = (rcvd_token.length == req->token_len);
     return (len_matches && (0 == memcmp(rcvd_token.s, req->token, req->token_len)));
 }
