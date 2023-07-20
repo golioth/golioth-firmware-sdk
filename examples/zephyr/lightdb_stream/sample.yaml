@@ -1,0 +1,11 @@
+sample:
+  description: Send data to Golioth LightDB Stream
+  name: lightdb stream
+common:
+  harness: pytest
+  tags: golioth socket goliothd
+tests:
+  sample.golioth.lightdb_stream:
+    platform_allow: >
+      nrf52840dk_nrf52840
+      qemu_x86
