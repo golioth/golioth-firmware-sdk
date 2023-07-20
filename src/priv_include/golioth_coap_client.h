@@ -87,6 +87,7 @@ typedef struct {
     /// Primarily intended to be used for synchronous requests, to avoid blocking forever.
     uint64_t ageout_ms;
     bool got_response;
+    bool got_nack;
 
     /// (sync request only) Notification from coap thread to user sync function that
     /// request is completed.
