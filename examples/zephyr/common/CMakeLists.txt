@@ -1,5 +1,5 @@
 zephyr_library_sources_ifdef(CONFIG_GOLIOTH_SAMPLE_HARDCODED_CREDENTIALS hardcoded_credentials.c)
-zephyr_library_sources(net_connect.c)
+zephyr_library_sources_ifdef(CONFIG_GOLIOTH_SAMPLE_COMMON net_connect.c)
 zephyr_library_sources_ifdef(CONFIG_GOLIOTH_SAMPLE_WIFI wifi.c)
 
 zephyr_include_directories(include)

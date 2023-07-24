@@ -5,6 +5,9 @@ endif()
 zephyr_include_directories(include)
 zephyr_include_directories(../../src/include)
 
+add_subdirectory_ifdef(CONFIG_GOLIOTH_SAMPLE_COMMON
+    ${ZEPHYR_GOLIOTH_FIRMWARE_SDK_MODULE_DIR}/examples/zephyr/common examples_zephyr_common)
+
 zephyr_library()
 zephyr_library_include_directories(../../src/priv_include)
 
