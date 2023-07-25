@@ -24,7 +24,7 @@ jobs:
         git fetch --no-recurse-submodules
         echo "Checking code format"
         sudo apt install clang-format
-        REPO_ROOT=`pwd` ./scripts/lint/ci_check_clang_format.sh
+        REPO_ROOT=`pwd` ./scripts/lint/ci_check_clang_format.sh --merge-base origin/$GITHUB_BASE_REF
     - name: Run unit tests
       shell: bash
       run: |

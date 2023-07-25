@@ -8,10 +8,26 @@ set -euxo pipefail
 
 cd "$(dirname "$0")"
 
-merge_base=origin/main
+MERGE_BASE=origin/main
+
+# https://stackoverflow.com/questions/192249/how-do-i-parse-command-line-arguments-in-bash
+while [[ $# -gt 0 ]]
+do
+key="$1"
+case $key in
+    --merge-base)
+    MERGE_BASE="$2"
+    shift # past argument
+    ;;
+    *)
+    # unknown option
+    ;;
+esac
+shift # past argument or value
+done
 
 set +e
-./check_clang_format.sh --against "$merge_base" --verbose --show-files
+./check_clang_format.sh --against "$MERGE_BASE" --verbose --show-files
 status=$?
 
 if [[ $status -ne 0 ]]
