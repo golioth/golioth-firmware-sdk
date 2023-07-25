@@ -6,7 +6,6 @@ zephyr_include_directories(include)
 zephyr_include_directories(../../src/include)
 
 zephyr_library()
-zephyr_library_include_directories(../../src/include)
 zephyr_library_include_directories(../../src/priv_include)
 
 zephyr_include_directories(
