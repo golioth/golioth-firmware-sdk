@@ -3,7 +3,7 @@
 set -e
 
 verbose=0
-show_files=1
+show_files=0
 AGAINST="HEAD"
 
 # https://stackoverflow.com/questions/192249/how-do-i-parse-command-line-arguments-in-bash
@@ -28,6 +28,9 @@ esac
 shift # past argument or value
 done
 
+# get commit
+base_commit=$(git log -n 1 --pretty=format:"%H" "$AGAINST")
+
 # all changed files
 changed_files=$(git diff --diff-filter=d --name-only "$AGAINST")
 
@@ -39,56 +42,19 @@ changed_c_h_files=$(echo "$changed_files" \
     | grep -v -E ".*external.*" \
     | grep -v -E ".*unity.*" \
     | grep -v -E ".*fff.*" \
-    | grep -v -E ".*cy_flash_map.h") || true
+    | grep -v -E ".*cy_flash_map.h" \
+    | tr '\n' ' ') || true
 
 cd "$(git rev-parse --show-toplevel)"
 
-# list of files which contain a diff
-diff_files=()
-
-have_diff=0
-for file in $changed_c_h_files; do
-    # turn off fail on error because diff exits with non-zero when there is a diff
-    # we want to identify that happening, not fail the script
+if ((verbose)); then
     set +e
-    if ((verbose)); then
-        diff -u "$file" <(clang-format "$file")
-    else
-        diff -u "$file" <(clang-format "$file") > /dev/null
-    fi
-
-    if [[ $? -ne 0 ]]
-    then
-        diff_files+=($file)
-        have_diff=1
-    fi
+    git-clang-format --diff $base_commit -- $changed_c_h_files
     set -e
-done
-
-RED='\033[0;31m'
-NO_COLOR='\033[0m'
-
-if [[ $have_diff -eq 1 ]]
-then
-    if ((show_files)); then
-        echo
-        echo -e "${RED}"
-        echo "Files with clang-format violations:"
-        for file in "${diff_files[@]}"; do
-            echo "* $file"
-        done
-        echo ""
-        echo "To fix the offending files (i.e. format them in-place), try:"
-        echo "cd $REPO_ROOT &&"
-        for file in $diff_files; do
-            echo "  clang-format -i $file &&"
-        done
-        echo "  cd -"
-        echo -e "${NO_COLOR}"
-        echo ""
-    fi
-
-    exit 1
 fi
 
-exit 0
+if ((show_files)); then
+    git-clang-format --diffstat $base_commit -- $changed_c_h_files
+else
+    git-clang-format --diffstat $base_commit -- $changed_c_h_files > /dev/null
+fi
