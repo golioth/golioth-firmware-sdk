@@ -12,14 +12,6 @@ option(ENABLE_SERVER_MODE "" OFF)
 option(ENABLE_TCP "" OFF)
 add_subdirectory("${repo_root}/external/libcoap" build)
 
-# Build cJSON from source
-set(cjson_dir "${repo_root}/external/cJSON")
-add_library(cjson
-    "${cjson_dir}/cJSON.c"
-    "${cjson_dir}/cJSON_Utils.c"
-)
-target_include_directories(cjson PUBLIC "${cjson_dir}")
-
 set(heatshrink_srcs
     "${heatshrink_dir}/src/heatshrink_decoder.c"
 )
@@ -84,6 +76,5 @@ target_include_directories(golioth_sdk
         ${sdk_src}/priv_include
 )
 target_link_libraries(golioth_sdk
-    PUBLIC cjson
     PRIVATE coap-3 pthread rt)
 target_compile_definitions(golioth_sdk PRIVATE -DHEATSHRINK_DYNAMIC_ALLOC=0)

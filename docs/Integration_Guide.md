@@ -139,7 +139,6 @@ release 3.0 from Infineon.
 ```
 echo 'https://github.com/golioth/golioth-firmware-sdk#v0.5.0#$$ASSET_REPO$$/golioth-firmware-sdk/v0.5.0' > deps/golioth-firmware-sdk.mtb
 echo 'https://github.com/obgm/libcoap#bbf098a72adeb8b5f9508e5a9f3a409f9a298d7a#$$ASSET_REPO$$/libcoap/bbf098a72adeb8b5f9508e5a9f3a409f9a298d7a' > deps/libcoap.mtb
-echo 'https://github.com/DaveGamble/cJSON#v1.7.15#$$ASSET_REPO$$/cJSON/v1.7.15' > deps/cJSON.mtb
 echo 'https://github.com/mcu-tools/mcuboot#v1.8.1-cypress#$$ASSET_REPO$$/mcuboot/v1.8.1-cypress' > deps/mcuboot.mtb
 ```
 

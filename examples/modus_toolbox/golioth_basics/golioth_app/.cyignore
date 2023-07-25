@@ -12,8 +12,3 @@ $(SEARCH_libcoap)/src/coap_io_riot.c
 $(SEARCH_libcoap)/src/coap_gnutls.c
 $(SEARCH_libcoap)/src/coap_tinydtls.c
 $(SEARCH_libcoap)/src/coap_openssl.c,)
-
-$(if $(SEARCH_cJSON),
-$(SEARCH_cJSON)/fuzzing
-$(SEARCH_cJSON)/tests
-$(SEARCH_cJSON)/test.c,)

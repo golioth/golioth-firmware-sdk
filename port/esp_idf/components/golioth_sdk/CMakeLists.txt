@@ -16,7 +16,6 @@ idf_component_register(
         "${sdk_src}/priv_include"
         "${freertos_include_dir}"
     REQUIRES
-        "json"
         "nvs_flash"
         "zcbor"
     PRIV_REQUIRES
