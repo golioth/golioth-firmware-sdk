@@ -828,6 +828,7 @@ static golioth_status_t coap_io_loop_once(
                     client, &response, request_msg.path, request_msg.delete.arg);
         }
 
+        golioth_sys_client_disconnected(client);
         if (client->event_callback && client->session_connected) {
             client->event_callback(
                     client, GOLIOTH_CLIENT_EVENT_DISCONNECTED, client->event_callback_arg);
@@ -839,6 +840,7 @@ static golioth_status_t coap_io_loop_once(
     if (!client->session_connected) {
         // Transitioned from not connected to connected
         GLTH_LOGI(TAG, "Golioth CoAP client connected");
+        golioth_sys_client_connected(client);
         if (client->event_callback) {
             client->event_callback(
                     client, GOLIOTH_CLIENT_EVENT_CONNECTED, client->event_callback_arg);

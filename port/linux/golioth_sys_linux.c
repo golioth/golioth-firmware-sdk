@@ -264,3 +264,11 @@ void golioth_sys_thread_destroy(golioth_sys_thread_t thread) {
     // Thread will be automatically destroyed when/if the parent
     // process exits.
 }
+
+/*--------------------------------------------------
+ * Misc
+ *------------------------------------------------*/
+
+void golioth_sys_client_connected(void* client) {}
+
+void golioth_sys_client_disconnected(void* client) {}

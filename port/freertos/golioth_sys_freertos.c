@@ -131,3 +131,11 @@ golioth_sys_thread_t golioth_sys_thread_create(golioth_sys_thread_config_t confi
 void golioth_sys_thread_destroy(golioth_sys_thread_t thread) {
     vTaskDelete((TaskHandle_t)thread);
 }
+
+/*--------------------------------------------------
+ * Misc
+ *------------------------------------------------*/
+
+void golioth_sys_client_connected(void* client) {}
+
+void golioth_sys_client_disconnected(void* client) {}

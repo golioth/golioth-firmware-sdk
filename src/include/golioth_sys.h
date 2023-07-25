@@ -83,6 +83,15 @@ void golioth_sys_thread_destroy(golioth_sys_thread_t thread);
 #endif
 
 /*--------------------------------------------------
+ * Misc
+ *------------------------------------------------*/
+
+// Can be used to adjust behavior based on client connection status,
+// e.g. to turn logging backends on and off.
+void golioth_sys_client_connected(void* client);
+void golioth_sys_client_disconnected(void* client);
+
+/*--------------------------------------------------
  * Logging
  *------------------------------------------------*/
 
