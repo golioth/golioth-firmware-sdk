@@ -86,6 +86,8 @@ zephyr_library_sources(
     ../../external/miniz/miniz_tinfl.c
 )
 
+zephyr_library_sources_ifdef(CONFIG_LOG_BACKEND_GOLIOTH golioth_log_zephyr.c)
+
 zephyr_library_compile_definitions(HEATSHRINK_DYNAMIC_ALLOC=0)
 
 zephyr_library_link_libraries(mbedTLS posix_subsys)
