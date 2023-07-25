@@ -188,3 +188,11 @@ void golioth_sys_thread_destroy(golioth_sys_thread_t gthread) {
     k_thread_abort(thread->tid);
     golioth_sys_free(thread);
 }
+
+/*--------------------------------------------------
+ * Misc
+ *------------------------------------------------*/
+
+void golioth_sys_client_connected(void* client) {}
+
+void golioth_sys_client_disconnected(void* client) {}
