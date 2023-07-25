@@ -89,6 +89,27 @@ config GOLIOTH_ZEPHYR_THREAD_STACK_SIZE
 	help
 	  Threads stacks sizes for the use in golioth_sys_thread_create().
 
+config LOG_BACKEND_GOLIOTH
+	bool "Golioth logging backend"
+	depends on LOG
+	depends on !LOG_MODE_IMMEDIATE
+	depends on GOLIOTH_FIRMWARE_SDK
+	select LOG_OUTPUT
+	select ZCBOR
+	help
+	  Enable sending logs to Golioth cloud.
+
+if LOG_BACKEND_GOLIOTH
+
+config LOG_BACKEND_GOLIOTH_MAX_LOG_STRING_SIZE
+	int "Maximum length of a formatted log string"
+	default 256
+	help
+	  Specified maximum buffer size used for storing a formatted log
+	  string before sending to Golioth cloud.
+
+endif # LOG_BACKEND_GOLIOTH
+
 rsource '${ZEPHYR_GOLIOTH_FIRMWARE_SDK_MODULE_DIR}/examples/zephyr/common/Kconfig'
 
 endif # GOLIOTH_FIRMWARE_SDK

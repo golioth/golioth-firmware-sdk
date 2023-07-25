@@ -1,6 +1,7 @@
 #include <zephyr/kernel.h>
 
 #include "golioth_sys.h"
+#include "golioth_log_zephyr.h"
 
 LOG_TAG_DEFINE(golioth_sys_zephyr);
 
@@ -193,6 +194,14 @@ void golioth_sys_thread_destroy(golioth_sys_thread_t gthread) {
  * Misc
  *------------------------------------------------*/
 
-void golioth_sys_client_connected(void* client) {}
+void golioth_sys_client_connected(void* client) {
+    if (IS_ENABLED(CONFIG_LOG_BACKEND_GOLIOTH)) {
+        log_backend_golioth_enable(client);
+    }
+}
 
-void golioth_sys_client_disconnected(void* client) {}
+void golioth_sys_client_disconnected(void* client) {
+    if (IS_ENABLED(CONFIG_LOG_BACKEND_GOLIOTH)) {
+        log_backend_golioth_disable(client);
+    }
+}
