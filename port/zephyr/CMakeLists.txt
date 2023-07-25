@@ -9,11 +9,6 @@ zephyr_library()
 zephyr_library_include_directories(../../src/include)
 zephyr_library_include_directories(../../src/priv_include)
 
-zephyr_include_directories(
-    # cJSON
-    ../../external/cJSON
-)
-
 zephyr_library_include_directories(
     # bsdiff
     ../../external/bsdiff
@@ -55,10 +50,6 @@ zephyr_library_sources(
 
     # bsdiff
     ../../external/bsdiff/bspatch.c
-
-    # cJSON
-    ../../external/cJSON/cJSON.c
-    ../../external/cJSON/cJSON_Utils.c
 
     # heatshrink
     ../../external/heatshrink/src/heatshrink_decoder.c
