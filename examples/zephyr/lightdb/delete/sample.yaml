@@ -1,0 +1,11 @@
+sample:
+  description: Use LightDB delete
+  name: lightdb-delete
+common:
+  harness: pytest
+  tags: golioth lightdb socket goliothd
+tests:
+  sample.golioth.lightdb_delete:
+    platform_allow: >
+      nrf52840dk_nrf52840
+      qemu_x86
