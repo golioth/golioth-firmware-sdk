@@ -10,10 +10,10 @@ int main(void) {
             .credentials = {
                     .auth_type = GOLIOTH_TLS_AUTH_TYPE_PSK,
                     .psk = {
-                            .psk_id = CONFIG_GOLIOTH_PSK_ID,
-                            .psk_id_len = strlen(CONFIG_GOLIOTH_PSK_ID),
-                            .psk = CONFIG_GOLIOTH_PSK,
-                            .psk_len = strlen(CONFIG_GOLIOTH_PSK),
+                            .psk_id = CONFIG_GOLIOTH_SAMPLE_PSK_ID,
+                            .psk_id_len = strlen(CONFIG_GOLIOTH_SAMPLE_PSK_ID),
+                            .psk = CONFIG_GOLIOTH_SAMPLE_PSK,
+                            .psk_len = strlen(CONFIG_GOLIOTH_SAMPLE_PSK),
                     }}};
 
     net_connect();

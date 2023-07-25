@@ -1,26 +1,4 @@
 # Copyright (c) 2021 Golioth, Inc.
 # SPDX-License-Identifier: Apache-2.0
 
-mainmenu "Golioth application options"
-
-config GOLIOTH_PSK_ID
-	string "PSK ID"
-	help
-	  Defines PSK ID used during DTLS handshake with Golioth server.
-
-config GOLIOTH_PSK
-	string "PSK"
-	help
-	  Defines PSK used during DTLS handshake with Golioth server.
-
-if DNS_RESOLVER
-
-config DNS_SERVER_IP_ADDRESSES
-	default y
-
-config DNS_SERVER1
-	default "1.1.1.1"
-
-endif # DNS_RESOLVER
-
 source "Kconfig.zephyr"
