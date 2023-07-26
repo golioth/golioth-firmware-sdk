@@ -11,6 +11,8 @@ menuconfig GOLIOTH_SAMPLE_COMMON
 
 if GOLIOTH_SAMPLE_COMMON
 
+rsource "Kconfig.defconfig"
+
 config GOLIOTH_SAMPLE_HARDCODED_CREDENTIALS
 	bool "Hardcoded credentials"
 	default n
