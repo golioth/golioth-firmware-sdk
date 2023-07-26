@@ -89,4 +89,6 @@ config GOLIOTH_ZEPHYR_THREAD_STACK_SIZE
 	help
 	  Threads stacks sizes for the use in golioth_sys_thread_create().
 
+rsource '${ZEPHYR_GOLIOTH_FIRMWARE_SDK_MODULE_DIR}/examples/zephyr/common/Kconfig'
+
 endif # GOLIOTH_FIRMWARE_SDK

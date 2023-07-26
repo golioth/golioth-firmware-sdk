@@ -23,6 +23,4 @@ config DNS_SERVER1
 
 endif # DNS_RESOLVER
 
-rsource "../common/Kconfig"
-
 source "Kconfig.zephyr"
