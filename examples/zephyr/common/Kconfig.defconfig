@@ -1,0 +1,76 @@
+#
+# Copyright (C) 2022-2023 Golioth, Inc.
+#
+# SPDX-License-Identifier: Apache-2.0
+#
+
+if GOLIOTH_SAMPLE_COMMON
+
+if DNS_RESOLVER
+
+config DNS_SERVER_IP_ADDRESSES
+	default y
+
+config DNS_SERVER1
+	default "1.1.1.1"
+
+endif # DNS_RESOLVER
+
+if MBEDTLS
+
+config MBEDTLS_ENABLE_HEAP
+	default y
+
+if MBEDTLS_ENABLE_HEAP
+
+config MBEDTLS_HEAP_SIZE
+	default 10240
+
+endif # MBEDTLS_ENABLE_HEAP
+
+if MBEDTLS_BUILTIN
+
+config MBEDTLS_SSL_MAX_CONTENT_LEN
+	default 2048
+
+endif # MBEDTLS_BUILTIN
+endif # MBEDTLS
+
+config NETWORKING
+	default y
+
+config NET_IPV4
+	default y
+
+config NET_IPV6
+	default n
+
+config NET_LOG
+	default y if NETWORKING
+
+config NET_SHELL
+	default y if NETWORKING
+
+config MAIN_STACK_SIZE
+	default 4096
+
+if GOLIOTH_AUTH_METHOD_PSK
+
+config GOLIOTH_SAMPLE_PSK_ID
+	default "$(GOLIOTH_SAMPLE_PSK_ID)" if "$(GOLIOTH_SAMPLE_PSK_ID)" != ""
+
+config GOLIOTH_SAMPLE_PSK
+	default "$(GOLIOTH_SAMPLE_PSK)" if "$(GOLIOTH_SAMPLE_PSK)" != ""
+
+endif # GOLIOTH_AUTH_METHOD_PSK
+
+if GOLIOTH_SAMPLE_WIFI
+
+config GOLIOTH_SAMPLE_WIFI_SSID
+	default "$(GOLIOTH_SAMPLE_WIFI_SSID)" if "$(GOLIOTH_SAMPLE_WIFI_SSID)" != ""
+
+config GOLIOTH_SAMPLE_WIFI_PSK
+	default "$(GOLIOTH_SAMPLE_WIFI_PSK)" if "$(GOLIOTH_SAMPLE_WIFI_PSK)" != ""
+
+endif # GOLIOTH_SAMPLE_WIFI
+endif # GOLIOTH_SAMPLE_COMMON
