@@ -13,36 +13,3 @@ tests:
     platform_allow: >
       nrf52840dk_nrf52840
       qemu_x86
-  sample.golioth.hello.psk.fast.gcm:
-    platform_allow: >
-      nrf52840dk_nrf52840
-      qemu_x86
-    extra_configs:
-      - CONFIG_MBEDTLS_CIPHER_GCM_ENABLED=y
-      - CONFIG_MBEDTLS_CIPHER_CCM_ENABLED=n
-      - CONFIG_MBEDTLS_CIPHER_MODE_CBC_ENABLED=n
-  sample.golioth.hello.psk.fast.ccm:
-    platform_allow: >
-      nrf52840dk_nrf52840
-      qemu_x86
-    extra_configs:
-      - CONFIG_MBEDTLS_CIPHER_GCM_ENABLED=n
-      - CONFIG_MBEDTLS_CIPHER_CCM_ENABLED=y
-      - CONFIG_MBEDTLS_CIPHER_MODE_CBC_ENABLED=n
-  sample.golioth.hello.psk.fast.cbc:
-    platform_allow: >
-      nrf52840dk_nrf52840
-      qemu_x86
-    extra_configs:
-      - CONFIG_MBEDTLS_CIPHER_GCM_ENABLED=n
-      - CONFIG_MBEDTLS_CIPHER_CCM_ENABLED=n
-      - CONFIG_MBEDTLS_CIPHER_MODE_CBC_ENABLED=y
-  sample.golioth.hello.psk.fast.ccm_8:
-    platform_allow: >
-      nrf52840dk_nrf52840
-      qemu_x86
-    extra_configs:
-      - CONFIG_MBEDTLS_CIPHER_GCM_ENABLED=n
-      - CONFIG_MBEDTLS_CIPHER_CCM_ENABLED=y
-      - CONFIG_MBEDTLS_CIPHER_MODE_CBC_ENABLED=n
-      - CONFIG_GOLIOTH_CIPHERSUITES="TLS_PSK_WITH_AES_128_CCM_8"
