@@ -10,3 +10,8 @@ firebase-debug.log
 mtb_shared
 *.key
 *.pem
+
+# Tag files
+tags
+tags.lock
+tags.temp
