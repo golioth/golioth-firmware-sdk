@@ -54,7 +54,7 @@ static void counter_get_async(golioth_client_t* client) {
 }
 
 static void counter_get_sync(golioth_client_t* client) {
-    uint32_t value;
+    int32_t value;
     int err;
 
     err = golioth_lightdb_get_int_sync(client, "counter", &value, APP_TIMEOUT_S);
