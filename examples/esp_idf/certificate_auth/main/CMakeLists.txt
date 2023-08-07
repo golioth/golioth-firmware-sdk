@@ -16,7 +16,6 @@ idf_component_register(
         "esp_hw_support"
         "esp_wifi"
     EMBED_TXTFILES
-        root_ca.pem
         certs/client.pem
         certs/client.key
 )
