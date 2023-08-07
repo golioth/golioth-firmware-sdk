@@ -25,23 +25,6 @@ menu "Golioth SDK Configuration"
 
 rsource '${ZEPHYR_GOLIOTH_FIRMWARE_SDK_MODULE_DIR}/src/Kconfig'
 
-choice GOLIOTH_AUTH_METHOD
-	prompt "Authentication method support"
-
-config GOLIOTH_AUTH_METHOD_PSK
-	bool "PSK-ID / PSK only"
-	imply GOLIOTH_AUTH_PSK_MBEDTLS_DEPS
-	help
-	  Only PSK based authentication will be supported.
-
-config GOLIOTH_AUTH_METHOD_CERT
-	bool "Certificate based only"
-	imply GOLIOTH_AUTH_CERT_MBEDTLS_DEPS
-	help
-	  Only certificate based authentication will be supported.
-
-endchoice
-
 config GOLIOTH_AUTH_PSK_MBEDTLS_DEPS
 	bool "mbedTLS dependencies for PSK auth"
 	depends on MBEDTLS_BUILTIN || NRF_SECURITY
