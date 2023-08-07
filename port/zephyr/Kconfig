@@ -90,6 +90,9 @@ config GOLIOTH_CIPHERSUITES
 
 endmenu
 
+config GOLIOTH_HARDCODED_CA_CRT_PATH
+    default "${ZEPHYR_GOLIOTH_FIRMWARE_SDK_MODULE_DIR}/src/isrgrootx1.pem"
+
 config GOLIOTH_ZEPHYR_THREAD_STACKS
 	int "Number of thread stacks in Zephyr pool"
 	default 3 if GOLIOTH_REMOTE_SHELL_ENABLE
