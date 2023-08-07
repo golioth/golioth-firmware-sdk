@@ -5,6 +5,22 @@ endif()
 zephyr_include_directories(include)
 zephyr_include_directories(../../src/include)
 
+function (include_cert path_var name)
+  set(path ${${path_var}})
+  if(NOT IS_ABSOLUTE ${path})
+    if(EXISTS ${APPLICATION_SOURCE_DIR}/${path})
+      set(path ${APPLICATION_SOURCE_DIR}/${path})
+    elseif(EXISTS ${CMAKE_CURRENT_SOURCE_DIR}/${path})
+      set(path ${CMAKE_CURRENT_SOURCE_DIR}/${path})
+    else()
+      message(FATAL_ERROR "${path} set by ${path_var} does not exist")
+    endif()
+  endif()
+
+  generate_inc_file_for_target(app ${path}
+    ${ZEPHYR_BINARY_DIR}/include/generated/golioth-systemclient-${name}.inc)
+endfunction()
+
 add_subdirectory_ifdef(CONFIG_GOLIOTH_SAMPLE_COMMON
     ${ZEPHYR_GOLIOTH_FIRMWARE_SDK_MODULE_DIR}/examples/zephyr/common examples_zephyr_common)
 
@@ -85,6 +101,10 @@ zephyr_library_sources(
     # miniz
     ../../external/miniz/miniz_tinfl.c
 )
+
+if(CONFIG_GOLIOTH_AUTH_METHOD_CERT)
+  include_cert(CONFIG_GOLIOTH_HARDCODED_CA_CRT_PATH ca_crt)
+endif()
 
 zephyr_library_sources_ifdef(CONFIG_LOG_BACKEND_GOLIOTH golioth_log_zephyr.c)
 
