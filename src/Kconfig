@@ -259,3 +259,12 @@ config GOLIOTH_AUTH_METHOD_CERT
       Only certificate based authentication will be supported.
 
 endchoice
+
+if GOLIOTH_AUTH_METHOD_CERT
+
+config GOLIOTH_HARDCODED_CA_CRT_PATH
+    string "Server CA certificate path"
+    help
+      Path to a certificate that will be used to authenticate the server
+
+endif
