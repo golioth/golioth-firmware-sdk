@@ -9,6 +9,12 @@
 /** Extract the major type, i.e. the first 3 bits of the header byte. */
 #define ZCBOR_MAJOR_TYPE(header_byte) ((zcbor_major_type_t)(((header_byte) >> 5) & 0x7))
 
+#if defined(ZCBOR_VERSION_MAJOR) && defined(ZCBOR_VERSION_MINOR)
+#if ZCBOR_VERSION_MAJOR == 0 && ZCBOR_VERSION_MINOR < 7
+#define ZCBOR_MAJOR_TYPE_SIMPLE ZCBOR_MAJOR_TYPE_PRIM
+#endif
+#endif
+
 enum {
     ZCBOR_MAP_KEY_TYPE_U32,
     ZCBOR_MAP_KEY_TYPE_TSTR,
