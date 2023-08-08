@@ -34,6 +34,19 @@ config MBEDTLS_SSL_MAX_CONTENT_LEN
 	default 2048
 
 endif # MBEDTLS_BUILTIN
+
+if NRF_SECURITY
+
+config MBEDTLS_SSL_IN_CONTENT_LEN
+	int
+	default 2048
+
+config MBEDTLS_SSL_OUT_CONTENT_LEN
+	int
+	default 2048
+
+endif # NRF_SECURITY
+
 endif # MBEDTLS
 
 config NETWORKING
