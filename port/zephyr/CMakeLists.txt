@@ -91,3 +91,13 @@ zephyr_library_sources_ifdef(CONFIG_LOG_BACKEND_GOLIOTH golioth_log_zephyr.c)
 zephyr_library_compile_definitions(HEATSHRINK_DYNAMIC_ALLOC=0)
 
 zephyr_library_link_libraries(mbedTLS posix_subsys)
+
+if(CONFIG_ZCBOR)
+    file(READ ${ZEPHYR_ZCBOR_MODULE_DIR}/zcbor/VERSION zcbor_version)
+    string(STRIP ${zcbor_version} zcbor_version)
+    set(zcbor_version_regex "^([0-9]+)\.([0-9]+)\.([0-9]+)$")
+    string(REGEX REPLACE ${zcbor_version_regex} "\\1" zcbor_version_major "${zcbor_version}")
+    string(REGEX REPLACE ${zcbor_version_regex} "\\2" zcbor_version_minor "${zcbor_version}")
+    zephyr_library_compile_definitions(ZCBOR_VERSION_MAJOR=${zcbor_version_major})
+    zephyr_library_compile_definitions(ZCBOR_VERSION_MINOR=${zcbor_version_minor})
+endif()
