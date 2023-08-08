@@ -1,0 +1,9 @@
+manifest:
+  projects:
+    - name: nrf
+      revision: v2.4.0
+      url: http://github.com/nrfconnect/sdk-nrf
+      import: true
+
+  self:
+    path: modules/lib/golioth-firmware-sdk
