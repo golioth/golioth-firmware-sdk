@@ -13,17 +13,14 @@ LOG_MODULE_REGISTER(golioth_hardcoded_credentials, LOG_LEVEL_DBG);
 
 static const uint8_t tls_client_crt[] = {
 #include "golioth-systemclient-crt.inc"
-    0x00
 };
 
 static const uint8_t tls_client_key[] = {
 #include "golioth-systemclient-key.inc"
-    0x00
 };
 
 static const uint8_t tls_ca_crt[] = {
 #include "golioth-systemclient-ca_crt.inc"
-    0x00
 };
 
 /* Awaiting certificate support in Zephyr port */

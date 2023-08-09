@@ -16,8 +16,8 @@ idf_component_register(
         "esp_hw_support"
         "esp_wifi"
     EMBED_TXTFILES
-        certs/client.pem
-        certs/client.key
+        certs/client.crt.der
+        certs/client.key.der
 )
 list(APPEND EXTRA_C_FLAGS_LIST
     -Werror

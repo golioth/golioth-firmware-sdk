@@ -49,7 +49,7 @@ idf_component_register(
         "${sdk_src}/golioth_fw_block_processor.c"
         "${sdk_src}/zcbor_utils.c"
     EMBED_TXTFILES
-        "${sdk_src}/isrgrootx1.pem"
+        "${sdk_src}/isrgrootx1.der"
 )
 
 component_compile_options(${EXTRA_C_FLAGS_LIST})
