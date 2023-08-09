@@ -57,17 +57,16 @@ cd certs
 This will create three files in the `certs` directory:
 
 ```
-<project_id>-<device_name>.crt.pem (public, cert presented to server)
-<project_id>-<device_name>.key.pem (private, used for signing/decrypting)
-<project_id>-<device_name>.csr.pem (public, signing request, can delete/ignore)
+<project_id>-<device_name>.crt.der (public, cert presented to server)
+<project_id>-<device_name>.key.der (private, used for signing/decrypting)
 ```
 
 Copy the first two files to new files with standard names (required for project to run):
 
 ```
 cd certs
-cp <project_id>-<device_name>.crt.pem client.pem
-cp <project_id>-<device_name>.key.pem client.key
+cp <project_id>-<device_name>.crt.der client.crt.der
+cp <project_id>-<device_name>.key.der client.key.der
 ```
 
 ## A note about root_ca.pem
