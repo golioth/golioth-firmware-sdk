@@ -175,8 +175,8 @@ int coap_dtls_context_set_pki(
     int err = tls_credential_add(
               dtls_ctx->sec_tag,
               TLS_CREDENTIAL_CA_CERTIFICATE,
-              setup_data->pki_key.key.pem_buf.ca_cert,
-              setup_data->pki_key.key.pem_buf.ca_cert_len);
+              setup_data->pki_key.key.asn1.ca_cert,
+              setup_data->pki_key.key.asn1.ca_cert_len);
     if (err < 0) {
         return 0;
     }
@@ -184,8 +184,8 @@ int coap_dtls_context_set_pki(
     err = tls_credential_add(
               dtls_ctx->sec_tag,
               TLS_CREDENTIAL_SERVER_CERTIFICATE,
-              setup_data->pki_key.key.pem_buf.public_cert,
-              setup_data->pki_key.key.pem_buf.public_cert_len);
+              setup_data->pki_key.key.asn1.public_cert,
+              setup_data->pki_key.key.asn1.public_cert_len);
     if (err < 0) {
         return 0;
     }
@@ -193,8 +193,8 @@ int coap_dtls_context_set_pki(
     err = tls_credential_add(
               dtls_ctx->sec_tag,
               TLS_CREDENTIAL_PRIVATE_KEY,
-              setup_data->pki_key.key.pem_buf.private_key,
-              setup_data->pki_key.key.pem_buf.private_key_len);
+              setup_data->pki_key.key.asn1.private_key,
+              setup_data->pki_key.key.asn1.private_key_len);
     if (err < 0) {
         return 0;
     }

@@ -619,14 +619,15 @@ static golioth_status_t create_session(
                 .validate_cn_call_back = validate_cn_call_back,
                 .client_sni = client_sni,
                 .pki_key = {
-                        .key_type = COAP_PKI_KEY_PEM_BUF,
-                        .key.pem_buf = {
+                        .key_type = COAP_PKI_KEY_ASN1,
+                        .key.asn1 = {
                                 .ca_cert = pki_creds.ca_cert,
                                 .ca_cert_len = pki_creds.ca_cert_len,
                                 .public_cert = pki_creds.public_cert,
                                 .public_cert_len = pki_creds.public_cert_len,
                                 .private_key = pki_creds.private_key,
                                 .private_key_len = pki_creds.private_key_len,
+                                .private_key_type = COAP_ASN1_PKEY_EC,
                         }}};
         *session =
                 coap_new_client_session_pki(context, NULL, &dst_addr, COAP_PROTO_DTLS, &dtls_pki);

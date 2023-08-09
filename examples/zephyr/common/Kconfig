@@ -44,14 +44,14 @@ config GOLIOTH_SAMPLE_HARDCODED_CRT_PATH
 	help
 	  Path to client's public certificate.
 
-	  Must be in PEM format.
+	  Must be in DER format.
 
 config GOLIOTH_SAMPLE_HARDCODED_KEY_PATH
 	string "Private key path"
 	help
 	  Path to client's private key.
 
-	  Must be in PEM format.
+	  Must be in DER format.
 
 endif # GOLIOTH_AUTH_METHOD_CERT
 
