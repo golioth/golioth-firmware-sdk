@@ -101,3 +101,6 @@ if(CONFIG_ZCBOR)
     zephyr_library_compile_definitions(ZCBOR_VERSION_MAJOR=${zcbor_version_major})
     zephyr_library_compile_definitions(ZCBOR_VERSION_MINOR=${zcbor_version_minor})
 endif()
+
+# Workaround for LTE Connectivity module in NCS being incompatible with CONFIG_POSIX_API=y
+target_compile_definitions_ifdef(CONFIG_LTE_CONNECTIVITY app PRIVATE -Dinet_pton=zsock_inet_pton)
