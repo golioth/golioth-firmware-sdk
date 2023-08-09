@@ -90,9 +90,8 @@ jobs:
         cd examples/esp_idf/certificate_auth
         mkdir -p main/certs
         cd main
-        touch certs/client.key
-        touch certs/client.pem
-        touch root_ca.pem
+        touch certs/client.key.der
+        touch certs/client.crt.der
     - name: Build ESP-IDF certificate_auth project
       uses: espressif/esp-idf-ci-action@v1
       with:
