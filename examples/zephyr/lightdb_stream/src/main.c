@@ -123,7 +123,7 @@ static void temperature_push_float_async(const struct sensor_value* temp) {
     int err;
 
     err = golioth_lightdb_stream_set_float_async(
-            client, "sensor/temp", sensor_value_to_float(temp), temperature_push_handler, NULL);
+        client, "sensor/temp", sensor_value_to_double(temp), temperature_push_handler, NULL);
 
     if (err) {
         LOG_WRN("Failed to push temperature: %d", err);
