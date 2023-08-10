@@ -78,6 +78,10 @@ int zcbor_map_tstr_decode(zcbor_state_t* zsd, void* value);
  * @param[inout] zsd          The current state of the decoding
  * @param[in]    entries      Array with entries to be decoded
  * @param[in]    num_entries  Number of entries (size of @a entries array)
+ *
+ * @retval  0       On success
+ * @retval -EBADMSG Failed to parse all map entries
+ * @retval <0       Other error returned from @ entries decode callback
  */
 int zcbor_map_decode(zcbor_state_t* zsd, struct zcbor_map_entry* entries, size_t num_entries);
 
