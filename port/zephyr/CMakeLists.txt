@@ -92,6 +92,19 @@ zephyr_library_compile_definitions(HEATSHRINK_DYNAMIC_ALLOC=0)
 
 zephyr_library_link_libraries(mbedTLS posix_subsys)
 
+if(CONFIG_GOLIOTH_CIPHERSUITES)
+  string(REGEX MATCHALL "[^,; ]+" ciphersuites ${CONFIG_GOLIOTH_CIPHERSUITES})
+  string(JOIN ", \\\n\t" ciphersuites_macro_value ${ciphersuites})
+
+  set(ciphersuites_generated "#define GOLIOTH_CIPHERSUITES \\\n\t${ciphersuites_macro_value}\n")
+else()
+  set(ciphersuites_generated "#define GOLIOTH_CIPHERSUITES\n")
+endif()
+
+file(WRITE
+  ${ZEPHYR_BINARY_DIR}/include/generated/golioth_ciphersuites.h
+  "${ciphersuites_generated}")
+
 if(CONFIG_ZCBOR)
     file(READ ${ZEPHYR_ZCBOR_MODULE_DIR}/zcbor/VERSION zcbor_version)
     string(STRIP ${zcbor_version} zcbor_version)
