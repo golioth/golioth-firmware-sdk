@@ -12,6 +12,9 @@ LOG_MODULE_REGISTER(coap_zephyr_tls);
 #include <errno.h>
 #include <zephyr/net/tls_credentials.h>
 
+#include <mbedtls/ssl_ciphersuites.h>
+#include <golioth_ciphersuites.h>
+
 #include "coap_zephyr.h"
 
 /*
@@ -19,6 +22,13 @@ LOG_MODULE_REGISTER(coap_zephyr_tls);
  */
 static sec_tag_t libcoap_sec_tag = {
         515765868,
+};
+
+/* Use mbedTLS macros which are IANA ciphersuite names prepended with MBEDTLS_ */
+#define GOLIOTH_CIPHERSUITE_ENTRY(x) _CONCAT(MBEDTLS_, x)
+
+static int golioth_ciphersuites[] = {
+    FOR_EACH_NONEMPTY_TERM(GOLIOTH_CIPHERSUITE_ENTRY, (, ), GOLIOTH_CIPHERSUITES)
 };
 
 void* coap_dtls_new_context(coap_context_t* context) {
@@ -51,6 +61,18 @@ int coap_dtls_zephyr_connect(coap_session_t* session) {
             session->sock.fd, SOL_TLS, TLS_SEC_TAG_LIST, &libcoap_sec_tag, sizeof(libcoap_sec_tag));
     if (ret < 0) {
         return 0;
+    }
+
+    if (sizeof(golioth_ciphersuites) > 0) {
+        ret = zsock_setsockopt(
+            session->sock.fd,
+            SOL_TLS,
+            TLS_CIPHERSUITE_LIST,
+            golioth_ciphersuites,
+            sizeof(golioth_ciphersuites));
+        if (ret < 0) {
+            return -errno;
+        }
     }
 
     ret = zsock_connect(session->sock.fd, &connect_addr.addr.sa, connect_addr.size);
