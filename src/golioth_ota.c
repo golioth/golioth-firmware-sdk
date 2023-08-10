@@ -232,12 +232,12 @@ golioth_status_t golioth_ota_payload_as_manifest(
 
     memset(manifest, 0, sizeof(*manifest));
 
-    if (payload_size == 1 && payload[0] == 0xa0) {
-        return GOLIOTH_OK;
-    }
-
     err = zcbor_map_decode(zsd, map_entries, ARRAY_SIZE(map_entries));
     if (err) {
+        if (err == -ENOENT) {
+            return GOLIOTH_OK;
+        }
+
         GLTH_LOGW(TAG, "Failed to decode desired map: %d", err);
         return GOLIOTH_ERR_INVALID_FORMAT;
     }
