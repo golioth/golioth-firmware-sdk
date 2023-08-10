@@ -81,6 +81,7 @@ int zcbor_map_tstr_decode(zcbor_state_t* zsd, void* value);
  *
  * @retval  0       On success
  * @retval -EBADMSG Failed to parse all map entries
+ * @retval -ENOENT  Map was empty
  * @retval <0       Other error returned from @ entries decode callback
  */
 int zcbor_map_decode(zcbor_state_t* zsd, struct zcbor_map_entry* entries, size_t num_entries);
