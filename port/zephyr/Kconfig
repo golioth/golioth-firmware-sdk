@@ -76,6 +76,35 @@ config GOLIOTH_AUTH_CERT_MBEDTLS_DEPS
 	  This is a convenience option when using mbedTLS as a library to make
 	  (D)TLS connection with Golioth cloud.
 
+config GOLIOTH_CIPHERSUITES
+	string "Ciphersuites"
+	# Select single PSK ciphersuite (following ciphersuite preference in mbedTLS)
+	default "TLS_PSK_WITH_AES_128_GCM_SHA256" if (GOLIOTH_AUTH_METHOD_PSK && MBEDTLS_BUILTIN && MBEDTLS_CIPHER_GCM_ENABLED)
+	default "TLS_PSK_WITH_AES_128_CCM" if (GOLIOTH_AUTH_METHOD_PSK && MBEDTLS_BUILTIN && MBEDTLS_CIPHER_CCM_ENABLED)
+	default "TLS_PSK_WITH_AES_128_CBC_SHA256" if (GOLIOTH_AUTH_METHOD_PSK && MBEDTLS_BUILTIN && MBEDTLS_CIPHER_MODE_CBC_ENABLED)
+	# Same, but for NCS flavour of mbedTLS
+	default "TLS_PSK_WITH_AES_128_GCM_SHA256" if (GOLIOTH_AUTH_METHOD_PSK && ZEPHYR_NRF_MODULE && MBEDTLS_TLS_LIBRARY && MBEDTLS_GCM_C)
+	default "TLS_PSK_WITH_AES_128_CCM" if (GOLIOTH_AUTH_METHOD_PSK && ZEPHYR_NRF_MODULE && MBEDTLS_TLS_LIBRARY && MBEDTLS_CCM_C)
+	default "TLS_PSK_WITH_AES_128_CBC_SHA256" if (GOLIOTH_AUTH_METHOD_PSK && ZEPHYR_NRF_MODULE && MBEDTLS_TLS_LIBRARY && MBEDTLS_CIPHER_MODE_CBC)
+	# Select all supported PSK ciphersuites if not using MBEDTLS_BUILTIN
+	default "TLS_PSK_WITH_AES_128_GCM_SHA256 TLS_PSK_WITH_AES_128_CCM TLS_PSK_WITH_AES_128_CBC_SHA256 TLS_PSK_WITH_AES_128_CCM_8" if GOLIOTH_AUTH_METHOD_PSK
+	help
+	  Ciphersuite list used during (D)TLS handshakes. Default value contains currently supported
+	  ciphersuites by Golioth server.
+
+	  Use string representations of ciphersuites as defined by IANA in:
+	  https://www.iana.org/assignments/tls-parameters/tls-parameters.xhtml
+
+	  Select single ciphersuite to reduce data exchanged during (D)TLS handshake, due to reduced
+	  ciphersuite list in Client Hello message.
+
+	  Make sure that credentials (e.g. using Zephyr TLS credentials subsystem) are configured
+	  for each ciphersuite (e.g. PSKs for PSK-based ciphersuites or certificates for
+	  certificate-based ciphersuites) that is negotiated.
+
+	  If empty, then underlying TLS implementation (e.g. mbedTLS library) decides which
+	  ciphersuites to use. Relying on that is not recommended!
+
 endmenu
 
 config GOLIOTH_ZEPHYR_THREAD_STACKS
