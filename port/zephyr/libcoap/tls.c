@@ -119,7 +119,7 @@ int coap_dtls_context_set_cpsk(coap_context_t* c_context, coap_dtls_cpsk_t* setu
             setup_data->psk_info.identity.length);
     if (err < 0) {
         LOG_ERR("Failed to register PSK ID: %d", err);
-        return err;
+        return 0;
     }
 
     err = tls_credential_add(
@@ -129,7 +129,7 @@ int coap_dtls_context_set_cpsk(coap_context_t* c_context, coap_dtls_cpsk_t* setu
             setup_data->psk_info.key.length);
     if (err < 0) {
         LOG_ERR("Failed to register PSK: %d", err);
-        return err;
+        return 0;
     }
 
     return 1;
