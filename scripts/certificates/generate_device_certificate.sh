@@ -41,3 +41,7 @@ openssl x509 -req \
 
 openssl x509 -in "${CLIENT_NAME}.crt.pem" --outform DER -out "${CLIENT_NAME}.crt.der"
 openssl ec -in "${CLIENT_NAME}.key.pem" --outform DER -out "${CLIENT_NAME}.key.der"
+
+rm "${CLIENT_NAME}.crt.pem"
+rm "${CLIENT_NAME}.key.pem"
+rm "${CLIENT_NAME}.csr.pem"
