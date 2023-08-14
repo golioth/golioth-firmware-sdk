@@ -2,31 +2,31 @@
 #include "golioth_basics.h"
 #include <string.h>
 #include <assert.h>
+#include <stdlib.h>
+#include <stdio.h>
 
 #define TAG "main"
 
-// Include user's Golioth credentials.
-//
-// This is a required file, so if it doesn't exist, you will
-// need to create it and add the following:
-//
-//    #define GOLIOTH_PSK_ID "device@project"
-//    #define GOLIOTH_PSK "secret"
-//
-// The Golioth credentials can be found at:
-//
-//    console.golioth.io -> Devices -> (yourdevice) -> Credentials
-#include "credentials.inc"
-
 int main(void) {
+    char* golioth_psk_id = getenv("GOLIOTH_PSK_ID");
+    if ((!golioth_psk_id) || strlen(golioth_psk_id) <= 0) {
+        fprintf(stderr, "PSK ID is not specified.\n");
+        return 1;
+    }
+    char* golioth_psk = getenv("GOLIOTH_PSK");
+    if ((!golioth_psk) || strlen(golioth_psk) <= 0) {
+        fprintf(stderr, "PSK is not specified.\n");
+        return 1;
+    }
+
     golioth_client_config_t config = {
             .credentials = {
                     .auth_type = GOLIOTH_TLS_AUTH_TYPE_PSK,
                     .psk = {
-                            .psk_id = GOLIOTH_PSK_ID,
-                            .psk_id_len = strlen(GOLIOTH_PSK_ID),
-                            .psk = GOLIOTH_PSK,
-                            .psk_len = strlen(GOLIOTH_PSK),
+                            .psk_id = golioth_psk_id,
+                            .psk_id_len = strlen(golioth_psk_id),
+                            .psk = golioth_psk,
+                            .psk_len = strlen(golioth_psk),
                     }}};
 
     golioth_client_t client = golioth_client_create(&config);
