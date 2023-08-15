@@ -21,8 +21,6 @@
 ///
 /// https://docs.golioth.io/reference/protocols/coap
 /// <br>
-/// https://docs.golioth.io/reference/protocols/coap/auth
-/// <br>
 /// https://docs.golioth.io/reference/protocols/device-auth
 /// @{
 
