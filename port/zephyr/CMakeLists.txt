@@ -54,6 +54,7 @@ zephyr_library_sources(
     ../../src/lightdb_stream.c
     ../../src/log.c
     ../../src/mbox.c
+    ../../src/memfault.c
     ../../src/ota.c
     ../../src/payload_utils.c
     ../../src/ringbuf.c
