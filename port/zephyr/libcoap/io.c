@@ -180,10 +180,6 @@ int coap_io_process(coap_context_t* ctx, uint32_t timeout_ms) {
 }
 
 void coap_packet_get_memmapped(coap_packet_t* packet, unsigned char** address, size_t* length) {
-    __ASSERT(
-            packet->pbuf->tot_len == packet->pbuf->len,
-            "Can only deal with contiguous PBUFs to read the initial details");
-
     *address = packet->payload;
     *length = packet->length;
 }
