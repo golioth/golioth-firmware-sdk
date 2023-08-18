@@ -1,0 +1,12 @@
+sample:
+  description: System logging to Golioth server
+  name: logging
+common:
+  harness: pytest
+  tags: golioth logger socket goliothd
+  timeout: 180
+tests:
+  sample.golioth.logging:
+    platform_allow: >
+      nrf52840dk_nrf52840
+      qemu_x86
