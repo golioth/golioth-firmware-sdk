@@ -49,7 +49,7 @@ static golioth_rpc_status_t on_multiply(
             && zcbor_float_decode(request_params_array, &b);
     if (!ok) {
         GLTH_LOGE(TAG, "Failed to decode array items");
-        return RPC_INVALID_ARGUMENT;
+        return GOLIOTH_RPC_INVALID_ARGUMENT;
     }
 
     value = a * b;
@@ -60,10 +60,10 @@ static golioth_rpc_status_t on_multiply(
             && zcbor_float64_put(response_detail_map, value);
     if (!ok) {
         GLTH_LOGE(TAG, "Failed to encode value");
-        return RPC_RESOURCE_EXHAUSTED;
+        return GOLIOTH_RPC_RESOURCE_EXHAUSTED;
     }
 
-    return RPC_OK;
+    return GOLIOTH_RPC_OK;
 }
 
 

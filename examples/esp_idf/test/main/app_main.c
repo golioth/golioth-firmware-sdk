@@ -57,7 +57,7 @@ static golioth_rpc_status_t on_double(
     ok = zcbor_float_decode(request_params_array, &value);
     if (!ok) {
         GLTH_LOGE(TAG, "Failed to decode value to be doubled");
-        return RPC_INVALID_ARGUMENT;
+        return GOLIOTH_RPC_INVALID_ARGUMENT;
     }
 
     value *= 2;
@@ -66,10 +66,10 @@ static golioth_rpc_status_t on_double(
             && zcbor_float64_put(response_detail_map, value);
     if (!ok) {
         GLTH_LOGE(TAG, "Failed to encode value");
-        return RPC_RESOURCE_EXHAUSTED;
+        return GOLIOTH_RPC_RESOURCE_EXHAUSTED;
     }
 
-    return RPC_OK;
+    return GOLIOTH_RPC_OK;
 }
 
 static golioth_settings_status_t on_test_setting(int32_t new_value, void* arg) {
