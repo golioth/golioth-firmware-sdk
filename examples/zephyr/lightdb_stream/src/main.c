@@ -5,7 +5,7 @@
  */
 
 #include <zephyr/logging/log.h>
-LOG_MODULE_REGISTER(hello_zephyr, LOG_LEVEL_DBG);
+LOG_MODULE_REGISTER(lightdb_stream, LOG_LEVEL_DBG);
 
 #include "golioth.h"
 #include <samples/common/hardcoded_credentials.h>
