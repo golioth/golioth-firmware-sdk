@@ -117,7 +117,7 @@ static void on_rpc(
     golioth_rpc_t* grpc = golioth_coap_client_get_rpc(client);
 
     const golioth_rpc_method_t* matching_rpc = NULL;
-    golioth_rpc_status_t status = RPC_UNKNOWN;
+    golioth_rpc_status_t status = GOLIOTH_RPC_UNKNOWN;
 
     for (int i = 0; i < grpc->num_rpcs; i++) {
         const golioth_rpc_method_t* rpc = &grpc->rpcs[i];

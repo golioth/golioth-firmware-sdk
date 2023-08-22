@@ -17,23 +17,23 @@
 
 /// Enumeration of RPC status codes, sent in the RPC response
 typedef enum {
-    RPC_OK = 0,
-    RPC_CANCELED = 1,
-    RPC_UNKNOWN = 2,
-    RPC_INVALID_ARGUMENT = 3,
-    RPC_DEADLINE_EXCEEDED = 4,
-    RPC_NOT_FOUND = 5,
-    RPC_ALREADYEXISTS = 6,
-    RPC_PERMISSION_DENIED = 7,
-    RPC_RESOURCE_EXHAUSTED = 8,
-    RPC_FAILED_PRECONDITION = 9,
-    RPC_ABORTED = 10,
-    RPC_OUT_OF_RANGE = 11,
-    RPC_UNIMPLEMENTED = 12,
-    RPC_INTERNAL = 13,
-    RPC_UNAVAILABLE = 14,
-    RPC_DATA_LOSS = 15,
-    RPC_UNAUTHENTICATED = 16,
+    GOLIOTH_RPC_OK = 0,
+    GOLIOTH_RPC_CANCELED = 1,
+    GOLIOTH_RPC_UNKNOWN = 2,
+    GOLIOTH_RPC_INVALID_ARGUMENT = 3,
+    GOLIOTH_RPC_DEADLINE_EXCEEDED = 4,
+    GOLIOTH_RPC_NOT_FOUND = 5,
+    GOLIOTH_RPC_ALREADYEXISTS = 6,
+    GOLIOTH_RPC_PERMISSION_DENIED = 7,
+    GOLIOTH_RPC_RESOURCE_EXHAUSTED = 8,
+    GOLIOTH_RPC_FAILED_PRECONDITION = 9,
+    GOLIOTH_RPC_ABORTED = 10,
+    GOLIOTH_RPC_OUT_OF_RANGE = 11,
+    GOLIOTH_RPC_UNIMPLEMENTED = 12,
+    GOLIOTH_RPC_INTERNAL = 13,
+    GOLIOTH_RPC_UNAVAILABLE = 14,
+    GOLIOTH_RPC_DATA_LOSS = 15,
+    GOLIOTH_RPC_UNAUTHENTICATED = 16,
 } golioth_rpc_status_t;
 
 /// Callback function type for remote procedure call
@@ -54,7 +54,7 @@ typedef enum {
 ///           zcbor_float_decode(request_params_array, &b);
 ///      if (!ok) {
 ///            GLTH_LOGE(TAG, "Failed to decode array items");
-///            return RPC_INVALID_ARGUMENT;
+///            return GOLIOTH_RPC_INVALID_ARGUMENT;
 ///      }
 ///
 ///      value = a * b;
@@ -63,10 +63,10 @@ typedef enum {
 ///           zcbor_float64_put(response_detail_map, value);
 ///      if (!ok) {
 ///            GLTH_LOGE(TAG, "Failed to encode value");
-///            return RPC_RESOURCE_EXHAUSTED;
+///            return GOLIOTH_RPC_RESOURCE_EXHAUSTED;
 ///      }
 ///
-///      return RPC_OK;
+///      return GOLIOTH_RPC_OK;
 /// }
 /// @endcode
 ///
@@ -74,8 +74,8 @@ typedef enum {
 /// @param response_detail_map zcbor encode state, inside of the RPC response detail map
 /// @param callback_arg callback_arg, unchanged from callback_arg of @ref golioth_rpc_register
 ///
-/// @return RPC_OK - if method was called successfully
-/// @return RPC_INVALID_ARGUMENT - if params were invalid
+/// @return GOLIOTH_RPC_OK - if method was called successfully
+/// @return GOLIOTH_RPC_INVALID_ARGUMENT - if params were invalid
 /// @return otherwise - method failure
 typedef golioth_rpc_status_t (*golioth_rpc_cb_fn)(
         zcbor_state_t* request_params_array,
