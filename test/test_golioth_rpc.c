@@ -263,7 +263,7 @@ golioth_rpc_status_t rpc_method_fake(
         TEST_ASSERT_EQUAL(248, param_2);
     }
 
-    return RPC_OK;
+    return GOLIOTH_RPC_OK;
 }
 
 void test_rpc_call_with_return(void) {

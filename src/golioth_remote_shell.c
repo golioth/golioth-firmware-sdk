@@ -96,11 +96,11 @@ static golioth_rpc_status_t on_line_input(
         struct zcbor_string tstr;
         bool ok = zcbor_tstr_decode(request_params_array, &tstr);
         if (!ok) {
-            return RPC_INVALID_ARGUMENT;
+            return GOLIOTH_RPC_INVALID_ARGUMENT;
         }
         _line_input_cb((char*)tstr.value, tstr.len);
     }
-    return RPC_OK;
+    return GOLIOTH_RPC_OK;
 }
 
 static void init(void) {
