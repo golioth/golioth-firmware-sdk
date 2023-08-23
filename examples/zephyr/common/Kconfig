@@ -64,6 +64,26 @@ config GOLIOTH_SAMPLE_DHCP_BIND
 	help
 	  Obtain an IPv4 address from the DHCP server.
 
+config GOLIOTH_SAMPLE_FW_VERSION
+	string "DFU Firmware Version"
+	default "0.0.0+0"
+	depends on BOOTLOADER_MCUBOOT
+	help
+          Firmware version used by Golioth DFU sample to assign MCUBOOT_IMGTOOL_SIGN_VERSION (if
+          using Zephyr) or MCUBOOT_IMAGE_VERSION (if using NCS)
+
+if BOOTLOADER_MCUBOOT
+
+config MCUBOOT_IMAGE_VERSION
+	string
+	default GOLIOTH_SAMPLE_FW_VERSION if ZEPHYR_NRF_MODULE
+
+config MCUBOOT_IMGTOOL_SIGN_VERSION
+	string
+	default GOLIOTH_SAMPLE_FW_VERSION if !ZEPHYR_NRF_MODULE
+
+endif # BOOTLOADER_MCUBOOT
+
 config GOLIOTH_SAMPLE_NRF91_LTE_MONITOR
 	bool "nRF91 LTE monitor"
 	default y
