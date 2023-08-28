@@ -60,15 +60,14 @@ esptool.py write_flash --verify 0x0 PATH_TO_ESP_AT/factory/factory_WROOM-32.bin
 Connect nRF52840 DK and ESP32-DevKitC V4 (or other ESP32-WROOM-32 based
 board) using wires:
 
-|             |                |
-| ----------- | -------------- |
-| nRF52840 DK | ESP32-WROOM-32 |
-| P1.01 (RX)  | IO17 (TX)      |
-| P1.02 (TX)  | IO16 (RX)      |
-| P1.03 (CTS) | IO14 (RTS)     |
-| P1.04 (RTS) | IO15 (CTS)     |
-| P1.05       | EN             |
-| GND         | GND            |
+| nRF52840 DK | ESP32-WROOM-32  | ESP32-WROVER-32 |
+| ----------- | --------------- | ----------------|
+| P1.01 (RX)  | IO17 (TX)       | IO22 (TX)       |
+| P1.02 (TX)  | IO16 (RX)       | IO19 (RX)       |
+| P1.03 (CTS) | IO14 (RTS)      | IO14 (RTS)      |
+| P1.04 (RTS) | IO15 (CTS)      | IO15 (CTS)      |
+| P1.05       | EN              | EN              |
+| GND         | GND             | GND             |
 
 Configure the following Kconfig options based on your WiFi AP
 credentials:
