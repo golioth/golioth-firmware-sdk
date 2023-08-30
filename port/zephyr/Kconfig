@@ -63,6 +63,10 @@ config GOLIOTH_AUTH_CERT_MBEDTLS_DEPS
 	  This is a convenience option when using mbedTLS as a library to make
 	  (D)TLS connection with Golioth cloud.
 
+config MBEDTLS_MPI_MAX_SIZE
+	int
+	default 512 if GOLIOTH_AUTH_CERT_MBEDTLS_DEPS
+
 config GOLIOTH_CIPHERSUITES
 	string "Ciphersuites"
 	# Select single PSK ciphersuite (following ciphersuite preference in mbedTLS)
