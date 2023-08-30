@@ -23,9 +23,6 @@ static const uint8_t tls_ca_crt[] = {
 #include "golioth-systemclient-ca_crt.inc"
 };
 
-/* Awaiting certificate support in Zephyr port */
-
-/* FIXME: define start/end addresses for PKI files */
 golioth_client_config_t _golioth_client_config_psk = {
         .credentials = {
                 .auth_type = GOLIOTH_TLS_AUTH_TYPE_PKI,
