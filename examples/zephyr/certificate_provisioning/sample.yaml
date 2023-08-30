@@ -1,0 +1,11 @@
+sample:
+  description: Provision certificates onto a device
+  name: certificate_provisioning
+common:
+  tags: golioth socket goliothd
+tests:
+  sample.golioth.certificate_provisioning:
+    build_only: true
+    platform_allow: >
+      nrf52840dk_nrf52840
+      nrf9160dk_nrf9160_ns
