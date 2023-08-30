@@ -65,15 +65,23 @@ void golioth_sys_sem_destroy(golioth_sys_sem_t sem) {
 
 struct golioth_timer {
     struct k_timer timer;
+    struct k_work work;
     golioth_sys_timer_config_t config;
 };
 
-static void on_timer(struct k_timer* ztimer) {
-    struct golioth_timer* timer = CONTAINER_OF(ztimer, struct golioth_timer, timer);
+static void timer_handler_worker(struct k_work *work)
+{
+    struct golioth_timer *timer = CONTAINER_OF(work, struct golioth_timer, work);
 
     if (timer->config.fn) {
         timer->config.fn(timer, timer->config.user_arg);
     }
+}
+
+static void on_timer(struct k_timer* ztimer) {
+    struct golioth_timer* timer = CONTAINER_OF(ztimer, struct golioth_timer, timer);
+
+    k_work_submit(&timer->work);
 }
 
 golioth_sys_timer_t golioth_sys_timer_create(golioth_sys_timer_config_t config) {
@@ -87,6 +95,7 @@ golioth_sys_timer_t golioth_sys_timer_create(golioth_sys_timer_config_t config) 
     timer->config = config;
 
     k_timer_init(&timer->timer, on_timer, NULL);
+    k_work_init(&timer->work, timer_handler_worker);
 
     return (golioth_sys_timer_t)timer;
 }
