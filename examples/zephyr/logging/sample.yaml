@@ -9,5 +9,6 @@ tests:
   sample.golioth.logging:
     platform_allow: >
       esp32_devkitc_wrover
+      mimxrt1024_evk
       nrf52840dk_nrf52840
       qemu_x86
