@@ -182,10 +182,16 @@ jobs:
         EOF
 
         west update -o=--depth=1 -n
+
+    - name: Download binary blobs
+      run: |
+        west blobs fetch hal_espressif
+
     - name: Run twister
       run: >
         zephyr/scripts/twister
         -b
+        -p esp32_devkitc_wrover
         -p nrf52840dk_nrf52840
         -p qemu_x86
         -o reports
