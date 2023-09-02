@@ -8,5 +8,6 @@ common:
 tests:
   sample.golioth.logging:
     platform_allow: >
+      esp32_devkitc_wrover
       nrf52840dk_nrf52840
       qemu_x86

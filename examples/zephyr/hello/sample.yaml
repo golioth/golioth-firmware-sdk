@@ -11,6 +11,7 @@ common:
 tests:
   sample.golioth.hello.psk.fast.default:
     platform_allow: >
+      esp32_devkitc_wrover
       nrf52840dk_nrf52840
       qemu_x86
   sample.golioth.hello.psk.long_start:
