@@ -51,30 +51,33 @@ QEMU](https://docs.zephyrproject.org/3.3.0/connectivity/networking/qemu_setup.ht
 on how to setup networking on host and configure NAT/masquerading to
 access Internet.
 
-#### nRF52840 DK + ESP32-WROOM-32
+#### nRF52840 DK + ESP32
 
 This subsection documents using nRF52840 DK running Zephyr with
-offloaded ESP-AT WiFi driver and ESP32-WROOM-32 module based board (such
-as ESP32 DevkitC rev. 4) running WiFi stack. See [AT Binary
+offloaded ESP-AT WiFi driver and an ESP32-WROOM-32, ESP32-WROVER-32, or
+ESP32-C3-MINI-1 module based board running a WiFi stack. See [ESP32 AT
+Binary
 Lists](https://docs.espressif.com/projects/esp-at/en/latest/AT_Binary_Lists/index.html)
+or [ESP32-C3 AT Binary
+Lists](https://docs.espressif.com/projects/esp-at/en/latest/esp32c3/AT_Binary_Lists/ESP32-C3_AT_binaries.html)
 for links to ESP-AT binaries and details on how to flash ESP-AT image on
 ESP chip. Flash ESP chip with following command:
 
 ```console
-esptool.py write_flash --verify 0x0 PATH_TO_ESP_AT/factory/factory_WROOM-32.bin
+esptool.py write_flash --verify 0x0 PATH_TO_ESP_AT/factory/factory_{MODULE}.bin
 ```
 
 Connect nRF52840 DK and ESP32-DevKitC V4 (or other ESP32-WROOM-32 based
 board) using wires:
 
-| nRF52840 DK | ESP32-WROOM-32  | ESP32-WROVER-32 |
-| ----------- | --------------- | ----------------|
-| P1.01 (RX)  | IO17 (TX)       | IO22 (TX)       |
-| P1.02 (TX)  | IO16 (RX)       | IO19 (RX)       |
-| P1.03 (CTS) | IO14 (RTS)      | IO14 (RTS)      |
-| P1.04 (RTS) | IO15 (CTS)      | IO15 (CTS)      |
-| P1.05       | EN              | EN              |
-| GND         | GND             | GND             |
+| nRF52840 DK | ESP32-WROOM-32  | ESP32-WROVER-32 | ESP32-C3-MINI-1 |
+| ----------- | --------------- | ----------------| ----------------|
+| P1.01 (RX)  | IO17 (TX)       | IO22 (TX)       | IO7 (TX)        |
+| P1.02 (TX)  | IO16 (RX)       | IO19 (RX)       | IO6 (RX)        |
+| P1.03 (CTS) | IO14 (RTS)      | IO14 (RTS)      | IO4 (RTS)       |
+| P1.04 (RTS) | IO15 (CTS)      | IO15 (CTS)      | IO5 (CTS)       |
+| P1.05       | EN              | EN              | EN              |
+| GND         | GND             | GND             | GND             |
 
 Configure the following Kconfig options based on your WiFi AP
 credentials:
