@@ -40,4 +40,10 @@
 
 #define HAVE_GETRANDOM
 
+#define COAP_WITH_LIBMBEDTLS
+
+#define COAP_CLIENT_SUPPORT 1
+#define COAP_IPV4_SUPPORT 1
+#define COAP_WS_SUPPORT 0
+
 #endif /* _CONFIG_H_ */
