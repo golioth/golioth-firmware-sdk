@@ -97,10 +97,10 @@ zephyr_library_sources(
     ../../external/libcoap/src/coap_tcp.c
     ../../external/libcoap/src/coap_uri.c
     ../../external/libcoap/src/coap_ws.c
-    libcoap/io.c
+    libcoap/coap_io_zephyr.c
+    libcoap/coap_time.c
+    libcoap/coap_zephyrtls.c
     libcoap/log.c
-    libcoap/time.c
-    libcoap/tls.c
 
     # miniz
     ../../external/miniz/miniz_tinfl.c
