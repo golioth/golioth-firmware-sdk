@@ -73,26 +73,30 @@ zephyr_library_sources(
     ../../external/heatshrink/src/heatshrink_decoder.c
 
     # libcoap
-    ../../external/libcoap/src/block.c
     ../../external/libcoap/src/coap_address.c
     ../../external/libcoap/src/coap_asn1.c
     ../../external/libcoap/src/coap_async.c
+    ../../external/libcoap/src/coap_block.c
     ../../external/libcoap/src/coap_cache.c
     ../../external/libcoap/src/coap_debug.c
+    ../../external/libcoap/src/coap_dtls.c
     ../../external/libcoap/src/coap_encode.c
     ../../external/libcoap/src/coap_event.c
     ../../external/libcoap/src/coap_hashkey.c
+    ../../external/libcoap/src/coap_layers.c
     ../../external/libcoap/src/coap_mem.c
+    ../../external/libcoap/src/coap_net.c
+    ../../external/libcoap/src/coap_netif.c
     ../../external/libcoap/src/coap_option.c
+    ../../external/libcoap/src/coap_pdu.c
     ../../external/libcoap/src/coap_prng.c
+    ../../external/libcoap/src/coap_resource.c
     ../../external/libcoap/src/coap_session.c
     ../../external/libcoap/src/coap_str.c
     ../../external/libcoap/src/coap_subscribe.c
     ../../external/libcoap/src/coap_tcp.c
     ../../external/libcoap/src/coap_uri.c
-    ../../external/libcoap/src/net.c
-    ../../external/libcoap/src/pdu.c
-    ../../external/libcoap/src/resource.c
+    ../../external/libcoap/src/coap_ws.c
     libcoap/io.c
     libcoap/log.c
     libcoap/time.c
