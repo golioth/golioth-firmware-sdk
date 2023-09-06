@@ -36,10 +36,10 @@ unsigned int coap_io_prepare_io(
 
     *num_sockets = 0;
 
-#ifndef WITHOUT_ASYNC
+#if COAP_ASYNC_SUPPORT
     /* Check to see if we need to send off any Async requests */
     timeout = coap_check_async(ctx, now);
-#endif /* WITHOUT_ASYNC */
+#endif /* COAP_ASYNC_SUPPORT */
 
     /* Check to see if we need to send off any retransmit request */
     nextpdu = coap_peek_next(ctx);
@@ -186,7 +186,7 @@ void coap_packet_get_memmapped(coap_packet_t* packet, unsigned char** address, s
 
 ssize_t coap_socket_send(
         coap_socket_t* sock,
-        coap_session_t* session,
+        const coap_session_t* session,
         const uint8_t* data,
         size_t data_len) {
     LOG_DBG("coap_socket_send()");
@@ -261,11 +261,11 @@ void coap_socket_close(coap_socket_t* sock) {
     sock->fd = -1;
 }
 
-ssize_t coap_network_read(coap_socket_t* sock, coap_packet_t* packet) {
+ssize_t coap_socket_recv(coap_socket_t* sock, coap_packet_t* packet) {
     ssize_t ret;
 
     if ((sock->flags & COAP_SOCKET_CAN_READ) == 0) {
-        LOG_DBG("coap_network_read: COAP_SOCKET_CAN_READ not set");
+        LOG_DBG("coap_socket_recv: COAP_SOCKET_CAN_READ not set");
         return -1;
     }
 
@@ -273,7 +273,7 @@ ssize_t coap_network_read(coap_socket_t* sock, coap_packet_t* packet) {
     sock->flags &= ~COAP_SOCKET_CAN_READ;
 
     if (!(sock->flags & COAP_SOCKET_CONNECTED)) {
-        LOG_DBG("coap_network_read: !COAP_SOCKET_CONNECTED");
+        LOG_DBG("coap_socket_recv: !COAP_SOCKET_CONNECTED");
         return -1;
     }
 
@@ -281,13 +281,13 @@ ssize_t coap_network_read(coap_socket_t* sock, coap_packet_t* packet) {
     if (ret < 0) {
         if (errno == ECONNREFUSED || errno == EHOSTUNREACH) {
             /* client-side ICMP destination unreachable, ignore it */
-            LOG_WRN("%s: coap_network_read: ICMP: %s",
+            LOG_WRN("%s: coap_socket_recv: ICMP: %s",
                     sock->session ? coap_session_str(sock->session) : "",
                     strerror(errno));
             return -2;
         }
 
-        LOG_WRN("%s: coap_network_read: %s",
+        LOG_WRN("%s: coap_socket_recv: %s",
                 sock->session ? coap_session_str(sock->session) : "",
                 strerror(errno));
 
@@ -306,10 +306,11 @@ error:
     return -1;
 }
 
-ssize_t coap_network_send(
-        coap_socket_t* sock,
-        const coap_session_t* session,
-        const uint8_t* data,
-        size_t datalen) {
-    return -1;
+const char *
+coap_socket_format_errno(int error) {
+  return strerror(error);
+}
+const char *
+coap_socket_strerror(void) {
+  return coap_socket_format_errno(errno);
 }
