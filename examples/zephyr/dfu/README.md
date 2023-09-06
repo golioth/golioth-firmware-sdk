@@ -56,6 +56,30 @@ CONFIG_GOLIOTH_SAMPLE_HARDCODED_KEY_PATH="keys/device.key.der"
 
 ### Platform specific configuration
 
+ESP32-DevKitC-WROVER
+--------------------
+
+Configure the following Kconfig options based on your WiFi AP credentials:
+
+- GOLIOTH_SAMPLE_WIFI_SSID  - WiFi SSID
+- GOLIOTH_SAMPLE_WIFI_PSK   - WiFi PSK
+
+by adding these lines to configuration file (e.g. ``prj.conf`` or
+``board/esp32_devkitc_wrover.conf``):
+
+.. code-block:: cfg
+
+   CONFIG_GOLIOTH_SAMPLE_WIFI_SSID="my-wifi"
+   CONFIG_GOLIOTH_SAMPLE_WIFI_PSK="my-psk"
+
+On your host computer open a terminal window, locate the source code of this
+sample application (i.e., ``examples/zephyr/dfu``) and type:
+
+.. code-block:: console
+
+   $ west build -b esp32_devkitc_wrover examples/zephyr/dfu
+   $ west flash
+
 #### nRF52840 DK + ESP32-WROOM-32
 
 This subsection documents using nRF52840 DK running Zephyr with
