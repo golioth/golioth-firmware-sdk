@@ -111,7 +111,7 @@ int coap_dtls_zephyr_connect(coap_session_t* session) {
 }
 
 int coap_dtls_send(coap_session_t* session, const uint8_t* data, size_t data_len) {
-    return coap_session_send(session, data, data_len);
+    return (int)session->sock.lfunc[COAP_LAYER_TLS].l_write(session, data, data_len);
 }
 
 void coap_dtls_startup(void) {}
