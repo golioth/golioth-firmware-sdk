@@ -67,8 +67,11 @@ static void wait_for_dhcp_bound(struct net_if* iface) {
 void net_connect(void) {
     struct net_if* iface = net_if_get_default();
 
-    LOG_INF("Waiting for interface to be up");
-    wait_for_iface_up(iface);
+    if (!(IS_ENABLED(CONFIG_GOLIOTH_SAMPLE_WIFI) &&
+          net_if_flag_is_set(iface, NET_IF_DORMANT))) {
+        LOG_INF("Waiting for interface to be up");
+        wait_for_iface_up(iface);
+    }
 
     if (IS_ENABLED(CONFIG_GOLIOTH_SAMPLE_WIFI)) {
         LOG_INF("Connecting to WiFi");
