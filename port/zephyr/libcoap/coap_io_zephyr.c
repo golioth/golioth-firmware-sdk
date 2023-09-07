@@ -215,6 +215,16 @@ int coap_socket_connect_udp(
         goto close_socket;
     }
 
+    // If Connection IDs are enabled, set socket option to send CIDs, but not require that the
+    // server sends one in return.
+#ifdef CONFIG_MBEDTLS_SSL_DTLS_CONNECTION_ID
+    int ENABLED = 1;
+    ret = zsock_setsockopt(sock->fd, SOL_TLS, TLS_DTLS_CID, &ENABLED, sizeof(ENABLED));
+    if (ret < 0) {
+        goto close_socket;
+    }
+#endif /* CONFIG_MBEDTLS_SSL_DTLS_CONNECTION_ID */
+
     if (session->proto == COAP_PROTO_UDP) {
         ret = zsock_connect(sock->fd, &connect_addr.addr.sa, connect_addr.size);
         if (ret < 0) {
