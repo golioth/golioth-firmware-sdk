@@ -966,6 +966,9 @@ golioth_client_t golioth_client_create(const golioth_client_config_t* config) {
         time_t t;
         srand(time(&t));
 
+        // Initialize libcoap prior to any coap_* function calls.
+        coap_startup();
+
         _initialized = true;
     }
 
