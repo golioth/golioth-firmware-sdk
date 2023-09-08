@@ -2,11 +2,11 @@
 
 This repo contains a set of examples intended to build
 and run in the latest release of esp-idf
-(currently [5.0](https://github.com/espressif/esp-idf/releases/tag/v5.0)).
+(currently [5.1.1](https://github.com/espressif/esp-idf/releases/tag/v5.1.1)).
 
 ### Install esp-idf
 
-Install version 5.0 of esp-idf using the
+Install version 5.1.1 of esp-idf using the
 [installation directions from Espressif](https://docs.espressif.com/projects/esp-idf/en/latest/esp32/get-started/index.html#installation).
 This is the version of esp-idf this SDK is tested against.
 
@@ -16,7 +16,7 @@ For Linux users, you can install esp-idf with these commands:
 sudo apt-get install git wget flex bison gperf python3 python3-venv cmake ninja-build ccache libffi-dev libssl-dev dfu-util libusb-1.0-0
 mkdir -p ~/esp
 cd ~/esp
-git clone --recursive https://github.com/espressif/esp-idf.git -b v5.0
+git clone --recursive https://github.com/espressif/esp-idf.git -b v5.1.1
 cd esp-idf
 ./install.sh all
 ```
