@@ -956,6 +956,9 @@ static void golioth_coap_client_thread(void* arg) {
 
 golioth_client_t golioth_client_create(const golioth_client_config_t* config) {
     if (!_initialized) {
+        // Initialize libcoap prior to any coap_* function calls.
+        coap_startup();
+
 #if GOLIOTH_OVERRIDE_LIBCOAP_LOG_HANDLER
         // Connect logs from libcoap to the ESP logger
         coap_set_log_handler(coap_log_handler);
