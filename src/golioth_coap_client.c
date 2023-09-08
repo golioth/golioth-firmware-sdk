@@ -948,7 +948,6 @@ static void golioth_coap_client_thread(void* arg) {
             coap_free_context(coap_context);
             GSTATS_INC_FREE("context");
         }
-        coap_cleanup();
 
         // Small delay before starting a new session
         golioth_sys_msleep(1000);
