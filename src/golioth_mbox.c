@@ -43,12 +43,14 @@ size_t golioth_mbox_num_messages(golioth_mbox_t mbox) {
 bool golioth_mbox_try_send(golioth_mbox_t mbox, const void* item) {
     assert(mbox);
 
-    assert(golioth_sys_sem_take(mbox->ringbuf_mutex, GOLIOTH_SYS_WAIT_FOREVER));
+    bool ret = golioth_sys_sem_take(mbox->ringbuf_mutex, GOLIOTH_SYS_WAIT_FOREVER);
+    assert(ret);
     bool sent = ringbuf_put(&mbox->ringbuf, item);
     golioth_sys_sem_give(mbox->ringbuf_mutex);
 
     if (sent) {
-        assert(golioth_sys_sem_give(mbox->fill_count_sem));
+        ret = golioth_sys_sem_give(mbox->fill_count_sem);
+        assert(ret);
     }
 
     return sent;
@@ -58,7 +60,9 @@ bool golioth_mbox_recv(golioth_mbox_t mbox, void* item, int32_t timeout_ms) {
     assert(mbox);
     bool received = golioth_sys_sem_take(mbox->fill_count_sem, timeout_ms);
     if (received) {
-        assert(ringbuf_get(&mbox->ringbuf, item));
+        bool ret = ringbuf_get(&mbox->ringbuf, item);
+        (void) ret;
+        assert(ret);
     }
     return received;
 }
