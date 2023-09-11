@@ -51,10 +51,10 @@ Before compiling the golioth_app, create a file in
 with your WiFi and Golioth credentials:
 
 ```c
-#define WIFI_SSID "WiFiSSID"
-#define WIFI_PASSWORD "WiFiPassword"
-#define GOLIOTH_PSK_ID "device@project"
-#define GOLIOTH_PSK "supersecret"
+#define GOLIOTH_SAMPLE_WIFI_SSID "WiFiSSID"
+#define GOLIOTH_SAMPLE_WIFI_PSK "WiFiPassword"
+#define GOLIOTH_SAMPLE_PSK_ID "device@project"
+#define GOLIOTH_SAMPLE_PSK "supersecret"
 ```
 
 Compile and flash the bootloader:
