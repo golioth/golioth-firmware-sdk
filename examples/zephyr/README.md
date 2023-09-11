@@ -22,8 +22,8 @@ Add credentials to ``~/golioth-workspace/modules/lib/golioth-firmware-sdk/exampl
 file:
 
 ``` cfg
-CONFIG_GOLIOTH_PSK_ID="my-psk-id@my-project"
-CONFIG_GOLIOTH_PSK="my-psk"
+CONFIG_GOLIOTH_SAMPLE_PSK_ID="my-psk-id@my-project"
+CONFIG_GOLIOTH_SAMPLE_PSK="my-psk"
 ```
 
 ### Build and run sample project

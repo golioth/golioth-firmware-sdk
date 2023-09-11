@@ -8,12 +8,12 @@
 #define TAG "main"
 
 int main(void) {
-    char* golioth_psk_id = getenv("GOLIOTH_PSK_ID");
+    char* golioth_psk_id = getenv("GOLIOTH_SAMPLE_PSK_ID");
     if ((!golioth_psk_id) || strlen(golioth_psk_id) <= 0) {
         fprintf(stderr, "PSK ID is not specified.\n");
         return 1;
     }
-    char* golioth_psk = getenv("GOLIOTH_PSK");
+    char* golioth_psk = getenv("GOLIOTH_SAMPLE_PSK");
     if ((!golioth_psk) || strlen(golioth_psk) <= 0) {
         fprintf(stderr, "PSK is not specified.\n");
         return 1;

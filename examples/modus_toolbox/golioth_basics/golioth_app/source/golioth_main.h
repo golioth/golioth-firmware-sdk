@@ -49,10 +49,10 @@
 // This is a required file, so if it doesn't exist, you will
 // need to create it and add the following:
 //
-//    #define WIFI_SSID "MySSID"
-//    #define WIFI_PASSWORD "MyPassword"
-//    #define GOLIOTH_PSK_ID "device@project"
-//    #define GOLIOTH_PSK "secret"
+//    #define GOLIOTH_SAMPLE_WIFI_SSID "MySSID"
+//    #define GOLIOTH_SAMPLE_WIFI_PSK "MyPassword"
+//    #define GOLIOTH_SAMPLE_PSK_ID "device@project"
+//    #define GOLIOTH_SAMPLE_PSK "secret"
 //
 // The Golioth credentials can be found at:
 //
