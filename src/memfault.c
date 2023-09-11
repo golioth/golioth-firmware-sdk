@@ -16,10 +16,10 @@
 static void handle_mflt_timer(golioth_sys_timer_t timer, void* arg)
 {
     golioth_sys_timer_start(timer);
-    upload_memfault_data((golioth_client_t) arg);
+    golioth_memfault_upload_now((golioth_client_t) arg);
 }
 
-int upload_memfault_data(golioth_client_t client)
+int golioth_memfault_upload_now(golioth_client_t client)
 {
     uint8_t buf[CONFIG_GOLIOTH_MFLT_CHUNK_SIZE];
     size_t buf_len = sizeof(buf);
@@ -40,7 +40,7 @@ int upload_memfault_data(golioth_client_t client)
     return 0;
 }
 
-int start_memfault_timer(golioth_client_t client)
+int golioth_memfault_timer_start(golioth_client_t client)
 {
     golioth_sys_timer_config_t timer_config = {
     	.name = "mflt_upld_tmr",
