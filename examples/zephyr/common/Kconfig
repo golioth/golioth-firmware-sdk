@@ -101,6 +101,14 @@ config GOLIOTH_SAMPLE_PSK_SETTINGS
          When selected, Golioth credentials will be loaded from settings
          subsystem.
 
+config GOLIOTH_SAMPLE_SETTINGS_AUTOLOAD
+	bool "Automatically load settings before main()"
+	default y if GOLIOTH_SAMPLE_PSK_SETTINGS
+	depends on SETTINGS
+	help
+	  Load settings automatically before running main() function. Enable it,
+	  so that application does not need to call settings_load() manually.
+
 config GOLIOTH_SAMPLE_WIFI
 	bool "WiFi utilities for samples"
 	depends on NET_L2_WIFI_MGMT
