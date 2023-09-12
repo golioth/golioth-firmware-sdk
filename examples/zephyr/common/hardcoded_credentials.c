@@ -48,6 +48,6 @@ static const golioth_client_config_t _golioth_client_config_psk = {
                 }}};
 #endif
 
-const golioth_client_config_t* hardcoded_credentials_get(void) {
+const golioth_client_config_t* golioth_sample_credentials_get(void) {
     return &_golioth_client_config_psk;
 }

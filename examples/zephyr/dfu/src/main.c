@@ -8,7 +8,7 @@
 LOG_MODULE_REGISTER(dfu_sample, LOG_LEVEL_DBG);
 
 #include "golioth.h"
-#include <samples/common/hardcoded_credentials.h>
+#include <samples/common/sample_credentials.h>
 #include <string.h>
 #include <zephyr/kernel.h>
 
@@ -36,7 +36,7 @@ int main(void) {
      * device. For simplicity, we provide a utility to hardcode credentials as
      * kconfig options in the samples.
      */
-    const golioth_client_config_t* client_config = hardcoded_credentials_get();
+    const golioth_client_config_t* client_config = golioth_sample_credentials_get();
 
     golioth_client_t client = golioth_client_create(client_config);
 
