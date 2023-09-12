@@ -89,7 +89,7 @@ int main(void) {
      * device. For simplicity, we provide a utility to hardcode credentials as
      * kconfig options in the samples.
      */
-    golioth_client_config_t* client_config = hardcoded_credentials_get();
+    const golioth_client_config_t* client_config = hardcoded_credentials_get();
 
     client = golioth_client_create(client_config);
     golioth_client_register_event_callback(client, on_client_event, NULL);
