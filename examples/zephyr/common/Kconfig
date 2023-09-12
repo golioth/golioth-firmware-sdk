@@ -92,6 +92,15 @@ config GOLIOTH_SAMPLE_NRF91_LTE_MONITOR
 	help
 	  LTE Link Control events monitor for nRF91.
 
+config GOLIOTH_SAMPLE_PSK_SETTINGS
+       bool "Load credentials from persistent settings"
+       default y if !GOLIOTH_SAMPLE_HARDCODED_CREDENTIALS
+       depends on GOLIOTH_AUTH_METHOD_PSK
+       depends on SETTINGS
+       help
+         When selected, Golioth credentials will be loaded from settings
+         subsystem.
+
 config GOLIOTH_SAMPLE_WIFI
 	bool "WiFi utilities for samples"
 	depends on NET_L2_WIFI_MGMT

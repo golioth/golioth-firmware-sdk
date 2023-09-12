@@ -1,6 +1,7 @@
 zephyr_library_sources_ifdef(CONFIG_GOLIOTH_SAMPLE_HARDCODED_CREDENTIALS hardcoded_credentials.c)
 zephyr_library_sources_ifdef(CONFIG_GOLIOTH_SAMPLE_COMMON net_connect.c)
 zephyr_library_sources_ifdef(CONFIG_GOLIOTH_SAMPLE_NRF91_LTE_MONITOR nrf91_lte_monitor.c)
+zephyr_library_sources_ifdef(CONFIG_GOLIOTH_SAMPLE_PSK_SETTINGS settings_golioth.c)
 zephyr_library_sources_ifdef(CONFIG_GOLIOTH_SAMPLE_WIFI wifi.c)
 
 zephyr_include_directories(include)
