@@ -9,6 +9,6 @@
 
 #include "golioth.h"
 
-golioth_client_config_t* hardcoded_credentials_get(void);
+const golioth_client_config_t* hardcoded_credentials_get(void);
 
 #endif /* __GOLIOTH_INCLUDE_HARDCODED_CREDENTIALS_H__ */
