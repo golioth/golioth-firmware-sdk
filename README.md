@@ -3,64 +3,33 @@
 A software development kit for connecting embedded devices to the
 [Golioth](https://golioth.io) IoT cloud.
 
-This SDK can be used on the following firmware platforms (a.k.a. ecosystems):
+This SDK can be used on any preemptive operating system that provides an
+Internet stack. Golioth maintains ports for the following platforms:
 
-* Espressif ESP-IDF
-* Infineon ModusToolbox
-* Linux (or POSIX-like)
+* [Espressif ESP-IDF](examples/esp_idf/README.md)
+* [Infineon ModusToolbox](examples/modus_toolbox/README.md)
+* [Zephyr & NCS](examples/zephyr/README.md) (Beta)
+* [Linux](examples/linux/README.md) (Experimental)
+
+More information on these ports can be found at the links above.
+
+The SDK can be ported to additional platforms by following the Porting Guide in
+the `docs` folder.
 
 SDK source: https://github.com/golioth/golioth-firmware-sdk
+
+Documentation: https://docs.golioth.io/firmware/golioth-firmware-sdk
 
 API documentation: https://firmware-sdk-docs.golioth.io/
 
 ## Getting Started
 
-### Hello, Golioth!
-
-Here is a minimal example that demonstrates how to connect to
-[Golioth cloud](https://docs.golioth.io/cloud) and send the message "Hello, Golioth!":
-
-```c
-#include <stdbool.h>
-#include <stdint.h>
-#include <string.h>
-#include "nvs.h"
-#include "wifi.h"
-#include "golioth.h"
-
-void app_main(void) {
-    const char* wifi_ssid = "SSID";
-    const char* wifi_password = "Password";
-    const char* golioth_psk_id = "device@project";
-    const char* golioth_psk = "supersecret";
-
-    nvs_init();
-    wifi_init(wifi_ssid, wifi_password);
-    wifi_wait_for_connected();
-
-    golioth_client_config_t config = {
-        .credentials = {
-            .auth_type = GOLIOTH_TLS_AUTH_TYPE_PSK,
-            .psk = {
-                    .psk_id = golioth_psk_id,
-                    .psk_id_len = strlen(golioth_psk_id),
-                    .psk = golioth_psk,
-                    .psk_len = strlen(golioth_psk),
-            }
-        }
-    };
-
-    golioth_client_t client = golioth_client_create(&config);
-    GLTH_LOGI(client, "app_main", "Hello, Golioth!");
-}
-```
-
-### Cloning this repo
+### Getting the Code
 
 This repo uses git submodules, so you will need to clone with the `--recursive` option:
 
 ```sh
-git clone --recursive https://github.com/golioth/golioth-firmware-sdk.git
+git clone --recursive https://github.com/golioth/golioth-firmware-sdk.git -b v0.7.0
 ```
 
 Or, if you've already cloned but forgot the `--recursive`, you can update and
@@ -70,6 +39,10 @@ initialize submodules with this command:
 cd golioth-firmware-sdk
 git submodule update --init --recursive
 ```
+
+
+> :warning: **Note:** Zephyr-based projects should use the West tool to clone the repo. See the
+[Zephyr Quick Start Guide](exampls/zephyr/README.md).
 
 ### Trying the SDK examples
 
@@ -89,31 +62,6 @@ and [OTA](https://docs.golioth.io/cloud/services/ota).
 
 The `docs` folder contains additional documentation, such as a platform
 integration guide and a platform porting guide.
-
-## Features Supported by Platform
-
-The following table lists which SDK features (rows) are support for each platform (columns).
-The :soon:'s indicate a feature that is planned to be implemented in the future, and
-the :x:'s indicate a feature that is not planned (or not applicable).
-
-| Feature | ESP-IDF | ModusToolbox | Linux | Zephyr |
-| --- | --- | --- | --- | --- |
-| OTA FW Update | :heavy_check_mark: | :heavy_check_mark: | :heavy_check_mark: <sup>1</sup> | :heavy_check_mark: |
-| Cloud Logging | :heavy_check_mark: | :heavy_check_mark: | :heavy_check_mark: | :soon: |
-| LightDB State | :heavy_check_mark: | :heavy_check_mark: | :heavy_check_mark: | :heavy_check_mark: |
-| LightDB Stream | :heavy_check_mark: | :heavy_check_mark: | :heavy_check_mark: | :heavy_check_mark: |
-| Remote Procedure Call | :heavy_check_mark: | :heavy_check_mark: | :heavy_check_mark: | :heavy_check_mark: |
-| Settings | :heavy_check_mark: | :heavy_check_mark: | :heavy_check_mark: | :heavy_check_mark: |
-| CoAP/DTLS Client | :heavy_check_mark: | :heavy_check_mark: | :heavy_check_mark: | :heavy_check_mark: |
-| PSK Auth | :heavy_check_mark: | :heavy_check_mark: | :heavy_check_mark: | :heavy_check_mark: |
-| Certificate Auth | :heavy_check_mark: | :soon: | :heavy_check_mark: | :soon: |
-| Sign+Verify OTA images | :soon: | :heavy_check_mark: | :soon: | :soon: |
-| Terminal shell | :heavy_check_mark: | :soon: | :x: | :soon: |
-| Serial Provisioning | :heavy_check_mark: | :soon: | :x: | :soon: |
-| BLE Provisioning | :heavy_check_mark: | :soon: | :x: | :soon: |
-
-<sup>1</sup>: partially implemented, downloads new image to file, but doesn't swap
-out the currently running image
 
 ## Verified Devices
 
