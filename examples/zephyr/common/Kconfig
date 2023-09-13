@@ -109,6 +109,18 @@ config GOLIOTH_SAMPLE_SETTINGS_AUTOLOAD
 	  Load settings automatically before running main() function. Enable it,
 	  so that application does not need to call settings_load() manually.
 
+config GOLIOTH_SAMPLE_SETTINGS_SHELL
+	bool "Settings shell"
+	default y if GOLIOTH_SAMPLE_PSK_SETTINGS
+	depends on SHELL
+	depends on SETTINGS
+	depends on !SETTINGS_SHELL
+	help
+	  Golioth specific settings shell. Enable it when reading and
+	  writing string based settings is desired. Look at Zephyr's
+	  settings shell implementation (SETTINGS_SHELL) when byte
+	  strings are needed to be handled as well.
+
 config GOLIOTH_SAMPLE_WIFI
 	bool "WiFi utilities for samples"
 	depends on NET_L2_WIFI_MGMT
