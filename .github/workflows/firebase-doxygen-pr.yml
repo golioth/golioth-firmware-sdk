@@ -1,5 +1,5 @@
 name: Deploy Doxygen to Firebase Hosting on PR
-'on': pull_request_target
+on: pull_request
 jobs:
   deploy_doxygen_dev:
     runs-on: ubuntu-latest
