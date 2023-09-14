@@ -218,8 +218,8 @@ This is the output from the serial console:
 
 ### Set counter value
 
-The device retrieves the value stored at `/counter` in LightDB every 5
-seconds. The value can be set with:
+The device deletes the `/counter` path in LightDB every 5 seconds. The
+path (and value) can be created with:
 
 ```console
 goliothctl lightdb set <device-name> /counter -b "{\"counter\":34}"
