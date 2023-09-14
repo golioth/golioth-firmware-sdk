@@ -13,6 +13,7 @@
 #include "golioth_debug.h"
 #include "golioth_util.h"
 #include "zcbor_utils.h"
+#include "zcbor_any_skip_fixed.h"
 
 LOG_TAG_DEFINE(golioth_ota);
 
