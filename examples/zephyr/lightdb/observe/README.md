@@ -37,34 +37,34 @@ shell. This is based on the Zephyr Settings subsystem.
 Enable the settings shell by including the following configuration overlay
 file:
 
-.. code-block:: console
-
-   $ west build -- -DEXTRA_CONF_FILE=../../common/runtime_psk.conf
+```sh
+$ west build -- -DEXTRA_CONF_FILE=../common/runtime_psk.conf
+```
 
 Alternatively, you can add the following options to ``prj.conf``:
 
-.. code-block:: cfg
+```cfg
+CONFIG_GOLIOTH_SAMPLE_HARDCODED_CREDENTIALS=n
 
-   CONFIG_GOLIOTH_SAMPLE_HARDCODED_CREDENTIALS=n
+CONFIG_FLASH=y
+CONFIG_FLASH_MAP=y
+CONFIG_NVS=y
 
-   CONFIG_FLASH=y
-   CONFIG_FLASH_MAP=y
-   CONFIG_NVS=y
-
-   CONFIG_SETTINGS=y
-   CONFIG_SETTINGS_RUNTIME=y
-   CONFIG_GOLIOTH_SAMPLE_PSK_SETTINGS=y
-   CONFIG_GOLIOTH_SAMPLE_SETTINGS_AUTOLOAD=y
-   CONFIG_GOLIOTH_SAMPLE_SETTINGS_SHELL=y
+CONFIG_SETTINGS=y
+CONFIG_SETTINGS_RUNTIME=y
+CONFIG_GOLIOTH_SAMPLE_PSK_SETTINGS=y
+CONFIG_GOLIOTH_SAMPLE_SETTINGS_AUTOLOAD=y
+CONFIG_GOLIOTH_SAMPLE_SETTINGS_SHELL=y
+```
 
 At runtime, configure PSK-ID and PSK using the device shell based on your
 Golioth credentials:
 
-.. code-block:: console
-
-   uart:~$ settings set golioth/psk-id <my-psk-id@my-project>
-   uart:~$ settings set golioth/psk <my-psk>
-   uart:-$ kernel reboot cold
+```sh
+uart:~$ settings set golioth/psk-id <my-psk-id@my-project>
+uart:~$ settings set golioth/psk <my-psk>
+uart:-$ kernel reboot cold
+```
 
 #### Certificate based auth
 
