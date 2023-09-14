@@ -4,11 +4,38 @@ All notable changes to this project will be documented in this file.
 The format is based on [Keep a Changelog](https://keepachangelog.com/en/1.0.0/),
 and this project adheres to [Semantic Versioning](https://semver.org/spec/v2.0.0.html).
 
-## [0.x.x] - unreleased
+## [0.8.0] - 2023-09-22
 
+### Highlights
+- Beta support for Zephyr and NCS
+- DTLS 1.2 Connection ID Support
+- Update ESP-IDF support to v5.1.1
+- Use CBOR instead of JSON internally
 ### Breaking Changes
-
 - Add `GOLIOTH_` to each RPC status (e.g. `GOLIOTH_RPC_OK`)
+### Added:
+- zephyr: add support for certificate authentication
+- zephyr: add Golioth log backend
+- zephyr: examples: add examples for each Golioth service
+- zephyr: examples: add support for runtime DTLS PSK and WiFi settings
+- zephyr: examples: add hardcoded credentials module
+- zephyr: examples: add support for ESP32-DevKitC-WROVER
+- zephyr: examples: add support for MIMXRT1024-EVK
+- ports: add connect/disconnect notification to port layer
+- ncs: add support for Nordic nRF SDK
+- ncs: examples: add support for nRF9160 DK
+### Changed:
+- auth: use DER formatted certificates
+- linux: examples: source PSK and PSK-ID from environment
+- treewide: use CBOR (zcbor) instead of JSON for Golioth services
+- zephyr: update zephyr revision
+- libcoap: update libcoap revision
+### Fixed:
+- docs: fixed typos and broken links
+- coap_client: handle NACKed CoAP requests
+- zephyr: libcoap: removed broken assert
+- zephyr: use work thread for timer handlers
+- mbox: fixed mbox failure when asserts enabled
 
 ## [0.7.0] - 2023-06-15
 
@@ -24,7 +51,6 @@ Highlights:
 - golioth_coap_client: introduce GOLIOTH_OVERRIDE_LIBCOAP_LOG_HANDLER
 - remote_shell: add CONFIG_GOLIOTH_REMOTE_SHELL_THREAD_STACK_SIZE
 - ota: add CONFIG_GOLIOTH_OTA_THREAD_STACK_SIZE
-
 ### Changed:
 - treewide: change 'task' nomenclature to thread
 - treewide: replace '#define TAG ...' with LOG_TAG_DEFINE(...)
@@ -34,7 +60,6 @@ Highlights:
 - port: remove COAP_RESOURCES_NOHASH definition
 - README: clarify the support for OTA on Linux
 - libcoap: bump to tip of develop branch
-
 ### Fixed:
 - settings: allow float type settings to be whole numbers
 - settings: update device_settings_register_bool docstring
