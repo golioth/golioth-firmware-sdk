@@ -6,12 +6,13 @@ A software development kit for connecting embedded devices to the
 This SDK can be used on any preemptive operating system that provides an
 Internet stack. Golioth maintains ports for the following platforms:
 
-* [Espressif ESP-IDF](examples/esp_idf/README.md)
-* [Infineon ModusToolbox](examples/modus_toolbox/README.md)
-* [Zephyr & NCS](examples/zephyr/README.md) (Beta)
-* [Linux](examples/linux/README.md) (Experimental)
+* Espressif ESP-IDF
+* Infineon ModusToolbox
+* Zephyr & NCS (Beta)
+* Linux (Experimental)
 
-More information on these ports can be found at the links above.
+More information on these ports can be found in their respective READMEs at
+`examples/<platform>/README.md`
 
 The SDK can be ported to additional platforms by following the Porting Guide in
 the `docs` folder.
@@ -42,7 +43,7 @@ git submodule update --init --recursive
 
 
 > :warning: **Note:** Zephyr-based projects should use the West tool to clone the repo. See the
-[Zephyr Quick Start Guide](exampls/zephyr/README.md).
+Zephyr Quick Start Guide at `examples/zephyr/README.md`.
 
 ### Trying the SDK examples
 
