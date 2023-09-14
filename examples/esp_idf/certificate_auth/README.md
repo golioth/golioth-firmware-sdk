@@ -30,8 +30,9 @@ Anyone who has it can sign authentic-looking device certificates.
 Upload `golioth.crt.pem` to the Golioth console:
 
 * Go to `console.golioth.io`
-* In the sidebar, click `Certificates`
-* Click `Add Client Certificate Authority` button
+* In the sidebar, click `Project Settings`
+* Select the `Certificates` tab
+* Click `Add CA Certificate` button
 * Leave Type as `Root`, upload the `golioth.crt.pem` file
 
 ## Generate a device certificate
@@ -51,7 +52,7 @@ cd main/certs
   using the `Project ID` column.
 * `device_name`: this is the name of the new device. It's a string, and can be anything.
 
-This will create three files in the `certs` directory:
+This will create two files in the `certs` directory:
 
 ```
 <project_id>-<device_name>.crt.der (public, cert presented to server)
@@ -66,9 +67,9 @@ cp <project_id>-<device_name>.crt.der client.crt.der
 cp <project_id>-<device_name>.key.der client.key.der
 ```
 
-## A note about root_ca.pem
+## A note about golioth.key.pem
 
-The file `main/root_ca.pem` is the public certificate of the root CA that was used
+The file `golioth.key.pem` is the public certificate of the root CA that was used
 to sign the server's certificate (which it presents to the device during DTLS
 handshake). This is required in order for the device to verify the authenticity
 of the Golioth server.
