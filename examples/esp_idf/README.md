@@ -39,7 +39,7 @@ source ~/esp/esp-idf/export.sh
 Next, `cd` to one of the examples, where you can build/flash/monitor:
 
 ```
-cd examples/golioth_basics
+cd examples/esp_idf/golioth_basics
 idf.py build
 idf.py flash
 idf.py monitor
