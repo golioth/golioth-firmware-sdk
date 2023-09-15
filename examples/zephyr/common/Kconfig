@@ -67,7 +67,6 @@ config GOLIOTH_SAMPLE_DHCP_BIND
 config GOLIOTH_SAMPLE_FW_VERSION
 	string "DFU Firmware Version"
 	default "0.0.0+0"
-	depends on BOOTLOADER_MCUBOOT
 	help
           Firmware version used by Golioth DFU sample to assign MCUBOOT_IMGTOOL_SIGN_VERSION (if
           using Zephyr) or MCUBOOT_IMAGE_VERSION (if using NCS)
