@@ -8,7 +8,11 @@
 #include <string.h>
 #include <golioth/golioth_debug.h>
 
+#ifdef __ZEPHYR__
+#include "coap_client_zephyr.h"
+#else
 #include "coap_client_libcoap.h"
+#endif
 
 LOG_TAG_DEFINE(golioth_coap_client);
 

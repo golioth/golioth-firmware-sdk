@@ -34,10 +34,6 @@ zephyr_library_include_directories(
     ../../external/heatshrink/src
     ../../external/heatshrink/include
 
-    # libcoap
-    ../../external/libcoap/include
-    libcoap/include
-
     # miniz
     ../../external/miniz
     ../common/miniz
@@ -45,8 +41,10 @@ zephyr_library_include_directories(
 
 zephyr_library_sources(
     # SDK
+    ../../src/zephyr_coap_req.c
+    ../../src/zephyr_coap_utils.c
     ../../src/coap_client.c
-    ../../src/coap_client_libcoap.c
+    ../../src/coap_client_zephyr.c
     ../../src/golioth_debug.c
     ../../src/event_group.c
     ../../src/fw_block_processor.c
@@ -69,36 +67,6 @@ zephyr_library_sources(
 
     # heatshrink
     ../../external/heatshrink/src/heatshrink_decoder.c
-
-    # libcoap
-    ../../external/libcoap/src/coap_address.c
-    ../../external/libcoap/src/coap_asn1.c
-    ../../external/libcoap/src/coap_async.c
-    ../../external/libcoap/src/coap_block.c
-    ../../external/libcoap/src/coap_cache.c
-    ../../external/libcoap/src/coap_debug.c
-    ../../external/libcoap/src/coap_dtls.c
-    ../../external/libcoap/src/coap_encode.c
-    ../../external/libcoap/src/coap_event.c
-    ../../external/libcoap/src/coap_hashkey.c
-    ../../external/libcoap/src/coap_layers.c
-    ../../external/libcoap/src/coap_mem.c
-    ../../external/libcoap/src/coap_net.c
-    ../../external/libcoap/src/coap_netif.c
-    ../../external/libcoap/src/coap_option.c
-    ../../external/libcoap/src/coap_pdu.c
-    ../../external/libcoap/src/coap_prng.c
-    ../../external/libcoap/src/coap_resource.c
-    ../../external/libcoap/src/coap_session.c
-    ../../external/libcoap/src/coap_str.c
-    ../../external/libcoap/src/coap_subscribe.c
-    ../../external/libcoap/src/coap_tcp.c
-    ../../external/libcoap/src/coap_uri.c
-    ../../external/libcoap/src/coap_ws.c
-    libcoap/coap_io_zephyr.c
-    libcoap/coap_time.c
-    libcoap/coap_zephyrtls.c
-    libcoap/log.c
 
     # miniz
     ../../external/miniz/miniz_tinfl.c

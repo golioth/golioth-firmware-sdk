@@ -68,6 +68,8 @@ typedef enum
 
 typedef struct
 {
+    struct golioth_client *client;
+
     // The CoAP path string (everything after coaps://coap.golioth.io/).
     // Assumption: path_prefix is a string literal (i.e. we don't need to strcpy).
     const char *path_prefix;
