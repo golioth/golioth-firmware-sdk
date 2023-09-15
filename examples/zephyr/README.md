@@ -39,7 +39,7 @@ dependencies:
 ```console
 west init -m https://github.com/golioth/golioth-firmware-sdk.git --mf west-zephyr.yml
 west update
-cd modules/lib/golioth-firmware-sdk && git submodule update --init --recursive
+(cd modules/lib/golioth-firmware-sdk && git submodule update --init --recursive)
 ```
 
 Follow [Zephyr Getting
@@ -54,7 +54,7 @@ dependencies:
 ```console
 west init -m https://github.com/golioth/golioth-firmware-sdk.git --mf west-ncs.yml
 west update
-cd modules/lib/golioth-firmware-sdk && git submodule update --init --recursive
+(cd modules/lib/golioth-firmware-sdk && git submodule update --init --recursive)
 ```
 
 Follow [nRF Connect SDK Getting
@@ -81,7 +81,7 @@ and clone all repositories including that one by running:
 
 ```console
 west update
-cd modules/lib/golioth-firmware-sdk && git submodule update --init --recursive
+(cd modules/lib/golioth-firmware-sdk && git submodule update --init --recursive)
 ```
 
 # Sample applications
