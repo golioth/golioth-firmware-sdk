@@ -7,6 +7,8 @@ config LIBCOAP_TLS_HOSTNAME_LEN_MAX
 
 menuconfig GOLIOTH_FIRMWARE_SDK
 	bool "Golioth Firmware SDK"
+	select COAP
+	select EVENTFD
 	select POSIX_API # libcoap
 	select REBOOT if BOOTLOADER_MCUBOOT
 	select REQUIRES_FULL_LIBC # libcoap
@@ -115,6 +117,54 @@ config GOLIOTH_CIPHERSUITES
 
 	  If empty, then underlying TLS implementation (e.g. mbedTLS library) decides which
 	  ciphersuites to use. Relying on that is not recommended!
+
+config GOLIOTH_COAP_CLIENT_CREDENTIALS_TAG
+	int "TLS credentials secure tag"
+	default 515765868
+	help
+	  Secure tag, which is a reference to TLS credential. This value is
+	  configured on created (D)TLS socket in order reference credentials
+	  used during connection handshake.
+
+	  See 'sec_tag_t' typedef in Zephyr for details.
+
+config GOLIOTH_HOSTNAME_VERIFICATION
+	bool "Hostname verification"
+	default y if GOLIOTH_AUTH_METHOD_CERT
+	help
+	  Enable hostname verification on (D)TLS layer.
+
+if GOLIOTH_HOSTNAME_VERIFICATION
+
+config GOLIOTH_HOSTNAME_VERIFICATION_SKIP
+	bool "(development only) Skip hostname verification"
+	help
+	  Skip TLS layer hostname verification, by passing NULL to
+	  zsock_setsockopt(..., SOL_TLS, TLS_HOSTNAME, ...).
+
+	  Use this only for development with self-hosted server.
+
+endif # GOLIOTH_HOSTNAME_VERIFICATION
+
+config GOLIOTH_COAP_CLIENT_PING_INTERVAL_SEC
+	int "Ping interval (seconds)"
+	default 9
+	help
+	  Periodic interval between consecutive ping messages being sent to
+	  Golioth.
+
+config GOLIOTH_COAP_CLIENT_RX_TIMEOUT_SEC
+	int "Receive timeout (seconds)"
+	default 30
+	help
+	  Receive timeout, after which connection will be reestablished.
+
+config GOLIOTH_COAP_CLIENT_RX_BUF_SIZE
+	int "Receive buffer size"
+	default 1280
+	help
+	  Size of receive buffer, which is used for reading data from network
+	  socket.
 
 endmenu
 
