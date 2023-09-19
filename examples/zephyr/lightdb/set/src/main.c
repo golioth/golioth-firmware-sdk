@@ -68,7 +68,7 @@ static void counter_set_json_async(int counter) {
     char sbuf[sizeof("{\"counter\":4294967295}")];
     int err;
 
-    snprintk(sbuf, sizeof(sbuf) - 1, "{\"counter\":%d}", counter);
+    snprintk(sbuf, sizeof(sbuf), "{\"counter\":%d}", counter);
 
     err = golioth_lightdb_set_json_async(client, "", sbuf, strlen(sbuf), counter_set_handler, NULL);
     if (err) {
