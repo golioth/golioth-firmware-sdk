@@ -24,7 +24,12 @@ jobs:
         git fetch --no-recurse-submodules
         echo "Checking code format"
         sudo apt install clang-format
-        REPO_ROOT=`pwd` ./scripts/lint/ci_check_clang_format.sh --merge-base origin/$GITHUB_BASE_REF
+        if [[ $GITHUB_EVENT_NAME == 'push' ]]; then
+            BASE=${{ github.event.before }}
+        else
+            BASE=origin/$GITHUB_BASE_REF
+        fi
+        REPO_ROOT=`pwd` ./scripts/lint/ci_check_clang_format.sh --merge-base $BASE
     - name: Run unit tests
       shell: bash
       run: |
