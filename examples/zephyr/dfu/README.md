@@ -225,14 +225,14 @@ commands below.
    an artifact to Golioth:
 
     ```console
-    $ goliothctl dfu artifact create <binary_file> --version 1.2.3
+    $ goliothctl dfu artifact create <binary_file> --version 1.2.4
     ```
 
 2. Create a new release consisting of this single firmware and roll it
 out to all devices in the project:
 
     ```console
-    $ goliothctl dfu release create --release-tags 1.2.3 --components main@1.2.3 --rollout true
+    $ goliothctl dfu release create --release-tags 1.2.4 --components main@1.2.4 --rollout true
     ```
 
 Note: the artifact upload and release rollout process is also available
