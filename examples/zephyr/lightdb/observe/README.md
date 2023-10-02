@@ -104,29 +104,30 @@ QEMU](https://docs.zephyrproject.org/3.3.0/connectivity/networking/qemu_setup.ht
 on how to setup networking on host and configure NAT/masquerading to
 access Internet.
 
-ESP32-DevKitC-WROVER
---------------------
+#### ESP32-DevKitC-WROVER
 
-Configure the following Kconfig options based on your WiFi AP credentials:
+Configure the following Kconfig options based on your WiFi AP
+credentials:
 
 - GOLIOTH_SAMPLE_WIFI_SSID  - WiFi SSID
 - GOLIOTH_SAMPLE_WIFI_PSK   - WiFi PSK
 
-by adding these lines to configuration file (e.g. ``prj.conf`` or
-``board/esp32_devkitc_wrover.conf``):
+by adding these lines to configuration file (e.g. `prj.conf` or
+`board/esp32_devkitc_wrover.conf`):
 
-.. code-block:: cfg
+```cfg
+CONFIG_GOLIOTH_SAMPLE_WIFI_SSID="my-wifi"
+CONFIG_GOLIOTH_SAMPLE_WIFI_PSK="my-psk"
+```
 
-   CONFIG_GOLIOTH_SAMPLE_WIFI_SSID="my-wifi"
-   CONFIG_GOLIOTH_SAMPLE_WIFI_PSK="my-psk"
+On your host computer open a terminal window, locate the source code of
+this sample application (i.e., `examples/zephyr/lightdb/observe`) and
+type:
 
-On your host computer open a terminal window, locate the source code of this
-sample application (i.e., ``examples/zephyr/lightdb/observe``) and type:
-
-.. code-block:: console
-
-   $ west build -b esp32_devkitc_wrover examples/zephyr/lightdb/observe
-   $ west flash
+```console
+$ west build -b esp32_devkitc_wrover examples/zephyr/lightdb/observe
+$ west flash
+```
 
 #### nRF52840 DK + ESP32-WROOM-32
 
