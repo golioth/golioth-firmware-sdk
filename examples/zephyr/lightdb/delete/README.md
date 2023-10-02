@@ -3,7 +3,7 @@
 ## Overview
 
 This sample demonstrates how to connect to Golioth and delete values
-from LigthDB.
+from LightDB.
 
 ## Requirements
 
