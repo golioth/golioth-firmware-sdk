@@ -74,6 +74,7 @@ based project (e.g. Zephyr RTOS):
   path: modules/lib/golioth-firmware-sdk
   revision: main
   url: https://github.com/golioth/golioth-firmware-sdk.git
+  submodules: true
   import: west-external.yml
 ```
 
@@ -81,8 +82,11 @@ and clone all repositories including that one by running:
 
 ```console
 west update
-cd modules/lib/golioth-firmware-sdk && git submodule update --init --recursive
 ```
+
+> :memo: When the Golioth Firmware SDK is added as a project in a
+> manifest file, the `submodules` keyword ensures that submodules are
+> updated recursively each time `west update` is used.
 
 # Sample applications
 
