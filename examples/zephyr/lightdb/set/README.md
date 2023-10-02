@@ -177,7 +177,7 @@ $ west flash
 #### nRF9160 DK
 
 On your host computer open a terminal window, locate the source code of
-this sample application (i.e., `samples/ligthdb/set`) and type:
+this sample application (i.e., `examples/zephyr/lightdb/set`) and type:
 
 ```console
 $ west build -b nrf9160dk_nrf9160_ns examples/zephyr/lightdb/set
