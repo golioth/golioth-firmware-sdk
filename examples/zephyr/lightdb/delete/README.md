@@ -91,11 +91,11 @@ CONFIG_GOLIOTH_SAMPLE_HARDCODED_KEY_PATH="keys/device.key.der"
 This application has been built and tested with QEMU x86 (qemu_x86).
 
 On your Linux host computer, open a terminal window, locate the source
-code of this sample application (i.e., `samples/lightdb/delete`) and
+code of this sample application (i.e., `examples/zephyr/lightdb/delete`) and
 type:
 
 ```console
-$ west build -b qemu_x86 samples/lightdb/delete
+$ west build -b qemu_x86 examples/zephyr/lightdb/delete
 $ west build -t run
 ```
 
@@ -168,20 +168,22 @@ CONFIG_GOLIOTH_SAMPLE_WIFI_PSK="my-psk"
 ```
 
 On your host computer open a terminal window, locate the source code of
-this sample application (i.e., `samples/lightdb/delete`) and type:
+this sample application (i.e., `examples/zephyr/lightdb/delete`) and
+type:
 
 ```console
-$ west build -b nrf52840dk_nrf52840 samples/lightdb/delete
+$ west build -b nrf52840dk_nrf52840 examples/zephyr/lightdb/delete
 $ west flash
 ```
 
 #### nRF9160 DK
 
 On your host computer open a terminal window, locate the source code of
-this sample application (i.e., `samples/ligthdb/delete`) and type:
+this sample application (i.e., `examples/zephyr/lightdb/delete`) and
+type:
 
 ```console
-$ west build -b nrf9160dk_nrf9160_ns samples/lightdb/delete
+$ west build -b nrf9160dk_nrf9160_ns examples/zephyr/lightdb/delete
 $ west flash
 ```
 
