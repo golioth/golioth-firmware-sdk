@@ -77,15 +77,15 @@ typedef struct {
 /// All memory is owned by user and must persist for the lifetime
 /// of the golioth client.
 typedef struct {
-    // PEM Common CA cert
+    // DER Common CA cert
     const uint8_t* ca_cert;
     size_t ca_cert_len;
 
-    /// PEM Public client cert
+    /// DER Public client cert
     const uint8_t* public_cert;
     size_t public_cert_len;
 
-    /// PEM Private client key
+    /// DER Private client key
     const uint8_t* private_key;
     size_t private_key_len;
 } golioth_pki_credentials_t;
