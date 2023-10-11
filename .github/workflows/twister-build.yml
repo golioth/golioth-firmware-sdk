@@ -1,0 +1,59 @@
+name: Twister build workflow
+
+on:
+  workflow_call:
+    inputs:
+      board:
+        required: true
+        type: string
+      manifest:
+        required: true
+        type: string
+      binary_blob:
+        required: false
+        type: string
+
+jobs:
+  twister_build:
+    container:
+      image: zephyrprojectrtos/ci:v0.26.4
+    env:
+      ZEPHYR_SDK_INSTALL_DIR: /opt/toolchains/zephyr-sdk-0.16.1
+    runs-on: ubuntu-latest
+    steps:
+    - name: Checkout repository and submodules
+      uses: actions/checkout@v3
+      with:
+        path: modules/lib/golioth-firmware-sdk
+        submodules: 'recursive'
+    - name: Init and update west
+      run: |
+        mkdir -p .west
+        cat <<EOF > .west/config
+        [manifest]
+        path = modules/lib/golioth-firmware-sdk
+        file = ${{ inputs.manifest }}
+        EOF
+
+        west update -o=--depth=1 -n
+
+    - name: Download binary blobs
+      if: ${{ inputs.binary_blob }}
+      run: |
+        west blobs fetch ${{ inputs.binary_blob }}
+
+    - name: Run twister
+      run: >
+        zephyr/scripts/twister
+        -b
+        -p ${{ inputs.board }}
+        -o reports
+        -T modules/lib/golioth-firmware-sdk
+    - name: Upload artifacts
+      uses: actions/upload-artifact@v2
+      if: ${{ always() }}
+      with:
+        name: twister-artifacts-${{ inputs.board }}
+        path: |
+          reports/*
+          twister-out/**/build.log
