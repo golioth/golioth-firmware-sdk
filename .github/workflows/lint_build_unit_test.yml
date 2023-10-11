@@ -169,85 +169,33 @@ jobs:
         make getlibs
         make build -j8
 
-  zephyr_build:
-    container:
-      image: zephyrprojectrtos/ci:v0.26.4
-    env:
-      ZEPHYR_SDK_INSTALL_DIR: /opt/toolchains/zephyr-sdk-0.16.1
-    runs-on: ubuntu-latest
-    steps:
-    - name: Checkout repository and submodules
-      uses: actions/checkout@v3
-      with:
-        path: modules/lib/golioth-firmware-sdk
-        submodules: 'recursive'
-    - name: Init and update west
-      run: |
-        mkdir -p .west
-        cat <<EOF > .west/config
-        [manifest]
-        path = modules/lib/golioth-firmware-sdk
-        file = west-zephyr.yml
-        EOF
+  esp32_devkitc_wrover_build:
+    uses: ./.github/workflows/twister-build.yml
+    with:
+      manifest: west-zephyr.yml
+      board: esp32_devkitc_wrover
+      binary_blob: hal_espressif
 
-        west update -o=--depth=1 -n
+  mimxrt1024_evk_build:
+    uses: ./.github/workflows/twister-build.yml
+    with:
+      manifest: west-zephyr.yml
+      board: mimxrt1024_evk
 
-    - name: Download binary blobs
-      run: |
-        west blobs fetch hal_espressif
+  nrf52840dk_build:
+    uses: ./.github/workflows/twister-build.yml
+    with:
+      manifest: west-zephyr.yml
+      board: nrf52840dk_nrf52840
 
-    - name: Run twister
-      run: >
-        zephyr/scripts/twister
-        -b
-        -p esp32_devkitc_wrover
-        -p nrf52840dk_nrf52840
-        -p qemu_x86
-        -o reports
-        -T modules/lib/golioth-firmware-sdk
-    - name: Upload artifacts
-      uses: actions/upload-artifact@v2
-      if: ${{ always() }}
-      with:
-        name: twister-artifacts
-        path: |
-          reports/*
-          twister-out/**/build.log
+  nrf9160dk_build:
+    uses: ./.github/workflows/twister-build.yml
+    with:
+      manifest: west-ncs.yml
+      board: nrf9160dk_nrf9160_ns
 
-  ncs_build:
-    container:
-      image: zephyrprojectrtos/ci:v0.26.4
-    env:
-      ZEPHYR_SDK_INSTALL_DIR: /opt/toolchains/zephyr-sdk-0.16.1
-    runs-on: ubuntu-latest
-    steps:
-    - name: Checkout repository and submodules
-      uses: actions/checkout@v3
-      with:
-        path: modules/lib/golioth-firmware-sdk
-        submodules: 'recursive'
-    - name: Init and update west
-      run: |
-        mkdir -p .west
-        cat <<EOF > .west/config
-        [manifest]
-        path = modules/lib/golioth-firmware-sdk
-        file = west-ncs.yml
-        EOF
-
-        west update -o=--depth=1 -n
-    - name: Run twister
-      run: >
-        zephyr/scripts/twister
-        -b
-        -p nrf9160dk_nrf9160_ns
-        -o reports
-        -T modules/lib/golioth-firmware-sdk
-    - name: Upload artifacts
-      uses: actions/upload-artifact@v2
-      if: ${{ always() }}
-      with:
-        name: twister-artifacts
-        path: |
-          reports/*
-          twister-out/**/build.log
+  qemu_build:
+    uses: ./.github/workflows/twister-build.yml
+    with:
+      manifest: west-zephyr.yml
+      board: qemu_x86
