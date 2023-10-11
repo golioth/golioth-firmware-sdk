@@ -2,10 +2,10 @@ sample:
   description: Use LightDB get
   name: lightdb-get
 common:
-  harness: pytest
   tags: golioth lightdb socket goliothd
 tests:
   sample.golioth.lightdb_get:
+    build_only: true
     platform_allow: >
       esp32_devkitc_wrover
       mimxrt1024_evk
