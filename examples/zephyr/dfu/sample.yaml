@@ -1,0 +1,17 @@
+sample:
+  description: Golioth OTA FW Update Sample
+  name: dfu
+common:
+  tags: golioth socket goliothd
+tests:
+  sample.golioth.dfu.sysbuild:
+    build_only: true
+    sysbuild: true
+    platform_allow: >
+      esp32_devkitc_wrover
+      mimxrt1024_evk
+      nrf52840dk_nrf52840
+  sample.golioth.dfu:
+    build_only: true
+    platform_allow: >
+      nrf9160dk_nrf9160_ns
