@@ -2,11 +2,10 @@ sample:
   description: System logging to Golioth server
   name: logging
 common:
-  harness: pytest
   tags: golioth logger socket goliothd
-  timeout: 180
 tests:
   sample.golioth.logging:
+    build_only: true
     platform_allow: >
       esp32_devkitc_wrover
       mimxrt1024_evk

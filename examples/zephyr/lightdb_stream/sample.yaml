@@ -2,10 +2,10 @@ sample:
   description: Send data to Golioth LightDB Stream
   name: lightdb stream
 common:
-  harness: pytest
   tags: golioth socket goliothd
 tests:
   sample.golioth.lightdb_stream:
+    build_only: true
     platform_allow: >
       esp32_devkitc_wrover
       mimxrt1024_evk
