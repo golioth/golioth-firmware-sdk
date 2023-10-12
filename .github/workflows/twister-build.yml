@@ -22,7 +22,7 @@ jobs:
     runs-on: ubuntu-latest
     steps:
     - name: Checkout repository and submodules
-      uses: actions/checkout@v3
+      uses: actions/checkout@v4
       with:
         path: modules/lib/golioth-firmware-sdk
         submodules: 'recursive'
@@ -50,7 +50,7 @@ jobs:
         -o reports
         -T modules/lib/golioth-firmware-sdk
     - name: Upload artifacts
-      uses: actions/upload-artifact@v2
+      uses: actions/upload-artifact@v3
       if: ${{ always() }}
       with:
         name: twister-artifacts-${{ inputs.board }}
