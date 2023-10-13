@@ -13,6 +13,18 @@ on:
         required: false
         type: string
 
+  workflow_dispatch:
+    inputs:
+      board:
+        required: true
+        type: string
+      manifest:
+        required: true
+        type: string
+      binary_blob:
+        required: false
+        type: string
+
 jobs:
   twister_build:
     container:
