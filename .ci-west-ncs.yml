@@ -1,0 +1,20 @@
+manifest:
+  self:
+    path: modules/lib/golioth-firmware-sdk
+    import:
+      file: west-ncs.yml
+      name-allowlist:
+        - cmsis
+        - hal_nordic
+        - littlefs
+        - mbedtls
+        - mcuboot
+        - net-tools
+        - nrf
+        - nrfxlib
+        - qcbor
+        - segger
+        - tinycrypt
+        - trusted-firmware-m
+        - zcbor
+        - zephyr
