@@ -45,6 +45,7 @@ jobs:
     - name: Run twister
       run: >
         zephyr/scripts/twister
+        -j 2
         -b
         -p ${{ inputs.board }}
         -o reports
