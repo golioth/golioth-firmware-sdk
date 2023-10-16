@@ -16,9 +16,9 @@ on:
 jobs:
   twister_build:
     container:
-      image: zephyrprojectrtos/ci:v0.26.4
+      image: zephyrprojectrtos/ci:v0.26.5
     env:
-      ZEPHYR_SDK_INSTALL_DIR: /opt/toolchains/zephyr-sdk-0.16.1
+      ZEPHYR_SDK_INSTALL_DIR: /opt/toolchains/zephyr-sdk-0.16.3
     runs-on: ubuntu-latest
     steps:
     - name: Checkout repository and submodules

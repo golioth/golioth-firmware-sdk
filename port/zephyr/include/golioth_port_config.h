@@ -7,7 +7,7 @@
 #pragma once
 
 #include <zephyr/logging/log.h>
-#include <zephyr/random/rand32.h>
+#include <zephyr/random/random.h>
 
 #define LOG_TAG_DEFINE(tag) LOG_MODULE_REGISTER(tag)
 
