@@ -1,0 +1,18 @@
+manifest:
+  self:
+    path: modules/lib/golioth-firmware-sdk
+    import:
+      file: west-zephyr.yml
+      name-allowlist:
+        - cmsis
+        - hal_espressif
+        - hal_nordic
+        - hal_nxp
+        - littlefs
+        - mbedtls
+        - mcuboot
+        - net-tools
+        - segger
+        - tinycrypt
+        - zcbor
+        - zephyr
