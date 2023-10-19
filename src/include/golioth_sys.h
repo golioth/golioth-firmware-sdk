@@ -83,6 +83,19 @@ void golioth_sys_thread_destroy(golioth_sys_thread_t thread);
 #endif
 
 /*--------------------------------------------------
+ * Random
+ *------------------------------------------------*/
+
+// Can be overridden via golioth_{user,port}_config
+#ifndef golioth_sys_srand
+#define golioth_sys_srand(seed) srand((seed))
+#endif
+
+#ifndef golioth_sys_rand
+#define golioth_sys_rand() rand()
+#endif
+
+/*--------------------------------------------------
  * Misc
  *------------------------------------------------*/
 

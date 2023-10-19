@@ -898,7 +898,7 @@ static void golioth_coap_client_thread(void* arg) {
         // Seed the session token generator
         uint8_t seed_token[8];
         size_t seed_token_len;
-        uint32_t randint = (uint32_t)rand();
+        uint32_t randint = golioth_sys_rand();
         seed_token_len = coap_encode_var_safe8(seed_token, sizeof(seed_token), randint);
         coap_session_init_token(coap_session, seed_token_len, seed_token);
 
@@ -967,7 +967,7 @@ golioth_client_t golioth_client_create(const golioth_client_config_t* config) {
 
         // Seed the random number generator. Used for token generation.
         time_t t;
-        srand(time(&t));
+        golioth_sys_srand(time(&t));
 
         _initialized = true;
     }
