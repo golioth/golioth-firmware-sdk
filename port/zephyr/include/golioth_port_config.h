@@ -7,6 +7,7 @@
 #pragma once
 
 #include <zephyr/logging/log.h>
+#include <zephyr/random/rand32.h>
 
 #define LOG_TAG_DEFINE(tag) LOG_MODULE_REGISTER(tag)
 
@@ -23,3 +24,10 @@
 #define GLTH_LOG_BUFFER_HEXDUMP(tag, buf, size, level) LOG_HEXDUMP_DBG(buf, size, "buffer")
 
 #define GOLIOTH_OVERRIDE_LIBCOAP_LOG_HANDLER 0
+
+/* Use Zephyr random subsystem, which has support for HW
+ * RNGs and HW entropy sources. Seeding is taken care of
+ * by Zephyr automatically, so make srand() a noop.
+ */
+#define golioth_sys_srand(seed) (void) (seed)
+#define golioth_sys_rand() sys_rand32_get()
