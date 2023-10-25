@@ -212,8 +212,8 @@ INCLUDES+=\
     $(MCUBOOT_CY_PATH)/libs/watchdog
 
 INCLUDES+=\
+    $(GOLIOTHSDK_PATH)/include\
     $(GOLIOTHSDK_PATH)/src/include\
-    $(GOLIOTHSDK_PATH)/src/priv_include\
     $(GOLIOTHSDK_PATH)/port/modus_toolbox\
     $(GOLIOTHSDK_PATH)/port/modus_toolbox/libcoap/include\
     $(GOLIOTHSDK_PATH)/external/heatshrink/include\

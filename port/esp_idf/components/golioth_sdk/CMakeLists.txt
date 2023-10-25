@@ -10,10 +10,10 @@ endif()
 
 idf_component_register(
     INCLUDE_DIRS
-        "${sdk_src}/include"
+        "${sdk_root}/include"
         "${sdk_port}/esp_idf"
     PRIV_INCLUDE_DIRS
-        "${sdk_src}/priv_include"
+        "${sdk_src}/include"
         "${freertos_include_dir}"
     REQUIRES
         "nvs_flash"
