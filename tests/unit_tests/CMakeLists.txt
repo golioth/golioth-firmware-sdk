@@ -7,7 +7,7 @@ set(CMAKE_BUILD_TYPE Debug)
 set(CMAKE_C_FLAGS "-fprofile-arcs -ftest-coverage")
 set(CMAKE_EXE_LINKER_FLAGS "-fprofile-arcs -ftest-coverage -coverage")
 
-set(repo_root ..)
+set(repo_root ../..)
 enable_testing()
 
 # Build Unity

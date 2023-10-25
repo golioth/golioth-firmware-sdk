@@ -37,7 +37,7 @@ jobs:
     - name: Run unit tests
       shell: bash
       run: |
-        cd test
+        cd tests/unit_tests
         ./test.sh
 
   linux_build:
