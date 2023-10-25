@@ -67,5 +67,3 @@ if [ "$LCOV_ENABLED" -eq 1 ]; then
 
     popd
 fi
-
-
