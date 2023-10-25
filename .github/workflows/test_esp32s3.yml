@@ -65,8 +65,8 @@ jobs:
   # Assumptions made about the self-hosted runner:
   #
   #  1. Has installed the GitHub Actions self-hosted runner service
-  #  2. Has an environment variable defined for the serial port: CI_ESP32S3_PORT
-  #  3. Has credentials defined in the file $HOME/credentials_esp32s3.yml
+  #  2. Has an environment variable defined for the serial port: CI_ESP32S3_DEVKITC_PORT
+  #  3. Has credentials defined in the file $HOME/credentials_esp32s3_devkitc.yml
   #
   # It is the responsibility of the self-hosted runner admin to ensure
   # these pre-conditions are met.
@@ -94,7 +94,7 @@ jobs:
   # ---
   hw_flash_and_test:
     needs: build_for_hw_test
-    runs-on: [self-hosted, has_esp32s3]
+    runs-on: [self-hosted, has_esp32s3_devkitc]
 
     steps:
     - name: Checkout repository without submodules
@@ -115,9 +115,9 @@ jobs:
         path: examples/esp_idf/test
     - name: Install python packages
       run: python -m pip install esptool requests
-    - name: Copy credentials_esp32s3.yml to examples/esp_idf/test
+    - name: Copy credentials_esp32s3_devkitc.yml to examples/esp_idf/test
       run: |
-        cp $HOME/credentials_esp32s3.yml examples/esp_idf/test/credentials.yml
+        cp $HOME/credentials_esp32s3_devkitc.yml examples/esp_idf/test/credentials.yml
     - name: Create and rollout new 1.2.99 OTA release using goliothctl
       run: |
         cd examples/esp_idf/test
@@ -133,4 +133,4 @@ jobs:
       run: |
         cd examples/esp_idf/test
         source $HOME/runner_env.sh
-        python flash.py $CI_ESP32S3_PORT && python verify.py $CI_ESP32S3_PORT
+        python flash.py $CI_ESP32S3_DEVKITC_PORT && python verify.py $CI_ESP32S3_DEVKITC_PORT
