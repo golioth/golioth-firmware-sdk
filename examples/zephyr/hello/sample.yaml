@@ -6,7 +6,7 @@ common:
   harness_config:
     type: one_line
     regex:
-      - "(.*)Client connected!"
+      - "(.*)Golioth client connected"
   tags: golioth socket goliothd
 tests:
   sample.golioth.hello.psk.fast.default:
