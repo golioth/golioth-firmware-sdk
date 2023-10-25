@@ -3,7 +3,7 @@ if(NOT CONFIG_GOLIOTH_FIRMWARE_SDK)
 endif()
 
 zephyr_include_directories(include)
-zephyr_include_directories(../../src/include)
+zephyr_include_directories(../../include)
 
 function (include_cert path_var name)
   set(path ${${path_var}})
@@ -25,7 +25,7 @@ add_subdirectory_ifdef(CONFIG_GOLIOTH_SAMPLE_COMMON
     ${ZEPHYR_GOLIOTH_FIRMWARE_SDK_MODULE_DIR}/examples/zephyr/common examples_zephyr_common)
 
 zephyr_library()
-zephyr_library_include_directories(../../src/priv_include)
+zephyr_library_include_directories(../../src/include)
 
 zephyr_library_include_directories(
     # bsdiff

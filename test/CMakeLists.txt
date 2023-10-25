@@ -44,8 +44,8 @@ add_subdirectory("${repo_root}/external/libcoap" build)
 function(golioth_unit_test name src)
     add_executable(${name} ${src} ${ARGN})
     target_include_directories(${name} PRIVATE
-        ${repo_root}/src/priv_include
         ${repo_root}/src/include
+        ${repo_root}/include
     )
     target_link_libraries(${name} unity fff)
     add_test(NAME ${name} COMMAND "./${name}")

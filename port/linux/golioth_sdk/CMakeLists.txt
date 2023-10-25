@@ -64,7 +64,7 @@ add_library(golioth_sdk
 target_include_directories(golioth_sdk
     PUBLIC
         ${zcbor_dir}/include
-        ${sdk_src}/include
+        ${repo_root}/include
         ${sdk_port}/linux
     PRIVATE
         ${bsdiff_dir}
@@ -73,7 +73,7 @@ target_include_directories(golioth_sdk
         ${miniz_dir}
         ${zcbor_dir}
         ${sdk_port}/common/miniz
-        ${sdk_src}/priv_include
+        ${sdk_src}/include
 )
 target_link_libraries(golioth_sdk
     PRIVATE coap-3 pthread rt)
