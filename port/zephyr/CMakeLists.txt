@@ -145,9 +145,6 @@ if(CONFIG_ZCBOR)
   endif()
 endif()
 
-# Workaround for LTE Connectivity module in NCS being incompatible with CONFIG_POSIX_API=y
-target_compile_definitions_ifdef(CONFIG_LTE_CONNECTIVITY app PRIVATE -Dinet_pton=zsock_inet_pton)
-
 # Zephyr renamed rand32.h to random.h, but NCS hasn't picked up this change yet.
 if(NOT EXISTS ${ZEPHYR_BASE}/include/zephyr/random/random.h)
   zephyr_include_directories(include_random)

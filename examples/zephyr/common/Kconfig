@@ -69,17 +69,13 @@ config GOLIOTH_SAMPLE_FW_VERSION
 	default "0.0.0+0"
 	help
           Firmware version used by Golioth DFU sample to assign MCUBOOT_IMGTOOL_SIGN_VERSION (if
-          using Zephyr) or MCUBOOT_IMAGE_VERSION (if using NCS)
+          using Zephyr) or MCUBOOT_IMGTOOL_SIGN_VERSION (if using NCS)
 
 if BOOTLOADER_MCUBOOT
 
-config MCUBOOT_IMAGE_VERSION
-	string
-	default GOLIOTH_SAMPLE_FW_VERSION if ZEPHYR_NRF_MODULE
-
 config MCUBOOT_IMGTOOL_SIGN_VERSION
 	string
-	default GOLIOTH_SAMPLE_FW_VERSION if !ZEPHYR_NRF_MODULE
+	default GOLIOTH_SAMPLE_FW_VERSION
 
 endif # BOOTLOADER_MCUBOOT
 

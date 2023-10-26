@@ -32,9 +32,6 @@ static void lte_handler(const struct lte_lc_evt* const evt) {
                 case LTE_LC_NW_REG_REGISTERED_ROAMING:
                     LOG_INF("Network: Registered (roaming)");
                     break;
-                case LTE_LC_NW_REG_REGISTERED_EMERGENCY:
-                    LOG_INF("Network: Registered (emergency)");
-                    break;
                 case LTE_LC_NW_REG_UICC_FAIL:
                     LOG_INF("Network: UICC fail");
                     break;
