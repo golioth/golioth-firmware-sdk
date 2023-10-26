@@ -1,0 +1,76 @@
+name: Hardware-in-the-Loop Tests
+
+on:
+  push:
+    branches: [ main ]
+  pull_request:
+  schedule:
+    # Run workflow at the start of every day (12 AM UTC)
+    - cron: "0 0 * * *"
+
+  workflow_dispatch:
+
+jobs:
+  build:
+    container: golioth/golioth-zephyr-base:0.16.3-SDK-v0
+    env:
+      ZEPHYR_SDK_INSTALL_DIR: /opt/toolchains/zephyr-sdk-0.16.3
+    runs-on: ubuntu-latest
+    steps:
+    - name: Checkout repository and submodules
+      uses: actions/checkout@v4
+      with:
+        path: modules/lib/golioth-firmware-sdk
+        submodules: 'recursive'
+    - name: Init and update west
+      run: |
+        mkdir -p .west
+        cat <<EOF > .west/config
+        [manifest]
+        path = modules/lib/golioth-firmware-sdk
+        file = .ci-west-zephyr.yml
+        EOF
+
+        west update -o=--depth=1 -n
+
+        pip3 install -r zephyr/scripts/requirements-base.txt
+        pip3 install -r zephyr/scripts/requirements-build-test.txt
+        pip3 install -r zephyr/scripts/requirements-run-test.txt
+        # Needed for TF-M
+        pip3 install cryptography pyasn1 pyyaml cbor>=1.0.0 imgtool>=1.9.0 jinja2 click
+
+    - name: Compile
+      run: west build -p -b nrf52840dk_nrf52840 modules/lib/golioth-firmware-sdk/tests/hil/platform/zephyr -- -DGOLIOTH_HIL_TEST=connection
+
+    - name: Save artifacts
+      uses: actions/upload-artifact@v3
+      with:
+        name: zephyr.hex
+        path: build/zephyr/zephyr.hex
+
+  test:
+    needs: build
+    runs-on: [self-hosted, has_nrf52840dk]
+
+    steps:
+      - name: Checkout repository
+        uses: actions/checkout@v4
+      - name: Setup Python dependencies
+        run: pip install pytest
+      - name: Download build
+        uses: actions/download-artifact@v3
+        with:
+          name: zephyr.hex
+          path: .
+      - name: Flash build
+        run: |
+          source $HOME/runner_env.sh
+          nrfjprog --recover -f NRF52 --snr $CI_NRF52840DK_SNR
+          nrfjprog --program zephyr.hex --sectoranduicrerase --verify -f NRF52 --snr $CI_NRF52840DK_SNR
+          nrfjprog --pinresetenable -f NRF52 --snr $CI_NRF52840DK_SNR
+          nrfjprog --pinreset -f NRF52 --snr $CI_NRF52840DK_SNR
+          sleep 3
+      - name: Run test
+        run: |
+          source $HOME/runner_env.sh
+          pytest --rootdir . tests/hil/tests/connection --port $CI_NRF52840DK_PORT --credentials_file $HOME/credentials_nrf52840dk.yml
