@@ -122,6 +122,22 @@ config GOLIOTH_SAMPLE_WIFI
 	help
 	  Enable utilities for easy WiFi setup, mainly for use inside samples/.
 
+if GOLIOTH_SAMPLE_WIFI
+
+config GOLIOTH_SAMPLE_WIFI_STACK_SIZE
+	int "WiFi manager stack size"
+	default 2048
+
+config GOLIOTH_SAMPLE_WIFI_INIT_PRIORITY
+	int "WiFi manager init priority"
+	default 90
+
+config GOLIOTH_SAMPLE_WIFI_THREAD_PRIORITY
+	int "WiFi manager thread priority"
+	default 7
+
+endif # GOLIOTH_SAMPLE_WIFI
+
 config GOLIOTH_SAMPLE_WIFI_SETTINGS
 	bool "Load SSID and PSK from settigs subsystem"
 	depends on GOLIOTH_SAMPLE_WIFI
