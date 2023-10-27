@@ -15,3 +15,4 @@ mtb_shared
 tags
 tags.lock
 tags.temp
+__pycache__
