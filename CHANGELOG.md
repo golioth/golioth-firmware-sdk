@@ -4,6 +4,35 @@ All notable changes to this project will be documented in this file.
 The format is based on [Keep a Changelog](https://keepachangelog.com/en/1.0.0/),
 and this project adheres to [Semantic Versioning](https://semver.org/spec/v2.0.0.html).
 
+## [0.9.0] - 2023-11-08
+
+### Added:
+- zephyr: Add CONFIG_GOLIOTH_USE_CONNECTION_ID symbol to enable
+  Connection IDs
+- zephyr: support DTLS 1.2 Connection IDs with NCS (disabled by default)
+- zephyr: samples: enable reboot
+- ci: add HIL test workflow
+- zephyr: samples: add connection test
+
+### Changed:
+- zephyr: Use Zephyr 3.5.0
+- zephyr: Use NCS 2.5.0
+- moved src/include folder to root directory
+- moved src/priv-include folder to src/include
+- zephyr: Use random subsystem provided by Zephyr
+- ci: parallelize workflows
+
+### Known Issues:
+- FlexSPI issue in Zephyr 3.5.0 may cause DFU to hang for NXP chips
+  during the flash memory erase step. This issue has already been
+  addressed with a recent commit:
+  https://github.com/zephyrproject-rtos/zephyr/commit/9dd8f94fd47b8b399c230fac2c24e4949cc25b99
+  Golioth has confirmed that this commit fixes the DFU issue on NXP
+  boards, but we have not performed full verification of the rest of the
+  SDK against this revision of Zephyr. Work around the issue by updating
+  the Zephyr revision number in west-zephyr.yml to that commit SHA
+  number (or newer).
+
 ## [0.8.0] - 2023-09-22
 
 ### Highlights
