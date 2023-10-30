@@ -27,3 +27,14 @@ verifies the behavior of the DUT. Each test is in its own folder under the
 `test_` prefix in the name (required for the file to be recognized by pytest).
 The .c file should provide a definition for the `hil_test_entry()` function,
 which will be called by the platform specific firmware.
+
+## PyTest Fixture
+
+A PyTest fixture for interacting with Devices-Under-Test (DUTs) is provided in
+`scipts/pytest-hil`. This provides a python API for board control, such as
+console input/output, setting WiFi credentials, programming the board, etc. It
+also allows the test to use a consistent interface when communicating with the
+DUT even if the different platforms and boards have a different underlying
+interface. For example, ESP-IDF and Zephyr have different console commands
+for resetting the DUT, but the test can simply call `board.reset()` and the
+fixture determines the correct console command to send to the DUT.

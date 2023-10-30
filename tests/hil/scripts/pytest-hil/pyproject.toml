@@ -1,0 +1,13 @@
+[build-system]
+requires = ["hatchling"]
+build-backend = "hatchling.build"
+
+[project]
+name = "pytest-hil"
+version = "0.1.0"
+classifiers = [
+    "Framework :: Pytest",
+]
+
+[project.entry-points.pytest11]
+hil = "plugin"
