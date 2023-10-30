@@ -74,6 +74,9 @@ config NET_BUF_TX_COUNT
 config MAIN_STACK_SIZE
 	default 4096
 
+config REBOOT
+	default y
+
 if GOLIOTH_AUTH_METHOD_PSK
 
 config GOLIOTH_SAMPLE_PSK_ID
