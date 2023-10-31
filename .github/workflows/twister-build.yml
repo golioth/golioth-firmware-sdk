@@ -49,6 +49,7 @@ jobs:
     - name: Run twister
       run: >
         zephyr/scripts/twister
+        --overflow-as-errors
         -j 2
         -b
         -p ${{ inputs.board }}
