@@ -1,5 +1,6 @@
 import pytest
 from nrf52840dk import nRF52840DK
+from nrf9160dk  import nRF9160DK
 
 def pytest_addoption(parser):
     parser.addoption("--board", type=str,
@@ -46,5 +47,7 @@ def serial_number(request):
 def board(board_name, port, baud, credentials_file, fw_image, serial_number):
     if board_name.lower() == "nrf52840dk":
         return nRF52840DK(port, baud, credentials_file, fw_image, serial_number)
+    elif board_name.lower() == "nrf9160dk":
+        return nRF9160DK(port, baud, credentials_file, fw_image, serial_number)
     else:
         raise ValueError("Unknown board")
