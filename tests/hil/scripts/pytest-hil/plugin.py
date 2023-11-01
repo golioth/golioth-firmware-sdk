@@ -12,6 +12,10 @@ def pytest_addoption(parser):
         "--credentials-file", action="store", type=str,
         help="YAML formatted settings file"
     )
+    parser.addoption("--fw-image", type=str,
+            help="Firmware binary to program to device")
+    parser.addoption("--serial-number", type=str,
+            help="Serial number to identify on-board debugger")
 
 @pytest.fixture(scope="session")
 def board_name(request):
@@ -29,9 +33,18 @@ def baud(request):
 def credentials_file(request):
     return request.config.getoption("--credentials-file")
 
+@pytest.fixture(scope="session")
+def fw_image(request):
+    return request.config.getoption("--fw-image")
+
+@pytest.fixture(scope="session")
+def serial_number(request):
+    return request.config.getoption("--serial-number")
+
+
 @pytest.fixture(scope="module")
-def board(board_name, port, baud, credentials_file):
+def board(board_name, port, baud, credentials_file, fw_image, serial_number):
     if board_name.lower() == "nrf52840dk":
-        return nRF52840DK(port, baud, credentials_file)
+        return nRF52840DK(port, baud, credentials_file, fw_image, serial_number)
     else:
         raise ValueError("Unknown board")

@@ -1,11 +1,19 @@
 from abc import ABC, abstractmethod
 import serial
-from time import time
+from time import time, sleep
 import re
 import yaml
 
 class Board(ABC):
-    def __init__(self, port, baud, credentials_file):
+    def __init__(self, port, baud, credentials_file, fw_image, serial_number):
+        self.serial_number = serial_number
+
+        if fw_image:
+            self.program(fw_image)
+
+            # Wait for reboot
+            sleep(3)
+
         self.serial_device = serial.Serial(port, baud, timeout=1)
 
         # Read credentials
@@ -52,6 +60,10 @@ class Board(ABC):
 
     @abstractmethod
     def reset(self):
+        pass
+
+    @abstractmethod
+    def program(self, fw_image):
         pass
 
     @abstractmethod
