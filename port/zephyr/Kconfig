@@ -11,7 +11,6 @@ menuconfig GOLIOTH_FIRMWARE_SDK
 	select REBOOT if BOOTLOADER_MCUBOOT
 	select REQUIRES_FULL_LIBC # libcoap
 	select MBEDTLS
-    select MBEDTLS_SSL_DTLS_CONNECTION_ID
 	select MBEDTLS_DTLS if MBEDTLS_BUILTIN
 	select MBEDTLS_TLS_LIBRARY if NRF_SECURITY
 	select MBEDTLS_SSL_PROTO_DTLS if NRF_SECURITY
@@ -32,6 +31,15 @@ if GOLIOTH_FIRMWARE_SDK
 menu "Golioth SDK Configuration"
 
 rsource '${ZEPHYR_GOLIOTH_FIRMWARE_SDK_MODULE_DIR}/src/Kconfig'
+
+config GOLIOTH_USE_CONNECTION_ID
+	bool "Use DTLS 1.2 Connection IDs"
+	select MBEDTLS_SSL_DTLS_CONNECTION_ID
+	help
+	  Use DTLS 1.2 Connection IDs. Connection IDs replace IP
+	  addresses as the session identifier, and can be used to
+	  reduce the number of handshakes a device has to make in
+	  certain scenarios.
 
 config GOLIOTH_AUTH_PSK_MBEDTLS_DEPS
 	bool "mbedTLS dependencies for PSK auth"
