@@ -1,0 +1,26 @@
+name: Hardware-in-the-Loop Tests
+
+on:
+  push:
+    branches: [ main ]
+  pull_request:
+  schedule:
+    # Run workflow at the start of every day (12 AM UTC)
+    - cron: "0 0 * * *"
+  workflow_dispatch:
+
+jobs:
+  hil_test_zephyr:
+    strategy:
+      matrix:
+        include:
+          - hil_board: nrf52840dk
+            west_board: nrf52840dk_nrf52840
+            manifest: .ci-west-zephyr.yml
+            binary_name: zephyr
+    uses: ./.github/workflows/hil_test_zephyr.yml
+    with:
+      hil_board: ${{ matrix.hil_board }}
+      west_board: ${{ matrix.west_board }}
+      manifest: ${{ matrix.manifest }}
+      binary_name: ${{ matrix.binary_name}}
