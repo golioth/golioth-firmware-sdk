@@ -66,7 +66,7 @@ this sample application (i.e., `examples/zephyr/golioth_basics`) and
 type:
 
 ```console
-$ west build -b esp32_devkitc_wrover examples/zephyr/golioth_basics
+$ west build -b esp32_devkitc_wrover --sysbuild examples/zephyr/golioth_basics
 $ west flash
 ```
 
@@ -113,7 +113,7 @@ On your host computer open a terminal window, locate the source code of
 this sample application (i.e., `examples/zephyr/golioth_basics`) and type:
 
 ```console
-$ west build -b nrf52840dk_nrf52840 examples/zephyr/golioth_basics
+$ west build -b nrf52840dk_nrf52840 --sysbuild examples/zephyr/golioth_basics
 $ west flash
 ```
 
@@ -126,3 +126,60 @@ this sample application (i.e., `examples/zephyr/golioth_basics`) and type:
 $ west build -b nrf9160dk_nrf9160_ns examples/zephyr/golioth_basics
 $ west flash
 ```
+
+## Device Firmware Upgrade via OTA
+
+Golioth Basics includes support for Golioth Over-the-Air (OTA) Updates.
+To test this feature, increment the app version, rebuild the firmware,
+and upload the binary to Golioth as a new artifact.
+
+### Prepare new firmware
+
+Edit the `examples/common/golioth_basics.c` file and update the firmware
+version number:
+
+```config
+// Current firmware version
+static const char* _current_version = "1.2.6";
+```
+
+Build the firmware update but do not flash it to the device. The binary
+update file will be uploaded to Golioth for the OTA update.
+
+```console
+# For esp32_devkitc_wrover
+$ west build -b esp32_devkitc_wrover --sysbuild examples/zephyr/golioth_basics
+
+# For nRF52840dk (Zephyr):
+$ west build -b nrf52840dk_nrf52840 --sysbuild examples/zephyr/golioth_basics
+
+# For nRF9160dk (NCS):
+$ west build -b nrf9160dk_nrf9160_ns examples/zephyr/golioth_basics
+```
+
+### Start DFU using `goliothctl`
+
+DFU requires one of two files based on the which platform you are using:
+
+* Zephyr: `build/golioth_basics/zephyr/zephyr.signed.bin`
+* NCS (Nordic version of Zephyr): `build/zephyr/app_update.bin`
+
+Use the correct file from your build to replace `<binary_file>` in the
+commands below.
+
+1. Run the following command on a host PC to upload the new firmware as
+   an artifact to Golioth:
+
+    ```console
+    $ goliothctl dfu artifact create <binary_file> --version 1.2.6
+    ```
+
+2. Create a new release consisting of this single firmware and roll it
+out to all devices in the project:
+
+    ```console
+    $ goliothctl dfu release create --release-tags 1.2.6 --components main@1.2.6 --rollout true
+    ```
+
+Note: the artifact upload and release rollout process is also available
+using the [Golioth web console](https://console.golioth.io).

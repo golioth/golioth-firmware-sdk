@@ -113,7 +113,7 @@ On your host computer open a terminal window, locate the source code of
 this sample application (i.e., `examples/zephyr/dfu`) and type:
 
 ```console
-$ west build -b esp32_devkitc_wrover examples/zephyr/dfu
+$ west build -b esp32_devkitc_wrover --sysbuild examples/zephyr/dfu
 $ west flash
 ```
 
@@ -204,6 +204,9 @@ Build the firmware update but do not flash it to the device. The binary
 update file will be uploaded to Golioth for the OTA update.
 
 ```console
+# For esp32_devkitc_wrover
+$ west build -b esp32_devkitc_wrover --sysbuild examples/zephyr/dfu
+
 # For nRF52840dk (Zephyr):
 $ west build -b nrf52840dk_nrf52840 --sysbuild examples/zephyr/dfu
 
