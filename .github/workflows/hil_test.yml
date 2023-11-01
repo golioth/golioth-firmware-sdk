@@ -64,15 +64,7 @@ jobs:
         with:
           name: zephyr.hex
           path: .
-      - name: Flash build
-        run: |
-          source $HOME/runner_env.sh
-          nrfjprog --recover -f NRF52 --snr $CI_NRF52840DK_SNR
-          nrfjprog --program zephyr.hex --sectoranduicrerase --verify -f NRF52 --snr $CI_NRF52840DK_SNR
-          nrfjprog --pinresetenable -f NRF52 --snr $CI_NRF52840DK_SNR
-          nrfjprog --pinreset -f NRF52 --snr $CI_NRF52840DK_SNR
-          sleep 3
       - name: Run test
         run: |
           source $HOME/runner_env.sh
-          pytest --rootdir . tests/hil/tests/connection --board nrf52840dk --port $CI_NRF52840DK_PORT --credentials-file $HOME/credentials_nrf52840dk.yml
+          pytest --rootdir . tests/hil/tests/connection --board nrf52840dk --port $CI_NRF52840DK_PORT --credentials-file $HOME/credentials_nrf52840dk.yml --fw-image zephyr.hex --serial-number $CI_NRF52840DK_SNR
