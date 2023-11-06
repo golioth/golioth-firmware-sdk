@@ -1,6 +1,7 @@
 import pytest
 from nrf52840dk import nRF52840DK
 from nrf9160dk  import nRF9160DK
+from mimxrt1024evk import MIMXRT1024EVK
 
 def pytest_addoption(parser):
     parser.addoption("--board", type=str,
@@ -49,5 +50,7 @@ def board(board_name, port, baud, credentials_file, fw_image, serial_number):
         return nRF52840DK(port, baud, credentials_file, fw_image, serial_number)
     elif board_name.lower() == "nrf9160dk":
         return nRF9160DK(port, baud, credentials_file, fw_image, serial_number)
+    elif board_name.lower() == "mimxrt1024_evk":
+        return MIMXRT1024EVK(port, baud, credentials_file, fw_image, serial_number)
     else:
         raise ValueError("Unknown board")
