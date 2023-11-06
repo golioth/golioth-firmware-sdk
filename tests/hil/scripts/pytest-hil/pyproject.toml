@@ -6,6 +6,7 @@ build-backend = "hatchling.build"
 name = "pytest-hil"
 version = "0.1.0"
 dependencies = [
+  'pylink-square',
   'pynrfjprog',
 ]
 classifiers = [
