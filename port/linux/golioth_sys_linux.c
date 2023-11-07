@@ -6,6 +6,8 @@
 #include <pthread.h>
 #include <errno.h>
 #include <assert.h>
+#include <poll.h>
+#include <sys/eventfd.h>
 
 #define TAG "golioth_sys_linux"
 
@@ -39,56 +41,65 @@ uint64_t golioth_sys_now_ms(void) {
  * Semaphores
  *------------------------------------------------*/
 
+#define SEM_TO_FD(sem) ((int)(intptr_t)(sem))
+#define FD_TO_SEM(sem) ((golioth_sys_sem_t)(intptr_t)(fd))
+
 golioth_sys_sem_t golioth_sys_sem_create(uint32_t sem_max_count, uint32_t sem_initial_count) {
-    sem_t* sem = (sem_t*)golioth_sys_malloc(sizeof(sem_t));
-    int err = sem_init(sem, 0, sem_initial_count);
-    if (err) {
-        GLTH_LOGE(TAG, "sem_init errno: %d", errno);
-        golioth_sys_free(sem);
+    int fd;
+
+    fd = eventfd(sem_initial_count, EFD_SEMAPHORE);
+    if (fd < 0) {
+        GLTH_LOGE(TAG, "eventfd creation failed, errno: %d", errno);
         assert(false);
         return NULL;
     }
-    return (golioth_sys_sem_t)sem;
+
+    return FD_TO_SEM(fd);
 }
 
 bool golioth_sys_sem_take(golioth_sys_sem_t sem, int32_t ms_to_wait) {
-    int err;
-
-    if (ms_to_wait >= 0) {
-        struct timespec now_spec;
-        clock_gettime(CLOCK_REALTIME, &now_spec);
-        uint64_t now_ms = (now_spec.tv_sec * 1000 + now_spec.tv_nsec / 1000000);
-        uint64_t abs_timeout_ms = now_ms + ms_to_wait;
-
-        struct timespec abs_timeout = {
-                .tv_sec = abs_timeout_ms / 1000,
-                .tv_nsec = (abs_timeout_ms % 1000) * 1000000,
+    int fd = SEM_TO_FD(sem);
+    while (true) {
+        struct pollfd pfd = {
+            .fd = fd,
+            .events = POLLIN,
         };
+        eventfd_t val;
+        int ret;
 
-        while ((err = sem_timedwait(sem, &abs_timeout)) == -1 && errno == EINTR) {
-            continue;  // Restart if interrupt by signal
+        ret = poll(&pfd, 1, ms_to_wait);
+        if (ret < 0) {
+            if (errno == EINTR) {
+                GLTH_LOGI(TAG, "EINTR");
+                continue;
+            }
+            GLTH_LOGE(TAG, "sem poll failed, errno: %d", errno);
+            assert(false);
+            return false;
+        } else if (ret == 0) {
+            return false;
         }
-    } else {
-        err = sem_wait(sem);
-    }
 
-    if (err) {
-        return false;
+        ret = eventfd_read(fd, &val);
+        if (ret < 0) {
+            GLTH_LOGE(TAG, "sem eventfd_read failed, errno: %d", errno);
+            assert(false);
+            return false;
+        }
+
+        assert(val == 1);
+        break;
     }
 
     return true;
 }
 
 bool golioth_sys_sem_give(golioth_sys_sem_t sem) {
-    return (0 == sem_post(sem));
+    return (0 == eventfd_write(SEM_TO_FD(sem), 1));
 }
 
 void golioth_sys_sem_destroy(golioth_sys_sem_t sem) {
-    sem_t* s = (sem_t*)sem;
-    if (s) {
-        sem_destroy(s);
-    }
-    golioth_sys_free(sem);
+    close(SEM_TO_FD(sem));
 }
 
 /*--------------------------------------------------
