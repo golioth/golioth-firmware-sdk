@@ -75,7 +75,6 @@ based project (e.g. Zephyr RTOS):
   revision: main
   url: https://github.com/golioth/golioth-firmware-sdk.git
   submodules: true
-  import: west-external.yml
 ```
 
 and clone all repositories including that one by running:
