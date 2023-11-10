@@ -56,7 +56,10 @@ jobs:
       - name: Checkout repository
         uses: actions/checkout@v4
       - name: Setup Python dependencies
-        run: pip install pytest
+        run: |
+            python -m venv .venv
+            source .venv/bin/activate
+            pip install pytest pyserial PyYAML
       - name: Download build
         uses: actions/download-artifact@v3
         with:
@@ -72,5 +75,6 @@ jobs:
           sleep 3
       - name: Run test
         run: |
+          source .venv/bin/activate
           source $HOME/runner_env.sh
           pytest --rootdir . tests/hil/tests/connection --port $CI_NRF52840DK_PORT --credentials_file $HOME/credentials_nrf52840dk.yml
