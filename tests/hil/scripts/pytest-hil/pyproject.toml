@@ -8,6 +8,8 @@ version = "0.1.0"
 dependencies = [
   'pylink-square',
   'pynrfjprog',
+  'pyserial',
+  'PyYAML',
 ]
 classifiers = [
     "Framework :: Pytest",
