@@ -7,6 +7,7 @@ import yaml
 class Board(ABC):
     def __init__(self, port, baud, credentials_file, fw_image, serial_number):
         self.serial_number = serial_number
+        self.port = port
 
         if fw_image:
             self.program(fw_image)
