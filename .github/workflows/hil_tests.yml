@@ -12,6 +12,7 @@ on:
 jobs:
   hil_test_zephyr:
     strategy:
+      fail-fast: false
       matrix:
         include:
           - hil_board: nrf52840dk
