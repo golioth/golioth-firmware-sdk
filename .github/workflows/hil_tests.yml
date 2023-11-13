@@ -15,6 +15,11 @@ jobs:
       fail-fast: false
       matrix:
         include:
+          - hil_board: esp32_devkitc_wrover
+            west_board: esp32_devkitc_wrover
+            manifest: .ci-west-zephyr.yml
+            binary_name: merged.bin
+            binary_blob: hal_espressif
           - hil_board: mimxrt1024_evk
             west_board: mimxrt1024_evk
             manifest: .ci-west-zephyr.yml
@@ -33,3 +38,4 @@ jobs:
       west_board: ${{ matrix.west_board }}
       manifest: ${{ matrix.manifest }}
       binary_name: ${{ matrix.binary_name}}
+      binary_blob: ${{ matrix.binary_blob }}
