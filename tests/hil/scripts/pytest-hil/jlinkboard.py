@@ -12,5 +12,6 @@ class JLinkBoard(Board):
         jlink.set_tif(pylink.JLinkInterfaces.SWD)
         jlink.connect(self.chip_name)
         jlink.reset()
+        jlink.erase()
         jlink.flash_file(fw_image, 0)
         jlink.reset(halt=False)
