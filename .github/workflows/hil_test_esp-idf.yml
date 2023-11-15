@@ -1,0 +1,61 @@
+name: ESP-IDF Hardware-in-the-Loop Tests
+
+on:
+  workflow_call:
+    inputs:
+      hil_board:
+        required: true
+        type: string
+      idf_target:
+        required: true
+        type: string
+
+jobs:
+  build:
+    runs-on: ubuntu-latest
+    steps:
+    - name: Checkout Repository and Submodules
+      uses: actions/checkout@v4
+      with:
+        submodules: 'recursive'
+    - name: Setup Python
+      uses: actions/setup-python@v4
+      with:
+        python-version: 3.x
+        architecture: 'x64'
+    - name: Build Test Firmware
+      uses: espressif/esp-idf-ci-action@v1
+      with:
+        esp_idf_version: v5.1.1
+        target: ${{ inputs.idf_target }}
+        path: 'tests/hil/platform/esp-idf'
+        command: 'idf.py -D GOLIOTH_HIL_TEST=connection build'
+    - name: Save Artifacts
+      uses: actions/upload-artifact@v3
+      with:
+        name: ${{ inputs.hil_board }}
+        path: tests/hil/platform/esp-idf/build/merged.bin
+
+  test:
+    needs: build
+    runs-on: has_${{ inputs.hil_board }}
+
+    steps:
+      - name: Checkout repository
+        uses: actions/checkout@v4
+      - name: Setup Python dependencies
+        run: |
+          pip install pytest
+          pip install tests/hil/scripts/pytest-hil
+      - name: Download build
+        uses: actions/download-artifact@v3
+        with:
+          name: ${{ inputs.hil_board }}
+          path: .
+      - name: Run test
+        env:
+          hil_board: ${{ inputs.hil_board }}
+        run: |
+          source $HOME/runner_env.sh
+          PORT_VAR=CI_${hil_board^^}_PORT
+          pytest --rootdir . tests/hil/tests/connection --board esp-idf --port ${!PORT_VAR} --credentials-file $HOME/credentials_${hil_board}.yml --fw-image merged.bin
