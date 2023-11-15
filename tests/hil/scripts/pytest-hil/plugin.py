@@ -1,4 +1,5 @@
 import pytest
+from espidfboard import ESPIDFBoard
 from esp32_devkitc_wrover import ESP32DevKitCWROVER
 from nrf52840dk import nRF52840DK
 from nrf9160dk  import nRF9160DK
@@ -47,7 +48,9 @@ def serial_number(request):
 
 @pytest.fixture(scope="module")
 def board(board_name, port, baud, credentials_file, fw_image, serial_number):
-    if board_name.lower() == "esp32_devkitc_wrover":
+    if board_name.lower() == "esp-idf":
+        return ESPIDFBoard(port, baud, credentials_file, fw_image, serial_number)
+    elif board_name.lower() == "esp32_devkitc_wrover":
         return ESP32DevKitCWROVER(port, baud, credentials_file, fw_image, serial_number)
     elif board_name.lower() == "nrf52840dk":
         return nRF52840DK(port, baud, credentials_file, fw_image, serial_number)
