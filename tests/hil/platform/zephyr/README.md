@@ -1,6 +1,6 @@
 # Zephyr HIL Test Base
 
-This provides a base Zephhyr application that can be used to run HIL tests. The
+This provides a base Zephyr application that can be used to run HIL tests. The
 application handles network connection and provides a shell interface for
 setting network and Golioth (PSK) credentials. The application must be combined
 with a test source file in order for it to compile correctly. The name of the
