@@ -39,3 +39,15 @@ jobs:
       manifest: ${{ matrix.manifest }}
       binary_name: ${{ matrix.binary_name}}
       binary_blob: ${{ matrix.binary_blob }}
+
+  hil_test_esp-idf:
+    strategy:
+      fail-fast: false
+      matrix:
+        include:
+          - hil_board: esp32s3_devkitc
+            idf_target: esp32s3
+    uses: ./.github/workflows/hil_test_esp-idf.yml
+    with:
+      hil_board: ${{ matrix.hil_board }}
+      idf_target: ${{ matrix.idf_target }}
