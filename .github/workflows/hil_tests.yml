@@ -47,6 +47,8 @@ jobs:
         include:
           - hil_board: esp32s3_devkitc
             idf_target: esp32s3
+          - hil_board: esp32_devkitc_wrover
+            idf_target: esp32
     uses: ./.github/workflows/hil_test_esp-idf.yml
     with:
       hil_board: ${{ matrix.hil_board }}
