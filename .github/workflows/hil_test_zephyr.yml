@@ -60,7 +60,7 @@ jobs:
     - name: Save artifacts
       uses: actions/upload-artifact@v3
       with:
-        name: ${{ inputs.hil_board }}
+        name: ${{ inputs.hil_board }}-connection-zephyr
         path: build/zephyr/${{ inputs.binary_name }}
 
   test:
@@ -77,7 +77,7 @@ jobs:
       - name: Download build
         uses: actions/download-artifact@v3
         with:
-          name: ${{ inputs.hil_board }}
+          name: ${{ inputs.hil_board }}-connection-zephyr
           path: .
       - name: Run test
         env:

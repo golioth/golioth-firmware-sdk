@@ -33,7 +33,7 @@ jobs:
     - name: Save Artifacts
       uses: actions/upload-artifact@v3
       with:
-        name: ${{ inputs.hil_board }}
+        name: ${{ inputs.hil_board }}-connection-esp-idf
         path: tests/hil/platform/esp-idf/build/merged.bin
 
   test:
@@ -50,7 +50,7 @@ jobs:
       - name: Download build
         uses: actions/download-artifact@v3
         with:
-          name: ${{ inputs.hil_board }}
+          name: ${{ inputs.hil_board }}-connection-esp-idf
           path: .
       - name: Run test
         env:
