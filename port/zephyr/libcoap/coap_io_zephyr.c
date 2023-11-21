@@ -108,8 +108,11 @@ unsigned int coap_io_prepare_io(
     return (unsigned int)((timeout * 1000 + COAP_TICKS_PER_SECOND - 1) / COAP_TICKS_PER_SECOND);
 }
 
-int coap_io_process(coap_context_t* ctx, uint32_t timeout_ms) {
-    struct zsock_pollfd fds[ARRAY_SIZE(ctx->sockets)] = {};
+int coap_io_process_with_fds(coap_context_t *ctx, uint32_t timeout_ms,
+                             int nfds, fd_set *readfds, fd_set *writefds,
+                             fd_set *exceptfds) {
+    struct zsock_pollfd fds[ARRAY_SIZE(ctx->sockets) + CONFIG_GOLIOTH_LIBCOAP_EXTRA_FDS_MAX] = {};
+    unsigned int num_pollfds = 0;
     coap_tick_t before, now;
     unsigned int timeout;
     int timeout_poll;
@@ -150,7 +153,38 @@ int coap_io_process(coap_context_t* ctx, uint32_t timeout_ms) {
         LOG_DBG("fds[%d].fd %d .events %d", i, fds[i].fd, fds[i].events);
     }
 
-    ret = zsock_poll(fds, ctx->num_sockets, timeout_poll);
+    num_pollfds = ctx->num_sockets;
+
+    for (unsigned int fd = 0; fd < nfds; fd++) {
+        int events = 0;
+
+        if (readfds) {
+            events |= FD_ISSET(fd, readfds) ? ZSOCK_POLLIN : 0;
+            FD_CLR(fd, readfds);
+        }
+
+        if (writefds) {
+            events |= FD_ISSET(fd, writefds) ? ZSOCK_POLLOUT : 0;
+            FD_CLR(fd, writefds);
+        }
+
+        if (!events) {
+            continue;
+        }
+
+        if (num_pollfds >= ARRAY_SIZE(fds)) {
+            LOG_WRN("Not enough fds");
+            errno = ENOMEM;
+            return -1;
+        }
+
+        fds[num_pollfds].fd = fd;
+        fds[num_pollfds].events = events;
+
+        num_pollfds++;
+    }
+
+    ret = zsock_poll(fds, num_pollfds, timeout_poll);
 
     if (ret < 0) {
         LOG_WRN("%s", strerror(errno));
@@ -171,12 +205,26 @@ int coap_io_process(coap_context_t* ctx, uint32_t timeout_ms) {
                 ctx->sockets[i]->flags |= COAP_SOCKET_CAN_WRITE;
             }
         }
+
+        for (unsigned int i = ctx->num_sockets; i < num_pollfds; i++) {
+            if (readfds && fds[i].revents & ZSOCK_POLLIN) {
+                FD_SET(fds[i].fd, readfds);
+            }
+
+            if (writefds && fds[i].revents & ZSOCK_POLLOUT) {
+                FD_SET(fds[i].fd, writefds);
+            }
+        }
     }
 
     coap_ticks(&now);
     coap_io_do_io(ctx, now);
 
     return 0;
+}
+
+int coap_io_process(coap_context_t* ctx, uint32_t timeout_ms) {
+    return coap_io_process_with_fds(ctx, timeout_ms, 0, NULL, NULL, NULL);
 }
 
 void coap_packet_get_memmapped(coap_packet_t* packet, unsigned char** address, size_t* length) {
