@@ -120,7 +120,7 @@ int coap_io_process(coap_context_t* ctx, uint32_t timeout_ms) {
     timeout = coap_io_prepare_io(
             ctx,
             ctx->sockets,
-            sizeof(ctx->sockets) / sizeof(ctx->sockets[0]),
+            ARRAY_SIZE(ctx->sockets),
             &ctx->num_sockets,
             before);
 
