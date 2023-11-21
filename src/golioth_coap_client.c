@@ -663,16 +663,37 @@ static golioth_status_t coap_io_loop_once(
         coap_context_t* context,
         coap_session_t* session) {
     golioth_coap_request_msg_t request_msg = {};
+    int mbox_fd = golioth_sys_sem_get_fd(client->request_queue->fill_count_sem);
 
-    // Wait for request message, with timeout
-    bool got_request_msg = golioth_mbox_recv(
+    if (mbox_fd >= 0) {
+        fd_set readfds;
+
+        FD_ZERO(&readfds);
+        FD_SET(mbox_fd, &readfds);
+
+        coap_io_process_with_fds(context, COAP_IO_WAIT,
+                                 mbox_fd + 1, &readfds, NULL, NULL);
+
+        if (!FD_ISSET(mbox_fd, &readfds)) {
+            return GOLIOTH_OK;
+        }
+
+        bool got_request_msg = golioth_mbox_recv(client->request_queue, &request_msg, 0);
+        if (!got_request_msg) {
+            GLTH_LOGE(TAG, "Failed to get request_message from mbox");
+            return GOLIOTH_ERR_IO;
+        }
+    } else {
+        // Wait for request message, with timeout
+        bool got_request_msg = golioth_mbox_recv(
             client->request_queue, &request_msg, CONFIG_GOLIOTH_COAP_REQUEST_QUEUE_TIMEOUT_MS);
-    if (!got_request_msg) {
-        // No requests, so process other pending IO (e.g. observations)
-        GLTH_LOGV(TAG, "Idle io process start");
-        coap_io_process(context, COAP_IO_NO_WAIT);
-        GLTH_LOGV(TAG, "Idle io process end");
-        return GOLIOTH_OK;
+        if (!got_request_msg) {
+            // No requests, so process other pending IO (e.g. observations)
+            GLTH_LOGV(TAG, "Idle io process start");
+            coap_io_process(context, COAP_IO_NO_WAIT);
+            GLTH_LOGV(TAG, "Idle io process end");
+            return GOLIOTH_OK;
+        }
     }
 
     // Make sure the request isn't too old
