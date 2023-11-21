@@ -1,4 +1,7 @@
+#include <unistd.h>
 #include <zephyr/kernel.h>
+#include <zephyr/posix/poll.h>
+#include <zephyr/posix/sys/eventfd.h>
 
 #include "golioth_sys.h"
 #include "golioth_log_zephyr.h"
@@ -21,42 +24,61 @@ uint64_t golioth_sys_now_ms(void) {
  * Semaphores
  *------------------------------------------------*/
 
+#define SEM_TO_FD(sem) ((int)(intptr_t)(sem))
+#define FD_TO_SEM(sem) ((golioth_sys_sem_t)(intptr_t)(fd))
+
 golioth_sys_sem_t golioth_sys_sem_create(uint32_t sem_max_count, uint32_t sem_initial_count) {
-    struct k_sem* sem;
-    int err;
+    int fd;
 
-    sem = golioth_sys_malloc(sizeof(*sem));
-    if (!sem) {
-        GLTH_LOGE(TAG, "sem malloc failed: %d", errno);
+    fd = eventfd(sem_initial_count, EFD_SEMAPHORE);
+    if (fd < 0) {
+        GLTH_LOGE(TAG, "eventfd creation failed, errno: %d", errno);
         return NULL;
     }
 
-    err = k_sem_init(sem, sem_initial_count, sem_max_count);
-    if (err) {
-        GLTH_LOGE(TAG, "sem init failed (%d): %d", (int)sem_initial_count, err);
-        golioth_sys_free(sem);
-        return NULL;
-    }
-
-    return (golioth_sys_sem_t)sem;
+    return FD_TO_SEM(fd);
 }
 
 bool golioth_sys_sem_take(golioth_sys_sem_t sem, int32_t ms_to_wait) {
-    int err;
+    int fd = SEM_TO_FD(sem);
+    while (true) {
+        struct pollfd pfd = {
+            .fd = fd,
+            .events = POLLIN,
+        };
+        eventfd_t val;
+        int ret;
 
-    err = k_sem_take(
-            (struct k_sem*)sem, SYS_TIMEOUT_MS(ms_to_wait < 0 ? SYS_FOREVER_MS : ms_to_wait));
+        ret = poll(&pfd, 1, ms_to_wait);
+        if (ret < 0) {
+            if (errno == EINTR) {
+                GLTH_LOGI(TAG, "EINTR");
+                continue;
+            }
+            GLTH_LOGE(TAG, "sem poll failed, errno: %d", errno);
+            return false;
+        } else if (ret == 0) {
+            return false;
+        }
 
-    return !err; /* What should be returned here? */
-}
+        ret = eventfd_read(fd, &val);
+        if (ret < 0) {
+            GLTH_LOGE(TAG, "sem eventfd_read failed, errno: %d", errno);
+            return false;
+        }
 
-bool golioth_sys_sem_give(golioth_sys_sem_t sem) {
-    k_sem_give((struct k_sem*)sem);
+        break;
+    }
+
     return true;
 }
 
+bool golioth_sys_sem_give(golioth_sys_sem_t sem) {
+    return (0 == eventfd_write(SEM_TO_FD(sem), 1));
+}
+
 void golioth_sys_sem_destroy(golioth_sys_sem_t sem) {
-    golioth_sys_free(sem);
+    close(SEM_TO_FD(sem));
 }
 
 /*--------------------------------------------------

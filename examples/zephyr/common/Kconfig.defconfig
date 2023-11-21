@@ -16,6 +16,13 @@ config DNS_SERVER1
 
 endif # DNS_RESOLVER
 
+if EVENTFD
+
+config EVENTFD_MAX
+	default 6
+
+endif # EVENTFD
+
 if MBEDTLS
 
 config MBEDTLS_ENABLE_HEAP
