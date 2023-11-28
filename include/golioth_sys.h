@@ -27,6 +27,7 @@ golioth_sys_sem_t golioth_sys_sem_create(uint32_t sem_max_count, uint32_t sem_in
 bool golioth_sys_sem_take(golioth_sys_sem_t sem, int32_t ms_to_wait);
 bool golioth_sys_sem_give(golioth_sys_sem_t sem);
 void golioth_sys_sem_destroy(golioth_sys_sem_t sem);
+int golioth_sys_sem_get_fd(golioth_sys_sem_t sem);
 
 /*--------------------------------------------------
  * Software Timers

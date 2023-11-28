@@ -40,6 +40,10 @@ void golioth_sys_sem_destroy(golioth_sys_sem_t sem) {
     vSemaphoreDelete((SemaphoreHandle_t)sem);
 }
 
+int golioth_sys_sem_get_fd(golioth_sys_sem_t sem) {
+    return -1;
+}
+
 /*--------------------------------------------------
  * Software Timers
  *------------------------------------------------*/
