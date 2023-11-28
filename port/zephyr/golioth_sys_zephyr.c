@@ -81,6 +81,10 @@ void golioth_sys_sem_destroy(golioth_sys_sem_t sem) {
     close(SEM_TO_FD(sem));
 }
 
+int golioth_sys_sem_get_fd(golioth_sys_sem_t sem) {
+    return SEM_TO_FD(sem);
+}
+
 /*--------------------------------------------------
  * Software Timers
  *------------------------------------------------*/
