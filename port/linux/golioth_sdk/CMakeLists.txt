@@ -10,6 +10,7 @@ option(ENABLE_DOCS "" OFF)
 option(ENABLE_EXAMPLES "" OFF)
 option(ENABLE_SERVER_MODE "" OFF)
 option(ENABLE_TCP "" OFF)
+option(WITH_EPOLL "" OFF)
 add_subdirectory("${repo_root}/external/libcoap" build)
 
 set(heatshrink_srcs
