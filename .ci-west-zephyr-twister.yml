@@ -1,0 +1,7 @@
+manifest:
+  self:
+    path: modules/lib/golioth-firmware-sdk
+    import:
+      file: west-zephyr.yml
+      name-allowlist:
+        - zephyr
