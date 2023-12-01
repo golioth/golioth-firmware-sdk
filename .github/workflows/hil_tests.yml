@@ -55,3 +55,42 @@ jobs:
     with:
       hil_board: ${{ matrix.hil_board }}
       idf_target: ${{ matrix.idf_target }}
+
+  hil_sample_zephyr:
+    strategy:
+      fail-fast: false
+      matrix:
+        include:
+          - hil_board: esp32_devkitc_wrover
+            west_board: esp32_devkitc_wrover
+            manifest: .ci-west-zephyr.yml
+            binary_blob: hal_espressif
+            run_tests: false
+
+          - hil_board: mimxrt1024_evk
+            west_board: mimxrt1024_evk
+            manifest: .ci-west-zephyr.yml
+            run_tests: true
+
+          - hil_board: nrf52840dk
+            west_board: nrf52840dk_nrf52840
+            manifest: .ci-west-zephyr.yml
+            run_tests: true
+
+          - hil_board: nrf9160dk
+            west_board: nrf9160dk_nrf9160_ns
+            manifest: .ci-west-ncs.yml
+            run_tests: true
+
+          - hil_board: qemu_x86
+            west_board: qemu_x86
+            manifest: .ci-west-zephyr.yml
+            run_tests: false
+    uses: ./.github/workflows/hil_sample_zephyr.yml
+    with:
+      hil_board: ${{ matrix.hil_board }}
+      west_board: ${{ matrix.west_board }}
+      manifest: ${{ matrix.manifest }}
+      binary_blob: ${{ matrix.binary_blob }}
+      run_tests: ${{ matrix.run_tests }}
+    secrets: inherit
