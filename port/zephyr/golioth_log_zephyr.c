@@ -37,12 +37,30 @@ static struct golioth_log_ctx log_ctx;
 
 typedef golioth_status_t (*glth_log_fn)(golioth_client_t, const char*, const char*, int32_t);
 
-static const glth_log_fn lvl_to_log_func[] = {
-    [LOG_LEVEL_ERR] = golioth_log_error_sync,
-    [LOG_LEVEL_WRN] = golioth_log_warn_sync,
-    [LOG_LEVEL_INF] = golioth_log_info_sync,
-    [LOG_LEVEL_DBG] = golioth_log_debug_sync,
-};
+static golioth_status_t golioth_log_drop(
+        golioth_client_t client,
+        const char* tag,
+        const char* log_message,
+        int32_t timeout_s) {
+    return GOLIOTH_OK;
+}
+
+static const glth_log_fn log_to_log_func(struct log_msg* log) {
+    int level = log_msg_get_level(log);
+
+    switch (level) {
+    case LOG_LEVEL_ERR:
+        return golioth_log_error_sync;
+    case LOG_LEVEL_WRN:
+        return golioth_log_warn_sync;
+    case LOG_LEVEL_INF:
+        return golioth_log_info_sync;
+    case LOG_LEVEL_DBG:
+        return golioth_log_debug_sync;
+    default:
+        return golioth_log_drop;
+    }
+}
 
 static int cbpprintf_out_func(int c, void* out_ctx) {
     struct cbpprintf_ctx* ctx = out_ctx;
@@ -77,7 +95,7 @@ static void process(const struct log_backend* const backend, union log_msg_gener
     ctx->print_ctx.ctr = 0;
     cbpprintf(cbpprintf_out_func, &ctx->print_ctx, data);
     ctx->print_ctx.msg[ctx->print_ctx.ctr] = '\0';
-    lvl_to_log_func[log_msg_get_level(log)](
+    log_to_log_func(log)(
         ctx->client, module, ctx->print_ctx.msg, GOLIOTH_WAIT_FOREVER);
 }
 
