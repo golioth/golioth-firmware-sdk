@@ -96,6 +96,13 @@ jobs:
     needs: build_for_hw_test
     runs-on: [self-hosted, has_esp32s3_devkitc]
 
+    container:
+      image: golioth/golioth-hil-base:ff78585
+      volumes:
+        - /dev:/dev
+        - /home/golioth/credentials:/opt/credentials
+      options: --privileged
+
     steps:
     - name: Checkout repository without submodules
       uses: actions/checkout@v4
@@ -114,11 +121,22 @@ jobs:
         name: test_new.bin
         path: examples/esp_idf/test
     - name: Install python packages
-      run: python -m pip install esptool requests
+      run: python3 -m pip install esptool requests
+    - name: Install goliothctl
+      run: |
+        echo "deb [trusted=yes] https://repos.golioth.io/apt/ /" | tee /etc/apt/sources.list.d/golioth.list
+        mkdir -p /tmp
+        apt update -y --allow-insecure-repositories
+        apt install goliothctl -y
+    - name: Prepare goliothctl secret
+      run: |
+        mkdir -p ~/.golioth
+        echo -n ${{ secrets.GOLIOTHCTL_DEV }} | base64 -d  > ~/.golioth/.goliothctl.yaml
     - name: Copy credentials_esp32s3_devkitc.yml to examples/esp_idf/test
       run: |
-        cp $HOME/credentials_esp32s3_devkitc.yml examples/esp_idf/test/credentials.yml
+        cp /opt/credentials/credentials_esp32s3_devkitc.yml examples/esp_idf/test/credentials.yml
     - name: Create and rollout new 1.2.99 OTA release using goliothctl
+      shell: bash
       run: |
         cd examples/esp_idf/test
         export GOLIOTH_API_URL=$(cat credentials.yml | grep api_url | awk '{print $2}')
@@ -130,7 +148,8 @@ jobs:
         goliothctl dfu --apiUrl $GOLIOTH_API_URL --projectId $GOLIOTH_PROJECT_ID artifact create test_new.bin --version 1.2.99
         goliothctl dfu --apiUrl $GOLIOTH_API_URL --projectId $GOLIOTH_PROJECT_ID release create --release-tags 1.2.99 --components main@1.2.99 --rollout true
     - name: Flash and Verify Serial Output
+      shell: bash
       run: |
         cd examples/esp_idf/test
-        source $HOME/runner_env.sh
-        python flash.py $CI_ESP32S3_DEVKITC_PORT && python verify.py $CI_ESP32S3_DEVKITC_PORT
+        source /opt/credentials/runner_env.sh
+        python3 flash.py $CI_ESP32S3_DEVKITC_PORT && python3 verify.py $CI_ESP32S3_DEVKITC_PORT

@@ -40,6 +40,13 @@ jobs:
     needs: build
     runs-on: has_${{ inputs.hil_board }}
 
+    container:
+      image: golioth/golioth-hil-base:ff78585
+      volumes:
+        - /dev:/dev
+        - /home/golioth/credentials:/opt/credentials
+      options: --privileged
+
     steps:
       - name: Checkout repository
         uses: actions/checkout@v4
@@ -53,9 +60,10 @@ jobs:
           name: ${{ inputs.hil_board }}-connection-esp-idf
           path: .
       - name: Run test
+        shell: bash
         env:
           hil_board: ${{ inputs.hil_board }}
         run: |
-          source $HOME/runner_env.sh
+          source /opt/credentials/runner_env.sh
           PORT_VAR=CI_${hil_board^^}_PORT
-          pytest --rootdir . tests/hil/tests/connection --board esp-idf --port ${!PORT_VAR} --credentials-file $HOME/credentials_${hil_board}.yml --fw-image merged.bin
+          pytest --rootdir . tests/hil/tests/connection --board esp-idf --port ${!PORT_VAR} --credentials-file /opt/credentials/credentials_${hil_board}.yml --fw-image merged.bin
