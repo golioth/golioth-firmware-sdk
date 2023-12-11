@@ -1,5 +1,5 @@
 [build-system]
-requires = ["hatchling"]
+requires = ["hatchling>=1.19"]
 build-backend = "hatchling.build"
 
 [project]
@@ -15,6 +15,9 @@ dependencies = [
 classifiers = [
     "Framework :: Pytest",
 ]
+
+[tool.hatch.build.targets.wheel]
+include = [ "*.py" ]
 
 [project.entry-points.pytest11]
 hil = "plugin"
