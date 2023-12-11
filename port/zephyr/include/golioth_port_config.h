@@ -9,7 +9,7 @@
 #include <zephyr/logging/log.h>
 #include <zephyr/random/random.h>
 
-#define LOG_TAG_DEFINE(tag) LOG_MODULE_REGISTER(tag)
+#define LOG_TAG_DEFINE(tag) LOG_MODULE_REGISTER(tag, CONFIG_GOLIOTH_LOG_LEVEL)
 
 #define GLTH_LOGE(tag, ...) LOG_ERR(__VA_ARGS__)
 
