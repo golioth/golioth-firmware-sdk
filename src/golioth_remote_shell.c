@@ -1,6 +1,6 @@
 #include "golioth_remote_shell.h"
 
-#if (CONFIG_GOLIOTH_REMOTE_SHELL_ENABLE == 1)
+#if defined(CONFIG_GOLIOTH_REMOTE_SHELL)
 
 #include "golioth_ringbuf.h"
 #include "golioth_util.h"
@@ -161,7 +161,7 @@ void golioth_remote_shell_set_line_input_handler(remote_shell_input_cb cb) {
     _line_input_cb = cb;
 }
 
-#else  // !CONFIG_GOLIOTH_REMOTE_SHELL_ENABLE
+#else  // !CONFIG_GOLIOTH_REMOTE_SHELL
 
 // Stubs if shell not enabled
 void golioth_remote_shell_set_client(golioth_client_t client) {}

@@ -34,7 +34,7 @@ LOG_TAG_DEFINE(golioth_rpc);
 //      "detail": {...}
 // }
 
-#if (CONFIG_GOLIOTH_RPC_ENABLE == 1)
+#if defined(CONFIG_GOLIOTH_RPC)
 
 #define GOLIOTH_RPC_PATH_PREFIX ".rpc/"
 
@@ -215,7 +215,7 @@ golioth_status_t golioth_rpc_register(
     }
     return GOLIOTH_OK;
 }
-#else  // CONFIG_GOLIOTH_RPC_ENABLE
+#else  // CONFIG_GOLIOTH_RPC
 
 golioth_status_t golioth_rpc_register(
         golioth_client_t client,
@@ -225,4 +225,4 @@ golioth_status_t golioth_rpc_register(
     return GOLIOTH_ERR_NOT_IMPLEMENTED;
 }
 
-#endif  // CONFIG_GOLIOTH_RPC_ENABLE
+#endif  // CONFIG_GOLIOTH_RPC

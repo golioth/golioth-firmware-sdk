@@ -109,7 +109,7 @@ void golioth_sys_client_disconnected(void* client);
  * Logging
  *------------------------------------------------*/
 
-#if CONFIG_GOLIOTH_DEBUG_LOG_ENABLE
+#if defined(CONFIG_GOLIOTH_DEBUG_LOG)
 
 #include <stdio.h>
 #include "golioth_debug.h"
@@ -174,7 +174,7 @@ void golioth_sys_client_disconnected(void* client);
     } while (0);
 #endif
 
-#else /* CONFIG_GOLIOTH_DEBUG_LOG_ENABLE */
+#else /* CONFIG_GOLIOTH_DEBUG_LOG */
 
 #define GLTH_LOGV(TAG, ...)
 #define GLTH_LOGD(TAG, ...)
@@ -183,4 +183,4 @@ void golioth_sys_client_disconnected(void* client);
 #define GLTH_LOGE(TAG, ...)
 #define GLTH_LOG_BUFFER_HEXDUMP(TAG, ...)
 
-#endif /* CONFIG_GOLIOTH_DEBUG_LOG_ENABLE */
+#endif /* CONFIG_GOLIOTH_DEBUG_LOG */
