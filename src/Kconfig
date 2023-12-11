@@ -134,11 +134,24 @@ config GOLIOTH_RPC
     help
         Enable the Golioth RPC service
 
+if GOLIOTH_RPC
+
+config GOLIOTH_RPC_MAX_NUM_METHODS
+    int "Maximum number of registered Golioth RPC methods"
+    default 8
+    help
+        Maximum number of Golioth Remote Procedure Call methods that can
+        be registered.
+
+endif # GOLIOTH_RPC
+
 config GOLIOTH_SETTINGS
     bool "Golioth Settings service"
     default y
     help
         Enable the Golioth Settings service
+
+if GOLIOTH_SETTINGS
 
 config GOLIOTH_MAX_NUM_SETTINGS
     int "Max number of Golioth settings"
@@ -147,12 +160,7 @@ config GOLIOTH_MAX_NUM_SETTINGS
         Maximum number of Golioth settings which can be registered
         by the application.
 
-config GOLIOTH_RPC_MAX_NUM_METHODS
-    int "Maximum number of registered Golioth RPC methods"
-    default 8
-    help
-        Maximum number of Golioth Remote Procedure Call methods that can
-        be registered.
+endif # GOLIOTH_SETTINGS
 
 config GOLIOTH_ALLOCATION_TRACKING
     int "Monitor for memory leaks"
@@ -201,6 +209,8 @@ config GOLIOTH_REMOTE_SHELL
         If enabled, an additional RTOS thread will be created along
         with a ringbuffer to queue device output log data.
 
+if GOLIOTH_REMOTE_SHELL
+
 config GOLIOTH_REMOTE_SHELL_THREAD_STACK_SIZE
     int "Remote shell thread stack size"
     default 4096
@@ -227,6 +237,8 @@ config GOLIOTH_REMOTE_SHELL_THREAD_DELAY_MS
         A larger value results in more latency when viewing logs remotely.
         A smaller value results in lower latency, but more packets sent
         (less log data per packet).
+
+endif # GOLIOTH_REMOTE_SHELL
 
 config GOLIOTH_DEBUG_DEFAULT_LOG_LEVEL
     int "Default log level for Golioth SDK"
