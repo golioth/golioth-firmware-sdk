@@ -34,7 +34,7 @@ indent_size = 4
 # YAML
 [*.{yml,yaml}]
 indent_style = space
-indent_size = 4
+indent_size = 2
 
 # Shell Script
 [*.sh]
