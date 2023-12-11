@@ -155,6 +155,10 @@ config LOG_BACKEND_GOLIOTH_MAX_LOG_STRING_SIZE
 
 endif # LOG_BACKEND_GOLIOTH
 
+module = GOLIOTH
+module-str = Golioth
+source "subsys/logging/Kconfig.template.log_config"
+
 rsource '${ZEPHYR_GOLIOTH_FIRMWARE_SDK_MODULE_DIR}/examples/zephyr/common/Kconfig'
 
 endif # GOLIOTH_FIRMWARE_SDK
