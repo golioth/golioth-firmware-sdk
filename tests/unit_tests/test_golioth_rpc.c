@@ -10,8 +10,8 @@ DEFINE_FFF_GLOBALS;
 static const char* last_err_msg = NULL;
 static const char* last_wrn_msg = NULL;
 
-#undef CONFIG_GOLIOTH_DEBUG_LOG_ENABLE
-#define CONFIG_GOLIOTH_DEBUG_LOG_ENABLE 1
+#define CONFIG_GOLIOTH_RPC
+#define CONFIG_GOLIOTH_DEBUG_LOG
 #define GLTH_LOGX(...)
 #define GLTH_LOG_BUFFER_HEXDUMP(...)
 #define GLTH_LOGE(TAG, msg, ...) last_err_msg = msg;

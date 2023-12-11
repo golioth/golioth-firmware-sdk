@@ -128,17 +128,17 @@ config GOLIOTH_COAP_MAX_PATH_LEN
         Maximum length of a CoAP path (everything after
         "coaps://coap.golioth.io/").
 
-config GOLIOTH_RPC_ENABLE
-    int "Enable/disable for Remote Procedure Call feature"
-    default 1
+config GOLIOTH_RPC
+    bool "Golioth RPC service"
+    default y
     help
-        Feature flag for Remote Procedure Call (RPC). 0 for disabled, 1 for enabled.
+        Enable the Golioth RPC service
 
-config GOLIOTH_SETTINGS_ENABLE
-    int "Enable/disable for Settings feature"
-    default 1
+config GOLIOTH_SETTINGS
+    bool "Golioth Settings service"
+    default y
     help
-        Feature flag for Settings. 0 for disabled, 1 for enabled.
+        Enable the Golioth Settings service
 
 config GOLIOTH_MAX_NUM_SETTINGS
     int "Max number of Golioth settings"
@@ -164,18 +164,18 @@ config GOLIOTH_ALLOCATION_TRACKING
         tracking the allocations, so it's not recommended for
         use in production firmware images (only use for test/debug).
 
-config GOLIOTH_DEBUG_LOG_ENABLE
-    int "Enable internal debug logs"
-    default 1
+config GOLIOTH_DEBUG_LOG
+    bool "Enable internal debug logs"
+    default y
     help
         Enable/disable GLTH_LOGX log statements.
 
-        If set to 0 (disabled), then the GLTH_LOGX macros will
+        If disabled, then the GLTH_LOGX macros will
         be removed/undefined.
 
 config GOLIOTH_AUTO_LOG_TO_CLOUD
-    int "Enable automatic logging to Golioth"
-    default 0
+    bool "Enable automatic logging to Golioth"
+    default y
     help
         Enable/disable automatic logging to Golioth for GLTH_LOGX statements
 
@@ -193,8 +193,8 @@ config GOLIOTH_AUTO_LOG_TO_CLOUD
         There is an internal feature flag that is set by default to the value of this
         configuration item. The flag can also be set at runtime.
 
-config GOLIOTH_REMOTE_SHELL_ENABLE
-    bool "(Experimental) Enable remote shell"
+config GOLIOTH_REMOTE_SHELL
+    bool "(Experimental) Golioth Remote Shell service"
     help
         Enable/disable golioth_remote_shell feature.
 

@@ -38,7 +38,7 @@
 //   ],
 // }
 
-#if (CONFIG_GOLIOTH_SETTINGS_ENABLE == 1)
+#if defined(CONFIG_GOLIOTH_SETTINGS)
 
 LOG_TAG_DEFINE(golioth_settings);
 
@@ -452,7 +452,7 @@ golioth_status_t golioth_settings_register_float(
     return GOLIOTH_OK;
 }
 
-#else  // CONFIG_GOLIOTH_SETTINGS_ENABLE
+#else  // CONFIG_GOLIOTH_SETTINGS
 
 golioth_status_t golioth_settings_register_int(
         golioth_client_t client,
@@ -488,4 +488,4 @@ golioth_status_t golioth_settings_register_float(
     return GOLIOTH_ERR_NOT_IMPLEMENTED;
 }
 
-#endif  // CONFIG_GOLIOTH_SETTINGS_ENABLE
+#endif  // CONFIG_GOLIOTH_SETTINGS
