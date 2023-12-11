@@ -1019,24 +1019,31 @@ golioth_client_t golioth_client_create(const golioth_client_config_t* config) {
     }
     GSTATS_INC_ALLOC("request_queue");
 
-    new_client->coap_thread_handle = golioth_sys_thread_create((golioth_sys_thread_config_t){
-            .name = "coap_client",
-            .fn = golioth_coap_client_thread,
-            .user_arg = new_client,
-            .stack_size = CONFIG_GOLIOTH_COAP_THREAD_STACK_SIZE,
-            .prio = CONFIG_GOLIOTH_COAP_THREAD_PRIORITY,
-    });
+    golioth_sys_thread_config_t thread_cfg =
+    {
+        .name = "coap_client",
+        .fn = golioth_coap_client_thread,
+        .user_arg = new_client,
+        .stack_size = CONFIG_GOLIOTH_COAP_THREAD_STACK_SIZE,
+        .prio = CONFIG_GOLIOTH_COAP_THREAD_PRIORITY,
+    };
+
+    new_client->coap_thread_handle = golioth_sys_thread_create(&thread_cfg);
     if (!new_client->coap_thread_handle) {
         GLTH_LOGE(TAG, "Failed to create client thread");
         goto error;
     }
     GSTATS_INC_ALLOC("coap_thread_handle");
 
-    new_client->keepalive_timer = golioth_sys_timer_create((golioth_sys_timer_config_t){
-            .name = "keepalive",
-            .expiration_ms = max(1000, 1000 * CONFIG_GOLIOTH_COAP_KEEPALIVE_INTERVAL_S),
-            .fn = on_keepalive,
-            .user_arg = new_client});
+    golioth_sys_timer_config_t keepalive_timer_cfg =
+    {
+        .name = "keepalive",
+        .expiration_ms = max(1000, 1000 * CONFIG_GOLIOTH_COAP_KEEPALIVE_INTERVAL_S),
+        .fn = on_keepalive,
+        .user_arg = new_client
+    };
+
+    new_client->keepalive_timer = golioth_sys_timer_create(&keepalive_timer_cfg);
     if (!new_client->keepalive_timer) {
         GLTH_LOGE(TAG, "Failed to create keepalive timer");
         goto error;

@@ -123,7 +123,7 @@ static void on_timer(int sig, siginfo_t* si, void* uc) {
     }
 }
 
-golioth_sys_timer_t golioth_sys_timer_create(golioth_sys_timer_config_t config) {
+golioth_sys_timer_t golioth_sys_timer_create(const golioth_sys_timer_config_t *config) {
     static bool initialized = false;
     const int signo = SIGRTMIN;
 
@@ -144,7 +144,7 @@ golioth_sys_timer_t golioth_sys_timer_create(golioth_sys_timer_config_t config) 
 
     // Note: config.name is unused
     wrapped_timer_t* wt = (wrapped_timer_t*)golioth_sys_malloc(sizeof(wrapped_timer_t));
-    wt->config = config;
+    memcpy(&wt->config, config, sizeof(wt->config));
     int err = timer_create(
             CLOCK_REALTIME,
             &(struct sigevent){
@@ -160,8 +160,8 @@ golioth_sys_timer_t golioth_sys_timer_create(golioth_sys_timer_config_t config) 
     struct itimerspec spec = {
             .it_interval =
                     {
-                            .tv_sec = config.expiration_ms / 1000,
-                            .tv_nsec = (config.expiration_ms % 1000) * 1000000,
+                            .tv_sec = config->expiration_ms / 1000,
+                            .tv_nsec = (config->expiration_ms % 1000) * 1000000,
                     },
     };
 
@@ -252,15 +252,15 @@ static void* pthread_callback(void* arg) {
     wt->fn(wt->user_arg);
 }
 
-golioth_sys_thread_t golioth_sys_thread_create(golioth_sys_thread_config_t config) {
+golioth_sys_thread_t golioth_sys_thread_create(const golioth_sys_thread_config_t *config) {
     // Intentionally ignoring from config:
     //      name
     //      stack_size
     //      prio
     wrapped_pthread_t* wt = (wrapped_pthread_t*)golioth_sys_malloc(sizeof(wrapped_pthread_t));
 
-    wt->fn = config.fn;
-    wt->user_arg = config.user_arg;
+    wt->fn = config->fn;
+    wt->user_arg = config->user_arg;
 
     int err = pthread_create(&wt->pthread, NULL, pthread_callback, wt);
     if (err) {
