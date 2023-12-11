@@ -130,7 +130,6 @@ config GOLIOTH_COAP_MAX_PATH_LEN
 
 config GOLIOTH_RPC
     bool "Golioth RPC service"
-    default y
     help
         Enable the Golioth RPC service
 
@@ -147,7 +146,6 @@ endif # GOLIOTH_RPC
 
 config GOLIOTH_SETTINGS
     bool "Golioth Settings service"
-    default y
     help
         Enable the Golioth Settings service
 
