@@ -1,10 +1,22 @@
 sample:
   description: Say Hello to Golioth server
   name: hello
-common:
-  build_only: true
 tests:
+  sample.golioth.hello:
+    harness: pytest
+    tags: golioth socket goliothd
+    extra_args: EXTRA_CONF_FILE="../common/runtime_psk.conf"
+    extra_configs:
+      - CONFIG_SHELL_BACKEND_SERIAL_RX_RING_BUFFER_SIZE=128
+      - CONFIG_SHELL_DEFAULT_TERMINAL_WIDTH=100
+      - CONFIG_GOLIOTH_COAP_HOST_URI="coaps://coap.golioth.dev"
+    platform_allow: >
+      esp32_devkitc_wrover
+      mimxrt1024_evk
+      nrf52840dk_nrf52840
+      nrf9160dk_nrf9160_ns
   sample.golioth.hello.psk:
+    build_only: true
     platform_allow: >
       esp32_devkitc_wrover
       mimxrt1024_evk
@@ -12,6 +24,7 @@ tests:
       qemu_x86
       nrf9160dk_nrf9160_ns
   sample.golioth.hello.psk.cid:
+    build_only: true
     platform_allow: >
       esp32_devkitc_wrover
       mimxrt1024_evk
@@ -20,15 +33,8 @@ tests:
       nrf9160dk_nrf9160_ns
     extra_configs:
       - CONFIG_GOLIOTH_USE_CONNECTION_ID=y
-  sample.golioth.hello.psk.runtime.buildonly:
-    extra_args: EXTRA_CONF_FILE="../common/runtime_psk.conf"
-    platform_allow: >
-      esp32_devkitc_wrover
-      mimxrt1024_evk
-      nrf52840dk_nrf52840
-      nrf9160dk_nrf9160_ns
-      qemu_x86
   sample.golioth.hello.cert.buildonly:
+    build_only: true
     extra_configs:
       - CONFIG_GOLIOTH_AUTH_METHOD_CERT=y
       # Make it build by providing path that can be resolved
