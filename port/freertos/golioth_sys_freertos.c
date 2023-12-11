@@ -76,22 +76,22 @@ static TickType_t ms_to_ticks(uint32_t ms) {
     return (rounded_ms / portTICK_PERIOD_MS);
 }
 
-golioth_sys_timer_t golioth_sys_timer_create(golioth_sys_timer_config_t config) {
-    assert(config.fn);  // timer callback function is required
+golioth_sys_timer_t golioth_sys_timer_create(const golioth_sys_timer_config_t *config) {
+    assert(config->fn);  // timer callback function is required
 
     wrapped_timer_t* wrapped_timer = (wrapped_timer_t*)golioth_sys_malloc(sizeof(wrapped_timer_t));
     memset(wrapped_timer, 0, sizeof(wrapped_timer_t));
 
     TimerHandle_t timer = xTimerCreate(
-            config.name,
-            ms_to_ticks(config.expiration_ms),
+            config->name,
+            ms_to_ticks(config->expiration_ms),
             pdTRUE,  // periodic
             wrapped_timer,
             freertos_timer_callback);
 
     wrapped_timer->timer = timer;
-    wrapped_timer->fn = config.fn;
-    wrapped_timer->user_arg = config.user_arg;
+    wrapped_timer->fn = config->fn;
+    wrapped_timer->user_arg = config->user_arg;
 
     return wrapped_timer;
 }
@@ -125,10 +125,14 @@ void golioth_sys_timer_destroy(golioth_sys_timer_t timer) {
  * Threads
  *------------------------------------------------*/
 
-golioth_sys_thread_t golioth_sys_thread_create(golioth_sys_thread_config_t config) {
+golioth_sys_thread_t golioth_sys_thread_create(const golioth_sys_thread_config_t *config) {
     TaskHandle_t task_handle = NULL;
-    xTaskCreate(
-            config.fn, config.name, config.stack_size, config.user_arg, config.prio, &task_handle);
+    xTaskCreate(config->fn,
+                config->name,
+                config->stack_size,
+                config->user_arg,
+                config->prio,
+                &task_handle);
     return (golioth_sys_thread_t)task_handle;
 }
 

@@ -110,7 +110,7 @@ static void on_timer(struct k_timer* ztimer) {
     k_work_submit(&timer->work);
 }
 
-golioth_sys_timer_t golioth_sys_timer_create(golioth_sys_timer_config_t config) {
+golioth_sys_timer_t golioth_sys_timer_create(const golioth_sys_timer_config_t *config) {
     struct golioth_timer* timer;
 
     timer = golioth_sys_malloc(sizeof(*timer));
@@ -118,7 +118,7 @@ golioth_sys_timer_t golioth_sys_timer_create(golioth_sys_timer_config_t config) 
         return NULL;
     }
 
-    timer->config = config;
+    memcpy(&timer->config, config, sizeof(timer->config));
 
     k_timer_init(&timer->timer, on_timer, NULL);
     k_work_init(&timer->work, timer_handler_worker);
@@ -182,7 +182,7 @@ static void golioth_thread_main(void* p1, void* p2, void* p3) {
     fn(user_arg);
 }
 
-golioth_sys_thread_t golioth_sys_thread_create(golioth_sys_thread_config_t config) {
+golioth_sys_thread_t golioth_sys_thread_create(const golioth_sys_thread_config_t *config) {
     // Intentionally ignoring from config:
     //      name
     //      stack_size
@@ -200,14 +200,14 @@ golioth_sys_thread_t golioth_sys_thread_create(golioth_sys_thread_config_t confi
             stack,
             CONFIG_GOLIOTH_ZEPHYR_THREAD_STACK_SIZE,
             golioth_thread_main,
-            config.fn,
-            config.user_arg,
+            config->fn,
+            config->user_arg,
             NULL,
-            config.prio,
+            config->prio,
             0,
             K_NO_WAIT);
-    if (config.name) {
-        k_thread_name_set(thread->tid, config.name);
+    if (config->name) {
+        k_thread_name_set(thread->tid, config->name);
     }
 
     return (golioth_sys_thread_t)thread;

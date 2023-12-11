@@ -273,12 +273,16 @@ void golioth_fw_update_init_with_config(
             _config.current_version);
 
     if (!initialized) {
-        golioth_sys_thread_t thread = golioth_sys_thread_create((golioth_sys_thread_config_t){
-                .name = "fw_update",
-                .fn = fw_update_thread,
-                .user_arg = NULL,
-                .stack_size = CONFIG_GOLIOTH_OTA_THREAD_STACK_SIZE,
-                .prio = 3});
+        golioth_sys_thread_config_t thread_cfg =
+        {
+            .name = "fw_update",
+            .fn = fw_update_thread,
+            .user_arg = NULL,
+            .stack_size = CONFIG_GOLIOTH_OTA_THREAD_STACK_SIZE,
+            .prio = 3
+        };
+
+        golioth_sys_thread_t thread = golioth_sys_thread_create(&thread_cfg);
         if (!thread) {
             GLTH_LOGE(TAG, "Failed to create firmware update thread");
         } else {

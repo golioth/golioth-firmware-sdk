@@ -45,7 +45,7 @@ typedef struct {
     void* user_arg;
 } golioth_sys_timer_config_t;
 
-golioth_sys_timer_t golioth_sys_timer_create(golioth_sys_timer_config_t config);
+golioth_sys_timer_t golioth_sys_timer_create(const golioth_sys_timer_config_t *config);
 bool golioth_sys_timer_start(golioth_sys_timer_t timer);
 bool golioth_sys_timer_reset(golioth_sys_timer_t timer);
 void golioth_sys_timer_destroy(golioth_sys_timer_t timer);
@@ -67,7 +67,7 @@ typedef struct {
     int32_t prio;        // large numbers == high priority
 } golioth_sys_thread_config_t;
 
-golioth_sys_thread_t golioth_sys_thread_create(golioth_sys_thread_config_t config);
+golioth_sys_thread_t golioth_sys_thread_create(const golioth_sys_thread_config_t *config);
 void golioth_sys_thread_destroy(golioth_sys_thread_t thread);
 
 /*--------------------------------------------------
