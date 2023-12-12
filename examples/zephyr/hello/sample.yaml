@@ -5,6 +5,7 @@ tests:
   sample.golioth.hello:
     harness: pytest
     tags: golioth socket goliothd
+    timeout: 90
     extra_args: EXTRA_CONF_FILE="../common/runtime_psk.conf"
     extra_configs:
       - CONFIG_SHELL_BACKEND_SERIAL_RX_RING_BUFFER_SIZE=128
