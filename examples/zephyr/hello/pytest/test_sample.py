@@ -5,6 +5,9 @@ import pprint
 import time
 import yaml
 import datetime
+import logging
+
+LOGGER = logging.getLogger(__name__)
 
 pytestmark = pytest.mark.anyio
 
@@ -45,13 +48,18 @@ async def test_hello(shell, api_key, device_name, credentials_file):
 
     # Test logs received from server
 
+    LOGGER.info("Searching log messages from end to start:")
     test_idx = 2
     test_hits = 0
     for m in reversed(logs):
+
         if m.message == f"Sending hello! {test_idx}":
+            LOGGER.info("### MATCH FOUND! ---> {0}".format(m.message))
             test_hits += 1
             test_idx -= 1
             if test_idx < 0:
                 break
+        else:
+            LOGGER.info(m.message)
 
     assert test_hits == 3, 'Unable to find all Hello messages on server'
