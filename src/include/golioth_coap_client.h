@@ -7,7 +7,6 @@
 
 #include <coap3/coap.h>  // COAP_MEDIATYPE_*
 #include "golioth_client.h"
-#include "golioth_lightdb.h"
 #include "golioth_settings.h"
 #include "golioth_rpc.h"
 #include "golioth_config.h"

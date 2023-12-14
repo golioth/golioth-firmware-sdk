@@ -8,51 +8,11 @@
 #include "golioth_status.h"
 #include "golioth_client.h"
 
-/// @defgroup golioth_lightdb golioth_lightdb
-/// Functions for interacting with Golioth LightDB state and LightDB stream services.
+/// @defgroup golioth_lightdb_state golioth_lightdb_state
+/// Functions for interacting with Golioth LightDB State service.
 ///
 /// https://docs.golioth.io/reference/protocols/coap/lightdb
-/// <br>
-/// https://docs.golioth.io/reference/protocols/coap/lightdb-stream
 /// @{
-
-/// Convert raw byte payload into an int32_t
-///
-/// @param payload Pointer to payload data
-/// @param payload_size Size of payload, in bytes
-///
-/// @return int32_t value returned from strtol(payload, NULL, 10)
-int32_t golioth_payload_as_int(const uint8_t* payload, size_t payload_size);
-
-/// Convert raw byte payload into a float
-///
-/// @param payload Pointer to payload data
-/// @param payload_size Size of payload, in bytes
-///
-/// @return float value returned from strtof(payload, NULL)
-float golioth_payload_as_float(const uint8_t* payload, size_t payload_size);
-
-/// Convert raw byte payload into a bool
-///
-/// @param payload Pointer to payload data
-/// @param payload_size Size of payload, in bytes
-///
-/// @return true - payload is exactly the string "true"
-/// @return false - otherwise
-bool golioth_payload_as_bool(const uint8_t* payload, size_t payload_size);
-
-/// Returns true if payload has no contents
-///
-/// @param payload Pointer to payload data
-/// @param payload_size Size of payload, in bytes
-///
-/// @return true - payload is NULL
-/// @return true - payload_size is 0
-/// @return true - payload is exactly the string "null"
-/// @return false - otherwise
-bool golioth_payload_is_null(const uint8_t* payload, size_t payload_size);
-
-// TODO - block transfers for large post/get
 
 //-------------------------------------------------------------------------------
 // LightDB State
@@ -352,105 +312,5 @@ golioth_status_t golioth_lightdb_observe_async(
         const char* path,
         golioth_get_cb_fn callback,
         void* callback_arg);
-
-//-------------------------------------------------------------------------------
-// LightDB Stream
-//-------------------------------------------------------------------------------
-
-/// Similar to @ref golioth_lightdb_set_int_async, but for LightDB stream
-golioth_status_t golioth_lightdb_stream_set_int_async(
-        golioth_client_t client,
-        const char* path,
-        int32_t value,
-        golioth_set_cb_fn callback,
-        void* callback_arg);
-
-/// Similar to @ref golioth_lightdb_set_int_sync, but for LightDB stream
-golioth_status_t golioth_lightdb_stream_set_int_sync(
-        golioth_client_t client,
-        const char* path,
-        int32_t value,
-        int32_t timeout_s);
-
-/// Similar to @ref golioth_lightdb_set_bool_async, but for LightDB stream
-golioth_status_t golioth_lightdb_stream_set_bool_async(
-        golioth_client_t client,
-        const char* path,
-        bool value,
-        golioth_set_cb_fn callback,
-        void* callback_arg);
-
-/// Similar to @ref golioth_lightdb_set_bool_sync, but for LightDB stream
-golioth_status_t golioth_lightdb_stream_set_bool_sync(
-        golioth_client_t client,
-        const char* path,
-        bool value,
-        int32_t timeout_s);
-
-/// Similar to @ref golioth_lightdb_set_float_async, but for LightDB stream
-golioth_status_t golioth_lightdb_stream_set_float_async(
-        golioth_client_t client,
-        const char* path,
-        float value,
-        golioth_set_cb_fn callback,
-        void* callback_arg);
-
-/// Similar to @ref golioth_lightdb_set_float_sync, but for LightDB stream
-golioth_status_t golioth_lightdb_stream_set_float_sync(
-        golioth_client_t client,
-        const char* path,
-        float value,
-        int32_t timeout_s);
-
-/// Similar to @ref golioth_lightdb_set_string_async, but for LightDB stream
-golioth_status_t golioth_lightdb_stream_set_string_async(
-        golioth_client_t client,
-        const char* path,
-        const char* str,
-        size_t str_len,
-        golioth_set_cb_fn callback,
-        void* callback_arg);
-
-/// Similar to @ref golioth_lightdb_set_string_sync, but for LightDB stream
-golioth_status_t golioth_lightdb_stream_set_string_sync(
-        golioth_client_t client,
-        const char* path,
-        const char* str,
-        size_t str_len,
-        int32_t timeout_s);
-
-/// Similar to @ref golioth_lightdb_set_json_async, but for LightDB stream
-golioth_status_t golioth_lightdb_stream_set_json_async(
-        golioth_client_t client,
-        const char* path,
-        const char* json_str,
-        size_t json_str_len,
-        golioth_set_cb_fn callback,
-        void* callback_arg);
-
-/// Similar to @ref golioth_lightdb_set_json_sync, but for LightDB stream
-golioth_status_t golioth_lightdb_stream_set_json_sync(
-        golioth_client_t client,
-        const char* path,
-        const char* json_str,
-        size_t json_str_len,
-        int32_t timeout_s);
-
-/// Similar to @ref golioth_lightdb_stream_set_json_async, but for CBOR
-golioth_status_t golioth_lightdb_stream_set_cbor_async(
-        golioth_client_t client,
-        const char* path,
-        const uint8_t* cbor_data,
-        size_t cbor_data_len,
-        golioth_set_cb_fn callback,
-        void* callback_arg);
-
-/// Similar to @ref golioth_lightdb_stream_set_json_sync, but for CBOR
-golioth_status_t golioth_lightdb_stream_set_cbor_sync(
-        golioth_client_t client,
-        const char* path,
-        const uint8_t* cbor_data,
-        size_t cbor_data_len,
-        int32_t timeout_s);
 
 /// @}
