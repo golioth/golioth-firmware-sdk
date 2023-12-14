@@ -6,7 +6,6 @@
 
 #include "golioth_settings.h"
 #include "golioth_util.h"
-#include "golioth_time.h"
 #include "golioth_coap_client.h"
 #include "golioth_statistics.h"
 #include "golioth_debug.h"
@@ -147,7 +146,7 @@ static int finalize_and_send_response(
             NULL,
             NULL,
             false,
-            GOLIOTH_WAIT_FOREVER);
+            GOLIOTH_SYS_WAIT_FOREVER);
 
     return 0;
 }

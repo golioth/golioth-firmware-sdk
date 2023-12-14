@@ -12,7 +12,6 @@
 #include "golioth_coap_client.h"
 #include "golioth_statistics.h"
 #include "golioth_util.h"
-#include "golioth_time.h"
 #include "golioth_debug.h"
 #include "golioth_remote_shell.h"
 #include "golioth_sys.h"
@@ -154,7 +153,7 @@ static coap_response_t coap_response_handler(
             }
         }
 
-        if (golioth_time_millis() > req->ageout_ms) {
+        if (golioth_sys_now_ms() > req->ageout_ms) {
             GLTH_LOGW(TAG, "Ignoring response from old request, type %d", req->type);
         } else {
             if (req->type == GOLIOTH_COAP_REQUEST_GET) {
@@ -697,7 +696,7 @@ static golioth_status_t coap_io_loop_once(
     }
 
     // Make sure the request isn't too old
-    if (golioth_time_millis() > request_msg.ageout_ms) {
+    if (golioth_sys_now_ms() > request_msg.ageout_ms) {
         GLTH_LOGW(
                 TAG,
                 "Ignoring request that has aged out, type %d, path %s",
@@ -767,8 +766,8 @@ static golioth_status_t coap_io_loop_once(
     int32_t time_spent_waiting_ms = 0;
     int32_t timeout_ms = CONFIG_GOLIOTH_COAP_RESPONSE_TIMEOUT_S * 1000;
 
-    if (request_msg.ageout_ms != GOLIOTH_WAIT_FOREVER) {
-        int32_t time_till_ageout_ms = (int32_t)(request_msg.ageout_ms - golioth_time_millis());
+    if (request_msg.ageout_ms != GOLIOTH_SYS_WAIT_FOREVER) {
+        int32_t time_till_ageout_ms = (int32_t)(request_msg.ageout_ms - golioth_sys_now_ms());
         timeout_ms = min(timeout_ms, time_till_ageout_ms);
     }
 
@@ -876,7 +875,7 @@ static golioth_status_t coap_io_loop_once(
 static void on_keepalive(golioth_sys_timer_t timer, void* arg) {
     golioth_coap_client_t* c = (golioth_coap_client_t*)arg;
     if (c->is_running && golioth_client_num_items_in_request_queue(c) == 0 && !c->pending_req) {
-        golioth_coap_client_empty(c, false, GOLIOTH_WAIT_FOREVER);
+        golioth_coap_client_empty(c, false, GOLIOTH_SYS_WAIT_FOREVER);
     }
 }
 
@@ -929,7 +928,7 @@ static void golioth_coap_client_thread(void* arg) {
         // to the cloud or not (libcoap does not tell us when it's connected
         // for some reason, so this is a workaround for that).
         if (golioth_client_num_items_in_request_queue(client) == 0) {
-            golioth_coap_client_empty(client, false, GOLIOTH_WAIT_FOREVER);
+            golioth_coap_client_empty(client, false, GOLIOTH_SYS_WAIT_FOREVER);
         }
 
         // If we are re-connecting and had prior observations, set
@@ -1085,11 +1084,11 @@ golioth_status_t golioth_client_stop(golioth_client_t client) {
     }
 
     GLTH_LOGI(TAG, "Attempting to stop client");
-    golioth_sys_sem_take(c->run_sem, GOLIOTH_WAIT_FOREVER);
+    golioth_sys_sem_take(c->run_sem, GOLIOTH_SYS_WAIT_FOREVER);
 
     // Wait for client to be fully stopped
     while (golioth_client_is_running(client)) {
-        golioth_time_delay_ms(100);
+        golioth_sys_msleep(100);
     }
 
     return GOLIOTH_OK;
@@ -1143,9 +1142,9 @@ golioth_status_t golioth_coap_client_empty(
         return GOLIOTH_ERR_INVALID_STATE;
     }
 
-    uint64_t ageout_ms = GOLIOTH_WAIT_FOREVER;
-    if (timeout_s != GOLIOTH_WAIT_FOREVER) {
-        ageout_ms = golioth_time_millis() + (1000 * timeout_s);
+    uint64_t ageout_ms = GOLIOTH_SYS_WAIT_FOREVER;
+    if (timeout_s != GOLIOTH_SYS_WAIT_FOREVER) {
+        ageout_ms = golioth_sys_now_ms() + (1000 * timeout_s);
     }
 
     golioth_coap_request_msg_t request_msg = {
@@ -1175,8 +1174,8 @@ golioth_status_t golioth_coap_client_empty(
 
     if (is_synchronous) {
         int32_t tmo_ms = timeout_s * 1000;
-        if (timeout_s == GOLIOTH_WAIT_FOREVER) {
-            tmo_ms = GOLIOTH_WAIT_FOREVER;
+        if (timeout_s == GOLIOTH_SYS_WAIT_FOREVER) {
+            tmo_ms = GOLIOTH_SYS_WAIT_FOREVER;
         }
         uint32_t bits = golioth_event_group_wait_bits(
                 request_msg.request_complete_event,
@@ -1233,9 +1232,9 @@ golioth_status_t golioth_coap_client_set(
         memcpy(request_payload, payload, payload_size);
     }
 
-    uint64_t ageout_ms = GOLIOTH_WAIT_FOREVER;
-    if (timeout_s != GOLIOTH_WAIT_FOREVER) {
-        ageout_ms = golioth_time_millis() + (1000 * timeout_s);
+    uint64_t ageout_ms = GOLIOTH_SYS_WAIT_FOREVER;
+    if (timeout_s != GOLIOTH_SYS_WAIT_FOREVER) {
+        ageout_ms = golioth_sys_now_ms() + (1000 * timeout_s);
     }
 
     golioth_coap_request_msg_t request_msg = {
@@ -1279,8 +1278,8 @@ golioth_status_t golioth_coap_client_set(
 
     if (is_synchronous) {
         int32_t tmo_ms = timeout_s * 1000;
-        if (timeout_s == GOLIOTH_WAIT_FOREVER) {
-            tmo_ms = GOLIOTH_WAIT_FOREVER;
+        if (timeout_s == GOLIOTH_SYS_WAIT_FOREVER) {
+            tmo_ms = GOLIOTH_SYS_WAIT_FOREVER;
         }
         uint32_t bits = golioth_event_group_wait_bits(
                 request_msg.request_complete_event,
@@ -1316,9 +1315,9 @@ golioth_status_t golioth_coap_client_delete(
         return GOLIOTH_ERR_INVALID_STATE;
     }
 
-    uint64_t ageout_ms = GOLIOTH_WAIT_FOREVER;
-    if (timeout_s != GOLIOTH_WAIT_FOREVER) {
-        ageout_ms = golioth_time_millis() + (1000 * timeout_s);
+    uint64_t ageout_ms = GOLIOTH_SYS_WAIT_FOREVER;
+    if (timeout_s != GOLIOTH_SYS_WAIT_FOREVER) {
+        ageout_ms = golioth_sys_now_ms() + (1000 * timeout_s);
     }
 
     golioth_coap_request_msg_t request_msg = {
@@ -1355,8 +1354,8 @@ golioth_status_t golioth_coap_client_delete(
 
     if (is_synchronous) {
         int32_t tmo_ms = timeout_s * 1000;
-        if (timeout_s == GOLIOTH_WAIT_FOREVER) {
-            tmo_ms = GOLIOTH_WAIT_FOREVER;
+        if (timeout_s == GOLIOTH_SYS_WAIT_FOREVER) {
+            tmo_ms = GOLIOTH_SYS_WAIT_FOREVER;
         }
         uint32_t bits = golioth_event_group_wait_bits(
                 request_msg.request_complete_event,
@@ -1392,9 +1391,9 @@ static golioth_status_t golioth_coap_client_get_internal(
         return GOLIOTH_ERR_INVALID_STATE;
     }
 
-    uint64_t ageout_ms = GOLIOTH_WAIT_FOREVER;
-    if (timeout_s != GOLIOTH_WAIT_FOREVER) {
-        ageout_ms = golioth_time_millis() + (1000 * timeout_s);
+    uint64_t ageout_ms = GOLIOTH_SYS_WAIT_FOREVER;
+    if (timeout_s != GOLIOTH_SYS_WAIT_FOREVER) {
+        ageout_ms = golioth_sys_now_ms() + (1000 * timeout_s);
     }
 
     golioth_coap_request_msg_t request_msg = {};
@@ -1430,8 +1429,8 @@ static golioth_status_t golioth_coap_client_get_internal(
 
     if (is_synchronous) {
         int32_t tmo_ms = timeout_s * 1000;
-        if (timeout_s == GOLIOTH_WAIT_FOREVER) {
-            tmo_ms = GOLIOTH_WAIT_FOREVER;
+        if (timeout_s == GOLIOTH_SYS_WAIT_FOREVER) {
+            tmo_ms = GOLIOTH_SYS_WAIT_FOREVER;
         }
         uint32_t bits = golioth_event_group_wait_bits(
                 request_msg.request_complete_event,
@@ -1521,7 +1520,7 @@ golioth_status_t golioth_coap_client_observe_async(
     golioth_coap_request_msg_t request_msg = {
             .type = GOLIOTH_COAP_REQUEST_OBSERVE,
             .path_prefix = path_prefix,
-            .ageout_ms = GOLIOTH_WAIT_FOREVER,
+            .ageout_ms = GOLIOTH_SYS_WAIT_FOREVER,
             .observe =
                     {
                             .content_type = content_type,

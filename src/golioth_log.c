@@ -6,7 +6,6 @@
 #include <zcbor_encode.h>
 #include "golioth_coap_client.h"
 #include "golioth_log.h"
-#include "golioth_time.h"
 #include "golioth_statistics.h"
 #include "golioth_debug.h"
 
@@ -103,7 +102,7 @@ golioth_status_t golioth_log_error_async(
             tag,
             log_message,
             false,
-            GOLIOTH_WAIT_FOREVER,
+            GOLIOTH_SYS_WAIT_FOREVER,
             callback,
             callback_arg);
 }
@@ -120,7 +119,7 @@ golioth_status_t golioth_log_warn_async(
             tag,
             log_message,
             false,
-            GOLIOTH_WAIT_FOREVER,
+            GOLIOTH_SYS_WAIT_FOREVER,
             callback,
             callback_arg);
 }
@@ -137,7 +136,7 @@ golioth_status_t golioth_log_info_async(
             tag,
             log_message,
             false,
-            GOLIOTH_WAIT_FOREVER,
+            GOLIOTH_SYS_WAIT_FOREVER,
             callback,
             callback_arg);
 }
@@ -154,7 +153,7 @@ golioth_status_t golioth_log_debug_async(
             tag,
             log_message,
             false,
-            GOLIOTH_WAIT_FOREVER,
+            GOLIOTH_SYS_WAIT_FOREVER,
             callback,
             callback_arg);
 }

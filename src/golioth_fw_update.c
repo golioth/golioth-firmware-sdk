@@ -145,7 +145,7 @@ static void fw_update_thread(void* arg) {
                     _config.fw_package_name,
                     _config.current_version,
                     NULL,
-                    GOLIOTH_WAIT_FOREVER);
+                    GOLIOTH_SYS_WAIT_FOREVER);
         }
     }
 
@@ -156,7 +156,7 @@ static void fw_update_thread(void* arg) {
             _config.fw_package_name,
             _config.current_version,
             NULL,
-            GOLIOTH_WAIT_FOREVER);
+            GOLIOTH_SYS_WAIT_FOREVER);
 
     golioth_ota_observe_manifest_async(_client, on_ota_manifest, NULL);
 
@@ -177,7 +177,7 @@ static void fw_update_thread(void* arg) {
                 _config.fw_package_name,
                 _config.current_version,
                 _main_component->version,
-                GOLIOTH_WAIT_FOREVER);
+                GOLIOTH_SYS_WAIT_FOREVER);
 
         if (download_and_write_flash() != GOLIOTH_OK) {
             GLTH_LOGE(TAG, "Firmware download failed");
@@ -191,7 +191,7 @@ static void fw_update_thread(void* arg) {
                     _config.fw_package_name,
                     _config.current_version,
                     _main_component->version,
-                    GOLIOTH_WAIT_FOREVER);
+                    GOLIOTH_SYS_WAIT_FOREVER);
 
             continue;
         }
@@ -208,7 +208,7 @@ static void fw_update_thread(void* arg) {
                     _config.fw_package_name,
                     _config.current_version,
                     _main_component->version,
-                    GOLIOTH_WAIT_FOREVER);
+                    GOLIOTH_SYS_WAIT_FOREVER);
 
             continue;
         }
@@ -221,7 +221,7 @@ static void fw_update_thread(void* arg) {
                 _config.fw_package_name,
                 _config.current_version,
                 _main_component->version,
-                GOLIOTH_WAIT_FOREVER);
+                GOLIOTH_SYS_WAIT_FOREVER);
 
         GLTH_LOGI(TAG, "State = Updating");
         golioth_fw_update_report_state_sync(
@@ -231,7 +231,7 @@ static void fw_update_thread(void* arg) {
                 _config.fw_package_name,
                 _config.current_version,
                 NULL,
-                GOLIOTH_WAIT_FOREVER);
+                GOLIOTH_SYS_WAIT_FOREVER);
 
         if (fw_update_change_boot_image() != GOLIOTH_OK) {
             GLTH_LOGE(TAG, "Firmware change boot image failed");
