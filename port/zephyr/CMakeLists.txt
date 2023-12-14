@@ -61,7 +61,6 @@ zephyr_library_sources(
     ../../src/golioth_settings.c
     ../../src/golioth_statistics.c
     ../../src/golioth_status.c
-    ../../src/golioth_time.c
     ../../src/zcbor_utils.c
     golioth_fw_zephyr.c
     golioth_sys_zephyr.c
