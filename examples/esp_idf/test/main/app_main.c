@@ -129,13 +129,13 @@ static void wait_for_empty_request_queue(void) {
     bool is_empty = false;
 
     // Wait up to 10 s for queue to be empty
-    uint64_t timeout_ms = golioth_time_millis() + 5000;
-    while (golioth_time_millis() < timeout_ms) {
+    uint64_t timeout_ms = (xTaskGetTickCount() * portTICK_PERIOD_MS) + 5000;
+    while ((xTaskGetTickCount() * portTICK_PERIOD_MS) < timeout_ms) {
         if (golioth_client_num_items_in_request_queue(_client) == 0) {
             is_empty = true;
             break;
         }
-        golioth_time_delay_ms(100);
+        vTaskDelay(100 / portTICK_PERIOD_MS);
     }
 
     TEST_ASSERT_TRUE(is_empty);
@@ -176,7 +176,7 @@ static void test_lightdb_set_get_sync(void) {
     // The server responds before the data is written to the database ("eventually consistent"),
     // so there's a chance that if we try to read immediately, we will get the wrong data,
     // so we need to wait to be sure.
-    golioth_time_delay_ms(200);
+    vTaskDelay(200 / portTICK_PERIOD_MS);
 
     int32_t get_randint = 0;
     TEST_ASSERT_EQUAL(
@@ -225,12 +225,12 @@ static void test_lightdb_set_get_async(void) {
                     _client, "test_int2", randint, on_set_test_int2, &set_async_response));
 
     // Wait for response
-    uint64_t timeout_ms = golioth_time_millis() + TEST_RESPONSE_TIMEOUT_S * 1000;
-    while (golioth_time_millis() < timeout_ms) {
+    uint64_t timeout_ms = (xTaskGetTickCount() * portTICK_PERIOD_MS) + TEST_RESPONSE_TIMEOUT_S * 1000;
+    while ((xTaskGetTickCount() * portTICK_PERIOD_MS) < timeout_ms) {
         if (_on_set_test_int2_called) {
             break;
         }
-        golioth_time_delay_ms(100);
+        vTaskDelay(100 / portTICK_PERIOD_MS);
     }
     TEST_ASSERT_TRUE(_on_set_test_int2_called);
     TEST_ASSERT_EQUAL(GOLIOTH_OK, set_async_response.status);
@@ -243,18 +243,18 @@ static void test_lightdb_set_get_async(void) {
     // The server responds before the data is written to the database ("eventually consistent"),
     // so there's a chance that if we try to read immediately, we will get the wrong data,
     // so we need to wait to be sure.
-    golioth_time_delay_ms(200);
+    vTaskDelay(200 / portTICK_PERIOD_MS);
 
     TEST_ASSERT_EQUAL(
             GOLIOTH_OK,
             golioth_lightdb_get_async(_client, "test_int2", on_get_test_int2, &get_async_response));
 
-    timeout_ms = golioth_time_millis() + TEST_RESPONSE_TIMEOUT_S * 1000;
-    while (golioth_time_millis() < timeout_ms) {
+    timeout_ms = (xTaskGetTickCount() * portTICK_PERIOD_MS) + TEST_RESPONSE_TIMEOUT_S * 1000;
+    while ((xTaskGetTickCount() * portTICK_PERIOD_MS) < timeout_ms) {
         if (_on_get_test_int2_called) {
             break;
         }
-        golioth_time_delay_ms(100);
+        vTaskDelay(100 / portTICK_PERIOD_MS);
     }
     TEST_ASSERT_TRUE(_on_get_test_int2_called);
     TEST_ASSERT_EQUAL(GOLIOTH_OK, get_async_response.status);
@@ -296,12 +296,12 @@ static void test_request_timeout_if_packets_dropped(void) {
             golioth_lightdb_get_async(_client, "expect_timeout", on_test_timeout, &async_response));
 
     // Wait for async response to time out (must be longer than client task timeout of 10 s)
-    uint64_t timeout_ms = golioth_time_millis() + 12000;
-    while (golioth_time_millis() < timeout_ms) {
+    uint64_t timeout_ms = (xTaskGetTickCount() * portTICK_PERIOD_MS) + 12000;
+    while ((xTaskGetTickCount() * portTICK_PERIOD_MS) < timeout_ms) {
         if (_on_test_timeout_called) {
             break;
         }
-        golioth_time_delay_ms(100);
+        vTaskDelay(100 / portTICK_PERIOD_MS);
     }
 
     TEST_ASSERT_TRUE(_on_test_timeout_called);
@@ -309,11 +309,11 @@ static void test_request_timeout_if_packets_dropped(void) {
 
     // If a synchronous request is performed with infinite timeout specified,
     // the request will still timeout after CONFIG_GOLIOTH_COAP_RESPONSE_TIMEOUT_S.
-    uint64_t now = golioth_time_millis();
+    uint64_t now = (xTaskGetTickCount() * portTICK_PERIOD_MS);
     TEST_ASSERT_EQUAL(
             GOLIOTH_ERR_TIMEOUT,
-            golioth_lightdb_delete_sync(_client, "expect_timeout", GOLIOTH_WAIT_FOREVER));
-    TEST_ASSERT_TRUE(golioth_time_millis() - now > (1000 * CONFIG_GOLIOTH_COAP_RESPONSE_TIMEOUT_S));
+            golioth_lightdb_delete_sync(_client, "expect_timeout", GOLIOTH_SYS_WAIT_FOREVER));
+    TEST_ASSERT_TRUE((xTaskGetTickCount() * portTICK_PERIOD_MS) - now > (1000 * CONFIG_GOLIOTH_COAP_RESPONSE_TIMEOUT_S));
 
     golioth_client_set_packet_loss_percent(0);
 
@@ -395,12 +395,12 @@ static void test_lightdb_observation(void) {
     // Wait up to 3 seconds to receive the initial value from the observation.
     //
     // It's possible this isn't received if test_int3 doesn't exist on the server.
-    uint64_t timeout_ms = golioth_time_millis() + TEST_RESPONSE_TIMEOUT_S * 1000;
-    while (golioth_time_millis() < timeout_ms) {
+    uint64_t timeout_ms = (xTaskGetTickCount() * portTICK_PERIOD_MS) + TEST_RESPONSE_TIMEOUT_S * 1000;
+    while ((xTaskGetTickCount() * portTICK_PERIOD_MS) < timeout_ms) {
         if (_on_get_test_int3_called) {
             break;
         }
-        golioth_time_delay_ms(100);
+        vTaskDelay(100 / portTICK_PERIOD_MS);
     }
 
     _on_get_test_int3_called = false;
@@ -413,12 +413,12 @@ static void test_lightdb_observation(void) {
             golioth_lightdb_set_int_sync(_client, "test_int3", randint, TEST_RESPONSE_TIMEOUT_S));
 
     // Wait up to 3 seconds to observe the new value
-    timeout_ms = golioth_time_millis() + TEST_RESPONSE_TIMEOUT_S * 1000;
-    while (golioth_time_millis() < timeout_ms) {
+    timeout_ms = (xTaskGetTickCount() * portTICK_PERIOD_MS) + TEST_RESPONSE_TIMEOUT_S * 1000;
+    while ((xTaskGetTickCount() * portTICK_PERIOD_MS) < timeout_ms) {
         if (_on_get_test_int3_called) {
             break;
         }
-        golioth_time_delay_ms(100);
+        vTaskDelay(100 / portTICK_PERIOD_MS);
     }
 
     TEST_ASSERT_TRUE(_on_get_test_int3_called);
@@ -501,6 +501,6 @@ void app_main(void) {
     shell_start();
 
     while (1) {
-        golioth_time_delay_ms(100000);
+        vTaskDelay(100000 / portTICK_PERIOD_MS);
     };
 }
