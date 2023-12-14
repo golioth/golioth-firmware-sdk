@@ -5,7 +5,7 @@
 #include "golioth_ringbuf.h"
 #include "golioth_util.h"
 #include "golioth_debug.h"
-#include "golioth_lightdb.h"
+#include "golioth_lightdb_stream.h"
 #include "golioth_rpc.h"
 #include "golioth_config.h"
 #include "golioth_sys.h"

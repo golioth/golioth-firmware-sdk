@@ -51,10 +51,12 @@ zephyr_library_sources(
     ../../src/golioth_event_group.c
     ../../src/golioth_fw_block_processor.c
     ../../src/golioth_fw_update.c
-    ../../src/golioth_lightdb.c
+    ../../src/golioth_lightdb_state.c
+    ../../src/golioth_lightdb_stream.c
     ../../src/golioth_log.c
     ../../src/golioth_mbox.c
     ../../src/golioth_ota.c
+    ../../src/golioth_payload_utils.c
     ../../src/golioth_remote_shell.c
     ../../src/golioth_ringbuf.c
     ../../src/golioth_rpc.c
