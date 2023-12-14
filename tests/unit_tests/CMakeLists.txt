@@ -67,7 +67,6 @@ golioth_unit_test(test_ringbuf
 golioth_unit_test(test_golioth_rpc
     test_golioth_rpc.c
     fakes/golioth_coap_client_fake.c
-    fakes/golioth_time_fake.c
 )
 find_package(coap-3)
 target_include_directories(test_golioth_rpc PRIVATE

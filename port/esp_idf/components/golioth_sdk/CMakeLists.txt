@@ -37,7 +37,6 @@ idf_component_register(
         "${sdk_src}/golioth_lightdb.c"
         "${sdk_src}/golioth_rpc.c"
         "${sdk_src}/golioth_ota.c"
-        "${sdk_src}/golioth_time.c"
         "${sdk_src}/golioth_fw_update.c"
         "${sdk_src}/golioth_statistics.c"
         "${sdk_src}/golioth_settings.c"

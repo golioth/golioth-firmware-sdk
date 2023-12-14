@@ -18,7 +18,6 @@ static const char* last_wrn_msg = NULL;
 #define GLTH_LOGW(TAG, msg, ...) last_wrn_msg = msg;
 
 #include "fakes/golioth_coap_client_fake.h"
-#include "fakes/golioth_time_fake.h"
 #include "../../src/golioth_rpc.c"
 
 FAKE_VALUE_FUNC(golioth_rpc_status_t, test_rpc_method_fn, zcbor_state_t*, zcbor_state_t*, void*);
