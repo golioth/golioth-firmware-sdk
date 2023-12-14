@@ -4,7 +4,6 @@
 
 #include "golioth_ringbuf.h"
 #include "golioth_util.h"
-#include "golioth_time.h"
 #include "golioth_debug.h"
 #include "golioth_lightdb.h"
 #include "golioth_rpc.h"
@@ -75,7 +74,7 @@ static void remote_shell_thread(void* arg) {
                         "shell",
                         encode_buf,
                         zse->payload - encode_buf,
-                        GOLIOTH_WAIT_FOREVER);
+                        GOLIOTH_SYS_WAIT_FOREVER);
                 if (status != GOLIOTH_OK) {
                     GLTH_LOGE(TAG, "Failed to post log data");
                 }
@@ -84,7 +83,7 @@ static void remote_shell_thread(void* arg) {
             }
         }
         GLTH_LOGD(TAG, "wr = %u, rd = %u, drop = %u", _bytes_written, _bytes_read, _bytes_dropped);
-        golioth_time_delay_ms(CONFIG_GOLIOTH_REMOTE_SHELL_THREAD_DELAY_MS);
+        golioth_sys_msleep(CONFIG_GOLIOTH_REMOTE_SHELL_THREAD_DELAY_MS);
     };
 }
 

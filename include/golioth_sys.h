@@ -129,7 +129,7 @@ void golioth_sys_client_disconnected(void* client);
 #define GLTH_LOGX(COLOR, LEVEL, LEVEL_STR, TAG, ...) \
     do { \
         if ((LEVEL) <= golioth_debug_get_log_level()) { \
-            uint64_t now_ms = golioth_time_millis(); \
+            uint64_t now_ms = golioth_sys_now_ms(); \
             printf(COLOR "%s (%" PRIu64 ") %s: ", LEVEL_STR, now_ms, TAG); \
             printf(__VA_ARGS__); \
             golioth_debug_printf(now_ms, LEVEL, TAG, __VA_ARGS__); \

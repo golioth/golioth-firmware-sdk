@@ -1,8 +1,8 @@
 #pragma once
 
 #include "golioth_config.h"
-#include "golioth_time.h"
 #include <stdbool.h>
+#include <stdint.h>
 
 #ifndef __UNUSED
 #if defined(__GNUC__) || defined(__clang__)

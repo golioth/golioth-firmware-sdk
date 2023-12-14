@@ -96,7 +96,7 @@ static void process(const struct log_backend* const backend, union log_msg_gener
     cbpprintf(cbpprintf_out_func, &ctx->print_ctx, data);
     ctx->print_ctx.msg[ctx->print_ctx.ctr] = '\0';
     log_to_log_func(log)(
-        ctx->client, module, ctx->print_ctx.msg, GOLIOTH_WAIT_FOREVER);
+        ctx->client, module, ctx->print_ctx.msg, GOLIOTH_SYS_WAIT_FOREVER);
 }
 
 static void init(const struct log_backend* const backend) {

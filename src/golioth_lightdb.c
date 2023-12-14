@@ -3,11 +3,9 @@
  *
  * SPDX-License-Identifier: Apache-2.0
  */
-#include "golioth_debug.h"
 #include "golioth_coap_client.h"
 #include "golioth_lightdb.h"
 #include "golioth_util.h"
-#include "golioth_time.h"
 #include "golioth_statistics.h"
 #include "golioth_sys.h"
 
@@ -275,7 +273,7 @@ golioth_status_t golioth_lightdb_set_int_async(
             path,
             value,
             false,
-            GOLIOTH_WAIT_FOREVER,
+            GOLIOTH_SYS_WAIT_FOREVER,
             callback,
             callback_arg);
 }
@@ -292,7 +290,7 @@ golioth_status_t golioth_lightdb_set_bool_async(
             path,
             value,
             false,
-            GOLIOTH_WAIT_FOREVER,
+            GOLIOTH_SYS_WAIT_FOREVER,
             callback,
             callback_arg);
 }
@@ -309,7 +307,7 @@ golioth_status_t golioth_lightdb_set_float_async(
             path,
             value,
             false,
-            GOLIOTH_WAIT_FOREVER,
+            GOLIOTH_SYS_WAIT_FOREVER,
             callback,
             callback_arg);
 }
@@ -328,7 +326,7 @@ golioth_status_t golioth_lightdb_set_string_async(
             str,
             str_len,
             false,
-            GOLIOTH_WAIT_FOREVER,
+            GOLIOTH_SYS_WAIT_FOREVER,
             callback,
             callback_arg);
 }
@@ -347,7 +345,7 @@ golioth_status_t golioth_lightdb_set_json_async(
             json_str,
             json_str_len,
             false,
-            GOLIOTH_WAIT_FOREVER,
+            GOLIOTH_SYS_WAIT_FOREVER,
             callback,
             callback_arg);
 }
@@ -364,7 +362,7 @@ golioth_status_t golioth_lightdb_get_async(
             callback,
             arg,
             false,
-            GOLIOTH_WAIT_FOREVER);
+            GOLIOTH_SYS_WAIT_FOREVER);
 }
 
 golioth_status_t golioth_lightdb_delete_async(
@@ -377,7 +375,7 @@ golioth_status_t golioth_lightdb_delete_async(
             GOLIOTH_LIGHTDB_STATE_PATH_PREFIX,
             path,
             false,
-            GOLIOTH_WAIT_FOREVER,
+            GOLIOTH_SYS_WAIT_FOREVER,
             callback,
             callback_arg);
 }
@@ -623,7 +621,7 @@ golioth_status_t golioth_lightdb_stream_set_int_async(
             path,
             value,
             false,
-            GOLIOTH_WAIT_FOREVER,
+            GOLIOTH_SYS_WAIT_FOREVER,
             callback,
             callback_arg);
 }
@@ -640,7 +638,7 @@ golioth_status_t golioth_lightdb_stream_set_bool_async(
             path,
             value,
             false,
-            GOLIOTH_WAIT_FOREVER,
+            GOLIOTH_SYS_WAIT_FOREVER,
             callback,
             callback_arg);
 }
@@ -657,7 +655,7 @@ golioth_status_t golioth_lightdb_stream_set_float_async(
             path,
             value,
             false,
-            GOLIOTH_WAIT_FOREVER,
+            GOLIOTH_SYS_WAIT_FOREVER,
             callback,
             callback_arg);
 }
@@ -676,7 +674,7 @@ golioth_status_t golioth_lightdb_stream_set_string_async(
             str,
             str_len,
             false,
-            GOLIOTH_WAIT_FOREVER,
+            GOLIOTH_SYS_WAIT_FOREVER,
             callback,
             callback_arg);
 }
@@ -695,7 +693,7 @@ golioth_status_t golioth_lightdb_stream_set_json_async(
             json_str,
             json_str_len,
             false,
-            GOLIOTH_WAIT_FOREVER,
+            GOLIOTH_SYS_WAIT_FOREVER,
             callback,
             callback_arg);
 }
@@ -777,7 +775,7 @@ golioth_status_t golioth_lightdb_stream_set_cbor_async(
             cbor_data,
             cbor_data_len,
             false,
-            GOLIOTH_WAIT_FOREVER,
+            GOLIOTH_SYS_WAIT_FOREVER,
             callback,
             callback_arg);
 }

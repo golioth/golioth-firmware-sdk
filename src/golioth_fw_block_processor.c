@@ -68,7 +68,7 @@ static golioth_status_t download_block(download_ctx_t* ctx) {
             ctx->download_buf,
             &ctx->block_bytes_downloaded,
             &ctx->is_last_block,
-            GOLIOTH_WAIT_FOREVER));
+            GOLIOTH_SYS_WAIT_FOREVER));
 
     assert(ctx->block_bytes_downloaded <= GOLIOTH_OTA_BLOCKSIZE);
     block_stats_update(&ctx->block_stats, golioth_sys_now_ms() - download_start_ms);
