@@ -10,6 +10,8 @@
 #include "golioth_statistics.h"
 #include "golioth_sys.h"
 
+#if defined(CONFIG_GOLIOTH_LIGHTDB_STATE)
+
 #define GOLIOTH_LIGHTDB_STATE_PATH_PREFIX ".d/"
 
 typedef enum {
@@ -459,3 +461,5 @@ golioth_status_t golioth_lightdb_delete_sync(
     return golioth_coap_client_delete(
             client, GOLIOTH_LIGHTDB_STATE_PATH_PREFIX, path, NULL, NULL, true, timeout_s);
 }
+
+#endif // CONFIG_GOLIOTH_LIGHTDB_STATE
