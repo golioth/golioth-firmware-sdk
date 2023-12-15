@@ -74,7 +74,7 @@ jobs:
     runs-on: has_${{ inputs.hil_board }}
 
     container:
-      image: golioth/golioth-twister-base:3ad9efa
+      image: golioth/golioth-twister-base:50cb4bc
       env:
         ZEPHYR_SDK_INSTALL_DIR: /opt/toolchains/zephyr-sdk-0.16.3
       volumes:
@@ -105,6 +105,8 @@ jobs:
           pip3 install -r zephyr/scripts/requirements-run-test.txt
 
           pip3 install git+https://github.com/golioth/python-golioth-tools@v0.2.0
+      - name: Power Cycle USB Hub
+        run: /opt/golioth-scripts/power-cycle-usb-hub.sh
       - name: Download build
         uses: actions/download-artifact@v3
         with:

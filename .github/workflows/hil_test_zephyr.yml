@@ -68,7 +68,7 @@ jobs:
     runs-on: has_${{ inputs.hil_board }}
 
     container:
-      image: golioth/golioth-hil-base:ff78585
+      image: golioth/golioth-hil-base:280d655
       volumes:
         - /dev:/dev
         - /home/golioth/credentials:/opt/credentials
@@ -81,6 +81,8 @@ jobs:
         run: |
           pip install pytest
           pip install tests/hil/scripts/pytest-hil
+      - name: Power Cycle USB Hub
+        run: /opt/golioth-scripts/power-cycle-usb-hub.sh
       - name: Download build
         uses: actions/download-artifact@v3
         with:
