@@ -9,6 +9,8 @@
 #include "golioth_statistics.h"
 #include "golioth_sys.h"
 
+#if defined(CONFIG_GOLIOTH_LIGHTDB_STREAM)
+
 #define GOLIOTH_LIGHTDB_STREAM_PATH_PREFIX ".s/"
 
 golioth_status_t golioth_lightdb_stream_set_int_async(
@@ -295,3 +297,5 @@ golioth_status_t golioth_lightdb_stream_set_cbor_sync(
             true,
             timeout_s);
 }
+
+#endif // CONFIG_GOLIOTH_LIGHTDB_STREAM
