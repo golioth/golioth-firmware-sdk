@@ -2,10 +2,16 @@ sample:
   description: Send data to Golioth LightDB Stream
   name: lightdb stream
 common:
+  harness: pytest
   tags: golioth socket goliothd
 tests:
   sample.golioth.lightdb_stream:
-    build_only: true
+    timeout: 90
+    extra_args: EXTRA_CONF_FILE="../common/runtime_psk.conf"
+    extra_configs:
+      - CONFIG_SHELL_BACKEND_SERIAL_RX_RING_BUFFER_SIZE=128
+      - CONFIG_SHELL_DEFAULT_TERMINAL_WIDTH=100
+      - CONFIG_GOLIOTH_COAP_HOST_URI="coaps://coap.golioth.dev"
     platform_allow: >
       esp32_devkitc_wrover
       mimxrt1024_evk
