@@ -94,7 +94,7 @@ jobs:
   # ---
   hw_flash_and_test:
     needs: build_for_hw_test
-    runs-on: [self-hosted, has_esp32s3_devkitc, mikes_orange_pi]
+    runs-on: [is_active, has_esp32s3_devkitc, mikes_orange_pi]
 
     container:
       image: golioth/golioth-hil-base:ff78585
