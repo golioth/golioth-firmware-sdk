@@ -170,16 +170,6 @@ config GOLIOTH_MAX_NUM_SETTINGS
 
 endif # GOLIOTH_SETTINGS
 
-config GOLIOTH_ALLOCATION_TRACKING
-    int "Monitor for memory leaks"
-    default 0
-    help
-        Enables tracking and instrumentation for resource
-        allocations. Primarily intended for developers of the
-        Golioth SDK itself. Will use extra RAM and CPU for
-        tracking the allocations, so it's not recommended for
-        use in production firmware images (only use for test/debug).
-
 config GOLIOTH_DEBUG_LOG
     bool "Enable internal debug logs"
     default y

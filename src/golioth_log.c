@@ -6,7 +6,6 @@
 #include <zcbor_encode.h>
 #include "golioth_coap_client.h"
 #include "golioth_log.h"
-#include "golioth_statistics.h"
 #include "golioth_debug.h"
 
 LOG_TAG_DEFINE(golioth_log);
@@ -59,7 +58,6 @@ static golioth_status_t golioth_log_internal(
         goto cleanup;
     }
 
-    GSTATS_INC_ALLOC("cbor_buf");
     ok = zcbor_tstr_put_lit(zse, "level") && zcbor_tstr_put_term(zse, _level_to_str[level])
             && zcbor_tstr_put_lit(zse, "module") && zcbor_tstr_put_term(zse, tag)
             && zcbor_tstr_put_lit(zse, "msg") && zcbor_tstr_put_term(zse, log_message);
@@ -86,7 +84,6 @@ static golioth_status_t golioth_log_internal(
 
 cleanup:
     free(cbor_buf);
-    GSTATS_INC_FREE("cbor_buf");
     return status;
 }
 
