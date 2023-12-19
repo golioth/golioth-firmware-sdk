@@ -7,7 +7,6 @@
 #include "golioth_lightdb_state.h"
 #include "golioth_payload_utils.h"
 #include "golioth_util.h"
-#include "golioth_statistics.h"
 #include "golioth_sys.h"
 
 #if defined(CONFIG_GOLIOTH_LIGHTDB_STATE)
@@ -109,7 +108,6 @@ golioth_status_t golioth_lightdb_set_string_async(
     if (!buf) {
         return GOLIOTH_ERR_MEM_ALLOC;
     }
-    GSTATS_INC_ALLOC("buf");
     memset(buf, 0, bufsize);
     snprintf(buf, bufsize, "\"%s\"", str);
 
@@ -126,7 +124,6 @@ golioth_status_t golioth_lightdb_set_string_async(
             GOLIOTH_SYS_WAIT_FOREVER);
 
     golioth_sys_free(buf);
-    GSTATS_INC_FREE("buf");
     return status;
 }
 
@@ -267,7 +264,6 @@ golioth_status_t golioth_lightdb_set_string_sync(
     if (!buf) {
         return GOLIOTH_ERR_MEM_ALLOC;
     }
-    GSTATS_INC_ALLOC("buf");
     memset(buf, 0, bufsize);
     snprintf(buf, bufsize, "\"%s\"", str);
 
@@ -284,7 +280,6 @@ golioth_status_t golioth_lightdb_set_string_sync(
             timeout_s);
 
     golioth_sys_free(buf);
-    GSTATS_INC_FREE("buf");
     return status;
 }
 

@@ -11,7 +11,6 @@
 #include <string.h>
 #include "golioth_sys.h"
 #include "golioth_fw_update.h"
-#include "golioth_statistics.h"
 #include "golioth_fw_block_processor.h"
 
 LOG_TAG_DEFINE(golioth_fw_update);

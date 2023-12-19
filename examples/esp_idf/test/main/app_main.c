@@ -354,7 +354,7 @@ static void test_client_task_stack_min_remaining(void) {
     TEST_ASSERT_TRUE(stack_unused >= CONFIG_GOLIOTH_COAP_THREAD_STACK_SIZE / 4);
 }
 
-static void test_client_destroy_and_no_memory_leaks(void) {
+static void test_client_destroy(void) {
     TEST_ASSERT_EQUAL(GOLIOTH_OK, golioth_client_stop(_client));
     TEST_ASSERT_EQUAL(pdTRUE, xSemaphoreTake(_disconnected_sem, 3000 / portTICK_PERIOD_MS));
 
@@ -363,9 +363,6 @@ static void test_client_destroy_and_no_memory_leaks(void) {
 
     golioth_client_destroy(_client);
     _client = NULL;
-
-    // Verify all allocations made by the client have been freed
-    TEST_ASSERT_FALSE(golioth_client_has_allocation_leaks());
 }
 
 static bool _on_get_test_int3_called = false;
@@ -445,7 +442,7 @@ static int built_in_test(int argc, char** argv) {
     RUN_TEST(test_lightdb_error_if_path_not_found);
     RUN_TEST(test_request_timeout_if_packets_dropped);
     RUN_TEST(test_client_task_stack_min_remaining);
-    RUN_TEST(test_client_destroy_and_no_memory_leaks);
+    RUN_TEST(test_client_destroy);
     UNITY_END();
 
     return 0;

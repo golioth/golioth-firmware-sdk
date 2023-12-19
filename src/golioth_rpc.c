@@ -10,7 +10,6 @@
 #include "golioth_coap_client.h"
 #include "golioth_rpc.h"
 #include "golioth_util.h"
-#include "golioth_statistics.h"
 #include "golioth_debug.h"
 #include "zcbor_utils.h"
 #include "zcbor_any_skip_fixed.h"

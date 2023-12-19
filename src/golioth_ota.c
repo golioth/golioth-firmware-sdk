@@ -9,7 +9,6 @@
 #include <zcbor_encode.h>
 #include "golioth_ota.h"
 #include "golioth_coap_client.h"
-#include "golioth_statistics.h"
 #include "golioth_debug.h"
 #include "golioth_util.h"
 #include "zcbor_utils.h"

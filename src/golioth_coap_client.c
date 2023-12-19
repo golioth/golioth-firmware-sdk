@@ -10,7 +10,6 @@
 #include <time.h>
 #include <coap3/coap.h>
 #include "golioth_coap_client.h"
-#include "golioth_statistics.h"
 #include "golioth_util.h"
 #include "golioth_debug.h"
 #include "golioth_remote_shell.h"
@@ -275,7 +274,6 @@ static golioth_status_t get_coap_dst_address(const coap_uri_t* host_uri, coap_ad
         GLTH_LOGE(TAG, "DNS lookup %s did not return any addresses", hostname);
         return GOLIOTH_ERR_DNS_LOOKUP;
     }
-    GSTATS_INC_ALLOC("ainfo");
 
     coap_address_init(dst_addr);
 
@@ -293,11 +291,9 @@ static golioth_status_t get_coap_dst_address(const coap_uri_t* host_uri, coap_ad
         default:
             GLTH_LOGE(TAG, "DNS lookup response failed");
             freeaddrinfo(ainfo);
-            GSTATS_INC_FREE("ainfo");
             return GOLIOTH_ERR_DNS_LOOKUP;
     }
     freeaddrinfo(ainfo);
-    GSTATS_INC_FREE("ainfo");
 
     return GOLIOTH_OK;
 }
@@ -378,11 +374,9 @@ static void golioth_coap_empty(golioth_coap_request_msg_t* req, coap_session_t* 
         GLTH_LOGE(TAG, "coap_new_pdu() delete failed");
         return;
     }
-    GSTATS_INC_ALLOC("empty_pdu");
 
     golioth_coap_add_token(req_pdu, req, session);
     coap_send(session, req_pdu);
-    GSTATS_INC_FREE("empty_pdu");
 }
 
 static void golioth_coap_get(golioth_coap_request_msg_t* req, coap_session_t* session) {
@@ -391,13 +385,11 @@ static void golioth_coap_get(golioth_coap_request_msg_t* req, coap_session_t* se
         GLTH_LOGE(TAG, "coap_new_pdu() get failed");
         return;
     }
-    GSTATS_INC_ALLOC("get_pdu");
 
     golioth_coap_add_token(req_pdu, req, session);
     golioth_coap_add_path(req_pdu, req->path_prefix, req->path);
     golioth_coap_add_accept(req_pdu, req->get.content_type);
     coap_send(session, req_pdu);
-    GSTATS_INC_FREE("get_pdu");
 }
 
 static void golioth_coap_get_block(
@@ -409,7 +401,6 @@ static void golioth_coap_get_block(
         GLTH_LOGE(TAG, "coap_new_pdu() get failed");
         return;
     }
-    GSTATS_INC_ALLOC("get_block_pdu");
 
     if (req->get_block.block_index == 0) {
         // Save this token for further blocks
@@ -428,7 +419,6 @@ static void golioth_coap_get_block(
     golioth_coap_add_path(req_pdu, req->path_prefix, req->path);
     golioth_coap_add_block2(req_pdu, req->get_block.block_index, req->get_block.block_size);
     coap_send(session, req_pdu);
-    GSTATS_INC_FREE("get_block_pdu");
 }
 
 static void golioth_coap_post(golioth_coap_request_msg_t* req, coap_session_t* session) {
@@ -437,14 +427,12 @@ static void golioth_coap_post(golioth_coap_request_msg_t* req, coap_session_t* s
         GLTH_LOGE(TAG, "coap_new_pdu() post failed");
         return;
     }
-    GSTATS_INC_ALLOC("post_pdu");
 
     golioth_coap_add_token(req_pdu, req, session);
     golioth_coap_add_path(req_pdu, req->path_prefix, req->path);
     golioth_coap_add_content_type(req_pdu, req->post.content_type);
     coap_add_data(req_pdu, req->post.payload_size, (unsigned char*)req->post.payload);
     coap_send(session, req_pdu);
-    GSTATS_INC_FREE("post_pdu");
 }
 
 static void golioth_coap_delete(golioth_coap_request_msg_t* req, coap_session_t* session) {
@@ -453,12 +441,10 @@ static void golioth_coap_delete(golioth_coap_request_msg_t* req, coap_session_t*
         GLTH_LOGE(TAG, "coap_new_pdu() delete failed");
         return;
     }
-    GSTATS_INC_ALLOC("delete_pdu");
 
     golioth_coap_add_token(req_pdu, req, session);
     golioth_coap_add_path(req_pdu, req->path_prefix, req->path);
     coap_send(session, req_pdu);
-    GSTATS_INC_FREE("delete_pdu");
 }
 
 static void add_observation(golioth_coap_request_msg_t* req, golioth_coap_client_t* client) {
@@ -492,7 +478,6 @@ static void golioth_coap_observe(
         GLTH_LOGE(TAG, "coap_new_pdu() get failed");
         return;
     }
-    GSTATS_INC_ALLOC("observe_pdu");
 
     golioth_coap_add_token(req_pdu, req, session);
 
@@ -507,7 +492,6 @@ static void golioth_coap_observe(
     golioth_coap_add_accept(req_pdu, req->observe.content_type);
 
     coap_send(session, req_pdu);
-    GSTATS_INC_FREE("observe_pdu");
 }
 
 static void reestablish_observations(golioth_coap_client_t* client, coap_session_t* session) {
@@ -526,7 +510,6 @@ static golioth_status_t create_context(golioth_coap_client_t* client, coap_conte
         GLTH_LOGE(TAG, "Failed to create CoAP context");
         return GOLIOTH_ERR_MEM_ALLOC;
     }
-    GSTATS_INC_ALLOC("context");
 
     // Store our client pointer in the context, since it's needed in the reponse handler
     // we register below.
@@ -639,7 +622,6 @@ static golioth_status_t create_session(
         GLTH_LOGE(TAG, "coap_new_client_session() failed");
         return GOLIOTH_ERR_MEM_ALLOC;
     }
-    GSTATS_INC_ALLOC("session");
 
     return GOLIOTH_OK;
 }
@@ -705,15 +687,12 @@ static golioth_status_t coap_io_loop_once(
 
         if (request_msg.type == GOLIOTH_COAP_REQUEST_POST && request_msg.post.payload_size > 0) {
             golioth_sys_free(request_msg.post.payload);
-            GSTATS_INC_FREE("request_payload");
         }
 
         if (request_msg.request_complete_event) {
             assert(request_msg.request_complete_ack_sem);
             golioth_event_group_destroy(request_msg.request_complete_event);
-            GSTATS_INC_FREE("request_complete_event");
             golioth_sys_sem_destroy(request_msg.request_complete_ack_sem);
-            GSTATS_INC_FREE("request_complete_ack_sem");
         }
         return GOLIOTH_OK;
     }
@@ -738,7 +717,6 @@ static golioth_status_t coap_io_loop_once(
             golioth_coap_post(&request_msg, session);
             assert(request_msg.post.payload);
             golioth_sys_free(request_msg.post.payload);
-            GSTATS_INC_FREE("request_payload");
             break;
         case GOLIOTH_COAP_REQUEST_DELETE:
             GLTH_LOGD(TAG, "Handle DELETE %s", request_msg.path);
@@ -812,9 +790,7 @@ static golioth_status_t coap_io_loop_once(
 
         // Now it's safe to delete the event and semaphore.
         golioth_event_group_destroy(request_msg.request_complete_event);
-        GSTATS_INC_FREE("request_complete_event");
         golioth_sys_sem_destroy(request_msg.request_complete_ack_sem);
-        GSTATS_INC_FREE("request_complete_ack_sem");
     }
 
     if (io_error) {
@@ -962,11 +938,9 @@ static void golioth_coap_client_thread(void* arg) {
 
         if (coap_session) {
             coap_session_release(coap_session);
-            GSTATS_INC_FREE("session");
         }
         if (coap_context) {
             coap_free_context(coap_context);
-            GSTATS_INC_FREE("context");
         }
 
         // Small delay before starting a new session
@@ -997,7 +971,6 @@ golioth_client_t golioth_client_create(const golioth_client_config_t* config) {
         GLTH_LOGE(TAG, "Failed to allocate memory for client");
         goto error;
     }
-    GSTATS_INC_ALLOC("client");
     memset(new_client, 0, sizeof(golioth_coap_client_t));
 
     new_client->config = *config;
@@ -1007,7 +980,6 @@ golioth_client_t golioth_client_create(const golioth_client_config_t* config) {
         GLTH_LOGE(TAG, "Failed to create run semaphore");
         goto error;
     }
-    GSTATS_INC_ALLOC("run_sem");
     golioth_sys_sem_give(new_client->run_sem);
 
     new_client->request_queue = golioth_mbox_create(
@@ -1016,7 +988,6 @@ golioth_client_t golioth_client_create(const golioth_client_config_t* config) {
         GLTH_LOGE(TAG, "Failed to create request queue");
         goto error;
     }
-    GSTATS_INC_ALLOC("request_queue");
 
     golioth_sys_thread_config_t thread_cfg =
     {
@@ -1032,7 +1003,6 @@ golioth_client_t golioth_client_create(const golioth_client_config_t* config) {
         GLTH_LOGE(TAG, "Failed to create client thread");
         goto error;
     }
-    GSTATS_INC_ALLOC("coap_thread_handle");
 
     golioth_sys_timer_config_t keepalive_timer_cfg =
     {
@@ -1047,7 +1017,6 @@ golioth_client_t golioth_client_create(const golioth_client_config_t* config) {
         GLTH_LOGE(TAG, "Failed to create keepalive timer");
         goto error;
     }
-    GSTATS_INC_ALLOC("keepalive_timer");
 
     if (CONFIG_GOLIOTH_COAP_KEEPALIVE_INTERVAL_S > 0) {
         if (!golioth_sys_timer_start(new_client->keepalive_timer)) {
@@ -1101,23 +1070,18 @@ void golioth_client_destroy(golioth_client_t client) {
     }
     if (c->keepalive_timer) {
         golioth_sys_timer_destroy(c->keepalive_timer);
-        GSTATS_INC_FREE("keepalive_timer");
     }
     if (c->coap_thread_handle) {
         golioth_sys_thread_destroy(c->coap_thread_handle);
-        GSTATS_INC_FREE("coap_thread_handle");
     }
     if (c->request_queue) {
         purge_request_mbox(c->request_queue);
         golioth_mbox_destroy(c->request_queue);
-        GSTATS_INC_FREE("request_queue");
     }
     if (c->run_sem) {
         golioth_sys_sem_destroy(c->run_sem);
-        GSTATS_INC_FREE("run_sem");
     }
     golioth_sys_free(c);
-    GSTATS_INC_FREE("client");
 }
 
 bool golioth_client_is_connected(golioth_client_t client) {
@@ -1155,9 +1119,7 @@ golioth_status_t golioth_coap_client_empty(
     if (is_synchronous) {
         // Created here, deleted by coap thread (or here if fail to enqueue
         request_msg.request_complete_event = golioth_event_group_create();
-        GSTATS_INC_ALLOC("request_complete_event");
         request_msg.request_complete_ack_sem = golioth_sys_sem_create(1, 0);
-        GSTATS_INC_ALLOC("request_complete_ack_sem");
     }
 
     bool sent = golioth_mbox_try_send(c->request_queue, &request_msg);
@@ -1165,9 +1127,7 @@ golioth_status_t golioth_coap_client_empty(
         GLTH_LOGW(TAG, "Failed to enqueue request, queue full");
         if (is_synchronous) {
             golioth_event_group_destroy(request_msg.request_complete_event);
-            GSTATS_INC_FREE("request_complete_event");
             golioth_sys_sem_destroy(request_msg.request_complete_ack_sem);
-            GSTATS_INC_FREE("request_complete_ack_sem");
         }
         return GOLIOTH_ERR_QUEUE_FULL;
     }
@@ -1227,7 +1187,6 @@ golioth_status_t golioth_coap_client_set(
             GLTH_LOGE(TAG, "Payload alloc failure");
             return GOLIOTH_ERR_MEM_ALLOC;
         }
-        GSTATS_INC_ALLOC("request_payload");
         memset(request_payload, 0, payload_size);
         memcpy(request_payload, payload, payload_size);
     }
@@ -1255,9 +1214,7 @@ golioth_status_t golioth_coap_client_set(
     if (is_synchronous) {
         // Created here, deleted by coap thread (or here if fail to enqueue
         request_msg.request_complete_event = golioth_event_group_create();
-        GSTATS_INC_ALLOC("request_complete_event");
         request_msg.request_complete_ack_sem = golioth_sys_sem_create(1, 0);
-        GSTATS_INC_ALLOC("request_complete_ack_sem");
     }
 
     bool sent = golioth_mbox_try_send(c->request_queue, &request_msg);
@@ -1265,13 +1222,10 @@ golioth_status_t golioth_coap_client_set(
         GLTH_LOGW(TAG, "Failed to enqueue request, queue full");
         if (payload_size > 0) {
             golioth_sys_free(request_payload);
-            GSTATS_INC_FREE("request_payload");
         }
         if (is_synchronous) {
             golioth_event_group_destroy(request_msg.request_complete_event);
-            GSTATS_INC_FREE("request_complete_event");
             golioth_sys_sem_destroy(request_msg.request_complete_ack_sem);
-            GSTATS_INC_FREE("request_complete_ack_sem");
         }
         return GOLIOTH_ERR_QUEUE_FULL;
     }
@@ -1335,9 +1289,7 @@ golioth_status_t golioth_coap_client_delete(
     if (is_synchronous) {
         // Created here, deleted by coap thread (or here if fail to enqueue
         request_msg.request_complete_event = golioth_event_group_create();
-        GSTATS_INC_ALLOC("request_complete_event");
         request_msg.request_complete_ack_sem = golioth_sys_sem_create(1, 0);
-        GSTATS_INC_ALLOC("request_complete_ack_sem");
     }
 
     bool sent = golioth_mbox_try_send(c->request_queue, &request_msg);
@@ -1345,9 +1297,7 @@ golioth_status_t golioth_coap_client_delete(
         GLTH_LOGW(TAG, "Failed to enqueue request, queue full");
         if (is_synchronous) {
             golioth_event_group_destroy(request_msg.request_complete_event);
-            GSTATS_INC_FREE("request_complete_event");
             golioth_sys_sem_destroy(request_msg.request_complete_ack_sem);
-            GSTATS_INC_FREE("request_complete_ack_sem");
         }
         return GOLIOTH_ERR_QUEUE_FULL;
     }
@@ -1403,9 +1353,7 @@ static golioth_status_t golioth_coap_client_get_internal(
     if (is_synchronous) {
         // Created here, deleted by coap thread (or here if fail to enqueue
         request_msg.request_complete_event = golioth_event_group_create();
-        GSTATS_INC_ALLOC("request_complete_event");
         request_msg.request_complete_ack_sem = golioth_sys_sem_create(1, 0);
-        GSTATS_INC_ALLOC("request_complete_ack_sem");
     }
     request_msg.ageout_ms = ageout_ms;
     if (type == GOLIOTH_COAP_REQUEST_GET_BLOCK) {
@@ -1420,9 +1368,7 @@ static golioth_status_t golioth_coap_client_get_internal(
         GLTH_LOGE(TAG, "Failed to enqueue request, queue full");
         if (is_synchronous) {
             golioth_event_group_destroy(request_msg.request_complete_event);
-            GSTATS_INC_FREE("request_complete_event");
             golioth_sys_sem_destroy(request_msg.request_complete_ack_sem);
-            GSTATS_INC_FREE("request_complete_ack_sem");
         }
         return GOLIOTH_ERR_QUEUE_FULL;
     }
@@ -1568,10 +1514,6 @@ uint32_t golioth_client_num_items_in_request_queue(golioth_client_t client) {
         return 0;
     }
     return golioth_mbox_num_messages(c->request_queue);
-}
-
-bool golioth_client_has_allocation_leaks(void) {
-    return golioth_statistics_has_allocation_leaks();
 }
 
 golioth_settings_t* golioth_coap_client_get_settings(golioth_client_t client) {

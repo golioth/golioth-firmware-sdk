@@ -263,14 +263,6 @@ uint32_t golioth_client_num_items_in_request_queue(golioth_client_t client);
 /// @param percent Percent packet loss (0 is no packets lost, 100 is all packets lost)
 void golioth_client_set_packet_loss_percent(uint8_t percent);
 
-/// Return whether there exists an allocated resource that has not been freed by the client.
-///
-/// Intended only for Golioth SDK developers, for test and debug purposes.
-///
-/// @return true There is at least one allocation leak (turn on debug logs to see which ones)
-/// @return false There are no allocation leaks
-bool golioth_client_has_allocation_leaks(void);
-
 /// Return the thread handle of the client thread.
 ///
 /// @param client The client handle
