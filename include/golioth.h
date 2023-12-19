@@ -20,7 +20,6 @@ extern "C" {
 #include "golioth_fw_update.h"
 #include "golioth_settings.h"
 #include "golioth_debug.h"
-#include "golioth_remote_shell.h"
 #include "golioth_sys.h"
 
 #ifdef __cplusplus
