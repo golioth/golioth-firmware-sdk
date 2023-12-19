@@ -199,45 +199,6 @@ config GOLIOTH_AUTO_LOG_TO_CLOUD
         There is an internal feature flag that is set by default to the value of this
         configuration item. The flag can also be set at runtime.
 
-config GOLIOTH_REMOTE_SHELL
-    bool "(Experimental) Golioth Remote Shell service"
-    help
-        Enable/disable golioth_remote_shell feature.
-
-        If enabled, an additional RTOS thread will be created along
-        with a ringbuffer to queue device output log data.
-
-if GOLIOTH_REMOTE_SHELL
-
-config GOLIOTH_REMOTE_SHELL_THREAD_STACK_SIZE
-    int "Remote shell thread stack size"
-    default 4096
-    help
-        Stack size of thread handling remote shell.
-
-config GOLIOTH_REMOTE_SHELL_BUF_SIZE
-    int "Remote shell buffer size"
-    default 8192
-    help
-        Size, in bytes, of the ringbuffer/FIFO to store log output data.
-
-        Setting this to a large-ish value can be useful to capture log
-        output from the device before it's connected to Golioth, i.e.
-        early boot logs. If this is not important, it can be set
-        to a much smaller value, like 512.
-
-config GOLIOTH_REMOTE_SHELL_THREAD_DELAY_MS
-    int "Remote shell thread delay"
-    default 500
-    help
-        How often the remote shell thread will process the log output ringbuffer.
-
-        A larger value results in more latency when viewing logs remotely.
-        A smaller value results in lower latency, but more packets sent
-        (less log data per packet).
-
-endif # GOLIOTH_REMOTE_SHELL
-
 config GOLIOTH_DEBUG_DEFAULT_LOG_LEVEL
     int "Default log level for Golioth SDK"
     default 3

@@ -123,7 +123,6 @@ config GOLIOTH_HARDCODED_CA_CRT_PATH
 
 config GOLIOTH_ZEPHYR_THREAD_STACKS
 	int "Number of thread stacks in Zephyr pool"
-	default 3 if GOLIOTH_REMOTE_SHELL_ENABLE
 	default 2
 	help
 	  Number of thread stacks statically allocated for the use in golioth_sys_thread_create().

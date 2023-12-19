@@ -57,7 +57,6 @@ zephyr_library_sources(
     ../../src/golioth_mbox.c
     ../../src/golioth_ota.c
     ../../src/golioth_payload_utils.c
-    ../../src/golioth_remote_shell.c
     ../../src/golioth_ringbuf.c
     ../../src/golioth_rpc.c
     ../../src/golioth_settings.c

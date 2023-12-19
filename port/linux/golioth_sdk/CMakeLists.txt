@@ -45,7 +45,6 @@ set(sdk_srcs
     "${sdk_src}/golioth_payload_utils.c"
     "${sdk_src}/golioth_fw_update.c"
     "${sdk_src}/golioth_settings.c"
-    "${sdk_src}/golioth_remote_shell.c"
     "${sdk_src}/golioth_ringbuf.c"
     "${sdk_src}/golioth_event_group.c"
     "${sdk_src}/golioth_mbox.c"
