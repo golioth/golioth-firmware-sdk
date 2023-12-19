@@ -38,7 +38,7 @@ jobs:
 
   test:
     needs: build
-    runs-on: has_${{ inputs.hil_board }}
+    runs-on: [ is_active, "has_${{ inputs.hil_board }}" ]
 
     container:
       image: golioth/golioth-hil-base:280d655
