@@ -34,14 +34,13 @@ static void counter_get_handler(
         const uint8_t* payload,
         size_t payload_size,
         void* arg) {
-    if (response->status != GOLIOTH_OK) {
-        LOG_WRN("Failed to set counter: %d", response->status);
-        return;
+    if ((response->status != GOLIOTH_OK) || golioth_payload_is_null(payload, payload_size)) {
+        LOG_WRN("Failed to get counter (async): %d", response->status);
     }
-
-    LOG_INF("Counter (async): %d", golioth_payload_as_int(payload, payload_size));
-
-    return;
+    else
+    {
+        LOG_INF("Counter (async): %d", golioth_payload_as_int(payload, payload_size));
+    }
 }
 
 static void counter_get_async(golioth_client_t* client) {
@@ -61,8 +60,10 @@ static void counter_get_sync(golioth_client_t* client) {
     if (err) {
         LOG_WRN("failed to get data from LightDB: %d", err);
     }
-
-    LOG_INF("Counter (sync): %d", value);
+    else
+    {
+        LOG_INF("Counter (sync): %d", value);
+    }
 }
 
 static void counter_get_json_sync(golioth_client_t* client) {
@@ -72,12 +73,13 @@ static void counter_get_json_sync(golioth_client_t* client) {
 
     /* Get root of LightDB State, but JSON can be returned for any path */
     err = golioth_lightdb_get_json_sync(client, "", sbuf, len, APP_TIMEOUT_S);
-    if (err) {
+    if (err || (0 == strlen(sbuf))) {
         LOG_WRN("failed to get JSON data from LightDB: %d", err);
-        return;
     }
-
-    LOG_HEXDUMP_INF(sbuf, strlen(sbuf), "LightDB JSON (sync)");
+    else
+    {
+        LOG_HEXDUMP_INF(sbuf, strlen(sbuf), "LightDB JSON (sync)");
+    }
 }
 
 int main(void) {
