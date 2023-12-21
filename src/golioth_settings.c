@@ -450,40 +450,4 @@ golioth_status_t golioth_settings_register_float(
     return GOLIOTH_OK;
 }
 
-#else  // CONFIG_GOLIOTH_SETTINGS
-
-golioth_status_t golioth_settings_register_int(
-        golioth_client_t client,
-        const char* setting_name,
-        golioth_int_setting_cb callback,
-        void* callback_arg) {
-    return GOLIOTH_ERR_NOT_IMPLEMENTED;
-}
-
-golioth_status_t golioth_settings_register_int_with_range(
-        golioth_client_t client,
-        const char* setting_name,
-        int32_t min_val,
-        int32_t max_val,
-        golioth_int_setting_cb callback,
-        void* callback_arg) {
-    return GOLIOTH_ERR_NOT_IMPLEMENTED;
-}
-
-golioth_status_t golioth_settings_register_bool(
-        golioth_client_t client,
-        const char* setting_name,
-        golioth_bool_setting_cb callback,
-        void* callback_arg) {
-    return GOLIOTH_ERR_NOT_IMPLEMENTED;
-}
-
-golioth_status_t golioth_settings_register_float(
-        golioth_client_t client,
-        const char* setting_name,
-        golioth_float_setting_cb callback,
-        void* callback_arg) {
-    return GOLIOTH_ERR_NOT_IMPLEMENTED;
-}
-
 #endif  // CONFIG_GOLIOTH_SETTINGS
