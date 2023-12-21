@@ -213,14 +213,5 @@ golioth_status_t golioth_rpc_register(
     }
     return GOLIOTH_OK;
 }
-#else  // CONFIG_GOLIOTH_RPC
-
-golioth_status_t golioth_rpc_register(
-        golioth_client_t client,
-        const char* method,
-        golioth_rpc_cb_fn callback,
-        void* callback_arg) {
-    return GOLIOTH_ERR_NOT_IMPLEMENTED;
-}
 
 #endif  // CONFIG_GOLIOTH_RPC
