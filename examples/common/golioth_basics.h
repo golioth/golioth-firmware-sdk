@@ -1,5 +1,5 @@
 #pragma once
 
-#include "golioth.h"
+#include <golioth/golioth.h>
 
 void golioth_basics(golioth_client_t client);

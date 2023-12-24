@@ -4,7 +4,7 @@
  * SPDX-License-Identifier: Apache-2.0
  */
 #include <assert.h>
-#include "golioth_status.h"
+#include <golioth/golioth_status.h>
 
 #define GENERATE_GOLIOTH_STATUS_STR(code) #code,
 static const char* _status_strings[NUM_GOLIOTH_STATUS_CODES] = {

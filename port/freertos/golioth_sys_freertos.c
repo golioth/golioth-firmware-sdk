@@ -1,4 +1,4 @@
-#include "golioth_sys.h"
+#include <golioth/golioth_sys.h>
 #include <FreeRTOS.h>
 #include <task.h>
 #include <semphr.h>

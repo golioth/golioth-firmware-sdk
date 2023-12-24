@@ -4,7 +4,7 @@
  * SPDX-License-Identifier: Apache-2.0
  */
 
-#include "golioth_sys.h"
+#include <golioth/golioth_sys.h>
 
 LOG_TAG_DEFINE(zcbor_utils);
 

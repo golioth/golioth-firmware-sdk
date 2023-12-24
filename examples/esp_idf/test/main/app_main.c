@@ -16,7 +16,7 @@
 #include "time.h"
 #include "shell.h"
 #include "util.h"
-#include "golioth.h"
+#include <golioth/golioth.h>
 
 #define TAG "test"
 

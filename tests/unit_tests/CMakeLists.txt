@@ -30,8 +30,9 @@ add_library(zcbor
     "${zcbor_dir}/src/zcbor_encode.c"
     "${repo_root}/src/zcbor_utils.c"
 )
-target_include_directories(zcbor PUBLIC "${zcbor_dir}/include")
-target_include_directories(zcbor PUBLIC "${CMAKE_CURRENT_SOURCE_DIR}")
+target_include_directories(zcbor PUBLIC ${zcbor_dir}/include)
+target_include_directories(zcbor PUBLIC ${CMAKE_CURRENT_SOURCE_DIR})
+target_include_directories(zcbor PRIVATE ${CMAKE_CURRENT_SOURCE_DIR}/include)
 target_compile_options(zcbor PRIVATE "-Wno-strict-aliasing" "-Wno-uninitialized")
 
 # Build libcoap
@@ -44,8 +45,8 @@ add_subdirectory("${repo_root}/external/libcoap" build)
 function(golioth_unit_test name src)
     add_executable(${name} ${src} ${ARGN})
     target_include_directories(${name} PRIVATE
-        ${repo_root}/src/include
         ${repo_root}/include
+        ${repo_root}/src
     )
     target_link_libraries(${name} unity fff)
     add_test(NAME ${name} COMMAND "./${name}")
@@ -58,20 +59,20 @@ endfunction()
 # Ringbuf unit tests
 
 golioth_unit_test(test_ringbuf
-    ${repo_root}/src/golioth_ringbuf.c
+    ${repo_root}/src/ringbuf.c
     test_ringbuf.c
 )
 
 # RPC unit tests
 
-golioth_unit_test(test_golioth_rpc
-    test_golioth_rpc.c
-    fakes/golioth_coap_client_fake.c
+golioth_unit_test(test_rpc
+    test_rpc.c
+    fakes/coap_client_fake.c
 )
 find_package(coap-3)
-target_include_directories(test_golioth_rpc PRIVATE
+target_include_directories(test_rpc PRIVATE
     ${repo_root}/external/libcoap/include
     ${repo_root}/port/linux
     $<TARGET_PROPERTY:coap-3,INCLUDE_DIRECTORIES>
 )
-target_link_libraries(test_golioth_rpc zcbor)
+target_link_libraries(test_rpc zcbor)

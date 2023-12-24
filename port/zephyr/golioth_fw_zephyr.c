@@ -3,7 +3,7 @@
 #include <zephyr/storage/flash_map.h>
 #include <zephyr/sys/reboot.h>
 
-#include "golioth_fw_update.h"
+#include <golioth/fw_update.h>
 
 #include <zephyr/logging/log.h>
 LOG_MODULE_REGISTER(golioth_fw_zephyr);

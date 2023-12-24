@@ -2,7 +2,7 @@
 #include <fff.h>
 #include <stdint.h>
 
-#include "golioth_ringbuf.h"
+#include "ringbuf.h"
 
 void setUp(void) {}
 void tearDown(void) {}

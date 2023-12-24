@@ -4,7 +4,7 @@
 #include "nvs.h"
 #include "wifi.h"
 #include "shell.h"
-#include "golioth.h"
+#include <golioth/golioth.h>
 
 #define TAG "app_main"
 

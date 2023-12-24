@@ -36,20 +36,20 @@ set(sdk_srcs
     "${sdk_port}/linux//golioth_sys_linux.c"
     "${sdk_port}/linux/fw_update_linux.c"
     "${sdk_src}/golioth_status.c"
-    "${sdk_src}/golioth_coap_client.c"
-    "${sdk_src}/golioth_log.c"
-    "${sdk_src}/golioth_lightdb_state.c"
-    "${sdk_src}/golioth_lightdb_stream.c"
-    "${sdk_src}/golioth_rpc.c"
-    "${sdk_src}/golioth_ota.c"
-    "${sdk_src}/golioth_payload_utils.c"
-    "${sdk_src}/golioth_fw_update.c"
-    "${sdk_src}/golioth_settings.c"
-    "${sdk_src}/golioth_ringbuf.c"
-    "${sdk_src}/golioth_event_group.c"
-    "${sdk_src}/golioth_mbox.c"
+    "${sdk_src}/coap_client.c"
+    "${sdk_src}/log.c"
+    "${sdk_src}/lightdb_state.c"
+    "${sdk_src}/lightdb_stream.c"
+    "${sdk_src}/rpc.c"
+    "${sdk_src}/ota.c"
+    "${sdk_src}/payload_utils.c"
+    "${sdk_src}/fw_update.c"
+    "${sdk_src}/settings.c"
+    "${sdk_src}/ringbuf.c"
+    "${sdk_src}/event_group.c"
+    "${sdk_src}/mbox.c"
     "${sdk_src}/golioth_debug.c"
-    "${sdk_src}/golioth_fw_block_processor.c"
+    "${sdk_src}/fw_block_processor.c"
     "${sdk_src}/zcbor_utils.c"
 )
 
@@ -73,7 +73,6 @@ target_include_directories(golioth_sdk
         ${miniz_dir}
         ${zcbor_dir}
         ${sdk_port}/common/miniz
-        ${sdk_src}/include
 )
 target_link_libraries(golioth_sdk
     PRIVATE coap-3 pthread rt)

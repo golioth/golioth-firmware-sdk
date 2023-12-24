@@ -8,7 +8,7 @@
 #include "nvs.h"
 #include "shell.h"
 #include "wifi.h"
-#include "golioth.h"
+#include <golioth/golioth.h>
 
 #define TAG "certificate_auth"
 

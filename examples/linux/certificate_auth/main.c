@@ -1,4 +1,4 @@
-#include "golioth.h"
+#include <golioth/golioth.h>
 #include <stdio.h>
 #include <string.h>
 #include <assert.h>

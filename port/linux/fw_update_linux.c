@@ -3,7 +3,7 @@
 // One idea is to do a "lightweight" OTA, where there is a loader process
 // that dynamically loads the app as a .so.
 
-#include "golioth_fw_update.h"
+#include <golioth/fw_update.h>
 #include <unistd.h>  // readlink
 #include <fcntl.h>   // open
 #include <string.h>  // memcpy
