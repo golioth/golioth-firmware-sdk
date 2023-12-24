@@ -4,7 +4,7 @@
  * SPDX-License-Identifier: Apache-2.0
  */
 
-#include <golioth_log.h>
+#include <golioth/log.h>
 #include <zephyr/logging/log_backend.h>
 #include <zephyr/logging/log_ctrl.h>
 #include <zephyr/logging/log_core.h>

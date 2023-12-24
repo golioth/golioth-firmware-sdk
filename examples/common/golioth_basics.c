@@ -4,7 +4,7 @@
  * SPDX-License-Identifier: Apache-2.0
  */
 #include "golioth_basics.h"
-#include "golioth.h"
+#include <golioth/golioth.h>
 #include <stdint.h>
 #include <string.h>
 #include <inttypes.h>

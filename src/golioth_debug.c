@@ -1,5 +1,5 @@
-#include "golioth_debug.h"
-#include "golioth_log.h"
+#include <golioth/golioth_debug.h>
+#include <golioth/log.h>
 #include <stdio.h>
 #include <stdarg.h>
 #include <stdlib.h>

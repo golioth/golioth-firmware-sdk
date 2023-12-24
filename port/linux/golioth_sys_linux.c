@@ -1,4 +1,4 @@
-#include "golioth_sys.h"
+#include <golioth/golioth_sys.h>
 #include <unistd.h>
 #include <signal.h>
 #include <time.h>

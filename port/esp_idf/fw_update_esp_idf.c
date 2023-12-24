@@ -1,4 +1,4 @@
-#include "golioth_fw_update.h"
+#include <golioth/fw_update.h>
 #include "esp_log.h"
 #include "esp_ota_ops.h"
 #include "esp_partition.h"

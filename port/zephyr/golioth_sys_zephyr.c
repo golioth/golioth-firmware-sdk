@@ -3,7 +3,7 @@
 #include <zephyr/posix/poll.h>
 #include <zephyr/posix/sys/eventfd.h>
 
-#include "golioth_sys.h"
+#include <golioth/golioth_sys.h>
 #include "golioth_log_zephyr.h"
 
 LOG_TAG_DEFINE(golioth_sys_zephyr);

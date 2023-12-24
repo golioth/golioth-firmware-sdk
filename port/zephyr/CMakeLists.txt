@@ -25,7 +25,6 @@ add_subdirectory_ifdef(CONFIG_GOLIOTH_SAMPLE_COMMON
     ${ZEPHYR_GOLIOTH_FIRMWARE_SDK_MODULE_DIR}/examples/zephyr/common examples_zephyr_common)
 
 zephyr_library()
-zephyr_library_include_directories(../../src/include)
 
 zephyr_library_include_directories(
     # bsdiff
@@ -46,20 +45,20 @@ zephyr_library_include_directories(
 
 zephyr_library_sources(
     # SDK
-    ../../src/golioth_coap_client.c
+    ../../src/coap_client.c
     ../../src/golioth_debug.c
-    ../../src/golioth_event_group.c
-    ../../src/golioth_fw_block_processor.c
-    ../../src/golioth_fw_update.c
-    ../../src/golioth_lightdb_state.c
-    ../../src/golioth_lightdb_stream.c
-    ../../src/golioth_log.c
-    ../../src/golioth_mbox.c
-    ../../src/golioth_ota.c
-    ../../src/golioth_payload_utils.c
-    ../../src/golioth_ringbuf.c
-    ../../src/golioth_rpc.c
-    ../../src/golioth_settings.c
+    ../../src/event_group.c
+    ../../src/fw_block_processor.c
+    ../../src/fw_update.c
+    ../../src/lightdb_state.c
+    ../../src/lightdb_stream.c
+    ../../src/log.c
+    ../../src/mbox.c
+    ../../src/ota.c
+    ../../src/payload_utils.c
+    ../../src/ringbuf.c
+    ../../src/rpc.c
+    ../../src/settings.c
     ../../src/golioth_status.c
     ../../src/zcbor_utils.c
     golioth_sys_zephyr.c

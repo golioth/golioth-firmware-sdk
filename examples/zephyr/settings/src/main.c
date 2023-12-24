@@ -7,7 +7,7 @@
 #include <zephyr/logging/log.h>
 LOG_MODULE_REGISTER(device_settings, LOG_LEVEL_DBG);
 
-#include "golioth.h"
+#include <golioth/golioth.h>
 #include <samples/common/sample_credentials.h>
 #include <zephyr/kernel.h>
 

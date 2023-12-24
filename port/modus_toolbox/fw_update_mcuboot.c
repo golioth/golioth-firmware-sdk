@@ -1,4 +1,4 @@
-#include "golioth_fw_update.h"
+#include <golioth/fw_update.h>
 #include "bootutil/bootutil.h"
 #include "bootutil/image.h"
 #include "sysflash/sysflash.h"

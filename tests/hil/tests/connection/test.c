@@ -1,4 +1,4 @@
-#include "golioth.h"
+#include <golioth/golioth.h>
 
 LOG_TAG_DEFINE(test_connect);
 
