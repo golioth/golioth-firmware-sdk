@@ -13,6 +13,8 @@
 #include "golioth_fw_update.h"
 #include "golioth_fw_block_processor.h"
 
+#if defined(CONFIG_GOLIOTH_FW_UPDATE)
+
 LOG_TAG_DEFINE(golioth_fw_update);
 
 static golioth_client_t _client;
@@ -296,3 +298,5 @@ void golioth_fw_update_register_state_change_callback(
     _state_callback = callback;
     _state_callback_arg = user_arg;
 }
+
+#endif // CONFIG_GOLIOTH_FW_UPDATE
