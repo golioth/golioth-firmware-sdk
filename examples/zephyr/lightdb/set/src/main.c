@@ -7,7 +7,8 @@
 #include <zephyr/logging/log.h>
 LOG_MODULE_REGISTER(lightdb_set, LOG_LEVEL_DBG);
 
-#include <golioth/golioth.h>
+#include <golioth/client.h>
+#include <golioth/lightdb_state.h>
 #include <samples/common/sample_credentials.h>
 #include <string.h>
 #include <zephyr/kernel.h>

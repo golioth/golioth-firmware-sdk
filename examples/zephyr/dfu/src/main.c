@@ -7,7 +7,8 @@
 #include <zephyr/logging/log.h>
 LOG_MODULE_REGISTER(dfu_sample, LOG_LEVEL_DBG);
 
-#include <golioth/golioth.h>
+#include <golioth/client.h>
+#include <golioth/fw_update.h>
 #include <samples/common/sample_credentials.h>
 #include <string.h>
 #include <zephyr/kernel.h>

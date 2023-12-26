@@ -10,7 +10,7 @@
 #if CONFIG_GOLIOTH_BLE_SERVICE_ENABLED
 #include "ble.h"
 #endif
-#include <golioth/golioth.h>
+#include <golioth/client.h>
 #include "golioth_basics.h"
 #include <string.h>
 

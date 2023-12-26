@@ -5,7 +5,8 @@
  */
 #pragma once
 
-#include <golioth/golioth.h>
+#include <golioth/client.h>
+#include <golioth/ota.h>
 #include <stdbool.h>
 
 #define GOLIOTH_FW_UPDATE_DEFAULT_PACKAGE_NAME "main"

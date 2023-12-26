@@ -3,11 +3,20 @@
  *
  * SPDX-License-Identifier: Apache-2.0
  */
-#include "golioth_basics.h"
-#include <golioth/golioth.h>
 #include <stdint.h>
 #include <string.h>
 #include <inttypes.h>
+
+#include <golioth/client.h>
+#include <golioth/fw_update.h>
+#include <golioth/lightdb_state.h>
+#include <golioth/lightdb_stream.h>
+#include <golioth/payload_utils.h>
+#include <golioth/rpc.h>
+#include <golioth/settings.h>
+#include <golioth/golioth_sys.h>
+
+#include "golioth_basics.h"
 
 LOG_TAG_DEFINE(golioth_basics);
 
