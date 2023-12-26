@@ -1,4 +1,3 @@
-from golioth import Client
 import logging
 import pytest
 import pprint
@@ -7,15 +6,7 @@ import yaml
 
 pytestmark = pytest.mark.anyio
 
-async def test_settings(shell, api_key, device_name, credentials_file):
-
-    # Connect to Golioth and get device object
-
-    client = Client(api_url = "https://api.golioth.dev",
-                    api_key = api_key)
-    project = (await client.get_projects())[0]
-    device = await project.device_by_name(device_name)
-
+async def test_settings(shell, project, device, credentials_file):
     # Delete any existing device-level settings
 
     settings = await device.settings.get_all()

@@ -1,4 +1,4 @@
-from golioth import Client, LogLevel, LogEntry
+from golioth import LogLevel, LogEntry
 import logging
 import pytest
 import time
@@ -49,15 +49,7 @@ def verify_log_messages(logs):
     assert len(expected_logs) == 0, 'Unable to find all Log messages on server'
 
 
-async def test_logging(shell, api_key, device_name, credentials_file):
-
-    # Connect to Golioth and get device object
-
-    client = Client(api_url = "https://api.golioth.dev",
-                    api_key = api_key)
-    project = (await client.get_projects())[0]
-    device = await project.device_by_name(device_name)
-
+async def test_logging(shell, device, credentials_file):
     # Read credentials
 
     with open(credentials_file, 'r') as f:

@@ -104,7 +104,7 @@ jobs:
           pip3 install -r zephyr/scripts/requirements-build-test.txt
           pip3 install -r zephyr/scripts/requirements-run-test.txt
 
-          pip3 install git+https://github.com/golioth/python-golioth-tools@v0.2.0
+          pip3 install git+https://github.com/golioth/python-golioth-tools@v0.3.0
       - name: Power Cycle USB Hub
         run: /opt/golioth-scripts/power-cycle-usb-hub.sh
       - name: Download build
