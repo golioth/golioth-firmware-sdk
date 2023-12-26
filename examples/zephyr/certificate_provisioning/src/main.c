@@ -7,7 +7,7 @@
 #include <zephyr/logging/log.h>
 LOG_MODULE_REGISTER(cert_provisioning, LOG_LEVEL_DBG);
 
-#include <golioth/golioth.h>
+#include <golioth/client.h>
 #include <samples/common/net_connect.h>
 #include <zephyr/net/coap.h>
 #include <zephyr/device.h>

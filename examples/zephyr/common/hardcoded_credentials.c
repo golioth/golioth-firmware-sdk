@@ -7,7 +7,7 @@
 #include <zephyr/logging/log.h>
 LOG_MODULE_REGISTER(golioth_hardcoded_credentials, LOG_LEVEL_DBG);
 
-#include <golioth/golioth.h>
+#include <golioth/client.h>
 
 #ifdef CONFIG_GOLIOTH_AUTH_METHOD_CERT
 

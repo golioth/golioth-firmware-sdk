@@ -1,7 +1,8 @@
-#include <golioth/golioth.h>
-#include "golioth_basics.h"
 #include <string.h>
 #include <assert.h>
+
+#include <golioth/client.h>
+#include "golioth_basics.h"
 
 #include <samples/common/net_connect.h>
 

@@ -7,7 +7,7 @@
 #ifndef __GOLIOTH_INCLUDE_SAMPLE_CREDENTIALS_H__
 #define __GOLIOTH_INCLUDE_SAMPLE_CREDENTIALS_H__
 
-#include <golioth/golioth.h>
+#include <golioth/client.h>
 
 /**
  * @brief This function returns Golioth credentials in one of three different ways

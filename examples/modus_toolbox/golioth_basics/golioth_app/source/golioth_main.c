@@ -56,7 +56,7 @@
 #include "cy_wcm_error.h"
 
 #include "golioth_main.h"
-#include <golioth/golioth.h>
+#include <golioth/client.h>
 #include "golioth_basics.h"
 
 #define TAG "golioth_main"

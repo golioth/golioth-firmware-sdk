@@ -1,9 +1,10 @@
-#include <golioth/golioth.h>
-#include "golioth_basics.h"
 #include <string.h>
 #include <assert.h>
 #include <stdlib.h>
 #include <stdio.h>
+
+#include <golioth/client.h>
+#include "golioth_basics.h"
 
 #define TAG "main"
 

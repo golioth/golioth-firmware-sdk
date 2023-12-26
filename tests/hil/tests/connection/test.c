@@ -1,4 +1,5 @@
-#include <golioth/golioth.h>
+#include <golioth/client.h>
+#include <golioth/golioth_sys.h>
 
 LOG_TAG_DEFINE(test_connect);
 

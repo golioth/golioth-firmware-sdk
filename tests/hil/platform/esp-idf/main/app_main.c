@@ -7,7 +7,8 @@
 #include "nvs.h"
 #include "shell.h"
 #include "wifi.h"
-#include <golioth/golioth.h>
+#include <golioth/client.h>
+#include <golioth/golioth_sys.h>
 #include <string.h>
 
 #define TAG "hil_test"

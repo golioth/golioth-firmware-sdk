@@ -16,7 +16,13 @@
 #include "time.h"
 #include "shell.h"
 #include "util.h"
-#include <golioth/golioth.h>
+#include <golioth/client.h>
+#include <golioth/fw_update.h>
+#include <golioth/golioth_debug.h>
+#include <golioth/lightdb_state.h>
+#include <golioth/payload_utils.h>
+#include <golioth/rpc.h>
+#include <golioth/settings.h>
 
 #define TAG "test"
 

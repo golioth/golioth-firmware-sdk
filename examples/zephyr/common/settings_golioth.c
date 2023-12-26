@@ -8,7 +8,7 @@
 LOG_MODULE_REGISTER(golioth_sample_settings, CONFIG_GOLIOTH_DEBUG_DEFAULT_LOG_LEVEL);
 
 #include <errno.h>
-#include <golioth/golioth.h>
+#include <golioth/client.h>
 #include <zephyr/init.h>
 #include <zephyr/settings/settings.h>
 

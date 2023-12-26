@@ -4,7 +4,14 @@
 #include "nvs.h"
 #include "wifi.h"
 #include "shell.h"
-#include <golioth/golioth.h>
+
+extern "C" {
+
+#include <golioth/client.h>
+#include <golioth/lightdb_state.h>
+#include <golioth/golioth_sys.h>
+
+}
 
 #define TAG "app_main"
 
