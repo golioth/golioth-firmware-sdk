@@ -5,7 +5,7 @@
  */
 
 #include <zephyr/logging/log.h>
-LOG_MODULE_REGISTER(dfu_sample, LOG_LEVEL_DBG);
+LOG_MODULE_REGISTER(fw_update_sample, LOG_LEVEL_DBG);
 
 #include <golioth/client.h>
 #include <golioth/fw_update.h>
@@ -29,7 +29,7 @@ static void on_client_event(golioth_client_t client, golioth_client_event_t even
 }
 
 int main(void) {
-    LOG_DBG("Start DFU sample");
+    LOG_DBG("Start FW Update sample");
 
     net_connect();
 

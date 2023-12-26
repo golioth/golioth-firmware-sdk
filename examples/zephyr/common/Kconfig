@@ -65,10 +65,10 @@ config GOLIOTH_SAMPLE_DHCP_BIND
 	  Obtain an IPv4 address from the DHCP server.
 
 config GOLIOTH_SAMPLE_FW_VERSION
-	string "DFU Firmware Version"
+	string "FW Update Firmware Version"
 	default "0.0.0+0"
 	help
-          Firmware version used by Golioth DFU sample to assign MCUBOOT_IMGTOOL_SIGN_VERSION (if
+          Firmware version used by Golioth FW Update sample to assign MCUBOOT_IMGTOOL_SIGN_VERSION (if
           using Zephyr) or MCUBOOT_IMGTOOL_SIGN_VERSION (if using NCS)
 
 if BOOTLOADER_MCUBOOT

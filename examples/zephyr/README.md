@@ -91,7 +91,7 @@ west update
 
   - [Golioth Basics sample](golioth_basics/README.md)
   - [Golioth Certificate Provisioning sample](certificate_provisioning/README.md)
-  - [Golioth DFU sample](dfu/README.md)
+  - [Golioth FW Update sample](fw_update/README.md)
   - [Golioth Hello sample](hello/README.md)
   - [Golioth LightDB get sample](lightdb/get/README.md)
   - [Golioth LightDB observe sample](lightdb/observe/README.md)
