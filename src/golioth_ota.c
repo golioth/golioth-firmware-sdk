@@ -14,6 +14,8 @@
 #include "zcbor_utils.h"
 #include "zcbor_any_skip_fixed.h"
 
+#if defined(CONFIG_GOLIOTH_FW_UPDATE)
+
 LOG_TAG_DEFINE(golioth_ota);
 
 #define GOLIOTH_OTA_MANIFEST_PATH ".u/desired"
@@ -316,3 +318,5 @@ golioth_status_t golioth_ota_get_block_sync(
 golioth_ota_state_t golioth_ota_get_state(void) {
     return _state;
 }
+
+#endif // CONFIG_GOLIOTH_FW_UPDATE

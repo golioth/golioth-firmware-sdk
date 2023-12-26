@@ -62,7 +62,6 @@ zephyr_library_sources(
     ../../src/golioth_settings.c
     ../../src/golioth_status.c
     ../../src/zcbor_utils.c
-    golioth_fw_zephyr.c
     golioth_sys_zephyr.c
 
     # bsdiff
@@ -104,6 +103,8 @@ zephyr_library_sources(
     # miniz
     ../../external/miniz/miniz_tinfl.c
 )
+
+zephyr_library_sources_ifdef(CONFIG_GOLIOTH_FW_UPDATE golioth_fw_zephyr.c)
 
 if(CONFIG_GOLIOTH_AUTH_METHOD_CERT)
   include_cert(CONFIG_GOLIOTH_HARDCODED_CA_CRT_PATH ca_crt)

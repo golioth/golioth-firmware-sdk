@@ -128,6 +128,11 @@ config GOLIOTH_COAP_MAX_PATH_LEN
         Maximum length of a CoAP path (everything after
         "coaps://coap.golioth.io/").
 
+config GOLIOTH_FW_UPDATE
+    bool "Golioth Firmware Update service"
+    help
+        Enable the Golioth Firmware Update service
+
 config GOLIOTH_LIGHTDB_STATE
     bool "Golioth LightDB State service"
     help

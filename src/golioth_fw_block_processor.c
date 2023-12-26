@@ -9,6 +9,8 @@
 #include <string.h>
 #include <assert.h>
 
+#if defined(CONFIG_GOLIOTH_FW_UPDATE)
+
 LOG_TAG_DEFINE(fw_block_processor);
 
 static void block_stats_init(block_latency_stats_t* stats) {
@@ -315,3 +317,5 @@ void fw_block_processor_log_results(const fw_block_processor_ctx_t* ctx) {
         GLTH_LOGI(TAG, "Compression saved %" PRId32 " bytes", decompress_delta);
     }
 }
+
+#endif // CONFIG_GOLIOTH_FW_UPDATE
