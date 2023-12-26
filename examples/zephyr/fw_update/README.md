@@ -1,9 +1,9 @@
-# Golioth DFU sample
+# Golioth FW Update sample
 
 ## Overview
 
-This sample application demonstrates how to perform Device Firmware
-Upgrade (DFU) using Golioth's Over-the-Air (OTA) update service. This is
+This sample application demonstrates how to perform a Firmware
+Update using Golioth's Over-the-Air (OTA) update service. This is
 a two step process:
 
 * Build initial firmware and flash it to the device.
@@ -110,10 +110,10 @@ CONFIG_GOLIOTH_SAMPLE_WIFI_PSK="my-psk"
 ```
 
 On your host computer open a terminal window, locate the source code of
-this sample application (i.e., `examples/zephyr/dfu`) and type:
+this sample application (i.e., `examples/zephyr/fw_update`) and type:
 
 ```console
-$ west build -b esp32_devkitc_wrover --sysbuild examples/zephyr/dfu
+$ west build -b esp32_devkitc_wrover --sysbuild examples/zephyr/fw_update
 $ west flash
 ```
 
@@ -157,10 +157,10 @@ CONFIG_GOLIOTH_SAMPLE_WIFI_PSK="my-psk"
 ```
 
 On your host computer open a terminal window, locate the source code of
-this sample application (i.e., `examples/zephyr/dfu`) and type:
+this sample application (i.e., `examples/zephyr/fw_update`) and type:
 
 ```console
-$ west build -b nrf52840dk_nrf52840 --sysbuild examples/zephyr/dfu
+$ west build -b nrf52840dk_nrf52840 --sysbuild examples/zephyr/fw_update
 $ west flash
 ```
 
@@ -170,7 +170,7 @@ On your host computer open a terminal window, locate the source code of
 this sample application (i.e., `examples/zephyr/hello`) and type:
 
 ```console
-$ west build -b nrf9160dk_nrf9160_ns examples/zephyr/dfu
+$ west build -b nrf9160dk_nrf9160_ns examples/zephyr/fw_update
 $ west flash
 ```
 ### Verify flashed application
@@ -196,7 +196,7 @@ failed to read secondary area (2) header: -5
 Edit the `prj.conf` file and update the firmware version number:
 
 ```config
-# Firmware version used in DFU process
+# Firmware version used in FW update process
 CONFIG_GOLIOTH_SAMPLE_FW_VERSION="1.2.4"
 ```
 
@@ -205,20 +205,20 @@ update file will be uploaded to Golioth for the OTA update.
 
 ```console
 # For esp32_devkitc_wrover
-$ west build -b esp32_devkitc_wrover --sysbuild examples/zephyr/dfu
+$ west build -b esp32_devkitc_wrover --sysbuild examples/zephyr/fw_update
 
 # For nRF52840dk (Zephyr):
-$ west build -b nrf52840dk_nrf52840 --sysbuild examples/zephyr/dfu
+$ west build -b nrf52840dk_nrf52840 --sysbuild examples/zephyr/fw_update
 
 # For nRF9160dk (NCS):
-$ west build -b nrf9160dk_nrf9160_ns examples/zephyr/dfu
+$ west build -b nrf9160dk_nrf9160_ns examples/zephyr/fw_update
 ```
 
-### Start DFU using `goliothctl`
+### Start FW Update using `goliothctl`
 
-DFU requires one of two files based on the which platform you are using:
+FW update requires one of two files based on the which platform you are using:
 
-* Zephyr: `build/dfu/zephyr/zephyr.signed.bin`
+* Zephyr: `build/fw_update/zephyr/zephyr.signed.bin`
 * NCS (Nordic version of Zephyr): `build/zephyr/app_update.bin`
 
 Use the correct file from your build to replace `<binary_file>` in the
@@ -251,7 +251,7 @@ seconds later it receives notification of a new firmware release
 
 ```console
 *** Booting Zephyr OS build zephyr-v3.4.0-553-g40d224022608 ***
-[00:00:00.101,074] <dbg> dfu_sample: main: Start DFU sample
+[00:00:00.101,074] <dbg> fw_update_sample: main: Start FW Update sample
 [00:00:00.101,104] <inf> golioth_samples: Waiting for interface to be up
 [00:00:02.248,626] <inf> wifi_esp_at: AT version: 2.4.0.0(s-4c6eb5e - ESP32 - May 20 2022 03:12:58)
 [00:00:02.251,800] <inf> wifi_esp_at: SDK version: qa-test-v4.3.3-20220423
@@ -268,7 +268,7 @@ Connected
 [00:00:03.722,320] <inf> golioth_coap_client: Entering CoAP I/O loop
 [00:00:05.139,770] <inf> golioth_fw_update: Waiting to receive OTA manifest
 [00:00:05.139,831] <inf> golioth_coap_client: Golioth CoAP client connected
-[00:00:05.140,045] <inf> dfu_sample: Golioth client connected
+[00:00:05.140,045] <inf> fw_update_sample: Golioth client connected
 [00:00:05.362,274] <inf> golioth_fw_update: Received OTA manifest
 [00:00:05.362,304] <inf> golioth_fw_update: Manifest does not contain different firmware version. Nothing to do.
 [00:00:05.362,304] <inf> golioth_fw_update: Waiting to receive OTA manifest
@@ -313,7 +313,7 @@ I: Jumping to the first image slot
 
 
 *** Booting Zephyr OS build zephyr-v3.4.0-553-g40d224022608 ***
-[00:00:00.101,104] <dbg> dfu_sample: main: Start DFU sample
+[00:00:00.101,104] <dbg> fw_update_sample: main: Start FW Update sample
 [00:00:00.101,135] <inf> golioth_samples: Waiting for interface to be up
 [00:00:02.246,490] <inf> wifi_esp_at: AT version: 2.4.0.0(s-4c6eb5e - ESP32 - May 20 2022 03:12:58)
 [00:00:02.249,633] <inf> wifi_esp_at: SDK version: qa-test-v4.3.3-20220423
@@ -330,7 +330,7 @@ Connected
 [00:00:03.843,536] <inf> golioth_coap_client: Session PSK-ID: devboard-one-id@ttgo-demo
 [00:00:03.843,933] <inf> golioth_coap_client: Entering CoAP I/O loop
 [00:00:05.226,623] <inf> golioth_coap_client: Golioth CoAP client connected
-[00:00:05.226,867] <inf> dfu_sample: Golioth client connected
+[00:00:05.226,867] <inf> fw_update_sample: Golioth client connected
 [00:00:05.779,571] <inf> golioth_fw_update: Firmware updated successfully!
 [00:00:05.779,663] <inf> golioth_fw_update: State = Idle
 [00:00:05.939,239] <inf> golioth_fw_update: Waiting to receive OTA manifest
