@@ -176,7 +176,7 @@ static void on_rpc(
             client,
             GOLIOTH_RPC_PATH_PREFIX,
             "status",
-            COAP_MEDIATYPE_APPLICATION_CBOR,
+            GOLIOTH_CONTENT_TYPE_CBOR,
             response_buf,
             zse->payload - response_buf,
             NULL,
@@ -209,7 +209,7 @@ golioth_status_t golioth_rpc_register(
     grpc->num_rpcs++;
     if (grpc->num_rpcs == 1) {
         return golioth_coap_client_observe_async(
-                client, GOLIOTH_RPC_PATH_PREFIX, "", COAP_MEDIATYPE_APPLICATION_CBOR, on_rpc, NULL);
+                client, GOLIOTH_RPC_PATH_PREFIX, "", GOLIOTH_CONTENT_TYPE_CBOR, on_rpc, NULL);
     }
     return GOLIOTH_OK;
 }

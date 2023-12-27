@@ -7,7 +7,7 @@
 
 #include <stdbool.h>
 #include <stdint.h>
-#include <stdlib.h>  // size_t
+#include <stdlib.h>
 #include <golioth/golioth_status.h>
 #include "golioth_sys.h"
 
@@ -34,6 +34,13 @@ typedef enum {
     /// Client was previously connected, and is now disconnected
     GOLIOTH_CLIENT_EVENT_DISCONNECTED,
 } golioth_client_event_t;
+
+/// Golioth Content Type
+enum golioth_content_type
+{
+    GOLIOTH_CONTENT_TYPE_JSON,
+    GOLIOTH_CONTENT_TYPE_CBOR,
+};
 
 /// Response status and CoAP class/code
 typedef struct {

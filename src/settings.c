@@ -139,7 +139,7 @@ static int finalize_and_send_response(
             client,
             SETTINGS_PATH_PREFIX,
             "status",
-            COAP_MEDIATYPE_APPLICATION_CBOR,
+            GOLIOTH_CONTENT_TYPE_CBOR,
             response->buf,
             response->zse->payload - response->buf,
             NULL,
@@ -339,7 +339,7 @@ static void settings_lazy_init(golioth_client_t client) {
     }
 
     golioth_status_t status = golioth_coap_client_observe_async(
-            client, SETTINGS_PATH_PREFIX, "", COAP_MEDIATYPE_APPLICATION_CBOR, on_settings, NULL);
+            client, SETTINGS_PATH_PREFIX, "", GOLIOTH_CONTENT_TYPE_CBOR, on_settings, NULL);
 
     if (status != GOLIOTH_OK) {
         GLTH_LOGE(TAG, "Failed to observe settings");

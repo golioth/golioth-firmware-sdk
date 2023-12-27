@@ -3,6 +3,7 @@
  *
  * SPDX-License-Identifier: Apache-2.0
  */
+#include <assert.h>
 #include <errno.h>
 #include <string.h>
 #include <zcbor_decode.h>
@@ -77,7 +78,7 @@ golioth_status_t golioth_ota_observe_manifest_async(
         golioth_get_cb_fn callback,
         void* arg) {
     return golioth_coap_client_observe_async(
-            client, "", GOLIOTH_OTA_MANIFEST_PATH, COAP_MEDIATYPE_APPLICATION_CBOR, callback, arg);
+            client, "", GOLIOTH_OTA_MANIFEST_PATH, GOLIOTH_CONTENT_TYPE_CBOR, callback, arg);
 }
 
 golioth_status_t golioth_ota_report_state_sync(
@@ -136,7 +137,7 @@ golioth_status_t golioth_ota_report_state_sync(
             client,
             GOLIOTH_OTA_COMPONENT_PATH_PREFIX,
             package,
-            COAP_MEDIATYPE_APPLICATION_CBOR,
+            GOLIOTH_CONTENT_TYPE_CBOR,
             encode_buf,
             zse->payload - encode_buf,
             NULL,
@@ -304,7 +305,7 @@ golioth_status_t golioth_ota_get_block_sync(
             client,
             GOLIOTH_OTA_COMPONENT_PATH_PREFIX,
             path,
-            COAP_MEDIATYPE_APPLICATION_JSON,
+            GOLIOTH_CONTENT_TYPE_JSON,
             block_index,
             GOLIOTH_OTA_BLOCKSIZE,
             on_block_rcvd,
