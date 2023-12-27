@@ -48,7 +48,8 @@ static void counter_get_handler(
 static void counter_get_async(golioth_client_t* client) {
     int err;
 
-    err = golioth_lightdb_get_async(client, "counter", counter_get_handler, NULL);
+    err = golioth_lightdb_get_async(client, "counter", GOLIOTH_CONTENT_TYPE_JSON,
+                                    counter_get_handler, NULL);
     if (err) {
         LOG_WRN("failed to get data from LightDB: %d", err);
     }
@@ -74,7 +75,8 @@ static void counter_get_json_sync(golioth_client_t* client) {
     int err;
 
     /* Get root of LightDB State, but JSON can be returned for any path */
-    err = golioth_lightdb_get_json_sync(client, "", sbuf, len, APP_TIMEOUT_S);
+    err = golioth_lightdb_get_sync(client, "", GOLIOTH_CONTENT_TYPE_JSON,
+                                   sbuf, &len, APP_TIMEOUT_S);
     if (err || (0 == strlen(sbuf))) {
         LOG_WRN("failed to get JSON data from LightDB: %d", err);
     }

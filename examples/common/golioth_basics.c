@@ -192,7 +192,7 @@ void golioth_basics(golioth_client_t client) {
     }
 
     // To asynchronously get a value from LightDB, a callback function must be provided
-    golioth_lightdb_get_async(client, "my_int", on_get_my_int, NULL);
+    golioth_lightdb_get_async(client, "my_int", GOLIOTH_CONTENT_TYPE_JSON, on_get_my_int, NULL);
 
     // We can also "observe" paths in LightDB state. The Golioth cloud will notify
     // our client whenever the resource at that path changes, without needing
