@@ -3,6 +3,7 @@
  *
  * SPDX-License-Identifier: Apache-2.0
  */
+#include <assert.h>
 #include <zcbor_encode.h>
 #include "coap_client.h"
 #include <golioth/log.h>
@@ -74,7 +75,7 @@ static golioth_status_t golioth_log_internal(
             client,
             "",  // path-prefix unused
             "logs",
-            COAP_MEDIATYPE_APPLICATION_CBOR,
+            GOLIOTH_CONTENT_TYPE_CBOR,
             cbor_buf,
             zse->payload - cbor_buf,
             callback,

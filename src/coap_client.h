@@ -5,7 +5,6 @@
  */
 #pragma once
 
-#include <coap3/coap.h>  // COAP_MEDIATYPE_*
 #include <golioth/client.h>
 #include <golioth/settings.h>
 #include <golioth/rpc.h>
@@ -18,10 +17,7 @@
 #define RESPONSE_TIMEOUT_EVENT_BIT (1 << 1)
 
 typedef struct {
-    // Must be one of:
-    //   COAP_MEDIATYPE_APPLICATION_JSON
-    //   COAP_MEDIATYPE_APPLICATION_CBOR
-    uint32_t content_type;
+    enum golioth_content_type content_type;
     // CoAP payload assumed to be dynamically allocated before enqueue
     // and freed after dequeue.
     uint8_t* payload;
@@ -32,13 +28,13 @@ typedef struct {
 } golioth_coap_post_params_t;
 
 typedef struct {
-    uint32_t content_type;
+    enum golioth_content_type content_type;
     golioth_get_cb_fn callback;
     void* arg;
 } golioth_coap_get_params_t;
 
 typedef struct {
-    uint32_t content_type;
+    enum golioth_content_type content_type;
     size_t block_index;
     size_t block_size;
     golioth_get_block_cb_fn callback;
@@ -51,7 +47,7 @@ typedef struct {
 } golioth_coap_delete_params_t;
 
 typedef struct {
-    uint32_t content_type;
+    enum golioth_content_type content_type;
     golioth_get_cb_fn callback;
     void* arg;
 } golioth_coap_observe_params_t;
@@ -120,7 +116,7 @@ golioth_status_t golioth_coap_client_set(
         golioth_client_t client,
         const char* path_prefix,
         const char* path,
-        uint32_t content_type,
+        enum golioth_content_type content_type,
         const uint8_t* payload,
         size_t payload_size,
         golioth_set_cb_fn callback,
@@ -141,7 +137,7 @@ golioth_status_t golioth_coap_client_get(
         golioth_client_t client,
         const char* path_prefix,
         const char* path,
-        uint32_t content_type,
+        enum golioth_content_type content_type,
         golioth_get_cb_fn callback,
         void* callback_arg,
         bool is_synchronous,
@@ -151,7 +147,7 @@ golioth_status_t golioth_coap_client_get_block(
         golioth_client_t client,
         const char* path_prefix,
         const char* path,
-        uint32_t content_type,
+        enum golioth_content_type content_type,
         size_t block_index,
         size_t block_size,
         golioth_get_block_cb_fn callback,
@@ -163,7 +159,7 @@ golioth_status_t golioth_coap_client_observe_async(
         golioth_client_t client,
         const char* path_prefix,
         const char* path,
-        uint32_t content_type,
+        enum golioth_content_type content_type,
         golioth_get_cb_fn callback,
         void* callback_arg);
 

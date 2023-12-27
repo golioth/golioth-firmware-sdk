@@ -328,21 +328,39 @@ static void golioth_coap_add_path(coap_pdu_t* request, const char* path_prefix, 
     }
 }
 
-static void golioth_coap_add_content_type(coap_pdu_t* request, uint32_t content_type) {
+static uint32_t golioth_content_type_to_coap_type(enum golioth_content_type content_type)
+{
+    switch (content_type)
+    {
+        case GOLIOTH_CONTENT_TYPE_JSON:
+            return COAP_MEDIATYPE_APPLICATION_JSON;
+        case GOLIOTH_CONTENT_TYPE_CBOR:
+            return COAP_MEDIATYPE_APPLICATION_CBOR;
+        default:
+            assert(0);
+            return COAP_MEDIATYPE_APPLICATION_OCTET_STREAM;
+    }
+}
+
+static void golioth_coap_add_content_type(coap_pdu_t* request,
+                                          enum golioth_content_type content_type) {
     unsigned char typebuf[4];
+    uint32_t coap_type = golioth_content_type_to_coap_type(content_type);
     coap_add_option(
             request,
             COAP_OPTION_CONTENT_TYPE,
-            coap_encode_var_safe(typebuf, sizeof(typebuf), content_type),
+            coap_encode_var_safe(typebuf, sizeof(typebuf), coap_type),
             typebuf);
 }
 
-static void golioth_coap_add_accept(coap_pdu_t* request, uint32_t content_type) {
+static void golioth_coap_add_accept(coap_pdu_t* request,
+                                    enum golioth_content_type content_type) {
     unsigned char typebuf[4];
+    uint32_t coap_type = golioth_content_type_to_coap_type(content_type);
     coap_add_option(
             request,
             COAP_OPTION_ACCEPT,
-            coap_encode_var_safe(typebuf, sizeof(typebuf), content_type),
+            coap_encode_var_safe(typebuf, sizeof(typebuf), coap_type),
             typebuf);
 }
 
@@ -1155,7 +1173,7 @@ golioth_status_t golioth_coap_client_set(
         golioth_client_t client,
         const char* path_prefix,
         const char* path,
-        uint32_t content_type,
+        enum golioth_content_type content_type,
         const uint8_t* payload,
         size_t payload_size,
         golioth_set_cb_fn callback,
@@ -1396,7 +1414,7 @@ golioth_status_t golioth_coap_client_get(
         golioth_client_t client,
         const char* path_prefix,
         const char* path,
-        uint32_t content_type,
+        enum golioth_content_type content_type,
         golioth_get_cb_fn callback,
         void* arg,
         bool is_synchronous,
@@ -1420,7 +1438,7 @@ golioth_status_t golioth_coap_client_get_block(
         golioth_client_t client,
         const char* path_prefix,
         const char* path,
-        uint32_t content_type,
+        enum golioth_content_type content_type,
         size_t block_index,
         size_t block_size,
         golioth_get_block_cb_fn callback,
@@ -1448,7 +1466,7 @@ golioth_status_t golioth_coap_client_observe_async(
         golioth_client_t client,
         const char* path_prefix,
         const char* path,
-        uint32_t content_type,
+        enum golioth_content_type content_type,
         golioth_get_cb_fn callback,
         void* arg) {
     golioth_coap_client_t* c = (golioth_coap_client_t*)client;
