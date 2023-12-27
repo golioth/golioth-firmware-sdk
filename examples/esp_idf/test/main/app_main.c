@@ -155,7 +155,9 @@ static void test_request_dropped_if_client_not_running(void) {
     TEST_ASSERT_EQUAL(
             GOLIOTH_ERR_INVALID_STATE, golioth_lightdb_set_int_async(_client, "a", 1, NULL, NULL));
     TEST_ASSERT_EQUAL(
-            GOLIOTH_ERR_INVALID_STATE, golioth_lightdb_get_async(_client, "a", NULL, NULL));
+            GOLIOTH_ERR_INVALID_STATE, golioth_lightdb_get_async(_client, "a",
+                                                                 GOLIOTH_CONTENT_TYPE_JSON,
+                                                                 NULL, NULL));
     TEST_ASSERT_EQUAL(
             GOLIOTH_ERR_INVALID_STATE, golioth_lightdb_delete_async(_client, "a", NULL, NULL));
     TEST_ASSERT_EQUAL(
@@ -253,7 +255,8 @@ static void test_lightdb_set_get_async(void) {
 
     TEST_ASSERT_EQUAL(
             GOLIOTH_OK,
-            golioth_lightdb_get_async(_client, "test_int2", on_get_test_int2, &get_async_response));
+            golioth_lightdb_get_async(_client, "test_int2", GOLIOTH_CONTENT_TYPE_JSON,
+                                      on_get_test_int2, &get_async_response));
 
     timeout_ms = (xTaskGetTickCount() * portTICK_PERIOD_MS) + TEST_RESPONSE_TIMEOUT_S * 1000;
     while ((xTaskGetTickCount() * portTICK_PERIOD_MS) < timeout_ms) {
@@ -299,7 +302,8 @@ static void test_request_timeout_if_packets_dropped(void) {
     golioth_response_t async_response = {};
     TEST_ASSERT_EQUAL(
             GOLIOTH_OK,
-            golioth_lightdb_get_async(_client, "expect_timeout", on_test_timeout, &async_response));
+            golioth_lightdb_get_async(_client, "expect_timeout", GOLIOTH_CONTENT_TYPE_JSON,
+                                      on_test_timeout, &async_response));
 
     // Wait for async response to time out (must be longer than client task timeout of 10 s)
     uint64_t timeout_ms = (xTaskGetTickCount() * portTICK_PERIOD_MS) + 12000;

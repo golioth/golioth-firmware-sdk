@@ -122,14 +122,18 @@ golioth_status_t golioth_lightdb_set_string_sync(
         size_t str_len,
         int32_t timeout_s);
 
-/// Set a JSON object (encoded as a string) in LightDB state at a particular path asynchronously
+/// Set an object in LightDB state at a particular path asynchronously
+///
+/// The serialization format of the object is specified by the content_type argument.
+/// Currently this is either JSON or CBOR.
 ///
 /// Similar to @ref golioth_lightdb_set_int_async.
 ///
 /// @param client The client handle from @ref golioth_client_create
 /// @param path The path in LightDB state to set (e.g. "my_integer")
-/// @param json_str A JSON object encoded as a string (e.g. "{ \"string_key\": \"value\"}")
-/// @param json_str_len Length of json_str, not including NULL terminator
+/// @param content_type The serialization format of buf
+/// @param buf A buffer containing the object to send
+/// @param buf_len Length of buf
 /// @param callback Callback to call on response received or timeout. Can be NULL.
 /// @param callback_arg Callback argument, passed directly when callback invoked. Can be NULL.
 ///
@@ -138,28 +142,34 @@ golioth_status_t golioth_lightdb_set_string_sync(
 /// @return GOLIOTH_ERR_INVALID_STATE - client is not running, currently stopped
 /// @return GOLIOTH_ERR_MEM_ALLOC - memory allocation error
 /// @return GOLIOTH_ERR_QUEUE_FULL - request queue is full, this request is dropped
-golioth_status_t golioth_lightdb_set_json_async(
+golioth_status_t golioth_lightdb_set_async(
         golioth_client_t client,
         const char* path,
-        const char* json_str,
-        size_t json_str_len,
+        enum golioth_content_type content_type,
+        const uint8_t* buf,
+        size_t buf_len,
         golioth_set_cb_fn callback,
         void* callback_arg);
 
-/// Set a JSON object (encoded as a string) in LightDB state at a particular path synchronously
+/// Set am object in LightDB state at a particular path synchronously
+///
+/// The serialization format of the object is specified by the content_type argument.
+/// Currently this is either JSON or CBOR.
 ///
 /// Similar to @ref golioth_lightdb_set_int_sync.
 ///
 /// @param client The client handle from @ref golioth_client_create
 /// @param path The path in LightDB state to set (e.g. "my_integer")
-/// @param json_str A JSON object encoded as a string (e.g. "{ \"string_key\": \"value\"}")
-/// @param json_str_len Length of json_str, not including NULL terminator
+/// @param content_type The serialization format of buf
+/// @param buf A buffer containing the object to send
+/// @param buf_len Length of buf
 /// @param timeout_s The timeout, in seconds, for receiving a server response
-golioth_status_t golioth_lightdb_set_json_sync(
+golioth_status_t golioth_lightdb_set_sync(
         golioth_client_t client,
         const char* path,
-        const char* json_str,
-        size_t json_str_len,
+        enum golioth_content_type content_type,
+        const uint8_t* buf,
+        size_t buf_len,
         int32_t timeout_s);
 
 /// Get data in LightDB state at a particular path asynchronously.
@@ -170,16 +180,18 @@ golioth_status_t golioth_lightdb_set_json_sync(
 ///
 /// The data passed into the callback function will be the raw payload bytes from the
 /// server response. The callback function can convert the payload to the appropriate
-/// type using, e.g. @ref golioth_payload_as_int, or using a JSON parsing library (like cJSON) in
-/// the case of JSON payload.
+/// type using, e.g. @ref golioth_payload_as_int, or using a parsing library (like cJSON or
+/// zCBOR) in the case of a serialized object payload
 ///
 /// @param client The client handle from @ref golioth_client_create
 /// @param path The path in LightDB state to get (e.g. "my_integer")
+/// @param content_type The serialization format to request for the path
 /// @param callback Callback to call on response received or timeout. Can be NULL.
 /// @param callback_arg Callback argument, passed directly when callback invoked. Can be NULL.
 golioth_status_t golioth_lightdb_get_async(
         golioth_client_t client,
         const char* path,
+        enum golioth_content_type content_type,
         golioth_get_cb_fn callback,
         void* callback_arg);
 
@@ -229,12 +241,13 @@ golioth_status_t golioth_lightdb_get_string_sync(
         size_t strbuf_size,
         int32_t timeout_s);
 
-/// Similar to @ref golioth_lightdb_get_int_sync, but for string-encoded JSON objects
-golioth_status_t golioth_lightdb_get_json_sync(
+/// Similar to @ref golioth_lightdb_get_int_sync, but for objects
+golioth_status_t golioth_lightdb_get_sync(
         golioth_client_t client,
         const char* path,
-        char* strbuf,
-        size_t strbuf_size,
+        enum golioth_content_type content_type,
+        uint8_t* buf,
+        size_t *buf_size,
         int32_t timeout_s);
 
 /// Delete a path in LightDB state asynchronously

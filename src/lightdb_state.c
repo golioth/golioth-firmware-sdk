@@ -19,6 +19,7 @@ typedef enum {
     LIGHTDB_GET_TYPE_BOOL,
     LIGHTDB_GET_TYPE_FLOAT,
     LIGHTDB_GET_TYPE_STRING,
+    LIGHTDB_GET_TYPE_BINARY,
 } lightdb_get_type_t;
 
 typedef struct {
@@ -27,9 +28,9 @@ typedef struct {
         int32_t* i;
         float* f;
         bool* b;
-        char* strbuf;
+        uint8_t* buf;
     };
-    size_t strbuf_size;  // only applicable for string type
+    size_t buf_size;  // only applicable for string & binary types
     bool is_null;
 } lightdb_get_response_t;
 
@@ -128,20 +129,21 @@ golioth_status_t golioth_lightdb_set_string_async(
     return status;
 }
 
-golioth_status_t golioth_lightdb_set_json_async(
+golioth_status_t golioth_lightdb_set_async(
         golioth_client_t client,
         const char* path,
-        const char* json_str,
-        size_t json_str_len,
+        enum golioth_content_type content_type,
+        const uint8_t* buf,
+        size_t buf_len,
         golioth_set_cb_fn callback,
         void* callback_arg) {
     return golioth_coap_client_set(
             client,
             GOLIOTH_LIGHTDB_STATE_PATH_PREFIX,
             path,
-            GOLIOTH_CONTENT_TYPE_JSON,
-            (const uint8_t*)json_str,
-            json_str_len,
+            content_type,
+            buf,
+            buf_len,
             callback,
             callback_arg,
             false,
@@ -151,13 +153,14 @@ golioth_status_t golioth_lightdb_set_json_async(
 golioth_status_t golioth_lightdb_get_async(
         golioth_client_t client,
         const char* path,
+        enum golioth_content_type content_type,
         golioth_get_cb_fn callback,
         void* callback_arg) {
     return golioth_coap_client_get(
             client,
             GOLIOTH_LIGHTDB_STATE_PATH_PREFIX,
             path,
-            GOLIOTH_CONTENT_TYPE_JSON,
+            content_type,
             callback,
             callback_arg,
             false,
@@ -284,19 +287,20 @@ golioth_status_t golioth_lightdb_set_string_sync(
     return status;
 }
 
-golioth_status_t golioth_lightdb_set_json_sync(
+golioth_status_t golioth_lightdb_set_sync(
         golioth_client_t client,
         const char* path,
-        const char* json_str,
-        size_t json_str_len,
+        enum golioth_content_type content_type,
+        const uint8_t* buf,
+        size_t buf_len,
         int32_t timeout_s) {
     return golioth_coap_client_set(
             client,
             GOLIOTH_LIGHTDB_STATE_PATH_PREFIX,
             path,
-            GOLIOTH_CONTENT_TYPE_JSON,
-            (const uint8_t*)json_str,
-            json_str_len,
+            content_type,
+            buf,
+            buf_len,
             NULL,
             NULL,
             true,
@@ -334,10 +338,14 @@ static void on_payload(
             break;
         case LIGHTDB_GET_TYPE_STRING: {
             // Remove the leading and trailing quote to get the raw string value
-            size_t nbytes = min(ldb_response->strbuf_size - 1, payload_size - 2);
-            memcpy(ldb_response->strbuf, payload + 1 /* skip quote */, nbytes);
-            ldb_response->strbuf[nbytes] = 0;
+            size_t nbytes = min(ldb_response->buf_size - 1, payload_size - 2);
+            memcpy(ldb_response->buf, payload + 1 /* skip quote */, nbytes);
+            ldb_response->buf[nbytes] = 0;
         } break;
+        case LIGHTDB_GET_TYPE_BINARY:
+            memcpy(ldb_response->buf, payload, min(ldb_response->buf_size, payload_size));
+            ldb_response->buf_size = payload_size;
+            break;
         default:
             assert(false);
     }
@@ -423,8 +431,8 @@ golioth_status_t golioth_lightdb_get_string_sync(
         int32_t timeout_s) {
     lightdb_get_response_t response = {
             .type = LIGHTDB_GET_TYPE_STRING,
-            .strbuf = strbuf,
-            .strbuf_size = strbuf_size,
+            .buf = (uint8_t *) strbuf,
+            .buf_size = strbuf_size,
     };
     golioth_status_t status = golioth_coap_client_get(
             client,
@@ -441,13 +449,34 @@ golioth_status_t golioth_lightdb_get_string_sync(
     return status;
 }
 
-golioth_status_t golioth_lightdb_get_json_sync(
+golioth_status_t golioth_lightdb_get_sync(
         golioth_client_t client,
         const char* path,
-        char* strbuf,
-        size_t strbuf_size,
+        enum golioth_content_type content_type,
+        uint8_t* buf,
+        size_t* buf_size,
         int32_t timeout_s) {
-    return golioth_lightdb_get_string_sync(client, path, strbuf, strbuf_size, timeout_s);
+    lightdb_get_response_t response = {
+            .type = content_type == GOLIOTH_CONTENT_TYPE_JSON ?
+                        LIGHTDB_GET_TYPE_STRING :
+                        LIGHTDB_GET_TYPE_BINARY,
+            .buf = buf,
+            .buf_size = *buf_size,
+    };
+    golioth_status_t status = golioth_coap_client_get(
+            client,
+            GOLIOTH_LIGHTDB_STATE_PATH_PREFIX,
+            path,
+            content_type,
+            on_payload,
+            &response,
+            true,
+            timeout_s);
+    *buf_size = response.buf_size;
+    if (status == GOLIOTH_OK && response.is_null) {
+        return GOLIOTH_ERR_NULL;
+    }
+    return status;
 }
 
 golioth_status_t golioth_lightdb_delete_sync(
