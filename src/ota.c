@@ -12,7 +12,7 @@
 #include "coap_client.h"
 #include <golioth/golioth_debug.h>
 #include "golioth_util.h"
-#include "zcbor_utils.h"
+#include <golioth/zcbor_utils.h>
 #include "zcbor_any_skip_fixed.h"
 
 #if defined(CONFIG_GOLIOTH_FW_UPDATE)

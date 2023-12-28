@@ -10,7 +10,7 @@ LOG_TAG_DEFINE(zcbor_utils);
 
 #include <errno.h>
 
-#include "zcbor_utils.h"
+#include <golioth/zcbor_utils.h>
 #include "zcbor_any_skip_fixed.h"
 
 static struct zcbor_map_entry* map_entry_get(
