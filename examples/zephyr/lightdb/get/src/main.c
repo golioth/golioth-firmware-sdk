@@ -10,8 +10,10 @@ LOG_MODULE_REGISTER(lightdb_get, LOG_LEVEL_DBG);
 #include <golioth/client.h>
 #include <golioth/lightdb_state.h>
 #include <golioth/payload_utils.h>
+#include <golioth/zcbor_utils.h>
 #include <samples/common/sample_credentials.h>
 #include <string.h>
+#include <zcbor_decode.h>
 #include <zephyr/kernel.h>
 
 #include <samples/common/net_connect.h>
@@ -86,6 +88,45 @@ static void counter_get_json_sync(golioth_client_t* client) {
     }
 }
 
+static void counter_get_cbor_handler(golioth_client_t client,
+                                     const golioth_response_t* response,
+                                     const char* path,
+                                     const uint8_t* payload,
+                                     size_t payload_size,
+                                     void *arg)
+{
+    if ((response->status != GOLIOTH_OK) || golioth_payload_is_null(payload, payload_size)) {
+        LOG_WRN("Failed to get counter (async): %d", response->status);
+        return;
+    }
+
+    ZCBOR_STATE_D(zsd, 1, payload, payload_size, 1);
+    int64_t counter;
+    struct zcbor_map_entry map_entry =
+        ZCBOR_TSTR_LIT_MAP_ENTRY("counter", zcbor_map_int64_decode, &counter);
+
+    int err = zcbor_map_decode(zsd, &map_entry, 1);
+    if (err)
+    {
+        LOG_WRN("Failed to decode CBOR data: %d", err);
+    }
+
+    LOG_INF("Counter (CBOR async): %d", (uint32_t) counter);
+}
+
+static void counter_get_cbor_async(golioth_client_t* client)
+{
+    int err = golioth_lightdb_get_async(client,
+                                        "",
+                                        GOLIOTH_CONTENT_TYPE_CBOR,
+                                        counter_get_cbor_handler,
+                                        NULL);
+    if (err)
+    {
+        LOG_WRN("Failed to get data from LightDB: %d", err);
+    }
+}
+
 int main(void) {
     LOG_DBG("Start LightDB get sample");
 
@@ -118,6 +159,12 @@ int main(void) {
         LOG_INF("Before JSON request (sync)");
         counter_get_json_sync(client);
         LOG_INF("After JSON request (sync)");
+
+        k_sleep(K_SECONDS(5));
+
+        LOG_INF("Before CBOR request (async)");
+        counter_get_cbor_async(client);
+        LOG_INF("After CBOR request (async)");
 
         k_sleep(K_SECONDS(5));
     }
