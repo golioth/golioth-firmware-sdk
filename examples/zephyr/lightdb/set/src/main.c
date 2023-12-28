@@ -11,6 +11,7 @@ LOG_MODULE_REGISTER(lightdb_set, LOG_LEVEL_DBG);
 #include <golioth/lightdb_state.h>
 #include <samples/common/sample_credentials.h>
 #include <string.h>
+#include <zcbor_encode.h>
 #include <zephyr/kernel.h>
 
 #include <samples/common/net_connect.h>
@@ -79,6 +80,54 @@ static void counter_set_json_async(int counter) {
     }
 }
 
+static void counter_set_cbor_sync(int counter)
+{
+    uint8_t buf[32];
+    ZCBOR_STATE_E(zse, 1, buf, sizeof(buf), 1);
+
+    bool ok = zcbor_map_start_encode(zse, 1);
+    if (!ok)
+    {
+        LOG_ERR("Failed to start CBOR encoding");
+        return;
+    }
+
+    ok = zcbor_tstr_put_lit(zse, "counter");
+    if (!ok)
+    {
+        LOG_ERR("CBOR: Failed to encode counter name");
+        return;
+    }
+
+    ok = zcbor_int32_put(zse, counter);
+    if (!ok)
+    {
+        LOG_ERR("CBOR: failed to encode counter value");
+        return;
+    }
+
+    ok = zcbor_map_end_encode(zse, 1);
+    if (!ok)
+    {
+        LOG_ERR("Failed to close CBOR map object");
+        return;
+    }
+
+    size_t payload_size = (intptr_t) zse->payload - (intptr_t) buf;
+
+    int err = golioth_lightdb_set_sync(client, "", GOLIOTH_CONTENT_TYPE_CBOR,
+                             buf, payload_size, APP_TIMEOUT_S);
+    if (err != 0)
+    {
+        LOG_WRN("Failed to set counter: %d", err);
+    }
+    else
+    {
+        LOG_DBG("Counter successfully set");
+    }
+
+}
+
 int main(void) {
     int counter = 0;
 
@@ -127,6 +176,18 @@ int main(void) {
 
         counter++;
         k_sleep(K_SECONDS(5));
+
+        /* Synchronous using CBOR object */
+        LOG_DBG("Setting counter to %d", counter);
+
+
+        LOG_DBG("Before request (cbor sync)");
+        counter_set_cbor_sync(counter);
+        LOG_DBG("After request (cbor sync)");
+
+        counter++;
+        k_sleep(K_SECONDS(5));
+
     }
 
     return 0;
