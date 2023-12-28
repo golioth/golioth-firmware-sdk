@@ -22,6 +22,7 @@ async def test_lightdb_delete(shell, api_key, device_name, credentials_file):
     # Set counter in lightdb state
 
     await device.lightdb.set("counter", 34)
+    time.sleep(0.1)
     counter = await device.lightdb.get("counter")
     assert counter == 34
 
@@ -53,6 +54,7 @@ async def test_lightdb_delete(shell, api_key, device_name, credentials_file):
     # Set and verify counter
 
     await device.lightdb.set("counter", 62)
+    time.sleep(0.1)
     counter = await device.lightdb.get("counter")
     assert counter == 62
 
