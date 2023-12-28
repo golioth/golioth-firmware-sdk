@@ -46,6 +46,10 @@ async def test_lightdb_get(shell, device, credentials_file):
     shell._device.readlines_until(regex=".*22 63 6f 75 6e 74 65 72  22 3a 32 37             |\"counter \":27",
                                   timeout=10.0)
 
+    await device.lightdb.set("counter", 99)
+
+    shell._device.readlines_until(regex=".*Counter \(CBOR async\): 99", timeout=10.0)
+
     await device.lightdb.set("counter", 42)
 
     shell._device.readlines_until(regex=".*Counter \(async\): 42", timeout=10.0)
