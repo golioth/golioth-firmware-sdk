@@ -36,7 +36,7 @@ async def test_lightdb_set(shell, device, credentials_file):
 
     # Verify lightdb writes
 
-    for i in range(0,3):
+    for i in range(0,4):
         shell._device.readlines_until(regex=f".*Setting counter to {i}", timeout=10.0)
         counter = await device.lightdb.get("counter")
         assert counter == i
