@@ -32,7 +32,8 @@ add_library(zcbor
 )
 target_include_directories(zcbor PUBLIC ${zcbor_dir}/include)
 target_include_directories(zcbor PUBLIC ${CMAKE_CURRENT_SOURCE_DIR})
-target_include_directories(zcbor PRIVATE ${CMAKE_CURRENT_SOURCE_DIR}/include)
+target_include_directories(zcbor PRIVATE ${CMAKE_CURRENT_SOURCE_DIR}/include
+                                         ${repo_root}/include)
 target_compile_options(zcbor PRIVATE "-Wno-strict-aliasing" "-Wno-uninitialized")
 
 # Build libcoap

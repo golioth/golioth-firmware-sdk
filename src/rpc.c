@@ -11,7 +11,7 @@
 #include <golioth/rpc.h>
 #include "golioth_util.h"
 #include <golioth/golioth_debug.h>
-#include "zcbor_utils.h"
+#include <golioth/zcbor_utils.h>
 #include "zcbor_any_skip_fixed.h"
 
 LOG_TAG_DEFINE(golioth_rpc);

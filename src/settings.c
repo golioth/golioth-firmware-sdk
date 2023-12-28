@@ -8,7 +8,7 @@
 #include "golioth_util.h"
 #include "coap_client.h"
 #include <golioth/golioth_debug.h>
-#include "zcbor_utils.h"
+#include <golioth/zcbor_utils.h>
 #include <errno.h>
 #include <math.h>  // modf
 #include <zcbor_decode.h>
