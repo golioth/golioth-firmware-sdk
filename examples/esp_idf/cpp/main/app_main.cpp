@@ -34,7 +34,7 @@ extern "C" void app_main(void) {
     const std::string psk_id = nvs_read_golioth_psk_id();
     const std::string psk = nvs_read_golioth_psk();
 
-    golioth_client_config_t config = {};
+    struct golioth_client_config config = {};
     config.credentials.auth_type = GOLIOTH_TLS_AUTH_TYPE_PSK;
     config.credentials.psk.psk_id = psk_id.c_str();
     config.credentials.psk.psk_id_len = psk_id.length();

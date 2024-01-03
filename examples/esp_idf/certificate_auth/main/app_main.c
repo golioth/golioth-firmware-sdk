@@ -43,7 +43,7 @@ void app_main(void) {
     size_t client_pem_len = client_pem_end - client_pem_start;
     size_t client_key_len = client_key_end - client_key_start;
 
-    golioth_client_config_t config = {
+    struct golioth_client_config config = {
             .credentials = {
                     .auth_type = GOLIOTH_TLS_AUTH_TYPE_PKI,
                     .pki = {

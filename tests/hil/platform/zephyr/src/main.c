@@ -10,7 +10,7 @@ LOG_MODULE_REGISTER(test, LOG_LEVEL_DBG);
 #include <samples/common/net_connect.h>
 #include <samples/common/sample_credentials.h>
 
-void hil_test_entry(const golioth_client_config_t *config);
+void hil_test_entry(const struct golioth_client_config *config);
 
 int main(void)
 {

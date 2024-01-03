@@ -12,7 +12,7 @@
 #include <samples/common/net_connect.h>
 
 int main(void) {
-    golioth_client_config_t config = {
+    struct golioth_client_config config = {
             .credentials = {
                     .auth_type = GOLIOTH_TLS_AUTH_TYPE_PSK,
                     .psk = {

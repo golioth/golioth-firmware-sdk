@@ -13,7 +13,7 @@
 
 #define TAG "hil_test"
 
-void hil_test_entry(const golioth_client_config_t *config);
+void hil_test_entry(const struct golioth_client_config *config);
 
 void app_main(void) {
     // Initialize NVS first.
@@ -42,7 +42,7 @@ void app_main(void) {
     const char* psk_id = nvs_read_golioth_psk_id();
     const char* psk = nvs_read_golioth_psk();
 
-    golioth_client_config_t config = {
+    struct golioth_client_config config = {
             .credentials = {
                     .auth_type = GOLIOTH_TLS_AUTH_TYPE_PSK,
                     .psk = {

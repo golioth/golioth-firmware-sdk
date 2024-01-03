@@ -19,8 +19,8 @@
  * The function is defined in both hardcoded_credentials.c and settings_golioth.c and will be
  * automatically added to the build based on Kconfig symbols.
  *
- * @return golioth_client_config_t configuration to use when creating a struct golioth_client*
+ * @return struct golioth_client_config configuration to use when creating a struct golioth_client*
  */
-const golioth_client_config_t* golioth_sample_credentials_get(void);
+const struct golioth_client_config* golioth_sample_credentials_get(void);
 
 #endif /* __GOLIOTH_INCLUDE_SAMPLE_CREDENTIALS_H__ */

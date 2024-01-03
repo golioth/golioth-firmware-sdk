@@ -107,9 +107,9 @@ struct golioth_credential {
 };
 
 /// Golioth client configuration, passed into golioth_client_create
-typedef struct {
+struct golioth_client_config {
     struct golioth_credential credentials;
-} golioth_client_config_t;
+};
 
 /// Callback function type for client events
 ///
@@ -178,7 +178,7 @@ typedef void (*golioth_set_cb_fn)(
 ///
 /// @return Non-NULL The client handle (success)
 /// @return NULL There was an error creating the client
-struct golioth_client* golioth_client_create(const golioth_client_config_t* config);
+struct golioth_client* golioth_client_create(const struct golioth_client_config* config);
 
 /// Wait (block) until connected to Golioth, or timeout occurs.
 ///

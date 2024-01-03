@@ -23,7 +23,7 @@ static const uint8_t tls_ca_crt[] = {
 #include "golioth-systemclient-ca_crt.inc"
 };
 
-static const golioth_client_config_t _golioth_client_config_psk = {
+static const struct golioth_client_config _golioth_client_config_psk = {
         .credentials = {
                 .auth_type = GOLIOTH_TLS_AUTH_TYPE_PKI,
                 .pki = {
@@ -37,7 +37,7 @@ static const golioth_client_config_t _golioth_client_config_psk = {
 
 #else /* Using PSK Authentication */
 
-static const golioth_client_config_t _golioth_client_config_psk = {
+static const struct golioth_client_config _golioth_client_config_psk = {
         .credentials = {
                 .auth_type = GOLIOTH_TLS_AUTH_TYPE_PSK,
                 .psk = {
@@ -48,6 +48,6 @@ static const golioth_client_config_t _golioth_client_config_psk = {
                 }}};
 #endif
 
-const golioth_client_config_t* golioth_sample_credentials_get(void) {
+const struct golioth_client_config* golioth_sample_credentials_get(void) {
     return &_golioth_client_config_psk;
 }
