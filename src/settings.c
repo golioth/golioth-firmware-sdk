@@ -338,7 +338,7 @@ static void settings_lazy_init(struct golioth_client* client) {
         return;
     }
 
-    golioth_status_t status = golioth_coap_client_observe_async(
+    enum golioth_status status = golioth_coap_client_observe_async(
             client, SETTINGS_PATH_PREFIX, "", GOLIOTH_CONTENT_TYPE_CBOR, on_settings, NULL);
 
     if (status != GOLIOTH_OK) {
@@ -365,7 +365,7 @@ golioth_setting_t* alloc_setting(struct golioth_client* client) {
     return &gsettings->settings[gsettings->num_settings++];
 }
 
-golioth_status_t golioth_settings_register_int(
+enum golioth_status golioth_settings_register_int(
         struct golioth_client* client,
         const char* setting_name,
         golioth_int_setting_cb callback,
@@ -374,7 +374,7 @@ golioth_status_t golioth_settings_register_int(
             client, setting_name, INT32_MIN, INT32_MAX, callback, callback_arg);
 }
 
-golioth_status_t golioth_settings_register_int_with_range(
+enum golioth_status golioth_settings_register_int_with_range(
         struct golioth_client* client,
         const char* setting_name,
         int32_t min_val,
@@ -402,7 +402,7 @@ golioth_status_t golioth_settings_register_int_with_range(
     return GOLIOTH_OK;
 }
 
-golioth_status_t golioth_settings_register_bool(
+enum golioth_status golioth_settings_register_bool(
         struct golioth_client* client,
         const char* setting_name,
         golioth_bool_setting_cb callback,
@@ -426,7 +426,7 @@ golioth_status_t golioth_settings_register_bool(
     return GOLIOTH_OK;
 }
 
-golioth_status_t golioth_settings_register_float(
+enum golioth_status golioth_settings_register_float(
         struct golioth_client* client,
         const char* setting_name,
         golioth_float_setting_cb callback,

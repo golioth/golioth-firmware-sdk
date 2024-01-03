@@ -13,7 +13,7 @@
 #include <miniz_tinfl.h>
 #include <stdint.h>
 
-typedef golioth_status_t (*process_fn)(const uint8_t* in, size_t in_size, void* arg);
+typedef enum golioth_status (*process_fn)(const uint8_t* in, size_t in_size, void* arg);
 
 typedef struct {
     uint32_t block_min_ms;
@@ -96,5 +96,5 @@ void fw_block_processor_init(
         struct golioth_client* client,
         const golioth_ota_component_t* component,
         uint8_t* download_buf);
-golioth_status_t fw_block_processor_process(fw_block_processor_ctx_t* ctx);
+enum golioth_status fw_block_processor_process(fw_block_processor_ctx_t* ctx);
 void fw_block_processor_log_results(const fw_block_processor_ctx_t* ctx);

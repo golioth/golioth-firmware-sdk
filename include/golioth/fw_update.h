@@ -105,7 +105,7 @@ void fw_update_cancel_rollback(void);
 ///
 /// @return GOLIOTH_OK - Block handled
 /// @return Otherwise - error handling block, abort firmware update
-golioth_status_t fw_update_handle_block(
+enum golioth_status fw_update_handle_block(
         const uint8_t* block,
         size_t block_size,
         size_t offset,
@@ -123,7 +123,7 @@ golioth_status_t fw_update_handle_block(
 ///
 /// @return GOLIOTH_OK - copied bufsize bytes into buf
 /// @return Otherwise - error copying bytes, abort firmware update
-golioth_status_t fw_update_read_current_image_at_offset(
+enum golioth_status fw_update_read_current_image_at_offset(
         uint8_t* buf,
         size_t bufsize,
         size_t offset);
@@ -142,14 +142,14 @@ void fw_update_post_download(void);
 ///
 /// @return GOLIOTH_OK - image validated
 /// @return Otherwise - error in validation, abort firmware update
-golioth_status_t fw_update_validate(void);
+enum golioth_status fw_update_validate(void);
 
 /// Switch to the new boot image. This will cause the new image
 /// to be booted next time.
 ///
 /// @return GOLIOTH_OK - changed boot image
 /// @return Otherwise - Error changing boot image, abort firmware update
-golioth_status_t fw_update_change_boot_image(void);
+enum golioth_status fw_update_change_boot_image(void);
 
 /// Called when firmware update aborted
 ///

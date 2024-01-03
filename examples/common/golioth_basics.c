@@ -177,7 +177,7 @@ void golioth_basics(struct golioth_client* client) {
     // We'll check the return code to know whether a timeout happened.
     //
     // Any function provided by this SDK ending in _sync will have the same meaning.
-    golioth_status_t status = golioth_lightdb_set_string_sync(client, "my_string", "asdf", 4, 5);
+    enum golioth_status status = golioth_lightdb_set_string_sync(client, "my_string", "asdf", 4, 5);
     if (status != GOLIOTH_OK) {
         GLTH_LOGE(TAG, "Error setting string: %s", golioth_status_to_str(status));
     }

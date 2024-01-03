@@ -33,7 +33,7 @@ static const char* _level_to_str[GOLIOTH_LOG_LEVEL_DEBUG + 1] = {
         [GOLIOTH_LOG_LEVEL_INFO] = "info",
         [GOLIOTH_LOG_LEVEL_DEBUG] = "debug"};
 
-static golioth_status_t golioth_log_internal(
+static enum golioth_status golioth_log_internal(
         struct golioth_client* client,
         golioth_log_level_t level,
         const char* tag,
@@ -45,7 +45,7 @@ static golioth_status_t golioth_log_internal(
     assert(level <= GOLIOTH_LOG_LEVEL_DEBUG);
 
     uint8_t* cbor_buf = malloc(CBOR_LOG_MAX_LEN);
-    golioth_status_t status = GOLIOTH_ERR_SERIALIZE;
+    enum golioth_status status = GOLIOTH_ERR_SERIALIZE;
     bool ok;
 
     if (!cbor_buf) {
@@ -88,7 +88,7 @@ cleanup:
     return status;
 }
 
-golioth_status_t golioth_log_error_async(
+enum golioth_status golioth_log_error_async(
         struct golioth_client* client,
         const char* tag,
         const char* log_message,
@@ -105,7 +105,7 @@ golioth_status_t golioth_log_error_async(
             callback_arg);
 }
 
-golioth_status_t golioth_log_warn_async(
+enum golioth_status golioth_log_warn_async(
         struct golioth_client* client,
         const char* tag,
         const char* log_message,
@@ -122,7 +122,7 @@ golioth_status_t golioth_log_warn_async(
             callback_arg);
 }
 
-golioth_status_t golioth_log_info_async(
+enum golioth_status golioth_log_info_async(
         struct golioth_client* client,
         const char* tag,
         const char* log_message,
@@ -139,7 +139,7 @@ golioth_status_t golioth_log_info_async(
             callback_arg);
 }
 
-golioth_status_t golioth_log_debug_async(
+enum golioth_status golioth_log_debug_async(
         struct golioth_client* client,
         const char* tag,
         const char* log_message,
@@ -156,7 +156,7 @@ golioth_status_t golioth_log_debug_async(
             callback_arg);
 }
 
-golioth_status_t golioth_log_error_sync(
+enum golioth_status golioth_log_error_sync(
         struct golioth_client* client,
         const char* tag,
         const char* log_message,
@@ -165,7 +165,7 @@ golioth_status_t golioth_log_error_sync(
             client, GOLIOTH_LOG_LEVEL_ERROR, tag, log_message, true, timeout_s, NULL, NULL);
 }
 
-golioth_status_t golioth_log_warn_sync(
+enum golioth_status golioth_log_warn_sync(
         struct golioth_client* client,
         const char* tag,
         const char* log_message,
@@ -174,7 +174,7 @@ golioth_status_t golioth_log_warn_sync(
             client, GOLIOTH_LOG_LEVEL_WARN, tag, log_message, true, timeout_s, NULL, NULL);
 }
 
-golioth_status_t golioth_log_info_sync(
+enum golioth_status golioth_log_info_sync(
         struct golioth_client* client,
         const char* tag,
         const char* log_message,
@@ -183,7 +183,7 @@ golioth_status_t golioth_log_info_sync(
             client, GOLIOTH_LOG_LEVEL_INFO, tag, log_message, true, timeout_s, NULL, NULL);
 }
 
-golioth_status_t golioth_log_debug_sync(
+enum golioth_status golioth_log_debug_sync(
         struct golioth_client* client,
         const char* tag,
         const char* log_message,

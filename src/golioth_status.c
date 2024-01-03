@@ -10,7 +10,7 @@
 static const char* _status_strings[NUM_GOLIOTH_STATUS_CODES] = {
         FOREACH_GOLIOTH_STATUS(GENERATE_GOLIOTH_STATUS_STR)};
 
-const char* golioth_status_to_str(golioth_status_t status) {
+const char* golioth_status_to_str(enum golioth_status status) {
     assert(status < NUM_GOLIOTH_STATUS_CODES);
     return _status_strings[status];
 }

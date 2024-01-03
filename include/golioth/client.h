@@ -50,7 +50,7 @@ struct golioth_response {
     ///      GOLIOTH_ERR_TIMEOUT (no response received from server)
     ///      GOLIOTH_OK (2.XX)
     ///      GOLIOTH_ERR_FAIL (anything other than 2.XX)
-    golioth_status_t status;
+    enum golioth_status status;
     /// the 2 in 2.XX
     uint8_t status_class;
     /// the 03 in 4.03
@@ -199,7 +199,7 @@ bool golioth_client_wait_for_connect(struct golioth_client* client, int timeout_
 ///
 /// @return GOLIOTH_OK Client started
 /// @return GOLIOTH_ERR_NULL Client handle invalid
-golioth_status_t golioth_client_start(struct golioth_client* client);
+enum golioth_status golioth_client_start(struct golioth_client* client);
 
 /// Stop the Golioth client
 ///
@@ -215,7 +215,7 @@ golioth_status_t golioth_client_start(struct golioth_client* client);
 ///
 /// @return GOLIOTH_OK Client stopped
 /// @return GOLIOTH_ERR_NULL Client handle invalid
-golioth_status_t golioth_client_stop(struct golioth_client* client);
+enum golioth_status golioth_client_stop(struct golioth_client* client);
 
 /// Destroy a Golioth client
 ///

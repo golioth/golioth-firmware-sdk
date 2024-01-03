@@ -25,7 +25,7 @@
 /// @param log_message String to log. Must be NULL-terminated.
 /// @param callback Callback to call on response received or timeout. Can be NULL.
 /// @param callback_arg Callback argument, passed directly when callback invoked. Can be NULL.
-golioth_status_t golioth_log_error_async(
+enum golioth_status golioth_log_error_async(
         struct golioth_client* client,
         const char* tag,
         const char* log_message,
@@ -33,7 +33,7 @@ golioth_status_t golioth_log_error_async(
         void* callback_arg);
 
 /// Same as @ref golioth_log_error_async, but for warning level
-golioth_status_t golioth_log_warn_async(
+enum golioth_status golioth_log_warn_async(
         struct golioth_client* client,
         const char* tag,
         const char* log_message,
@@ -41,7 +41,7 @@ golioth_status_t golioth_log_warn_async(
         void* callback_arg);
 
 /// Same as @ref golioth_log_error_async, but for info level
-golioth_status_t golioth_log_info_async(
+enum golioth_status golioth_log_info_async(
         struct golioth_client* client,
         const char* tag,
         const char* log_message,
@@ -49,7 +49,7 @@ golioth_status_t golioth_log_info_async(
         void* callback_arg);
 
 /// Same as @ref golioth_log_error_async, but for debug level
-golioth_status_t golioth_log_debug_async(
+enum golioth_status golioth_log_debug_async(
         struct golioth_client* client,
         const char* tag,
         const char* log_message,
@@ -68,28 +68,28 @@ golioth_status_t golioth_log_debug_async(
 /// @param tag A free-form string to identify/tag the message
 /// @param log_message String to log. Must be NULL-terminated.
 /// @param timeout_s The timeout, in seconds, for receiving a server response
-golioth_status_t golioth_log_error_sync(
+enum golioth_status golioth_log_error_sync(
         struct golioth_client* client,
         const char* tag,
         const char* log_message,
         int32_t timeout_s);
 
 /// Same as @ref golioth_log_error_sync, but for warning level
-golioth_status_t golioth_log_warn_sync(
+enum golioth_status golioth_log_warn_sync(
         struct golioth_client* client,
         const char* tag,
         const char* log_message,
         int32_t timeout_s);
 
 /// Same as @ref golioth_log_error_sync, but for info level
-golioth_status_t golioth_log_info_sync(
+enum golioth_status golioth_log_info_sync(
         struct golioth_client* client,
         const char* tag,
         const char* log_message,
         int32_t timeout_s);
 
 /// Same as @ref golioth_log_error_sync, but for debug level
-golioth_status_t golioth_log_debug_sync(
+enum golioth_status golioth_log_debug_sync(
         struct golioth_client* client,
         const char* tag,
         const char* log_message,

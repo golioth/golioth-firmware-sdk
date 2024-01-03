@@ -39,7 +39,7 @@ void fw_update_cancel_rollback(void) {
     boot_set_confirmed();
 }
 
-golioth_status_t fw_update_handle_block(
+enum golioth_status fw_update_handle_block(
         const uint8_t* block,
         size_t block_size,
         size_t offset,
@@ -101,12 +101,12 @@ void fw_update_post_download(void) {
     }
 }
 
-golioth_status_t fw_update_validate(void) {
+enum golioth_status fw_update_validate(void) {
     // Nothing to do
     return GOLIOTH_OK;
 }
 
-golioth_status_t fw_update_change_boot_image(void) {
+enum golioth_status fw_update_change_boot_image(void) {
     GLTH_LOGD(TAG, "boot_set_pending");
     int status = boot_set_pending(0);
     if (status != 0) {
@@ -130,7 +130,7 @@ void fw_update_end(void) {
     // Nothing to do
 }
 
-golioth_status_t fw_update_read_current_image_at_offset(
+enum golioth_status fw_update_read_current_image_at_offset(
         uint8_t* buf,
         size_t bufsize,
         size_t offset) {

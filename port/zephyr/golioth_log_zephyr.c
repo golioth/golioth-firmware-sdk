@@ -35,9 +35,9 @@ struct golioth_log_ctx {
 
 static struct golioth_log_ctx log_ctx;
 
-typedef golioth_status_t (*glth_log_fn)(struct golioth_client*, const char*, const char*, int32_t);
+typedef enum golioth_status (*glth_log_fn)(struct golioth_client*, const char*, const char*, int32_t);
 
-static golioth_status_t golioth_log_drop(
+static enum golioth_status golioth_log_drop(
         struct golioth_client* client,
         const char* tag,
         const char* log_message,

@@ -26,7 +26,7 @@ golioth_rpc_t grpc_fake;
 uint8_t last_coap_payload[256];
 size_t last_coap_payload_size;
 
-golioth_status_t golioth_coap_client_set_custom_fake(
+enum golioth_status golioth_coap_client_set_custom_fake(
         struct golioth_client* client,
         const char* path_prefix,
         const char* path,
@@ -60,7 +60,7 @@ void tearDown(void) {
 }
 
 void test_rpc_register(void) {
-    golioth_status_t ret = golioth_rpc_register(NULL, "", NULL, NULL);
+    enum golioth_status ret = golioth_rpc_register(NULL, "", NULL, NULL);
 
     TEST_ASSERT_EQUAL(GOLIOTH_OK, ret);
     TEST_ASSERT_EQUAL(1, grpc_fake.num_rpcs);
@@ -69,7 +69,7 @@ void test_rpc_register(void) {
 
 void test_rpc_register_multi(void) {
     for (int i = 0; i < 3; i++) {
-        golioth_status_t ret = golioth_rpc_register(NULL, "", NULL, NULL);
+        enum golioth_status ret = golioth_rpc_register(NULL, "", NULL, NULL);
         TEST_ASSERT_EQUAL(GOLIOTH_OK, ret);
     }
 
@@ -79,11 +79,11 @@ void test_rpc_register_multi(void) {
 
 void test_rpc_register_too_many(void) {
     for (int i = 0; i < CONFIG_GOLIOTH_RPC_MAX_NUM_METHODS; i++) {
-        golioth_status_t ret = golioth_rpc_register(NULL, "", NULL, NULL);
+        enum golioth_status ret = golioth_rpc_register(NULL, "", NULL, NULL);
         TEST_ASSERT_EQUAL(GOLIOTH_OK, ret);
     }
 
-    golioth_status_t ret = golioth_rpc_register(NULL, "", NULL, NULL);
+    enum golioth_status ret = golioth_rpc_register(NULL, "", NULL, NULL);
     TEST_ASSERT_EQUAL(GOLIOTH_ERR_MEM_ALLOC, ret);
 
     TEST_ASSERT_EQUAL(8, grpc_fake.num_rpcs);
@@ -215,7 +215,7 @@ void test_rpc_call_not_registered(void) {
 }
 
 void test_rpc_call_one(void) {
-    golioth_status_t ret = golioth_rpc_register(NULL, "test", test_rpc_method_fn, NULL);
+    enum golioth_status ret = golioth_rpc_register(NULL, "test", test_rpc_method_fn, NULL);
     TEST_ASSERT_EQUAL(GOLIOTH_OK, ret);
 
     const uint8_t payload[] = {
@@ -267,7 +267,7 @@ golioth_rpc_status_t rpc_method_fake(
 
 void test_rpc_call_with_return(void) {
     test_rpc_method_fn_fake.custom_fake = rpc_method_fake;
-    golioth_status_t ret = golioth_rpc_register(NULL, "test", test_rpc_method_fn, NULL);
+    enum golioth_status ret = golioth_rpc_register(NULL, "test", test_rpc_method_fn, NULL);
     TEST_ASSERT_EQUAL(GOLIOTH_OK, ret);
 
     const uint8_t payload[] = {
@@ -314,7 +314,7 @@ void test_rpc_call_with_return(void) {
 
 void test_rpc_call_one_with_params(void) {
     test_rpc_method_fn_fake.custom_fake = rpc_method_fake;
-    golioth_status_t ret = golioth_rpc_register(NULL, "test", test_rpc_method_fn, (void*)true);
+    enum golioth_status ret = golioth_rpc_register(NULL, "test", test_rpc_method_fn, (void*)true);
     TEST_ASSERT_EQUAL(GOLIOTH_OK, ret);
 
     const uint8_t payload[] = {
@@ -340,7 +340,7 @@ void test_rpc_call_one_with_params(void) {
 }
 
 void test_rpc_call_same_multiple(void) {
-    golioth_status_t ret = golioth_rpc_register(NULL, "test", test_rpc_method_fn, NULL);
+    enum golioth_status ret = golioth_rpc_register(NULL, "test", test_rpc_method_fn, NULL);
     TEST_ASSERT_EQUAL(GOLIOTH_OK, ret);
 
     const uint8_t payload[] = {
@@ -370,7 +370,7 @@ void test_rpc_register_many_call_all(void) {
     char* method_names[CONFIG_GOLIOTH_RPC_MAX_NUM_METHODS];
     for (int i = 0; i < CONFIG_GOLIOTH_RPC_MAX_NUM_METHODS; i++) {
         asprintf(&method_names[i], "test%d", i);
-        golioth_status_t ret =
+        enum golioth_status ret =
                 golioth_rpc_register(NULL, method_names[i], test_rpc_method_fn, NULL);
         TEST_ASSERT_EQUAL(GOLIOTH_OK, ret);
     }

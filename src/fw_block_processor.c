@@ -47,7 +47,7 @@ static void download_init(
     ctx->total_num_blocks = golioth_ota_size_to_nblocks(ota_component->size);
 }
 
-static golioth_status_t download_block(download_ctx_t* ctx) {
+static enum golioth_status download_block(download_ctx_t* ctx) {
     if (ctx->is_last_block) {
         // We've already downloaded the last block
         return GOLIOTH_ERR_NO_MORE_DATA;
@@ -94,7 +94,7 @@ static void decompress_init(decompress_ctx_t* ctx) {
 }
 
 static int patch_old_read(const struct bspatch_stream_i* stream, void* buffer, int pos, int len) {
-    golioth_status_t status = fw_update_read_current_image_at_offset(buffer, len, pos);
+    enum golioth_status status = fw_update_read_current_image_at_offset(buffer, len, pos);
     if (status != GOLIOTH_OK) {
         return -1;
     }
@@ -104,7 +104,7 @@ static int patch_old_read(const struct bspatch_stream_i* stream, void* buffer, i
 static int patch_new_write(const struct bspatch_stream_n* stream, const void* buffer, int length) {
     patch_ctx_t* ctx = (patch_ctx_t*)stream->opaque;
     assert(ctx->output_fn);
-    golioth_status_t status = ctx->output_fn(buffer, length, ctx->output_fn_arg);
+    enum golioth_status status = ctx->output_fn(buffer, length, ctx->output_fn_arg);
     if (status != GOLIOTH_OK) {
         return -1;
     }
@@ -129,10 +129,10 @@ static void handle_block_init(handle_block_ctx_t* ctx, size_t component_size) {
     ctx->component_size = component_size;
 }
 
-static golioth_status_t handle_block(const uint8_t* in_data, size_t in_data_size, void* arg) {
+static enum golioth_status handle_block(const uint8_t* in_data, size_t in_data_size, void* arg) {
     handle_block_ctx_t* ctx = (handle_block_ctx_t*)arg;
 
-    golioth_status_t status = fw_update_handle_block(
+    enum golioth_status status = fw_update_handle_block(
             in_data,
             in_data_size,
             ctx->bytes_handled,  // offset
@@ -143,7 +143,7 @@ static golioth_status_t handle_block(const uint8_t* in_data, size_t in_data_size
 }
 
 #if CONFIG_GOLIOTH_OTA_DECOMPRESS_METHOD_HEATSHRINK
-static golioth_status_t decompress_heatshrink(
+static enum golioth_status decompress_heatshrink(
         decompress_ctx_t* ctx,
         const uint8_t* in_data,
         size_t in_data_size) {
@@ -182,7 +182,7 @@ static golioth_status_t decompress_heatshrink(
 #endif
 
 #if CONFIG_GOLIOTH_OTA_DECOMPRESS_METHOD_ZLIB
-static golioth_status_t decompress_zlib(
+static enum golioth_status decompress_zlib(
         decompress_ctx_t* ctx,
         const uint8_t* in_data,
         size_t in_data_size) {
@@ -229,7 +229,7 @@ static golioth_status_t decompress_zlib(
 }
 #endif
 
-static golioth_status_t decompress_none(
+static enum golioth_status decompress_none(
         decompress_ctx_t* ctx,
         const uint8_t* in_data,
         size_t in_data_size) {
@@ -238,7 +238,7 @@ static golioth_status_t decompress_none(
     return GOLIOTH_OK;
 }
 
-static golioth_status_t decompress(const uint8_t* in_data, size_t in_data_size, void* arg) {
+static enum golioth_status decompress(const uint8_t* in_data, size_t in_data_size, void* arg) {
     decompress_ctx_t* ctx = (decompress_ctx_t*)arg;
     assert(ctx->output_fn);
 
@@ -256,7 +256,7 @@ static golioth_status_t decompress(const uint8_t* in_data, size_t in_data_size, 
     // TODO - compute sha256 of decompressed image and verify it matches manifest
 }
 
-static golioth_status_t patch(const uint8_t* in_data, size_t in_data_size, void* arg) {
+static enum golioth_status patch(const uint8_t* in_data, size_t in_data_size, void* arg) {
     patch_ctx_t* ctx = (patch_ctx_t*)arg;
     assert(ctx->output_fn);
 
@@ -300,7 +300,7 @@ void fw_block_processor_init(
     ctx->patch.output_fn_arg = &ctx->handle_block;
 }
 
-golioth_status_t fw_block_processor_process(fw_block_processor_ctx_t* ctx) {
+enum golioth_status fw_block_processor_process(fw_block_processor_ctx_t* ctx) {
     // Call the first function in the block processing chain.
     return download_block(&ctx->download);
 }
