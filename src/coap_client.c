@@ -1020,7 +1020,7 @@ struct golioth_client* golioth_client_create(const struct golioth_client_config*
         goto error;
     }
 
-    golioth_sys_timer_config_t keepalive_timer_cfg =
+    struct golioth_timer_config keepalive_timer_cfg =
     {
         .name = "keepalive",
         .expiration_ms = max(1000, 1000 * CONFIG_GOLIOTH_COAP_KEEPALIVE_INTERVAL_S),
