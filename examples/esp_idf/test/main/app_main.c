@@ -53,7 +53,7 @@ static void on_client_event(struct golioth_client* client, enum golioth_client_e
     }
 }
 
-static golioth_rpc_status_t on_double(
+static enum golioth_rpc_status on_double(
         zcbor_state_t* request_params_array,
         zcbor_state_t* response_detail_map,
         void* callback_arg) {

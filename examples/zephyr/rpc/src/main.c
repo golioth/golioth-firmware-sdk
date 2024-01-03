@@ -16,7 +16,7 @@ LOG_MODULE_REGISTER(rpc_sample, LOG_LEVEL_DBG);
 
 static K_SEM_DEFINE(connected, 0, 1);
 
-static golioth_rpc_status_t on_multiply(
+static enum golioth_rpc_status on_multiply(
     zcbor_state_t* request_params_array,
     zcbor_state_t* response_detail_map,
     void* callback_arg) {

@@ -20,9 +20,9 @@ static const char* last_wrn_msg = NULL;
 #include "fakes/coap_client_fake.h"
 #include "../../src/rpc.c"
 
-FAKE_VALUE_FUNC(golioth_rpc_status_t, test_rpc_method_fn, zcbor_state_t*, zcbor_state_t*, void*);
+FAKE_VALUE_FUNC(enum golioth_rpc_status, test_rpc_method_fn, zcbor_state_t*, zcbor_state_t*, void*);
 
-golioth_rpc_t grpc_fake;
+struct golioth_rpc grpc_fake;
 uint8_t last_coap_payload[256];
 size_t last_coap_payload_size;
 
@@ -240,7 +240,7 @@ void test_rpc_call_one(void) {
 /** Extract the major type, i.e. the first 3 bits of the header byte. */
 #define ZCBOR_MAJOR_TYPE(header_byte) ((zcbor_major_type_t)(((header_byte) >> 5) & 0x7))
 
-golioth_rpc_status_t rpc_method_fake(
+enum golioth_rpc_status rpc_method_fake(
         zcbor_state_t* request_params_array,
         zcbor_state_t* response_detail_map,
         void* callback_arg) {

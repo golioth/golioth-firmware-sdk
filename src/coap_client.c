@@ -36,7 +36,7 @@ struct golioth_client {
     golioth_client_event_cb_fn event_callback;
     void* event_callback_arg;
     golioth_settings_t settings;
-    golioth_rpc_t rpc;
+    struct golioth_rpc rpc;
 };
 
 static bool token_matches_request(const golioth_coap_request_msg_t* req, const coap_pdu_t* pdu) {
@@ -1524,7 +1524,7 @@ golioth_settings_t* golioth_coap_client_get_settings(struct golioth_client* clie
     return &client->settings;
 }
 
-golioth_rpc_t* golioth_coap_client_get_rpc(struct golioth_client* client) {
+struct golioth_rpc* golioth_coap_client_get_rpc(struct golioth_client* client) {
     return &client->rpc;
 }
 

@@ -166,5 +166,5 @@ enum golioth_status golioth_coap_client_observe_async(
 /// Getters, for internal SDK code to access data within the
 /// coap client struct.
 golioth_settings_t* golioth_coap_client_get_settings(struct golioth_client* client);
-golioth_rpc_t* golioth_coap_client_get_rpc(struct golioth_client* client);
+struct golioth_rpc* golioth_coap_client_get_rpc(struct golioth_client* client);
 golioth_sys_thread_t golioth_coap_client_get_thread(struct golioth_client* client);
