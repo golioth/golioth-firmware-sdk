@@ -20,7 +20,7 @@
 #define GOLIOTH_OTA_BLOCKSIZE 1024
 
 /// State of OTA update, reported to Golioth server
-typedef enum {
+enum golioth_ota_state {
     /// No OTA update in progress
     GOLIOTH_OTA_STATE_IDLE,
     /// OTA is being downloaded and written to flash
@@ -29,10 +29,10 @@ typedef enum {
     GOLIOTH_OTA_STATE_DOWNLOADED,
     /// OTA is being applied to the system, but is not yet complete
     GOLIOTH_OTA_STATE_UPDATING,
-} golioth_ota_state_t;
+};
 
 /// A reason associated with state changes
-typedef enum {
+enum golioth_ota_reason {
     /// OTA update is ready to go. Also used for "no reason".
     GOLIOTH_OTA_REASON_READY,
     /// Firmware update was successful
@@ -53,10 +53,10 @@ typedef enum {
     GOLIOTH_OTA_REASON_FIRMWARE_UPDATE_FAILED,
     /// Protocol not supported
     GOLIOTH_OTA_REASON_UNSUPPORTED_PROTOCOL,
-} golioth_ota_reason_t;
+};
 
 /// A component/artifact within an OTA manifest
-typedef struct {
+struct golioth_ota_component {
     /// Artifact package name (e.g. "main")
     char package[CONFIG_GOLIOTH_OTA_MAX_PACKAGE_NAME_LEN + 1];
     /// Artifact version (e.g. "1.0.0")
@@ -65,30 +65,30 @@ typedef struct {
     int32_t size;
     /// True, if the component is compressed and requires decompression
     bool is_compressed;
-} golioth_ota_component_t;
+};
 
 /// An OTA manifest, composed of multiple components/artifacts
-typedef struct {
+struct golioth_ota_manifest {
     /// OTA release sequence number
     int32_t seqnum;
     /// An array of artifacts
-    golioth_ota_component_t components[CONFIG_GOLIOTH_OTA_MAX_NUM_COMPONENTS];
+    struct golioth_ota_component components[CONFIG_GOLIOTH_OTA_MAX_NUM_COMPONENTS];
     /// Number of artifacts
     size_t num_components;
-} golioth_ota_manifest_t;
+};
 
-/// Convert raw byte payload into a @ref golioth_ota_manifest_t
+/// Convert raw byte payload into a @ref golioth_ota_manifest
 ///
 /// @param payload Pointer to payload data
 /// @param payload_size Size of payload, in bytes
 /// @param manifest Output param, memory allocated by caller, populated with manifest
 ///
-/// @return GOLIOTH_OK - payload converted to golioth_ota_manifest_t
+/// @return GOLIOTH_OK - payload converted to struct golioth_ota_manifest
 /// @return GOLIOTH_ERR_INVALID_FORMAT - failed to parse manifest
 enum golioth_status golioth_ota_payload_as_manifest(
         const uint8_t* payload,
         size_t payload_size,
-        golioth_ota_manifest_t* manifest);
+        struct golioth_ota_manifest* manifest);
 
 /// Convert a size in bytes to the number of blocks required (of size up to GOLIOTH_OTA_BLOCKSIZE)
 size_t golioth_ota_size_to_nblocks(size_t component_size);
@@ -100,8 +100,8 @@ size_t golioth_ota_size_to_nblocks(size_t component_size);
 ///
 /// @return if found - pointer to component
 /// @return if not found - NULL
-const golioth_ota_component_t* golioth_ota_find_component(
-        const golioth_ota_manifest_t* manifest,
+const struct golioth_ota_component* golioth_ota_find_component(
+        const struct golioth_ota_manifest* manifest,
         const char* package);
 
 /// Observe for the OTA manifest asynchronously
@@ -169,8 +169,8 @@ enum golioth_status golioth_ota_get_block_sync(
 /// @return GOLIOTH_ERR_TIMEOUT - response not received from server, timeout occurred
 enum golioth_status golioth_ota_report_state_sync(
         struct golioth_client* client,
-        golioth_ota_state_t state,
-        golioth_ota_reason_t reason,
+        enum golioth_ota_state state,
+        enum golioth_ota_reason reason,
         const char* package,
         const char* current_version,
         const char* target_version,
@@ -179,6 +179,6 @@ enum golioth_status golioth_ota_report_state_sync(
 /// Get the current state of OTA update
 ///
 /// @return The current OTA update state
-golioth_ota_state_t golioth_ota_get_state(void);
+enum golioth_ota_state golioth_ota_get_state(void);
 
 /// @}

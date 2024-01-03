@@ -47,7 +47,7 @@ struct component_tstr_value {
     size_t value_len;
 };
 
-static golioth_ota_state_t _state = GOLIOTH_OTA_STATE_IDLE;
+static enum golioth_ota_state _state = GOLIOTH_OTA_STATE_IDLE;
 
 size_t golioth_ota_size_to_nblocks(size_t component_size) {
     size_t nblocks = component_size / GOLIOTH_OTA_BLOCKSIZE;
@@ -57,13 +57,13 @@ size_t golioth_ota_size_to_nblocks(size_t component_size) {
     return nblocks;
 }
 
-const golioth_ota_component_t* golioth_ota_find_component(
-        const golioth_ota_manifest_t* manifest,
+const struct golioth_ota_component* golioth_ota_find_component(
+        const struct golioth_ota_manifest* manifest,
         const char* package) {
     // Scan the manifest until we find the component with matching package.
-    const golioth_ota_component_t* found = NULL;
+    const struct golioth_ota_component* found = NULL;
     for (size_t i = 0; i < manifest->num_components; i++) {
-        const golioth_ota_component_t* c = &manifest->components[i];
+        const struct golioth_ota_component* c = &manifest->components[i];
         bool matches = (0 == strcmp(c->package, package));
         if (matches) {
             found = c;
@@ -83,8 +83,8 @@ enum golioth_status golioth_ota_observe_manifest_async(
 
 enum golioth_status golioth_ota_report_state_sync(
         struct golioth_client* client,
-        golioth_ota_state_t state,
-        golioth_ota_reason_t reason,
+        enum golioth_ota_state state,
+        enum golioth_ota_reason reason,
         const char* package,
         const char* current_version,
         const char* target_version,
@@ -168,7 +168,7 @@ static int component_entry_decode_value(zcbor_state_t* zsd, void* void_value) {
 }
 
 static int components_decode(zcbor_state_t* zsd, void* value) {
-    golioth_ota_manifest_t* manifest = value;
+    struct golioth_ota_manifest* manifest = value;
     int err;
     bool ok;
 
@@ -179,7 +179,7 @@ static int components_decode(zcbor_state_t* zsd, void* value) {
     }
 
     for (size_t i = 0; i < ARRAY_SIZE(manifest->components) && !zcbor_list_or_map_end(zsd); i++) {
-        golioth_ota_component_t* component = &manifest->components[i];
+        struct golioth_ota_component* component = &manifest->components[i];
         struct component_tstr_value package = {
                 component->package,
                 sizeof(component->package) - 1,
@@ -221,7 +221,7 @@ static int components_decode(zcbor_state_t* zsd, void* value) {
 enum golioth_status golioth_ota_payload_as_manifest(
         const uint8_t* payload,
         size_t payload_size,
-        golioth_ota_manifest_t* manifest) {
+        struct golioth_ota_manifest* manifest) {
     ZCBOR_STATE_D(zsd, 3, payload, payload_size, 1);
     int64_t manifest_sequence_number;
     struct zcbor_map_entry map_entries[] = {
@@ -316,7 +316,7 @@ enum golioth_status golioth_ota_get_block_sync(
     return status;
 }
 
-golioth_ota_state_t golioth_ota_get_state(void) {
+enum golioth_ota_state golioth_ota_get_state(void) {
     return _state;
 }
 

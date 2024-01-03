@@ -57,8 +57,8 @@ void golioth_fw_update_init_with_config(
 /// @param reason The reason the state transition is happening
 /// @param user_arg Arbitraty user argument, can be NULL.
 typedef void (*golioth_fw_update_state_change_callback)(
-        golioth_ota_state_t state,
-        golioth_ota_reason_t reason,
+        enum golioth_ota_state state,
+        enum golioth_ota_reason reason,
         void* user_arg);
 
 /// Register listener for FW update state changes.

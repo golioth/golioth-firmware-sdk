@@ -35,7 +35,7 @@ typedef struct {
     /// Statistics to measure block download latency
     block_latency_stats_t block_stats;
     /// OTA component to download
-    const golioth_ota_component_t* ota_component;
+    const struct golioth_ota_component* ota_component;
     /// Buffer where downloaded blocks will be copied to
     uint8_t* download_buf;
     /// Function to call when output is available
@@ -94,7 +94,7 @@ typedef struct {
 void fw_block_processor_init(
         fw_block_processor_ctx_t* ctx,
         struct golioth_client* client,
-        const golioth_ota_component_t* component,
+        const struct golioth_ota_component* component,
         uint8_t* download_buf);
 enum golioth_status fw_block_processor_process(fw_block_processor_ctx_t* ctx);
 void fw_block_processor_log_results(const fw_block_processor_ctx_t* ctx);
