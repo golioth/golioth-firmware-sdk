@@ -21,7 +21,6 @@ LOG_MODULE_REGISTER(device_settings, LOG_LEVEL_DBG);
 // Configurable via Settings service, key = "LOOP_DELAY_S"
 int32_t _loop_delay_s = 10;
 
-struct golioth_client* client;
 static K_SEM_DEFINE(connected, 0, 1);
 
 static enum golioth_settings_status on_loop_delay_setting(int32_t new_value, void* arg) {
@@ -51,11 +50,13 @@ int main(void) {
      */
     const struct golioth_client_config* client_config = golioth_sample_credentials_get();
 
-    client = golioth_client_create(client_config);
+    struct golioth_client* client = golioth_client_create(client_config);
 
     golioth_client_register_event_callback(client, on_client_event, NULL);
 
-    golioth_settings_register_int_with_range(client,
+    struct golioth_settings* settings = golioth_settings_init(client);
+
+    golioth_settings_register_int_with_range(settings,
                                              "LOOP_DELAY_S",
                                              LOOP_DELAY_S_MIN,
                                              LOOP_DELAY_S_MAX,

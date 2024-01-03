@@ -120,6 +120,9 @@ static void on_my_config(
 
 
 void golioth_basics(struct golioth_client* client) {
+    // Initialize the Settings service
+    struct golioth_settings* settings = golioth_settings_init(client);
+
     // Register a callback function that will be called by the client thread when
     // connect and disconnect events happen.
     //
@@ -222,7 +225,7 @@ void golioth_basics(struct golioth_client* client) {
 
     // We can register a callback for persistent settings. The Settings service
     // allows remote users to manage and push settings to devices.
-    golioth_settings_register_int(client, "LOOP_DELAY_S", on_loop_delay_setting, NULL);
+    golioth_settings_register_int(settings, "LOOP_DELAY_S", on_loop_delay_setting, NULL);
 
     // Now we'll just sit in a loop and update a LightDB state variable every
     // once in a while.
