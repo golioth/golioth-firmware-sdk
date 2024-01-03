@@ -23,23 +23,23 @@
 
 struct golioth_client;
 
-typedef enum {
+enum golioth_debug_log_level {
     GOLIOTH_DEBUG_LOG_LEVEL_NONE,
     GOLIOTH_DEBUG_LOG_LEVEL_ERROR,
     GOLIOTH_DEBUG_LOG_LEVEL_WARN,
     GOLIOTH_DEBUG_LOG_LEVEL_INFO,
     GOLIOTH_DEBUG_LOG_LEVEL_DEBUG,
     GOLIOTH_DEBUG_LOG_LEVEL_VERBOSE,
-} golioth_debug_log_level_t;
+};
 
-void golioth_debug_set_log_level(golioth_debug_log_level_t level);
-golioth_debug_log_level_t golioth_debug_get_log_level(void);
+void golioth_debug_set_log_level(enum golioth_debug_log_level level);
+enum golioth_debug_log_level golioth_debug_get_log_level(void);
 void golioth_debug_hexdump(const char* tag, const void* addr, int len);
 void golioth_debug_set_client(struct golioth_client* client);
 void golioth_debug_set_cloud_log_enabled(bool enable);
 void golioth_debug_printf(
         uint64_t tstamp_ms,
-        golioth_debug_log_level_t level,
+        enum golioth_debug_log_level level,
         const char* tag,
         const char* format,
         ...);
