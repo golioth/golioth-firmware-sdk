@@ -57,13 +57,13 @@ struct golioth_response {
     uint8_t status_code;
 };
 
-/// TLS authentication type
-typedef enum {
+/// Authentication type
+enum golioth_auth_type {
     /// Authenticate with pre-shared key (psk-id and psk)
     GOLIOTH_TLS_AUTH_TYPE_PSK,
     /// Authenticate with PKI certificates (CA cert, public client cert, private client key)
     GOLIOTH_TLS_AUTH_TYPE_PKI,
-} golioth_tls_auth_type_t;
+};
 
 /// Pre-Shared Key (PSK) credentials.
 ///
@@ -99,7 +99,7 @@ typedef struct {
 
 /// TLS Authentication Credentials
 typedef struct {
-    golioth_tls_auth_type_t auth_type;
+    enum golioth_auth_type auth_type;
     union {
         golioth_psk_credentials_t psk;
         golioth_pki_credentials_t pki;
