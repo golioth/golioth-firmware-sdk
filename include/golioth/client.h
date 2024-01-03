@@ -24,8 +24,8 @@
 /// https://docs.golioth.io/reference/protocols/device-auth
 /// @{
 
-/// @brief Opaque handle to the Golioth client
-typedef void* golioth_client_t;
+/// @brief Opaque Golioth client
+struct golioth_client;
 
 /// Golioth client events
 typedef enum {
@@ -117,7 +117,7 @@ typedef struct {
 /// @param event The event that occurred
 /// @param arg User argument, copied from @ref golioth_client_register_event_callback. Can be NULL.
 typedef void (*golioth_client_event_cb_fn)(
-        golioth_client_t client,
+        struct golioth_client* client,
         golioth_client_event_t event,
         void* arg);
 
@@ -134,14 +134,14 @@ typedef void (*golioth_client_event_cb_fn)(
 /// @param payload_size The size of payload, in bytes
 /// @param arg User argument, copied from the original request. Can be NULL.
 typedef void (*golioth_get_cb_fn)(
-        golioth_client_t client,
+        struct golioth_client* client,
         const golioth_response_t* response,
         const char* path,
         const uint8_t* payload,
         size_t payload_size,
         void* arg);
 typedef void (*golioth_get_block_cb_fn)(
-        golioth_client_t client,
+        struct golioth_client* client,
         const golioth_response_t* response,
         const char* path,
         const uint8_t* payload,
@@ -161,7 +161,7 @@ typedef void (*golioth_get_block_cb_fn)(
 /// @param path The path from the original request
 /// @param arg User argument, copied from the original request. Can be NULL.
 typedef void (*golioth_set_cb_fn)(
-        golioth_client_t client,
+        struct golioth_client* client,
         const golioth_response_t* response,
         const char* path,
         void* arg);
@@ -178,7 +178,7 @@ typedef void (*golioth_set_cb_fn)(
 ///
 /// @return Non-NULL The client handle (success)
 /// @return NULL There was an error creating the client
-golioth_client_t golioth_client_create(const golioth_client_config_t* config);
+struct golioth_client* golioth_client_create(const golioth_client_config_t* config);
 
 /// Wait (block) until connected to Golioth, or timeout occurs.
 ///
@@ -188,7 +188,7 @@ golioth_client_t golioth_client_create(const golioth_client_config_t* config);
 /// @param timeout_ms How long to wait, in milliseconds, or -1 to wait forever
 ///
 /// @return True, if connected, false otherwise.
-bool golioth_client_wait_for_connect(golioth_client_t client, int timeout_ms);
+bool golioth_client_wait_for_connect(struct golioth_client* client, int timeout_ms);
 
 /// Start the Golioth client
 ///
@@ -199,7 +199,7 @@ bool golioth_client_wait_for_connect(golioth_client_t client, int timeout_ms);
 ///
 /// @return GOLIOTH_OK Client started
 /// @return GOLIOTH_ERR_NULL Client handle invalid
-golioth_status_t golioth_client_start(golioth_client_t client);
+golioth_status_t golioth_client_start(struct golioth_client* client);
 
 /// Stop the Golioth client
 ///
@@ -215,14 +215,14 @@ golioth_status_t golioth_client_start(golioth_client_t client);
 ///
 /// @return GOLIOTH_OK Client stopped
 /// @return GOLIOTH_ERR_NULL Client handle invalid
-golioth_status_t golioth_client_stop(golioth_client_t client);
+golioth_status_t golioth_client_stop(struct golioth_client* client);
 
 /// Destroy a Golioth client
 ///
 /// Frees dynamically created resources from @ref golioth_client_create.
 ///
 /// @param client The handle of the client to destroy
-void golioth_client_destroy(golioth_client_t client);
+void golioth_client_destroy(struct golioth_client* client);
 
 /// Returns whether the client is currently running
 ///
@@ -230,7 +230,7 @@ void golioth_client_destroy(golioth_client_t client);
 ///
 /// @return true The client is running
 /// @return false The client is not running, or the client handle is not valid
-bool golioth_client_is_running(golioth_client_t client);
+bool golioth_client_is_running(struct golioth_client* client);
 
 /// Returns whether the client is currently connected to Golioth servers.
 ///
@@ -241,7 +241,7 @@ bool golioth_client_is_running(golioth_client_t client);
 ///
 /// @return true The client is connected to Golioth
 /// @return false The client is not connected, or the client handle is not valid
-bool golioth_client_is_connected(golioth_client_t client);
+bool golioth_client_is_connected(struct golioth_client* client);
 
 /// Register a callback that will be called on client events (e.g. connected, disconnected)
 ///
@@ -249,7 +249,7 @@ bool golioth_client_is_connected(golioth_client_t client);
 /// @param callback Callback function to register
 /// @param arg Optional argument, forwarded directly to the callback when invoked. Can be NULL.
 void golioth_client_register_event_callback(
-        golioth_client_t client,
+        struct golioth_client* client,
         golioth_client_event_cb_fn callback,
         void* arg);
 
@@ -260,7 +260,7 @@ void golioth_client_register_event_callback(
 /// @param client The client handle
 ///
 /// @return The number of items currently in the client thread request queue.
-uint32_t golioth_client_num_items_in_request_queue(golioth_client_t client);
+uint32_t golioth_client_num_items_in_request_queue(struct golioth_client* client);
 
 /// Simulate packet loss at a particular percentage (0 to 100).
 ///
@@ -275,6 +275,6 @@ void golioth_client_set_packet_loss_percent(uint8_t percent);
 /// @param client The client handle
 ///
 /// @return The thread handle of the client thread
-golioth_sys_thread_t golioth_client_get_thread(golioth_client_t client);
+golioth_sys_thread_t golioth_client_get_thread(struct golioth_client* client);
 
 /// @}

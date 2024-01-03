@@ -45,7 +45,7 @@ static golioth_rpc_status_t on_multiply(
     return GOLIOTH_RPC_OK;
 }
 
-static void on_client_event(golioth_client_t client, golioth_client_event_t event, void* arg) {
+static void on_client_event(struct golioth_client* client, golioth_client_event_t event, void* arg) {
     bool is_connected = (event == GOLIOTH_CLIENT_EVENT_CONNECTED);
     if (is_connected) {
         k_sem_give(&connected);
@@ -64,7 +64,7 @@ int main(void) {
      */
     const golioth_client_config_t* client_config = golioth_sample_credentials_get();
 
-    golioth_client_t client = golioth_client_create(client_config);
+    struct golioth_client* client = golioth_client_create(client_config);
 
     golioth_client_register_event_callback(client, on_client_event, NULL);
 

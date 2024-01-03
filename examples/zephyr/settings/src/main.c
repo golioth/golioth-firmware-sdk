@@ -21,7 +21,7 @@ LOG_MODULE_REGISTER(device_settings, LOG_LEVEL_DBG);
 // Configurable via Settings service, key = "LOOP_DELAY_S"
 int32_t _loop_delay_s = 10;
 
-golioth_client_t client;
+struct golioth_client* client;
 static K_SEM_DEFINE(connected, 0, 1);
 
 static golioth_settings_status_t on_loop_delay_setting(int32_t new_value, void* arg) {
@@ -30,7 +30,7 @@ static golioth_settings_status_t on_loop_delay_setting(int32_t new_value, void* 
     return GOLIOTH_SETTINGS_SUCCESS;
 }
 
-static void on_client_event(golioth_client_t client, golioth_client_event_t event, void* arg) {
+static void on_client_event(struct golioth_client* client, golioth_client_event_t event, void* arg) {
     bool is_connected = (event == GOLIOTH_CLIENT_EVENT_CONNECTED);
     if (is_connected) {
         k_sem_give(&connected);

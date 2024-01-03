@@ -41,14 +41,14 @@ typedef struct {
 /// @param client The client handle from @ref golioth_client_create
 /// @param current_version The current firmware version (e.g. "1.2.3"), shallow copy, must be
 ///     NULL-terminated
-void golioth_fw_update_init(golioth_client_t client, const char* current_version);
+void golioth_fw_update_init(struct golioth_client* client, const char* current_version);
 
 /// Same as golioth_fw_update_init, but with additional configuration specified via struct.
 ///
 /// @param client The client handle from @ref golioth_client_create
 /// @param config The configuration struct (see @ref golioth_fw_update_config_t).
 void golioth_fw_update_init_with_config(
-        golioth_client_t client,
+        struct golioth_client* client,
         const golioth_fw_update_config_t* config);
 
 /// Function callback type, for FW update state change listeners

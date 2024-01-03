@@ -34,7 +34,7 @@
 /// @return GOLIOTH_ERR_MEM_ALLOC - memory allocation error
 /// @return GOLIOTH_ERR_QUEUE_FULL - request queue is full, this request is dropped
 golioth_status_t golioth_lightdb_stream_set_int_async(
-        golioth_client_t client,
+        struct golioth_client* client,
         const char* path,
         int32_t value,
         golioth_set_cb_fn callback,
@@ -60,7 +60,7 @@ golioth_status_t golioth_lightdb_stream_set_int_async(
 /// @return GOLIOTH_ERR_QUEUE_FULL - request queue is full, this request is dropped
 /// @return GOLIOTH_ERR_TIMEOUT - response not received from server, timeout occurred
 golioth_status_t golioth_lightdb_stream_set_int_sync(
-        golioth_client_t client,
+        struct golioth_client* client,
         const char* path,
         int32_t value,
         int32_t timeout_s);
@@ -69,7 +69,7 @@ golioth_status_t golioth_lightdb_stream_set_int_sync(
 ///
 /// Same as @ref golioth_lightdb_stream_set_int_async, but for type bool
 golioth_status_t golioth_lightdb_stream_set_bool_async(
-        golioth_client_t client,
+        struct golioth_client* client,
         const char* path,
         bool value,
         golioth_set_cb_fn callback,
@@ -79,7 +79,7 @@ golioth_status_t golioth_lightdb_stream_set_bool_async(
 ///
 /// Same as @ref golioth_lightdb_stream_set_int_sync, but for type bool
 golioth_status_t golioth_lightdb_stream_set_bool_sync(
-        golioth_client_t client,
+        struct golioth_client* client,
         const char* path,
         bool value,
         int32_t timeout_s);
@@ -88,7 +88,7 @@ golioth_status_t golioth_lightdb_stream_set_bool_sync(
 ///
 /// Same as @ref golioth_lightdb_stream_set_int_async, but for type float
 golioth_status_t golioth_lightdb_stream_set_float_async(
-        golioth_client_t client,
+        struct golioth_client* client,
         const char* path,
         float value,
         golioth_set_cb_fn callback,
@@ -98,7 +98,7 @@ golioth_status_t golioth_lightdb_stream_set_float_async(
 ///
 /// Same as @ref golioth_lightdb_stream_set_int_sync, but for type float
 golioth_status_t golioth_lightdb_stream_set_float_sync(
-        golioth_client_t client,
+        struct golioth_client* client,
         const char* path,
         float value,
         int32_t timeout_s);
@@ -107,7 +107,7 @@ golioth_status_t golioth_lightdb_stream_set_float_sync(
 ///
 /// Same as @ref golioth_lightdb_stream_set_int_async, but for type string
 golioth_status_t golioth_lightdb_stream_set_string_async(
-        golioth_client_t client,
+        struct golioth_client* client,
         const char* path,
         const char* str,
         size_t str_len,
@@ -118,7 +118,7 @@ golioth_status_t golioth_lightdb_stream_set_string_async(
 ///
 /// Same as @ref golioth_lightdb_stream_set_int_sync, but for type string
 golioth_status_t golioth_lightdb_stream_set_string_sync(
-        golioth_client_t client,
+        struct golioth_client* client,
         const char* path,
         const char* str,
         size_t str_len,
@@ -141,7 +141,7 @@ golioth_status_t golioth_lightdb_stream_set_string_sync(
 /// @return GOLIOTH_ERR_MEM_ALLOC - memory allocation error
 /// @return GOLIOTH_ERR_QUEUE_FULL - request queue is full, this request is dropped
 golioth_status_t golioth_lightdb_stream_set_json_async(
-        golioth_client_t client,
+        struct golioth_client* client,
         const char* path,
         const char* json_str,
         size_t json_str_len,
@@ -158,7 +158,7 @@ golioth_status_t golioth_lightdb_stream_set_json_async(
 /// @param json_str_len Length of json_str, not including NULL terminator
 /// @param timeout_s The timeout, in seconds, for receiving a server response
 golioth_status_t golioth_lightdb_stream_set_json_sync(
-        golioth_client_t client,
+        struct golioth_client* client,
         const char* path,
         const char* json_str,
         size_t json_str_len,
@@ -166,7 +166,7 @@ golioth_status_t golioth_lightdb_stream_set_json_sync(
 
 /// Similar to @ref golioth_lightdb_stream_set_json_async, but for CBOR
 golioth_status_t golioth_lightdb_stream_set_cbor_async(
-        golioth_client_t client,
+        struct golioth_client* client,
         const char* path,
         const uint8_t* cbor_data,
         size_t cbor_data_len,
@@ -175,7 +175,7 @@ golioth_status_t golioth_lightdb_stream_set_cbor_async(
 
 /// Similar to @ref golioth_lightdb_stream_set_json_sync, but for CBOR
 golioth_status_t golioth_lightdb_stream_set_cbor_sync(
-        golioth_client_t client,
+        struct golioth_client* client,
         const char* path,
         const uint8_t* cbor_data,
         size_t cbor_data_len,

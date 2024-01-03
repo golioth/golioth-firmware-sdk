@@ -23,7 +23,7 @@ typedef struct {
 
 typedef struct {
     /// Golioth client used for downloading
-    golioth_client_t client;
+    struct golioth_client* client;
     /// Estimate of the total number blocks to download
     size_t total_num_blocks;
     /// Index of current block to download
@@ -93,7 +93,7 @@ typedef struct {
 
 void fw_block_processor_init(
         fw_block_processor_ctx_t* ctx,
-        golioth_client_t client,
+        struct golioth_client* client,
         const golioth_ota_component_t* component,
         uint8_t* download_buf);
 golioth_status_t fw_block_processor_process(fw_block_processor_ctx_t* ctx);

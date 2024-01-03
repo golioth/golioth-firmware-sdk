@@ -17,7 +17,7 @@
 
 LOG_TAG_DEFINE(golioth_fw_update);
 
-static golioth_client_t _client;
+static struct golioth_client* _client;
 static golioth_sys_sem_t _manifest_rcvd;
 static golioth_ota_manifest_t _ota_manifest;
 static uint8_t _ota_block_buffer[GOLIOTH_OTA_BLOCKSIZE + 1];
@@ -51,7 +51,7 @@ static golioth_status_t download_and_write_flash(void) {
 }
 
 static golioth_status_t golioth_fw_update_report_state_sync(
-        golioth_client_t client,
+        struct golioth_client* client,
         golioth_ota_state_t state,
         golioth_ota_reason_t reason,
         const char* package,
@@ -67,7 +67,7 @@ static golioth_status_t golioth_fw_update_report_state_sync(
 }
 
 static void on_ota_manifest(
-        golioth_client_t client,
+        struct golioth_client* client,
         const golioth_response_t* response,
         const char* path,
         const uint8_t* payload,
@@ -250,7 +250,7 @@ static void fw_update_thread(void* arg) {
     }
 }
 
-void golioth_fw_update_init(golioth_client_t client, const char* current_version) {
+void golioth_fw_update_init(struct golioth_client* client, const char* current_version) {
     golioth_fw_update_config_t config = {
             .current_version = current_version,
             .fw_package_name = GOLIOTH_FW_UPDATE_DEFAULT_PACKAGE_NAME,
@@ -259,7 +259,7 @@ void golioth_fw_update_init(golioth_client_t client, const char* current_version
 }
 
 void golioth_fw_update_init_with_config(
-        golioth_client_t client,
+        struct golioth_client* client,
         const golioth_fw_update_config_t* config) {
     static bool initialized = false;
 

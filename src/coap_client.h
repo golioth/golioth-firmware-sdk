@@ -108,12 +108,12 @@ typedef struct {
 } golioth_coap_observe_info_t;
 
 golioth_status_t golioth_coap_client_empty(
-        golioth_client_t client,
+        struct golioth_client* client,
         bool is_synchronous,
         int32_t timeout_s);
 
 golioth_status_t golioth_coap_client_set(
-        golioth_client_t client,
+        struct golioth_client* client,
         const char* path_prefix,
         const char* path,
         enum golioth_content_type content_type,
@@ -125,7 +125,7 @@ golioth_status_t golioth_coap_client_set(
         int32_t timeout_s);
 
 golioth_status_t golioth_coap_client_delete(
-        golioth_client_t client,
+        struct golioth_client* client,
         const char* path_prefix,
         const char* path,
         golioth_set_cb_fn callback,
@@ -134,7 +134,7 @@ golioth_status_t golioth_coap_client_delete(
         int32_t timeout_s);
 
 golioth_status_t golioth_coap_client_get(
-        golioth_client_t client,
+        struct golioth_client* client,
         const char* path_prefix,
         const char* path,
         enum golioth_content_type content_type,
@@ -144,7 +144,7 @@ golioth_status_t golioth_coap_client_get(
         int32_t timeout_s);
 
 golioth_status_t golioth_coap_client_get_block(
-        golioth_client_t client,
+        struct golioth_client* client,
         const char* path_prefix,
         const char* path,
         enum golioth_content_type content_type,
@@ -156,7 +156,7 @@ golioth_status_t golioth_coap_client_get_block(
         int32_t timeout_s);
 
 golioth_status_t golioth_coap_client_observe_async(
-        golioth_client_t client,
+        struct golioth_client* client,
         const char* path_prefix,
         const char* path,
         enum golioth_content_type content_type,
@@ -165,6 +165,6 @@ golioth_status_t golioth_coap_client_observe_async(
 
 /// Getters, for internal SDK code to access data within the
 /// coap client struct.
-golioth_settings_t* golioth_coap_client_get_settings(golioth_client_t client);
-golioth_rpc_t* golioth_coap_client_get_rpc(golioth_client_t client);
-golioth_sys_thread_t golioth_coap_client_get_thread(golioth_client_t client);
+golioth_settings_t* golioth_coap_client_get_settings(struct golioth_client* client);
+golioth_rpc_t* golioth_coap_client_get_rpc(struct golioth_client* client);
+golioth_sys_thread_t golioth_coap_client_get_thread(struct golioth_client* client);

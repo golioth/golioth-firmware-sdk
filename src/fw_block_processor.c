@@ -28,7 +28,7 @@ static void block_stats_update(block_latency_stats_t* stats, uint32_t block_late
 
 static void download_init(
         download_ctx_t* ctx,
-        golioth_client_t client,
+        struct golioth_client* client,
         const golioth_ota_component_t* ota_component,
         uint8_t* download_buf) {
     memset(ctx, 0, sizeof(*ctx));
@@ -277,7 +277,7 @@ static golioth_status_t patch(const uint8_t* in_data, size_t in_data_size, void*
 
 void fw_block_processor_init(
         fw_block_processor_ctx_t* ctx,
-        golioth_client_t client,
+        struct golioth_client* client,
         const golioth_ota_component_t* component,
         uint8_t* download_buf) {
     memset(ctx, 0, sizeof(*ctx));

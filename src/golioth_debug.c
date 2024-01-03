@@ -10,7 +10,7 @@
 #include <stdlib.h>
 
 static golioth_debug_log_level_t _level = CONFIG_GOLIOTH_DEBUG_DEFAULT_LOG_LEVEL;
-static golioth_client_t _client = NULL;
+static struct golioth_client* _client = NULL;
 static bool _cloud_log_enabled = CONFIG_GOLIOTH_AUTO_LOG_TO_CLOUD;
 
 void golioth_debug_set_log_level(golioth_debug_log_level_t level) {
@@ -151,7 +151,7 @@ void golioth_debug_printf(
     golioth_sys_free(msg_buffer);
 }
 
-void golioth_debug_set_client(golioth_client_t client) {
+void golioth_debug_set_client(struct golioth_client* client) {
     _client = client;
 }
 

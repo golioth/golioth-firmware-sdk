@@ -35,7 +35,7 @@ int main(void) {
                             .psk_len = strlen(golioth_psk),
                     }}};
 
-    golioth_client_t client = golioth_client_create(&config);
+    struct golioth_client* client = golioth_client_create(&config);
     assert(client);
     golioth_basics(client);
 

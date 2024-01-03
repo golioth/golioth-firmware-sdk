@@ -93,7 +93,7 @@ typedef golioth_rpc_status_t (*golioth_rpc_cb_fn)(
 /// @return GOLIOTH_OK - RPC method successfully registered
 /// @return otherwise - Error registering RPC method
 golioth_status_t golioth_rpc_register(
-        golioth_client_t client,
+        struct golioth_client* client,
         const char* method,
         golioth_rpc_cb_fn callback,
         void* callback_arg);

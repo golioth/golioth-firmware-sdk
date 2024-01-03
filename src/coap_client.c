@@ -19,9 +19,7 @@ LOG_TAG_DEFINE(golioth_coap_client);
 
 static bool _initialized;
 
-// This is the struct hidden by the opaque type golioth_client_t
-// TODO - document these
-typedef struct {
+struct golioth_client {
     golioth_mbox_t request_queue;
     golioth_sys_thread_t coap_thread_handle;
     golioth_sys_sem_t run_sem;
@@ -39,7 +37,7 @@ typedef struct {
     void* event_callback_arg;
     golioth_settings_t settings;
     golioth_rpc_t rpc;
-} golioth_coap_client_t;
+};
 
 static bool token_matches_request(const golioth_coap_request_msg_t* req, const coap_pdu_t* pdu) {
     coap_bin_const_t rcvd_token = coap_pdu_get_token(pdu);
@@ -49,7 +47,7 @@ static bool token_matches_request(const golioth_coap_request_msg_t* req, const c
 
 static void notify_observers(
         const coap_pdu_t* received,
-        golioth_coap_client_t* client,
+        struct golioth_client* client,
         const uint8_t* data,
         size_t data_len,
         const golioth_response_t* response) {
@@ -101,7 +99,7 @@ static coap_response_t coap_response_handler(
     assert(session);
     coap_context_t* coap_context = coap_session_get_context(session);
     assert(coap_context);
-    golioth_coap_client_t* client = (golioth_coap_client_t*)coap_get_app_data(coap_context);
+    struct golioth_client* client = coap_get_app_data(coap_context);
     assert(client);
 
     const uint8_t* data = NULL;
@@ -220,7 +218,7 @@ static void nack_handler(
         const coap_nack_reason_t reason,
         const coap_mid_t id) {
     coap_context_t* context = coap_session_get_context(session);
-    golioth_coap_client_t* client = coap_get_app_data(context);
+    struct golioth_client* client = coap_get_app_data(context);
     golioth_coap_request_msg_t* req = client->pending_req;
 
     switch (reason) {
@@ -411,7 +409,7 @@ static void golioth_coap_get(golioth_coap_request_msg_t* req, coap_session_t* se
 
 static void golioth_coap_get_block(
         golioth_coap_request_msg_t* req,
-        golioth_coap_client_t* client,
+        struct golioth_client* client,
         coap_session_t* session) {
     coap_pdu_t* req_pdu = coap_new_pdu(COAP_MESSAGE_CON, COAP_REQUEST_GET, session);
     if (!req_pdu) {
@@ -464,7 +462,7 @@ static void golioth_coap_delete(golioth_coap_request_msg_t* req, coap_session_t*
     coap_send(session, req_pdu);
 }
 
-static void add_observation(golioth_coap_request_msg_t* req, golioth_coap_client_t* client) {
+static void add_observation(golioth_coap_request_msg_t* req, struct golioth_client* client) {
     // scan for available (not used) observation slot
     golioth_coap_observe_info_t* obs_info = NULL;
     bool found_slot = false;
@@ -487,7 +485,7 @@ static void add_observation(golioth_coap_request_msg_t* req, golioth_coap_client
 
 static void golioth_coap_observe(
         golioth_coap_request_msg_t* req,
-        golioth_coap_client_t* client,
+        struct golioth_client* client,
         coap_session_t* session) {
     // GET with an OBSERVE option
     coap_pdu_t* req_pdu = coap_new_pdu(COAP_MESSAGE_CON, COAP_REQUEST_GET, session);
@@ -511,7 +509,7 @@ static void golioth_coap_observe(
     coap_send(session, req_pdu);
 }
 
-static void reestablish_observations(golioth_coap_client_t* client, coap_session_t* session) {
+static void reestablish_observations(struct golioth_client* client, coap_session_t* session) {
     golioth_coap_observe_info_t* obs_info = NULL;
     for (int i = 0; i < CONFIG_GOLIOTH_MAX_NUM_OBSERVATIONS; i++) {
         obs_info = &client->observations[i];
@@ -521,7 +519,7 @@ static void reestablish_observations(golioth_coap_client_t* client, coap_session
     }
 }
 
-static golioth_status_t create_context(golioth_coap_client_t* client, coap_context_t** context) {
+static golioth_status_t create_context(struct golioth_client* client, coap_context_t** context) {
     *context = coap_new_context(NULL);
     if (!*context) {
         GLTH_LOGE(TAG, "Failed to create CoAP context");
@@ -558,7 +556,7 @@ static int validate_cn_call_back(
 }
 
 static golioth_status_t create_session(
-        golioth_coap_client_t* client,
+        struct golioth_client* client,
         coap_context_t* context,
         coap_session_t** session) {
     // Split URI for host
@@ -657,7 +655,7 @@ static void purge_request_mbox(golioth_mbox_t request_mbox) {
 }
 
 static golioth_status_t coap_io_loop_once(
-        golioth_coap_client_t* client,
+        struct golioth_client* client,
         coap_context_t* context,
         coap_session_t* session) {
     golioth_coap_request_msg_t request_msg = {};
@@ -866,24 +864,25 @@ static golioth_status_t coap_io_loop_once(
 }
 
 static void on_keepalive(golioth_sys_timer_t timer, void* arg) {
-    golioth_coap_client_t* c = (golioth_coap_client_t*)arg;
-    if (c->is_running && golioth_client_num_items_in_request_queue(c) == 0 && !c->pending_req) {
-        golioth_coap_client_empty(c, false, GOLIOTH_SYS_WAIT_FOREVER);
+    struct golioth_client* client = arg;
+    if (   client->is_running
+        && golioth_client_num_items_in_request_queue(client) == 0
+        && !client->pending_req) {
+        golioth_coap_client_empty(client, false, GOLIOTH_SYS_WAIT_FOREVER);
     }
 }
 
-bool golioth_client_is_running(golioth_client_t client) {
-    golioth_coap_client_t* c = (golioth_coap_client_t*)client;
-    if (!c) {
+bool golioth_client_is_running(struct golioth_client* client) {
+    if (!client) {
         return false;
     }
-    return c->is_running;
+    return client->is_running;
 }
 
 // Note: libcoap is not thread safe, so all rx/tx I/O for the session must be
 // done in this thread.
 static void golioth_coap_client_thread(void* arg) {
-    golioth_coap_client_t* client = (golioth_coap_client_t*)arg;
+    struct golioth_client* client = arg;
     assert(client);
 
     while (1) {
@@ -965,7 +964,7 @@ static void golioth_coap_client_thread(void* arg) {
     }
 }
 
-golioth_client_t golioth_client_create(const golioth_client_config_t* config) {
+struct golioth_client* golioth_client_create(const golioth_client_config_t* config) {
     if (!_initialized) {
         // Initialize libcoap prior to any coap_* function calls.
         coap_startup();
@@ -983,12 +982,12 @@ golioth_client_t golioth_client_create(const golioth_client_config_t* config) {
         _initialized = true;
     }
 
-    golioth_coap_client_t* new_client = golioth_sys_malloc(sizeof(golioth_coap_client_t));
+    struct golioth_client* new_client = golioth_sys_malloc(sizeof(struct golioth_client));
     if (!new_client) {
         GLTH_LOGE(TAG, "Failed to allocate memory for client");
         goto error;
     }
-    memset(new_client, 0, sizeof(golioth_coap_client_t));
+    memset(new_client, 0, sizeof(struct golioth_client));
 
     new_client->config = *config;
 
@@ -1046,30 +1045,28 @@ golioth_client_t golioth_client_create(const golioth_client_config_t* config) {
 
     golioth_debug_set_client(new_client);
 
-    return (golioth_client_t)new_client;
+    return new_client;
 
 error:
     golioth_client_destroy(new_client);
     return NULL;
 }
 
-golioth_status_t golioth_client_start(golioth_client_t client) {
-    golioth_coap_client_t* c = (golioth_coap_client_t*)client;
-    if (!c) {
+golioth_status_t golioth_client_start(struct golioth_client* client) {
+    if (!client) {
         return GOLIOTH_ERR_NULL;
     }
-    golioth_sys_sem_give(c->run_sem);
+    golioth_sys_sem_give(client->run_sem);
     return GOLIOTH_OK;
 }
 
-golioth_status_t golioth_client_stop(golioth_client_t client) {
-    golioth_coap_client_t* c = (golioth_coap_client_t*)client;
-    if (!c) {
+golioth_status_t golioth_client_stop(struct golioth_client* client) {
+    if (!client) {
         return GOLIOTH_ERR_NULL;
     }
 
     GLTH_LOGI(TAG, "Attempting to stop client");
-    golioth_sys_sem_take(c->run_sem, GOLIOTH_SYS_WAIT_FOREVER);
+    golioth_sys_sem_take(client->run_sem, GOLIOTH_SYS_WAIT_FOREVER);
 
     // Wait for client to be fully stopped
     while (golioth_client_is_running(client)) {
@@ -1079,45 +1076,42 @@ golioth_status_t golioth_client_stop(golioth_client_t client) {
     return GOLIOTH_OK;
 }
 
-void golioth_client_destroy(golioth_client_t client) {
-    golioth_coap_client_t* c = (golioth_coap_client_t*)client;
-    if (!c) {
+void golioth_client_destroy(struct golioth_client* client) {
+    if (!client) {
         return;
     }
-    if (c->keepalive_timer) {
-        golioth_sys_timer_destroy(c->keepalive_timer);
+    if (client->keepalive_timer) {
+        golioth_sys_timer_destroy(client->keepalive_timer);
     }
-    if (c->coap_thread_handle) {
-        golioth_sys_thread_destroy(c->coap_thread_handle);
+    if (client->coap_thread_handle) {
+        golioth_sys_thread_destroy(client->coap_thread_handle);
     }
-    if (c->request_queue) {
-        purge_request_mbox(c->request_queue);
-        golioth_mbox_destroy(c->request_queue);
+    if (client->request_queue) {
+        purge_request_mbox(client->request_queue);
+        golioth_mbox_destroy(client->request_queue);
     }
-    if (c->run_sem) {
-        golioth_sys_sem_destroy(c->run_sem);
+    if (client->run_sem) {
+        golioth_sys_sem_destroy(client->run_sem);
     }
-    golioth_sys_free(c);
+    golioth_sys_free(client);
 }
 
-bool golioth_client_is_connected(golioth_client_t client) {
-    golioth_coap_client_t* c = (golioth_coap_client_t*)client;
-    if (!c) {
+bool golioth_client_is_connected(struct golioth_client* client) {
+    if (!client) {
         return false;
     }
-    return c->session_connected;
+    return client->session_connected;
 }
 
 golioth_status_t golioth_coap_client_empty(
-        golioth_client_t client,
+        struct golioth_client* client,
         bool is_synchronous,
         int32_t timeout_s) {
-    golioth_coap_client_t* c = (golioth_coap_client_t*)client;
-    if (!c) {
+    if (!client) {
         return GOLIOTH_ERR_NULL;
     }
 
-    if (!c->is_running) {
+    if (!client->is_running) {
         GLTH_LOGW(TAG, "Client not running, dropping request");
         return GOLIOTH_ERR_INVALID_STATE;
     }
@@ -1138,7 +1132,7 @@ golioth_status_t golioth_coap_client_empty(
         request_msg.request_complete_ack_sem = golioth_sys_sem_create(1, 0);
     }
 
-    bool sent = golioth_mbox_try_send(c->request_queue, &request_msg);
+    bool sent = golioth_mbox_try_send(client->request_queue, &request_msg);
     if (!sent) {
         GLTH_LOGW(TAG, "Failed to enqueue request, queue full");
         if (is_synchronous) {
@@ -1170,7 +1164,7 @@ golioth_status_t golioth_coap_client_empty(
 }
 
 golioth_status_t golioth_coap_client_set(
-        golioth_client_t client,
+        struct golioth_client* client,
         const char* path_prefix,
         const char* path,
         enum golioth_content_type content_type,
@@ -1180,14 +1174,13 @@ golioth_status_t golioth_coap_client_set(
         void* callback_arg,
         bool is_synchronous,
         int32_t timeout_s) {
-    golioth_coap_client_t* c = (golioth_coap_client_t*)client;
-    if (!c) {
+    if (!client) {
         return GOLIOTH_ERR_NULL;
     }
 
     uint8_t* request_payload = NULL;
 
-    if (!c->is_running) {
+    if (!client->is_running) {
         GLTH_LOGW(TAG, "Client not running, dropping request for path %s", path);
         return GOLIOTH_ERR_INVALID_STATE;
     }
@@ -1233,7 +1226,7 @@ golioth_status_t golioth_coap_client_set(
         request_msg.request_complete_ack_sem = golioth_sys_sem_create(1, 0);
     }
 
-    bool sent = golioth_mbox_try_send(c->request_queue, &request_msg);
+    bool sent = golioth_mbox_try_send(client->request_queue, &request_msg);
     if (!sent) {
         GLTH_LOGW(TAG, "Failed to enqueue request, queue full");
         if (payload_size > 0) {
@@ -1268,19 +1261,18 @@ golioth_status_t golioth_coap_client_set(
 }
 
 golioth_status_t golioth_coap_client_delete(
-        golioth_client_t client,
+        struct golioth_client* client,
         const char* path_prefix,
         const char* path,
         golioth_set_cb_fn callback,
         void* callback_arg,
         bool is_synchronous,
         int32_t timeout_s) {
-    golioth_coap_client_t* c = (golioth_coap_client_t*)client;
-    if (!c) {
+    if (!client) {
         return GOLIOTH_ERR_NULL;
     }
 
-    if (!c->is_running) {
+    if (!client->is_running) {
         GLTH_LOGW(TAG, "Client not running, dropping request for path %s", path);
         return GOLIOTH_ERR_INVALID_STATE;
     }
@@ -1308,7 +1300,7 @@ golioth_status_t golioth_coap_client_delete(
         request_msg.request_complete_ack_sem = golioth_sys_sem_create(1, 0);
     }
 
-    bool sent = golioth_mbox_try_send(c->request_queue, &request_msg);
+    bool sent = golioth_mbox_try_send(client->request_queue, &request_msg);
     if (!sent) {
         GLTH_LOGW(TAG, "Failed to enqueue request, queue full");
         if (is_synchronous) {
@@ -1340,19 +1332,18 @@ golioth_status_t golioth_coap_client_delete(
 }
 
 static golioth_status_t golioth_coap_client_get_internal(
-        golioth_client_t client,
+        struct golioth_client* client,
         const char* path_prefix,
         const char* path,
         golioth_coap_request_type_t type,
         void* request_params,
         bool is_synchronous,
         int32_t timeout_s) {
-    golioth_coap_client_t* c = (golioth_coap_client_t*)client;
-    if (!c) {
+    if (!client) {
         return GOLIOTH_ERR_NULL;
     }
 
-    if (!c->is_running) {
+    if (!client->is_running) {
         GLTH_LOGW(TAG, "Client not running, dropping get request");
         return GOLIOTH_ERR_INVALID_STATE;
     }
@@ -1379,7 +1370,7 @@ static golioth_status_t golioth_coap_client_get_internal(
         request_msg.get = *(golioth_coap_get_params_t*)request_params;
     }
 
-    bool sent = golioth_mbox_try_send(c->request_queue, &request_msg);
+    bool sent = golioth_mbox_try_send(client->request_queue, &request_msg);
     if (!sent) {
         GLTH_LOGE(TAG, "Failed to enqueue request, queue full");
         if (is_synchronous) {
@@ -1411,7 +1402,7 @@ static golioth_status_t golioth_coap_client_get_internal(
 }
 
 golioth_status_t golioth_coap_client_get(
-        golioth_client_t client,
+        struct golioth_client* client,
         const char* path_prefix,
         const char* path,
         enum golioth_content_type content_type,
@@ -1435,7 +1426,7 @@ golioth_status_t golioth_coap_client_get(
 }
 
 golioth_status_t golioth_coap_client_get_block(
-        golioth_client_t client,
+        struct golioth_client* client,
         const char* path_prefix,
         const char* path,
         enum golioth_content_type content_type,
@@ -1463,18 +1454,17 @@ golioth_status_t golioth_coap_client_get_block(
 }
 
 golioth_status_t golioth_coap_client_observe_async(
-        golioth_client_t client,
+        struct golioth_client* client,
         const char* path_prefix,
         const char* path,
         enum golioth_content_type content_type,
         golioth_get_cb_fn callback,
         void* arg) {
-    golioth_coap_client_t* c = (golioth_coap_client_t*)client;
-    if (!c) {
+    if (!client) {
         return GOLIOTH_ERR_NULL;
     }
 
-    if (!c->is_running) {
+    if (!client->is_running) {
         GLTH_LOGW(TAG, "Client not running, dropping request for path %s", path);
         return GOLIOTH_ERR_INVALID_STATE;
     }
@@ -1492,7 +1482,7 @@ golioth_status_t golioth_coap_client_observe_async(
     };
     strncpy(request_msg.path, path, sizeof(request_msg.path) - 1);
 
-    bool sent = golioth_mbox_try_send(c->request_queue, &request_msg);
+    bool sent = golioth_mbox_try_send(client->request_queue, &request_msg);
     if (!sent) {
         GLTH_LOGW(TAG, "Failed to enqueue request, queue full");
         return GOLIOTH_ERR_QUEUE_FULL;
@@ -1502,15 +1492,14 @@ golioth_status_t golioth_coap_client_observe_async(
 }
 
 void golioth_client_register_event_callback(
-        golioth_client_t client,
+        struct golioth_client* client,
         golioth_client_event_cb_fn callback,
         void* arg) {
-    golioth_coap_client_t* c = (golioth_coap_client_t*)client;
-    if (!c) {
+    if (!client) {
         return;
     }
-    c->event_callback = callback;
-    c->event_callback_arg = arg;
+    client->event_callback = callback;
+    client->event_callback_arg = arg;
 }
 
 void golioth_client_set_packet_loss_percent(uint8_t percent) {
@@ -1524,30 +1513,26 @@ void golioth_client_set_packet_loss_percent(uint8_t percent) {
     coap_debug_set_packet_loss(buf);
 }
 
-uint32_t golioth_client_num_items_in_request_queue(golioth_client_t client) {
-    golioth_coap_client_t* c = (golioth_coap_client_t*)client;
-    if (!c) {
+uint32_t golioth_client_num_items_in_request_queue(struct golioth_client* client) {
+    if (!client) {
         return 0;
     }
-    return golioth_mbox_num_messages(c->request_queue);
+    return golioth_mbox_num_messages(client->request_queue);
 }
 
-golioth_settings_t* golioth_coap_client_get_settings(golioth_client_t client) {
-    golioth_coap_client_t* c = (golioth_coap_client_t*)client;
-    return &c->settings;
+golioth_settings_t* golioth_coap_client_get_settings(struct golioth_client* client) {
+    return &client->settings;
 }
 
-golioth_rpc_t* golioth_coap_client_get_rpc(golioth_client_t client) {
-    golioth_coap_client_t* c = (golioth_coap_client_t*)client;
-    return &c->rpc;
+golioth_rpc_t* golioth_coap_client_get_rpc(struct golioth_client* client) {
+    return &client->rpc;
 }
 
-golioth_sys_thread_t golioth_client_get_thread(golioth_client_t client) {
-    golioth_coap_client_t* c = (golioth_coap_client_t*)client;
-    return c->coap_thread_handle;
+golioth_sys_thread_t golioth_client_get_thread(struct golioth_client* client) {
+    return client->coap_thread_handle;
 }
 
-bool golioth_client_wait_for_connect(golioth_client_t client, int timeout_ms) {
+bool golioth_client_wait_for_connect(struct golioth_client* client, int timeout_ms) {
     const uint32_t poll_period_ms = 100;
 
     if (timeout_ms == -1) {

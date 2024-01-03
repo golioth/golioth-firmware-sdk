@@ -18,10 +18,10 @@ LOG_MODULE_REGISTER(lightdb_set, LOG_LEVEL_DBG);
 
 #define APP_TIMEOUT_S 1
 
-golioth_client_t client;
+struct golioth_client* client;
 static K_SEM_DEFINE(connected, 0, 1);
 
-static void on_client_event(golioth_client_t client, golioth_client_event_t event, void* arg) {
+static void on_client_event(struct golioth_client* client, golioth_client_event_t event, void* arg) {
     bool is_connected = (event == GOLIOTH_CLIENT_EVENT_CONNECTED);
     if (is_connected) {
         k_sem_give(&connected);
@@ -30,7 +30,7 @@ static void on_client_event(golioth_client_t client, golioth_client_event_t even
 }
 
 static void counter_set_handler(
-        golioth_client_t client,
+        struct golioth_client* client,
         const golioth_response_t* response,
         const char* path,
         void* arg) {

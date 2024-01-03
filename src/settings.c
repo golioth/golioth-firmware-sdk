@@ -50,10 +50,10 @@ struct settings_response {
     zcbor_state_t zse[1 /* num_backups */ + 2];
     uint8_t buf[GOLIOTH_SETTINGS_MAX_RESPONSE_LEN];
     size_t num_errors;
-    golioth_client_t client;
+    struct golioth_client* client;
 };
 
-static void response_init(struct settings_response* response, golioth_client_t client) {
+static void response_init(struct settings_response* response, struct golioth_client* client) {
     memset(response, 0, sizeof(*response));
 
     response->client = client;
@@ -101,7 +101,7 @@ static golioth_setting_t* find_registered_setting(golioth_settings_t* gsettings,
 }
 
 static int finalize_and_send_response(
-        golioth_client_t client,
+        struct golioth_client* client,
         struct settings_response* response,
         int64_t version) {
     bool ok;
@@ -152,7 +152,7 @@ static int finalize_and_send_response(
 
 static int settings_decode(zcbor_state_t* zsd, void* value) {
     struct settings_response* settings_response = value;
-    golioth_client_t client = settings_response->client;
+    struct golioth_client* client = settings_response->client;
     struct zcbor_string label;
     golioth_settings_status_t setting_status = GOLIOTH_SETTINGS_SUCCESS;
     golioth_settings_t* gsettings = golioth_coap_client_get_settings(client);
@@ -294,7 +294,7 @@ static int settings_decode(zcbor_state_t* zsd, void* value) {
 }
 
 static void on_settings(
-        golioth_client_t client,
+        struct golioth_client* client,
         const golioth_response_t* response,
         const char* path,
         const uint8_t* payload,
@@ -331,7 +331,7 @@ static void on_settings(
     finalize_and_send_response(client, &settings_response, version);
 }
 
-static void settings_lazy_init(golioth_client_t client) {
+static void settings_lazy_init(struct golioth_client* client) {
     golioth_settings_t* gsettings = golioth_coap_client_get_settings(client);
 
     if (gsettings->initialized) {
@@ -349,7 +349,7 @@ static void settings_lazy_init(golioth_client_t client) {
     gsettings->initialized = true;
 }
 
-golioth_setting_t* alloc_setting(golioth_client_t client) {
+golioth_setting_t* alloc_setting(struct golioth_client* client) {
     settings_lazy_init(client);
 
     golioth_settings_t* gsettings = golioth_coap_client_get_settings(client);
@@ -366,7 +366,7 @@ golioth_setting_t* alloc_setting(golioth_client_t client) {
 }
 
 golioth_status_t golioth_settings_register_int(
-        golioth_client_t client,
+        struct golioth_client* client,
         const char* setting_name,
         golioth_int_setting_cb callback,
         void* callback_arg) {
@@ -375,7 +375,7 @@ golioth_status_t golioth_settings_register_int(
 }
 
 golioth_status_t golioth_settings_register_int_with_range(
-        golioth_client_t client,
+        struct golioth_client* client,
         const char* setting_name,
         int32_t min_val,
         int32_t max_val,
@@ -403,7 +403,7 @@ golioth_status_t golioth_settings_register_int_with_range(
 }
 
 golioth_status_t golioth_settings_register_bool(
-        golioth_client_t client,
+        struct golioth_client* client,
         const char* setting_name,
         golioth_bool_setting_cb callback,
         void* callback_arg) {
@@ -427,7 +427,7 @@ golioth_status_t golioth_settings_register_bool(
 }
 
 golioth_status_t golioth_settings_register_float(
-        golioth_client_t client,
+        struct golioth_client* client,
         const char* setting_name,
         golioth_float_setting_cb callback,
         void* callback_arg) {
