@@ -28,12 +28,12 @@
 struct golioth_client;
 
 /// Golioth client events
-typedef enum {
+enum golioth_client_event {
     /// Client was previously not connected, and is now connected
     GOLIOTH_CLIENT_EVENT_CONNECTED,
     /// Client was previously connected, and is now disconnected
     GOLIOTH_CLIENT_EVENT_DISCONNECTED,
-} golioth_client_event_t;
+};
 
 /// Golioth Content Type
 enum golioth_content_type
@@ -118,7 +118,7 @@ typedef struct {
 /// @param arg User argument, copied from @ref golioth_client_register_event_callback. Can be NULL.
 typedef void (*golioth_client_event_cb_fn)(
         struct golioth_client* client,
-        golioth_client_event_t event,
+        enum golioth_client_event event,
         void* arg);
 
 /// Callback function type for all asynchronous get and observe requests

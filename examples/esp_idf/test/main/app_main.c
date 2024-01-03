@@ -43,7 +43,7 @@ static bool _wifi_connected;
 // I'm not sure exactly why this happens, but I suspect it's related to
 // Unity's UNITY_FAIL_AND_BAIL macro that gets called on failing assertions.
 
-static void on_client_event(struct golioth_client* client, golioth_client_event_t event, void* arg) {
+static void on_client_event(struct golioth_client* client, enum golioth_client_event event, void* arg) {
     bool is_connected = (event == GOLIOTH_CLIENT_EVENT_CONNECTED);
     ESP_LOGI(TAG, "Golioth %s", is_connected ? "connected" : "disconnected");
     if (is_connected) {

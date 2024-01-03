@@ -32,7 +32,7 @@ int32_t _loop_delay_s = 10;
 // Given if/when the we have a connection to Golioth
 static golioth_sys_sem_t _connected_sem;
 
-static void on_client_event(struct golioth_client* client, golioth_client_event_t event, void* arg) {
+static void on_client_event(struct golioth_client* client, enum golioth_client_event event, void* arg) {
     bool is_connected = (event == GOLIOTH_CLIENT_EVENT_CONNECTED);
     if (is_connected) {
         golioth_sys_sem_give(_connected_sem);

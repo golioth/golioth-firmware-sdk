@@ -30,7 +30,7 @@ static golioth_settings_status_t on_loop_delay_setting(int32_t new_value, void* 
     return GOLIOTH_SETTINGS_SUCCESS;
 }
 
-static void on_client_event(struct golioth_client* client, golioth_client_event_t event, void* arg) {
+static void on_client_event(struct golioth_client* client, enum golioth_client_event event, void* arg) {
     bool is_connected = (event == GOLIOTH_CLIENT_EVENT_CONNECTED);
     if (is_connected) {
         k_sem_give(&connected);

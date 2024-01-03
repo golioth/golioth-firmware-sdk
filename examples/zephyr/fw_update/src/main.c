@@ -20,7 +20,7 @@ static const char* _current_version = CONFIG_GOLIOTH_SAMPLE_FW_VERSION;
 
 static K_SEM_DEFINE(connected, 0, 1);
 
-static void on_client_event(struct golioth_client* client, golioth_client_event_t event, void* arg) {
+static void on_client_event(struct golioth_client* client, enum golioth_client_event event, void* arg) {
     bool is_connected = (event == GOLIOTH_CLIENT_EVENT_CONNECTED);
     if (is_connected) {
         k_sem_give(&connected);
