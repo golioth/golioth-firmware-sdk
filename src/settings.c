@@ -46,17 +46,40 @@ LOG_TAG_DEFINE(golioth_settings);
 #define GOLIOTH_SETTINGS_MAX_RESPONSE_LEN 256
 #define GOLIOTH_SETTINGS_MAX_NAME_LEN 63 /* not including NULL */
 
+/// Private struct for storing a single setting
+struct golioth_setting {
+    bool is_valid;
+    const char* key;  // aka name
+    enum golioth_settings_value_type type;
+    union {
+        golioth_int_setting_cb int_cb;
+        golioth_bool_setting_cb bool_cb;
+        golioth_float_setting_cb float_cb;
+        golioth_string_setting_cb string_cb;
+    };
+    int32_t int_min_val;  // applies only to integers
+    int32_t int_max_val;  // applies only to integers
+    void* cb_arg;
+};
+
+/// Private struct to contain settings state data
+struct golioth_settings {
+    struct golioth_client* client;
+    size_t num_settings;
+    struct golioth_setting settings[CONFIG_GOLIOTH_MAX_NUM_SETTINGS];
+};
+
 struct settings_response {
     zcbor_state_t zse[1 /* num_backups */ + 2];
     uint8_t buf[GOLIOTH_SETTINGS_MAX_RESPONSE_LEN];
     size_t num_errors;
-    struct golioth_client* client;
+    struct golioth_settings* settings;
 };
 
-static void response_init(struct settings_response* response, struct golioth_client* client) {
+static void response_init(struct settings_response* response, struct golioth_settings* settings) {
     memset(response, 0, sizeof(*response));
 
-    response->client = client;
+    response->settings = settings;
 
     zcbor_new_encode_state(
             response->zse, ARRAY_SIZE(response->zse), response->buf, sizeof(response->buf), 1);
@@ -152,10 +175,9 @@ static int finalize_and_send_response(
 
 static int settings_decode(zcbor_state_t* zsd, void* value) {
     struct settings_response* settings_response = value;
-    struct golioth_client* client = settings_response->client;
+    struct golioth_settings* gsettings = settings_response->settings;
     struct zcbor_string label;
     enum golioth_settings_status setting_status = GOLIOTH_SETTINGS_SUCCESS;
-    struct golioth_settings* gsettings = golioth_coap_client_get_settings(client);
     bool ok;
 
     if (zcbor_nil_expect(zsd, NULL)) {
@@ -302,6 +324,7 @@ static void on_settings(
         void* arg) {
     ZCBOR_STATE_D(zsd, 2, payload, payload_size, 1);
     int64_t version;
+    struct golioth_settings* settings = arg;
     struct settings_response settings_response;
     struct zcbor_map_entry map_entries[] = {
             ZCBOR_TSTR_LIT_MAP_ENTRY("settings", settings_decode, &settings_response),
@@ -318,7 +341,7 @@ static void on_settings(
 
     GLTH_LOG_BUFFER_HEXDUMP(TAG, payload, min(64, payload_size), GOLIOTH_DEBUG_LOG_LEVEL_DEBUG);
 
-    response_init(&settings_response, client);
+    response_init(&settings_response, settings);
 
     err = zcbor_map_decode(zsd, map_entries, ARRAY_SIZE(map_entries));
     if (err) {
@@ -331,30 +354,8 @@ static void on_settings(
     finalize_and_send_response(client, &settings_response, version);
 }
 
-static void settings_lazy_init(struct golioth_client* client) {
-    struct golioth_settings* gsettings = golioth_coap_client_get_settings(client);
-
-    if (gsettings->initialized) {
-        return;
-    }
-
-    enum golioth_status status = golioth_coap_client_observe_async(
-            client, SETTINGS_PATH_PREFIX, "", GOLIOTH_CONTENT_TYPE_CBOR, on_settings, NULL);
-
-    if (status != GOLIOTH_OK) {
-        GLTH_LOGE(TAG, "Failed to observe settings");
-        return;
-    }
-
-    gsettings->initialized = true;
-}
-
-struct golioth_setting* alloc_setting(struct golioth_client* client) {
-    settings_lazy_init(client);
-
-    struct golioth_settings* gsettings = golioth_coap_client_get_settings(client);
-
-    if (gsettings->num_settings == CONFIG_GOLIOTH_MAX_NUM_SETTINGS) {
+static struct golioth_setting* alloc_setting(struct golioth_settings* settings) {
+    if (settings->num_settings == CONFIG_GOLIOTH_MAX_NUM_SETTINGS) {
         GLTH_LOGE(
                 TAG,
                 "Exceededed CONFIG_GOLIOTH_MAX_NUM_SETTINGS (%d)",
@@ -362,20 +363,43 @@ struct golioth_setting* alloc_setting(struct golioth_client* client) {
         return NULL;
     }
 
-    return &gsettings->settings[gsettings->num_settings++];
+    return &settings->settings[settings->num_settings++];
+}
+
+struct golioth_settings* golioth_settings_init(struct golioth_client* client) {
+    struct golioth_settings* gsettings = golioth_sys_malloc(sizeof(struct golioth_settings));
+
+    if (gsettings == NULL) {
+        goto finish;
+    }
+
+    gsettings->client = client;
+    gsettings->num_settings = 0;
+
+    enum golioth_status status = golioth_coap_client_observe_async(
+            client, SETTINGS_PATH_PREFIX, "", GOLIOTH_CONTENT_TYPE_CBOR, on_settings, gsettings);
+
+    if (status != GOLIOTH_OK) {
+        GLTH_LOGE(TAG, "Failed to observe settings");
+        golioth_sys_free(gsettings);
+        gsettings = NULL;
+    }
+
+finish:
+    return gsettings;
 }
 
 enum golioth_status golioth_settings_register_int(
-        struct golioth_client* client,
+        struct golioth_settings* settings,
         const char* setting_name,
         golioth_int_setting_cb callback,
         void* callback_arg) {
     return golioth_settings_register_int_with_range(
-            client, setting_name, INT32_MIN, INT32_MAX, callback, callback_arg);
+            settings, setting_name, INT32_MIN, INT32_MAX, callback, callback_arg);
 }
 
 enum golioth_status golioth_settings_register_int_with_range(
-        struct golioth_client* client,
+        struct golioth_settings* settings,
         const char* setting_name,
         int32_t min_val,
         int32_t max_val,
@@ -386,7 +410,7 @@ enum golioth_status golioth_settings_register_int_with_range(
         return GOLIOTH_ERR_NULL;
     }
 
-    struct golioth_setting* new_setting = alloc_setting(client);
+    struct golioth_setting* new_setting = alloc_setting(settings);
     if (!new_setting) {
         return GOLIOTH_ERR_MEM_ALLOC;
     }
@@ -403,7 +427,7 @@ enum golioth_status golioth_settings_register_int_with_range(
 }
 
 enum golioth_status golioth_settings_register_bool(
-        struct golioth_client* client,
+        struct golioth_settings* settings,
         const char* setting_name,
         golioth_bool_setting_cb callback,
         void* callback_arg) {
@@ -412,7 +436,7 @@ enum golioth_status golioth_settings_register_bool(
         return GOLIOTH_ERR_NULL;
     }
 
-    struct golioth_setting* new_setting = alloc_setting(client);
+    struct golioth_setting* new_setting = alloc_setting(settings);
     if (!new_setting) {
         return GOLIOTH_ERR_MEM_ALLOC;
     }
@@ -427,7 +451,7 @@ enum golioth_status golioth_settings_register_bool(
 }
 
 enum golioth_status golioth_settings_register_float(
-        struct golioth_client* client,
+        struct golioth_settings* settings,
         const char* setting_name,
         golioth_float_setting_cb callback,
         void* callback_arg) {
@@ -436,7 +460,7 @@ enum golioth_status golioth_settings_register_float(
         return GOLIOTH_ERR_NULL;
     }
 
-    struct golioth_setting* new_setting = alloc_setting(client);
+    struct golioth_setting* new_setting = alloc_setting(settings);
     if (!new_setting) {
         return GOLIOTH_ERR_MEM_ALLOC;
     }
