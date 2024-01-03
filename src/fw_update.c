@@ -19,9 +19,9 @@ LOG_TAG_DEFINE(golioth_fw_update);
 
 static struct golioth_client* _client;
 static golioth_sys_sem_t _manifest_rcvd;
-static golioth_ota_manifest_t _ota_manifest;
+static struct golioth_ota_manifest _ota_manifest;
 static uint8_t _ota_block_buffer[GOLIOTH_OTA_BLOCKSIZE + 1];
-static const golioth_ota_component_t* _main_component;
+static const struct golioth_ota_component* _main_component;
 static golioth_fw_update_state_change_callback _state_callback;
 static void* _state_callback_arg;
 static struct golioth_fw_update_config _config;
@@ -52,8 +52,8 @@ static enum golioth_status download_and_write_flash(void) {
 
 static enum golioth_status golioth_fw_update_report_state_sync(
         struct golioth_client* client,
-        golioth_ota_state_t state,
-        golioth_ota_reason_t reason,
+        enum golioth_ota_state state,
+        enum golioth_ota_reason reason,
         const char* package,
         const char* current_version,
         const char* target_version,
@@ -79,7 +79,7 @@ static void on_ota_manifest(
 
     GLTH_LOGD(TAG, "Received OTA manifest: %.*s", (int)payload_size, payload);
 
-    golioth_ota_state_t state = golioth_ota_get_state();
+    enum golioth_ota_state state = golioth_ota_get_state();
     if (state == GOLIOTH_OTA_STATE_DOWNLOADING) {
         GLTH_LOGW(TAG, "Ignoring manifest while download in progress");
         return;
@@ -94,7 +94,7 @@ static void on_ota_manifest(
     golioth_sys_sem_give(_manifest_rcvd);
 }
 
-static bool manifest_version_is_different(const golioth_ota_manifest_t* manifest) {
+static bool manifest_version_is_different(const struct golioth_ota_manifest* manifest) {
     _main_component = golioth_ota_find_component(manifest, _config.fw_package_name);
     if (_main_component) {
         if (0 != strcmp(_config.current_version, _main_component->version)) {
