@@ -79,11 +79,11 @@ struct golioth_psk_credential {
     size_t psk_len;
 };
 
-/// Public Key Infrastructure (PKI) credentials (aka "certificates").
+/// Public Key Infrastructure (PKI) credential (aka "certificate").
 ///
 /// All memory is owned by user and must persist for the lifetime
 /// of the golioth client.
-typedef struct {
+struct golioth_pki_credential {
     // DER Common CA cert
     const uint8_t* ca_cert;
     size_t ca_cert_len;
@@ -95,14 +95,14 @@ typedef struct {
     /// DER Private client key
     const uint8_t* private_key;
     size_t private_key_len;
-} golioth_pki_credentials_t;
+};
 
 /// TLS Authentication Credentials
 typedef struct {
     enum golioth_auth_type auth_type;
     union {
         struct golioth_psk_credential psk;
-        golioth_pki_credentials_t pki;
+        struct golioth_pki_credential pki;
     };
 } golioth_tls_credentials_t;
 

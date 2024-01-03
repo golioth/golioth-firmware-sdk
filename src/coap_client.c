@@ -597,7 +597,7 @@ static golioth_status_t create_session(
         *session =
                 coap_new_client_session_psk2(context, NULL, &dst_addr, COAP_PROTO_DTLS, &dtls_psk);
     } else if (auth_type == GOLIOTH_TLS_AUTH_TYPE_PKI) {
-        golioth_pki_credentials_t pki_creds = client->config.credentials.pki;
+        struct golioth_pki_credential pki_creds = client->config.credentials.pki;
 
         coap_dtls_pki_t dtls_pki = {
                 .version = COAP_DTLS_PKI_SETUP_VERSION,
