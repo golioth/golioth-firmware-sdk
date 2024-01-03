@@ -9,15 +9,15 @@
 #include <stdarg.h>
 #include <stdlib.h>
 
-static golioth_debug_log_level_t _level = CONFIG_GOLIOTH_DEBUG_DEFAULT_LOG_LEVEL;
+static enum golioth_debug_log_level _level = CONFIG_GOLIOTH_DEBUG_DEFAULT_LOG_LEVEL;
 static struct golioth_client* _client = NULL;
 static bool _cloud_log_enabled = CONFIG_GOLIOTH_AUTO_LOG_TO_CLOUD;
 
-void golioth_debug_set_log_level(golioth_debug_log_level_t level) {
+void golioth_debug_set_log_level(enum golioth_debug_log_level level) {
     _level = level;
 }
 
-golioth_debug_log_level_t golioth_debug_get_log_level(void) {
+enum golioth_debug_log_level golioth_debug_get_log_level(void) {
     return _level;
 }
 
@@ -82,7 +82,7 @@ void golioth_debug_hexdump(const char* tag, const void* addr, int len) {
 // If you must log, use printf instead.
 void golioth_debug_printf(
         uint64_t tstamp_ms,
-        golioth_debug_log_level_t level,
+        enum golioth_debug_log_level level,
         const char* tag,
         const char* format,
         ...) {
