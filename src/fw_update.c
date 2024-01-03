@@ -274,7 +274,7 @@ void golioth_fw_update_init_with_config(
             _config.current_version);
 
     if (!initialized) {
-        golioth_sys_thread_config_t thread_cfg =
+        struct golioth_thread_config thread_cfg =
         {
             .name = "fw_update",
             .fn = fw_update_thread,
