@@ -151,7 +151,7 @@ void golioth_main_task(void* arg) {
     const char* psk_id = GOLIOTH_SAMPLE_PSK_ID;
     const char* psk = GOLIOTH_SAMPLE_PSK;
 
-    golioth_client_config_t config = {
+    struct golioth_client_config config = {
             .credentials = {
                     .auth_type = GOLIOTH_TLS_AUTH_TYPE_PSK,
                     .psk = {

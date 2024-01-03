@@ -39,7 +39,7 @@ int main(void) {
         return 1;
     }
 
-    golioth_client_config_t config = {
+    struct golioth_client_config config = {
             .credentials = {
                     .auth_type = GOLIOTH_TLS_AUTH_TYPE_PKI,
                     .pki = {

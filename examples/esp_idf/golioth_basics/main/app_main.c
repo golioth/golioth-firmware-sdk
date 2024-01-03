@@ -58,7 +58,7 @@ void app_main(void) {
     const char* psk_id = nvs_read_golioth_psk_id();
     const char* psk = nvs_read_golioth_psk();
 
-    golioth_client_config_t config = {
+    struct golioth_client_config config = {
             .credentials = {
                     .auth_type = GOLIOTH_TLS_AUTH_TYPE_PSK,
                     .psk = {

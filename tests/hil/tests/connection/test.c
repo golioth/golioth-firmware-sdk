@@ -3,7 +3,7 @@
 
 LOG_TAG_DEFINE(test_connect);
 
-void hil_test_entry(const golioth_client_config_t *config)
+void hil_test_entry(const struct golioth_client_config *config)
 {
     struct golioth_client* client = golioth_client_create(config);
 

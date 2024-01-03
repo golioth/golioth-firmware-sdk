@@ -126,7 +126,7 @@ int main(void) {
     if (tls_client_crt != NULL && tls_client_key != NULL) {
         net_connect();
 
-        golioth_client_config_t client_config = {
+        struct golioth_client_config client_config = {
             .credentials = {
                 .auth_type = GOLIOTH_TLS_AUTH_TYPE_PKI,
                 .pki = {

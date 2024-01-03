@@ -20,7 +20,7 @@ LOG_MODULE_REGISTER(golioth_sample_settings, CONFIG_GOLIOTH_DEBUG_DEFAULT_LOG_LE
 static uint8_t golioth_dtls_psk[CONFIG_GOLIOTH_SAMPLE_PSK_MAX_LEN + 1];
 static uint8_t golioth_dtls_psk_id[CONFIG_GOLIOTH_SAMPLE_PSK_ID_MAX_LEN + 1];
 
-static golioth_client_config_t client_config = {
+static struct golioth_client_config client_config = {
 	.credentials = {
 		.auth_type = GOLIOTH_TLS_AUTH_TYPE_PSK,
 		.psk = {
@@ -109,6 +109,6 @@ SETTINGS_STATIC_HANDLER_DEFINE(golioth, "golioth",
 	IS_ENABLED(CONFIG_SETTINGS_RUNTIME) ? golioth_settings_get : NULL,
 	golioth_settings_set, NULL, NULL);
 
-const golioth_client_config_t* golioth_sample_credentials_get(void) {
+const struct golioth_client_config* golioth_sample_credentials_get(void) {
 	return &client_config;
 }
