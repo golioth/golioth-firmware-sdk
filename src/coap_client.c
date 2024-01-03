@@ -579,7 +579,7 @@ static golioth_status_t create_session(
     char client_sni[256] = {};
     memcpy(client_sni, host_uri.host.s, MIN(host_uri.host.length, sizeof(client_sni) - 1));
 
-    golioth_tls_auth_type_t auth_type = client->config.credentials.auth_type;
+    enum golioth_auth_type auth_type = client->config.credentials.auth_type;
 
     if (auth_type == GOLIOTH_TLS_AUTH_TYPE_PSK) {
         golioth_psk_credentials_t psk_creds = client->config.credentials.psk;
