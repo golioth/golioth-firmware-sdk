@@ -11,13 +11,13 @@
 
 #define GOLIOTH_FW_UPDATE_DEFAULT_PACKAGE_NAME "main"
 
-typedef struct {
+struct golioth_fw_update_config {
     /// The current firmware version, NULL-terminated, shallow-copied from user. (e.g. "1.2.3")
     const char* current_version;
     /// The name of the package in the manifest for the main firmware, NULL-terminated,
     /// shallow-copied from user (e.g. "main").
     const char* fw_package_name;
-} golioth_fw_update_config_t;
+};
 
 /// @defgroup golioth_fw_update golioth_fw_update
 /// Create a background thread that will execute Over-the-Air (OTA) updates
@@ -46,10 +46,10 @@ void golioth_fw_update_init(struct golioth_client* client, const char* current_v
 /// Same as golioth_fw_update_init, but with additional configuration specified via struct.
 ///
 /// @param client The client handle from @ref golioth_client_create
-/// @param config The configuration struct (see @ref golioth_fw_update_config_t).
+/// @param config The configuration struct (see @ref golioth_fw_update_config).
 void golioth_fw_update_init_with_config(
         struct golioth_client* client,
-        const golioth_fw_update_config_t* config);
+        const struct golioth_fw_update_config* config);
 
 /// Function callback type, for FW update state change listeners
 ///

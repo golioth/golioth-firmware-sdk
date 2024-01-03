@@ -24,7 +24,7 @@ static uint8_t _ota_block_buffer[GOLIOTH_OTA_BLOCKSIZE + 1];
 static const golioth_ota_component_t* _main_component;
 static golioth_fw_update_state_change_callback _state_callback;
 static void* _state_callback_arg;
-static golioth_fw_update_config_t _config;
+static struct golioth_fw_update_config _config;
 static fw_block_processor_ctx_t _fw_block_processor;
 
 static enum golioth_status download_and_write_flash(void) {
@@ -251,7 +251,7 @@ static void fw_update_thread(void* arg) {
 }
 
 void golioth_fw_update_init(struct golioth_client* client, const char* current_version) {
-    golioth_fw_update_config_t config = {
+    struct golioth_fw_update_config config = {
             .current_version = current_version,
             .fw_package_name = GOLIOTH_FW_UPDATE_DEFAULT_PACKAGE_NAME,
     };
@@ -260,7 +260,7 @@ void golioth_fw_update_init(struct golioth_client* client, const char* current_v
 
 void golioth_fw_update_init_with_config(
         struct golioth_client* client,
-        const golioth_fw_update_config_t* config) {
+        const struct golioth_fw_update_config* config) {
     static bool initialized = false;
 
     _client = client;
