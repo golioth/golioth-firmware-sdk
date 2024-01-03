@@ -309,7 +309,7 @@ golioth_status_t golioth_lightdb_set_sync(
 
 static void on_payload(
         struct golioth_client* client,
-        const golioth_response_t* response,
+        const struct golioth_response* response,
         const char* path,
         const uint8_t* payload,
         size_t payload_size,

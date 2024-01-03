@@ -295,7 +295,7 @@ static int settings_decode(zcbor_state_t* zsd, void* value) {
 
 static void on_settings(
         struct golioth_client* client,
-        const golioth_response_t* response,
+        const struct golioth_response* response,
         const char* path,
         const uint8_t* payload,
         size_t payload_size,

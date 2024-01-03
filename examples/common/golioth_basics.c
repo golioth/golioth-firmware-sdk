@@ -79,7 +79,7 @@ static golioth_rpc_status_t on_multiply(
 // Callback function for asynchronous get request of LightDB path "my_int"
 static void on_get_my_int(
         struct golioth_client* client,
-        const golioth_response_t* response,
+        const struct golioth_response* response,
         const char* path,
         const uint8_t* payload,
         size_t payload_size,
@@ -98,7 +98,7 @@ static void on_get_my_int(
 // Callback function for asynchronous observation of LightDB path "desired/my_config"
 static void on_my_config(
         struct golioth_client* client,
-        const golioth_response_t* response,
+        const struct golioth_response* response,
         const char* path,
         const uint8_t* payload,
         size_t payload_size,

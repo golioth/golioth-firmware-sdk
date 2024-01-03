@@ -198,12 +198,12 @@ static bool _on_get_test_int2_called = false;
 static int32_t _test_int2_value = 0;
 static void on_get_test_int2(
         struct golioth_client* client,
-        const golioth_response_t* response,
+        const struct golioth_response* response,
         const char* path,
         const uint8_t* payload,
         size_t payload_size,
         void* arg) {
-    golioth_response_t* arg_response = (golioth_response_t*)arg;
+    struct golioth_response* arg_response = (struct golioth_response*)arg;
     *arg_response = *response;
     _on_get_test_int2_called = true;
     _test_int2_value = golioth_payload_as_int(payload, payload_size);
@@ -212,10 +212,10 @@ static void on_get_test_int2(
 static bool _on_set_test_int2_called = false;
 static void on_set_test_int2(
         struct golioth_client* client,
-        const golioth_response_t* response,
+        const struct golioth_response* response,
         const char* path,
         void* arg) {
-    golioth_response_t* arg_response = (golioth_response_t*)arg;
+    struct golioth_response* arg_response = (struct golioth_response*)arg;
     *arg_response = *response;
     _on_set_test_int2_called = true;
 }
@@ -223,8 +223,8 @@ static void on_set_test_int2(
 static void test_lightdb_set_get_async(void) {
     _on_set_test_int2_called = false;
     _on_get_test_int2_called = false;
-    golioth_response_t set_async_response = {};
-    golioth_response_t get_async_response = {};
+    struct golioth_response set_async_response = {};
+    struct golioth_response get_async_response = {};
 
     int randint = esp_random();
     TEST_ASSERT_EQUAL(
@@ -275,12 +275,12 @@ static void test_lightdb_set_get_async(void) {
 static bool _on_test_timeout_called = false;
 static void on_test_timeout(
         struct golioth_client* client,
-        const golioth_response_t* response,
+        const struct golioth_response* response,
         const char* path,
         const uint8_t* payload,
         size_t payload_size,
         void* arg) {
-    golioth_response_t* arg_response = (golioth_response_t*)arg;
+    struct golioth_response* arg_response = (struct golioth_response*)arg;
     *arg_response = *response;
     _on_test_timeout_called = true;
 }
@@ -299,7 +299,7 @@ static void test_request_timeout_if_packets_dropped(void) {
             GOLIOTH_ERR_TIMEOUT, golioth_lightdb_delete_sync(_client, "expect_timeout", 1));
 
     _on_test_timeout_called = false;
-    golioth_response_t async_response = {};
+    struct golioth_response async_response = {};
     TEST_ASSERT_EQUAL(
             GOLIOTH_OK,
             golioth_lightdb_get_async(_client, "expect_timeout", GOLIOTH_CONTENT_TYPE_JSON,
@@ -379,7 +379,7 @@ static bool _on_get_test_int3_called = false;
 static int32_t _test_int3_value = 0;
 static void on_test_int3(
         struct golioth_client* client,
-        const golioth_response_t* response,
+        const struct golioth_response* response,
         const char* path,
         const uint8_t* payload,
         size_t payload_size,
