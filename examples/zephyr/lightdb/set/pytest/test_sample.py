@@ -28,6 +28,7 @@ async def test_lightdb_set(shell, device, credentials_file):
 
     shell._device.clear_buffer()
     shell._device.write('kernel reboot cold\n\n'.encode())
+    shell._device.readlines_until(regex=".*Booting", timeout=10.0)
 
     # Wait for Golioth connection
 
