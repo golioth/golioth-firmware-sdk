@@ -255,7 +255,7 @@ static void coap_log_handler(coap_log_t level, const char* message) {
 #endif /* GOLIOTH_OVERRIDE_LIBCOAP_LOG_HANDLER */
 
 // DNS lookup of host_uri
-static golioth_status_t get_coap_dst_address(const coap_uri_t* host_uri, coap_address_t* dst_addr) {
+static enum golioth_status get_coap_dst_address(const coap_uri_t* host_uri, coap_address_t* dst_addr) {
     struct addrinfo hints = {
             .ai_socktype = SOCK_DGRAM,
             .ai_family = AF_UNSPEC,
@@ -519,7 +519,7 @@ static void reestablish_observations(struct golioth_client* client, coap_session
     }
 }
 
-static golioth_status_t create_context(struct golioth_client* client, coap_context_t** context) {
+static enum golioth_status create_context(struct golioth_client* client, coap_context_t** context) {
     *context = coap_new_context(NULL);
     if (!*context) {
         GLTH_LOGE(TAG, "Failed to create CoAP context");
@@ -555,7 +555,7 @@ static int validate_cn_call_back(
     return 1;
 }
 
-static golioth_status_t create_session(
+static enum golioth_status create_session(
         struct golioth_client* client,
         coap_context_t* context,
         coap_session_t** session) {
@@ -654,7 +654,7 @@ static void purge_request_mbox(golioth_mbox_t request_mbox) {
     }
 }
 
-static golioth_status_t coap_io_loop_once(
+static enum golioth_status coap_io_loop_once(
         struct golioth_client* client,
         coap_context_t* context,
         coap_session_t* session) {
@@ -1052,7 +1052,7 @@ error:
     return NULL;
 }
 
-golioth_status_t golioth_client_start(struct golioth_client* client) {
+enum golioth_status golioth_client_start(struct golioth_client* client) {
     if (!client) {
         return GOLIOTH_ERR_NULL;
     }
@@ -1060,7 +1060,7 @@ golioth_status_t golioth_client_start(struct golioth_client* client) {
     return GOLIOTH_OK;
 }
 
-golioth_status_t golioth_client_stop(struct golioth_client* client) {
+enum golioth_status golioth_client_stop(struct golioth_client* client) {
     if (!client) {
         return GOLIOTH_ERR_NULL;
     }
@@ -1103,7 +1103,7 @@ bool golioth_client_is_connected(struct golioth_client* client) {
     return client->session_connected;
 }
 
-golioth_status_t golioth_coap_client_empty(
+enum golioth_status golioth_coap_client_empty(
         struct golioth_client* client,
         bool is_synchronous,
         int32_t timeout_s) {
@@ -1163,7 +1163,7 @@ golioth_status_t golioth_coap_client_empty(
     return GOLIOTH_OK;
 }
 
-golioth_status_t golioth_coap_client_set(
+enum golioth_status golioth_coap_client_set(
         struct golioth_client* client,
         const char* path_prefix,
         const char* path,
@@ -1260,7 +1260,7 @@ golioth_status_t golioth_coap_client_set(
     return GOLIOTH_OK;
 }
 
-golioth_status_t golioth_coap_client_delete(
+enum golioth_status golioth_coap_client_delete(
         struct golioth_client* client,
         const char* path_prefix,
         const char* path,
@@ -1331,7 +1331,7 @@ golioth_status_t golioth_coap_client_delete(
     return GOLIOTH_OK;
 }
 
-static golioth_status_t golioth_coap_client_get_internal(
+static enum golioth_status golioth_coap_client_get_internal(
         struct golioth_client* client,
         const char* path_prefix,
         const char* path,
@@ -1401,7 +1401,7 @@ static golioth_status_t golioth_coap_client_get_internal(
     return GOLIOTH_OK;
 }
 
-golioth_status_t golioth_coap_client_get(
+enum golioth_status golioth_coap_client_get(
         struct golioth_client* client,
         const char* path_prefix,
         const char* path,
@@ -1425,7 +1425,7 @@ golioth_status_t golioth_coap_client_get(
             timeout_s);
 }
 
-golioth_status_t golioth_coap_client_get_block(
+enum golioth_status golioth_coap_client_get_block(
         struct golioth_client* client,
         const char* path_prefix,
         const char* path,
@@ -1453,7 +1453,7 @@ golioth_status_t golioth_coap_client_get_block(
             timeout_s);
 }
 
-golioth_status_t golioth_coap_client_observe_async(
+enum golioth_status golioth_coap_client_observe_async(
         struct golioth_client* client,
         const char* path_prefix,
         const char* path,

@@ -73,7 +73,7 @@ const golioth_ota_component_t* golioth_ota_find_component(
     return found;
 }
 
-golioth_status_t golioth_ota_observe_manifest_async(
+enum golioth_status golioth_ota_observe_manifest_async(
         struct golioth_client* client,
         golioth_get_cb_fn callback,
         void* arg) {
@@ -81,7 +81,7 @@ golioth_status_t golioth_ota_observe_manifest_async(
             client, "", GOLIOTH_OTA_MANIFEST_PATH, GOLIOTH_CONTENT_TYPE_CBOR, callback, arg);
 }
 
-golioth_status_t golioth_ota_report_state_sync(
+enum golioth_status golioth_ota_report_state_sync(
         struct golioth_client* client,
         golioth_ota_state_t state,
         golioth_ota_reason_t reason,
@@ -218,7 +218,7 @@ static int components_decode(zcbor_state_t* zsd, void* value) {
     return 0;
 }
 
-golioth_status_t golioth_ota_payload_as_manifest(
+enum golioth_status golioth_ota_payload_as_manifest(
         const uint8_t* payload,
         size_t payload_size,
         golioth_ota_manifest_t* manifest) {
@@ -277,7 +277,7 @@ static void on_block_rcvd(
     *out_params->block_nbytes = payload_size;
 }
 
-golioth_status_t golioth_ota_get_block_sync(
+enum golioth_status golioth_ota_get_block_sync(
         struct golioth_client* client,
         const char* package,
         const char* version,
@@ -300,7 +300,7 @@ golioth_status_t golioth_ota_get_block_sync(
     //
     // Ref: https://golioth.atlassian.net/wiki/spaces/EN/pages/262275073/OTA+Compressed+Artifacts
 
-    golioth_status_t status = GOLIOTH_OK;
+    enum golioth_status status = GOLIOTH_OK;
     status = golioth_coap_client_get_block(
             client,
             GOLIOTH_OTA_COMPONENT_PATH_PREFIX,

@@ -165,7 +165,7 @@ void fw_update_cancel_rollback(void) {
     boot_write_img_confirmed();
 }
 
-golioth_status_t fw_update_handle_block(
+enum golioth_status fw_update_handle_block(
         const uint8_t* block,
         size_t block_size,
         size_t offset,
@@ -205,11 +205,11 @@ void fw_update_post_download(void) {
     }
 }
 
-golioth_status_t fw_update_validate(void) {
+enum golioth_status fw_update_validate(void) {
     return GOLIOTH_OK;
 }
 
-golioth_status_t fw_update_change_boot_image(void) {
+enum golioth_status fw_update_change_boot_image(void) {
     int err;
 
     if (!IS_ENABLED(CONFIG_BOOTLOADER_MCUBOOT)) {
@@ -226,7 +226,7 @@ golioth_status_t fw_update_change_boot_image(void) {
 
 void fw_update_end(void) {}
 
-golioth_status_t fw_update_read_current_image_at_offset(
+enum golioth_status fw_update_read_current_image_at_offset(
         uint8_t* buf,
         size_t bufsize,
         size_t offset) {

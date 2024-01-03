@@ -4,7 +4,7 @@
 
 DECLARE_FAKE_VALUE_FUNC(golioth_rpc_t*, golioth_coap_client_get_rpc, struct golioth_client*);
 DECLARE_FAKE_VALUE_FUNC(
-        golioth_status_t,
+        enum golioth_status,
         golioth_coap_client_observe_async,
         struct golioth_client*,
         const char*,
@@ -13,7 +13,7 @@ DECLARE_FAKE_VALUE_FUNC(
         golioth_get_cb_fn,
         void*);
 DECLARE_FAKE_VALUE_FUNC(
-        golioth_status_t,
+        enum golioth_status,
         golioth_coap_client_set,
         struct golioth_client*,
         const char*,

@@ -12,7 +12,7 @@
 
 #define GOLIOTH_LIGHTDB_STREAM_PATH_PREFIX ".s/"
 
-golioth_status_t golioth_lightdb_stream_set_int_async(
+enum golioth_status golioth_lightdb_stream_set_int_async(
         struct golioth_client* client,
         const char* path,
         int32_t value,
@@ -34,7 +34,7 @@ golioth_status_t golioth_lightdb_stream_set_int_async(
             GOLIOTH_SYS_WAIT_FOREVER);
 }
 
-golioth_status_t golioth_lightdb_stream_set_bool_async(
+enum golioth_status golioth_lightdb_stream_set_bool_async(
         struct golioth_client* client,
         const char* path,
         bool value,
@@ -55,7 +55,7 @@ golioth_status_t golioth_lightdb_stream_set_bool_async(
             GOLIOTH_SYS_WAIT_FOREVER);
 }
 
-golioth_status_t golioth_lightdb_stream_set_float_async(
+enum golioth_status golioth_lightdb_stream_set_float_async(
         struct golioth_client* client,
         const char* path,
         float value,
@@ -77,7 +77,7 @@ golioth_status_t golioth_lightdb_stream_set_float_async(
             GOLIOTH_SYS_WAIT_FOREVER);
 }
 
-golioth_status_t golioth_lightdb_stream_set_string_async(
+enum golioth_status golioth_lightdb_stream_set_string_async(
         struct golioth_client* client,
         const char* path,
         const char* str,
@@ -100,7 +100,7 @@ golioth_status_t golioth_lightdb_stream_set_string_async(
     memset(buf, 0, bufsize);
     snprintf(buf, bufsize, "\"%s\"", str);
 
-    golioth_status_t status = golioth_coap_client_set(
+    enum golioth_status status = golioth_coap_client_set(
             client,
             GOLIOTH_LIGHTDB_STREAM_PATH_PREFIX,
             path,
@@ -116,7 +116,7 @@ golioth_status_t golioth_lightdb_stream_set_string_async(
     return status;
 }
 
-golioth_status_t golioth_lightdb_stream_set_json_async(
+enum golioth_status golioth_lightdb_stream_set_json_async(
         struct golioth_client* client,
         const char* path,
         const char* json_str,
@@ -137,7 +137,7 @@ golioth_status_t golioth_lightdb_stream_set_json_async(
             GOLIOTH_SYS_WAIT_FOREVER);
 }
 
-golioth_status_t golioth_lightdb_stream_set_cbor_async(
+enum golioth_status golioth_lightdb_stream_set_cbor_async(
         struct golioth_client* client,
         const char* path,
         const uint8_t* cbor_data,
@@ -158,7 +158,7 @@ golioth_status_t golioth_lightdb_stream_set_cbor_async(
             GOLIOTH_SYS_WAIT_FOREVER);
 }
 
-golioth_status_t golioth_lightdb_stream_set_int_sync(
+enum golioth_status golioth_lightdb_stream_set_int_sync(
         struct golioth_client* client,
         const char* path,
         int32_t value,
@@ -179,7 +179,7 @@ golioth_status_t golioth_lightdb_stream_set_int_sync(
             timeout_s);
 }
 
-golioth_status_t golioth_lightdb_stream_set_bool_sync(
+enum golioth_status golioth_lightdb_stream_set_bool_sync(
         struct golioth_client* client,
         const char* path,
         bool value,
@@ -199,7 +199,7 @@ golioth_status_t golioth_lightdb_stream_set_bool_sync(
             timeout_s);
 }
 
-golioth_status_t golioth_lightdb_stream_set_float_sync(
+enum golioth_status golioth_lightdb_stream_set_float_sync(
         struct golioth_client* client,
         const char* path,
         float value,
@@ -220,7 +220,7 @@ golioth_status_t golioth_lightdb_stream_set_float_sync(
             timeout_s);
 }
 
-golioth_status_t golioth_lightdb_stream_set_string_sync(
+enum golioth_status golioth_lightdb_stream_set_string_sync(
         struct golioth_client* client,
         const char* path,
         const char* str,
@@ -237,7 +237,7 @@ golioth_status_t golioth_lightdb_stream_set_string_sync(
     memset(buf, 0, bufsize);
     snprintf(buf, bufsize, "\"%s\"", str);
 
-    golioth_status_t status = golioth_coap_client_set(
+    enum golioth_status status = golioth_coap_client_set(
             client,
             GOLIOTH_LIGHTDB_STREAM_PATH_PREFIX,
             path,
@@ -253,7 +253,7 @@ golioth_status_t golioth_lightdb_stream_set_string_sync(
     return status;
 }
 
-golioth_status_t golioth_lightdb_stream_set_json_sync(
+enum golioth_status golioth_lightdb_stream_set_json_sync(
         struct golioth_client* client,
         const char* path,
         const char* json_str,
@@ -273,7 +273,7 @@ golioth_status_t golioth_lightdb_stream_set_json_sync(
             timeout_s);
 }
 
-golioth_status_t golioth_lightdb_stream_set_cbor_sync(
+enum golioth_status golioth_lightdb_stream_set_cbor_sync(
         struct golioth_client* client,
         const char* path,
         const uint8_t* cbor_data,

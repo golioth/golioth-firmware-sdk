@@ -107,12 +107,12 @@ typedef struct {
     golioth_coap_request_msg_t req;
 } golioth_coap_observe_info_t;
 
-golioth_status_t golioth_coap_client_empty(
+enum golioth_status golioth_coap_client_empty(
         struct golioth_client* client,
         bool is_synchronous,
         int32_t timeout_s);
 
-golioth_status_t golioth_coap_client_set(
+enum golioth_status golioth_coap_client_set(
         struct golioth_client* client,
         const char* path_prefix,
         const char* path,
@@ -124,7 +124,7 @@ golioth_status_t golioth_coap_client_set(
         bool is_synchronous,
         int32_t timeout_s);
 
-golioth_status_t golioth_coap_client_delete(
+enum golioth_status golioth_coap_client_delete(
         struct golioth_client* client,
         const char* path_prefix,
         const char* path,
@@ -133,7 +133,7 @@ golioth_status_t golioth_coap_client_delete(
         bool is_synchronous,
         int32_t timeout_s);
 
-golioth_status_t golioth_coap_client_get(
+enum golioth_status golioth_coap_client_get(
         struct golioth_client* client,
         const char* path_prefix,
         const char* path,
@@ -143,7 +143,7 @@ golioth_status_t golioth_coap_client_get(
         bool is_synchronous,
         int32_t timeout_s);
 
-golioth_status_t golioth_coap_client_get_block(
+enum golioth_status golioth_coap_client_get_block(
         struct golioth_client* client,
         const char* path_prefix,
         const char* path,
@@ -155,7 +155,7 @@ golioth_status_t golioth_coap_client_get_block(
         bool is_synchronous,
         int32_t timeout_s);
 
-golioth_status_t golioth_coap_client_observe_async(
+enum golioth_status golioth_coap_client_observe_async(
         struct golioth_client* client,
         const char* path_prefix,
         const char* path,

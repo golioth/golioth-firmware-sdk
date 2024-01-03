@@ -85,7 +85,7 @@ typedef struct {
 ///
 /// @return GOLIOTH_OK - payload converted to golioth_ota_manifest_t
 /// @return GOLIOTH_ERR_INVALID_FORMAT - failed to parse manifest
-golioth_status_t golioth_ota_payload_as_manifest(
+enum golioth_status golioth_ota_payload_as_manifest(
         const uint8_t* payload,
         size_t payload_size,
         golioth_ota_manifest_t* manifest);
@@ -109,7 +109,7 @@ const golioth_ota_component_t* golioth_ota_find_component(
 /// This function will enqueue a request and return immediately without
 /// waiting for a response from the server. The callback will be invoked whenever
 /// the manifest is changed on the Golioth server.
-golioth_status_t golioth_ota_observe_manifest_async(
+enum golioth_status golioth_ota_observe_manifest_async(
         struct golioth_client* client,
         golioth_get_cb_fn callback,
         void* arg);
@@ -142,7 +142,7 @@ golioth_status_t golioth_ota_observe_manifest_async(
 /// @return GOLIOTH_ERR_INVALID_STATE - client is not running, currently stopped
 /// @return GOLIOTH_ERR_QUEUE_FULL - request queue is full, this request is dropped
 /// @return GOLIOTH_ERR_TIMEOUT - response not received from server, timeout occurred
-golioth_status_t golioth_ota_get_block_sync(
+enum golioth_status golioth_ota_get_block_sync(
         struct golioth_client* client,
         const char* package,
         const char* version,
@@ -167,7 +167,7 @@ golioth_status_t golioth_ota_get_block_sync(
 /// @return GOLIOTH_ERR_INVALID_STATE - client is not running, currently stopped
 /// @return GOLIOTH_ERR_QUEUE_FULL - request queue is full, this request is dropped
 /// @return GOLIOTH_ERR_TIMEOUT - response not received from server, timeout occurred
-golioth_status_t golioth_ota_report_state_sync(
+enum golioth_status golioth_ota_report_state_sync(
         struct golioth_client* client,
         golioth_ota_state_t state,
         golioth_ota_reason_t reason,

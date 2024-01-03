@@ -185,7 +185,7 @@ static void on_rpc(
             GOLIOTH_SYS_WAIT_FOREVER);
 }
 
-golioth_status_t golioth_rpc_register(
+enum golioth_status golioth_rpc_register(
         struct golioth_client* client,
         const char* method,
         golioth_rpc_cb_fn callback,

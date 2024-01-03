@@ -27,7 +27,7 @@ static void* _state_callback_arg;
 static golioth_fw_update_config_t _config;
 static fw_block_processor_ctx_t _fw_block_processor;
 
-static golioth_status_t download_and_write_flash(void) {
+static enum golioth_status download_and_write_flash(void) {
     assert(_main_component);
 
     GLTH_LOGI(TAG, "Image size = %" PRIu32, _main_component->size);
@@ -50,7 +50,7 @@ static golioth_status_t download_and_write_flash(void) {
     return GOLIOTH_OK;
 }
 
-static golioth_status_t golioth_fw_update_report_state_sync(
+static enum golioth_status golioth_fw_update_report_state_sync(
         struct golioth_client* client,
         golioth_ota_state_t state,
         golioth_ota_reason_t reason,
@@ -85,7 +85,7 @@ static void on_ota_manifest(
         return;
     }
 
-    golioth_status_t status =
+    enum golioth_status status =
             golioth_ota_payload_as_manifest(payload, payload_size, &_ota_manifest);
     if (status != GOLIOTH_OK) {
         GLTH_LOGE(TAG, "Failed to parse manifest: %s", golioth_status_to_str(status));

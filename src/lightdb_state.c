@@ -34,7 +34,7 @@ typedef struct {
     bool is_null;
 } lightdb_get_response_t;
 
-golioth_status_t golioth_lightdb_set_int_async(
+enum golioth_status golioth_lightdb_set_int_async(
         struct golioth_client* client,
         const char* path,
         int32_t value,
@@ -55,7 +55,7 @@ golioth_status_t golioth_lightdb_set_int_async(
             GOLIOTH_SYS_WAIT_FOREVER);
 }
 
-golioth_status_t golioth_lightdb_set_bool_async(
+enum golioth_status golioth_lightdb_set_bool_async(
         struct golioth_client* client,
         const char* path,
         bool value,
@@ -75,7 +75,7 @@ golioth_status_t golioth_lightdb_set_bool_async(
             GOLIOTH_SYS_WAIT_FOREVER);
 }
 
-golioth_status_t golioth_lightdb_set_float_async(
+enum golioth_status golioth_lightdb_set_float_async(
         struct golioth_client* client,
         const char* path,
         float value,
@@ -96,7 +96,7 @@ golioth_status_t golioth_lightdb_set_float_async(
             GOLIOTH_SYS_WAIT_FOREVER);
 }
 
-golioth_status_t golioth_lightdb_set_string_async(
+enum golioth_status golioth_lightdb_set_string_async(
         struct golioth_client* client,
         const char* path,
         const char* str,
@@ -113,7 +113,7 @@ golioth_status_t golioth_lightdb_set_string_async(
     memset(buf, 0, bufsize);
     snprintf(buf, bufsize, "\"%s\"", str);
 
-    golioth_status_t status = golioth_coap_client_set(
+    enum golioth_status status = golioth_coap_client_set(
             client,
             GOLIOTH_LIGHTDB_STATE_PATH_PREFIX,
             path,
@@ -129,7 +129,7 @@ golioth_status_t golioth_lightdb_set_string_async(
     return status;
 }
 
-golioth_status_t golioth_lightdb_set_async(
+enum golioth_status golioth_lightdb_set_async(
         struct golioth_client* client,
         const char* path,
         enum golioth_content_type content_type,
@@ -150,7 +150,7 @@ golioth_status_t golioth_lightdb_set_async(
             GOLIOTH_SYS_WAIT_FOREVER);
 }
 
-golioth_status_t golioth_lightdb_get_async(
+enum golioth_status golioth_lightdb_get_async(
         struct golioth_client* client,
         const char* path,
         enum golioth_content_type content_type,
@@ -167,7 +167,7 @@ golioth_status_t golioth_lightdb_get_async(
             GOLIOTH_SYS_WAIT_FOREVER);
 }
 
-golioth_status_t golioth_lightdb_delete_async(
+enum golioth_status golioth_lightdb_delete_async(
         struct golioth_client* client,
         const char* path,
         golioth_set_cb_fn callback,
@@ -182,7 +182,7 @@ golioth_status_t golioth_lightdb_delete_async(
             GOLIOTH_SYS_WAIT_FOREVER);
 }
 
-golioth_status_t golioth_lightdb_observe_async(
+enum golioth_status golioth_lightdb_observe_async(
         struct golioth_client* client,
         const char* path,
         golioth_get_cb_fn callback,
@@ -196,7 +196,7 @@ golioth_status_t golioth_lightdb_observe_async(
             arg);
 }
 
-golioth_status_t golioth_lightdb_set_int_sync(
+enum golioth_status golioth_lightdb_set_int_sync(
         struct golioth_client* client,
         const char* path,
         int32_t value,
@@ -216,7 +216,7 @@ golioth_status_t golioth_lightdb_set_int_sync(
             timeout_s);
 }
 
-golioth_status_t golioth_lightdb_set_bool_sync(
+enum golioth_status golioth_lightdb_set_bool_sync(
         struct golioth_client* client,
         const char* path,
         bool value,
@@ -235,7 +235,7 @@ golioth_status_t golioth_lightdb_set_bool_sync(
             timeout_s);
 }
 
-golioth_status_t golioth_lightdb_set_float_sync(
+enum golioth_status golioth_lightdb_set_float_sync(
         struct golioth_client* client,
         const char* path,
         float value,
@@ -255,7 +255,7 @@ golioth_status_t golioth_lightdb_set_float_sync(
             timeout_s);
 }
 
-golioth_status_t golioth_lightdb_set_string_sync(
+enum golioth_status golioth_lightdb_set_string_sync(
         struct golioth_client* client,
         const char* path,
         const char* str,
@@ -271,7 +271,7 @@ golioth_status_t golioth_lightdb_set_string_sync(
     memset(buf, 0, bufsize);
     snprintf(buf, bufsize, "\"%s\"", str);
 
-    golioth_status_t status = golioth_coap_client_set(
+    enum golioth_status status = golioth_coap_client_set(
             client,
             GOLIOTH_LIGHTDB_STATE_PATH_PREFIX,
             path,
@@ -287,7 +287,7 @@ golioth_status_t golioth_lightdb_set_string_sync(
     return status;
 }
 
-golioth_status_t golioth_lightdb_set_sync(
+enum golioth_status golioth_lightdb_set_sync(
         struct golioth_client* client,
         const char* path,
         enum golioth_content_type content_type,
@@ -351,7 +351,7 @@ static void on_payload(
     }
 }
 
-golioth_status_t golioth_lightdb_get_int_sync(
+enum golioth_status golioth_lightdb_get_int_sync(
         struct golioth_client* client,
         const char* path,
         int32_t* value,
@@ -360,7 +360,7 @@ golioth_status_t golioth_lightdb_get_int_sync(
             .type = LIGHTDB_GET_TYPE_INT,
             .i = value,
     };
-    golioth_status_t status = golioth_coap_client_get(
+    enum golioth_status status = golioth_coap_client_get(
             client,
             GOLIOTH_LIGHTDB_STATE_PATH_PREFIX,
             path,
@@ -375,7 +375,7 @@ golioth_status_t golioth_lightdb_get_int_sync(
     return status;
 }
 
-golioth_status_t golioth_lightdb_get_bool_sync(
+enum golioth_status golioth_lightdb_get_bool_sync(
         struct golioth_client* client,
         const char* path,
         bool* value,
@@ -384,7 +384,7 @@ golioth_status_t golioth_lightdb_get_bool_sync(
             .type = LIGHTDB_GET_TYPE_BOOL,
             .b = value,
     };
-    golioth_status_t status = golioth_coap_client_get(
+    enum golioth_status status = golioth_coap_client_get(
             client,
             GOLIOTH_LIGHTDB_STATE_PATH_PREFIX,
             path,
@@ -399,7 +399,7 @@ golioth_status_t golioth_lightdb_get_bool_sync(
     return status;
 }
 
-golioth_status_t golioth_lightdb_get_float_sync(
+enum golioth_status golioth_lightdb_get_float_sync(
         struct golioth_client* client,
         const char* path,
         float* value,
@@ -408,7 +408,7 @@ golioth_status_t golioth_lightdb_get_float_sync(
             .type = LIGHTDB_GET_TYPE_FLOAT,
             .f = value,
     };
-    golioth_status_t status = golioth_coap_client_get(
+    enum golioth_status status = golioth_coap_client_get(
             client,
             GOLIOTH_LIGHTDB_STATE_PATH_PREFIX,
             path,
@@ -423,7 +423,7 @@ golioth_status_t golioth_lightdb_get_float_sync(
     return status;
 }
 
-golioth_status_t golioth_lightdb_get_string_sync(
+enum golioth_status golioth_lightdb_get_string_sync(
         struct golioth_client* client,
         const char* path,
         char* strbuf,
@@ -434,7 +434,7 @@ golioth_status_t golioth_lightdb_get_string_sync(
             .buf = (uint8_t *) strbuf,
             .buf_size = strbuf_size,
     };
-    golioth_status_t status = golioth_coap_client_get(
+    enum golioth_status status = golioth_coap_client_get(
             client,
             GOLIOTH_LIGHTDB_STATE_PATH_PREFIX,
             path,
@@ -449,7 +449,7 @@ golioth_status_t golioth_lightdb_get_string_sync(
     return status;
 }
 
-golioth_status_t golioth_lightdb_get_sync(
+enum golioth_status golioth_lightdb_get_sync(
         struct golioth_client* client,
         const char* path,
         enum golioth_content_type content_type,
@@ -463,7 +463,7 @@ golioth_status_t golioth_lightdb_get_sync(
             .buf = buf,
             .buf_size = *buf_size,
     };
-    golioth_status_t status = golioth_coap_client_get(
+    enum golioth_status status = golioth_coap_client_get(
             client,
             GOLIOTH_LIGHTDB_STATE_PATH_PREFIX,
             path,
@@ -479,7 +479,7 @@ golioth_status_t golioth_lightdb_get_sync(
     return status;
 }
 
-golioth_status_t golioth_lightdb_delete_sync(
+enum golioth_status golioth_lightdb_delete_sync(
         struct golioth_client* client,
         const char* path,
         int32_t timeout_s) {
