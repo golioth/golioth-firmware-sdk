@@ -16,7 +16,7 @@
 /// @{
 
 /// Enumeration of RPC status codes, sent in the RPC response
-typedef enum {
+enum golioth_rpc_status {
     GOLIOTH_RPC_OK = 0,
     GOLIOTH_RPC_CANCELED = 1,
     GOLIOTH_RPC_UNKNOWN = 2,
@@ -34,7 +34,7 @@ typedef enum {
     GOLIOTH_RPC_UNAVAILABLE = 14,
     GOLIOTH_RPC_DATA_LOSS = 15,
     GOLIOTH_RPC_UNAUTHENTICATED = 16,
-} golioth_rpc_status_t;
+};
 
 /// Callback function type for remote procedure call
 ///
@@ -42,7 +42,7 @@ typedef enum {
 /// takes two float parameters, and multiplies them:
 ///
 /// @code{.c}
-/// static golioth_rpc_status_t on_multiply(zcbor_state_t *request_params_array,
+/// static enum golioth_rpc_status on_multiply(zcbor_state_t *request_params_array,
 ///                                         zcbor_state_t *response_detail_map,
 ///                                         void *callback_arg)
 /// {
@@ -77,7 +77,7 @@ typedef enum {
 /// @return GOLIOTH_RPC_OK - if method was called successfully
 /// @return GOLIOTH_RPC_INVALID_ARGUMENT - if params were invalid
 /// @return otherwise - method failure
-typedef golioth_rpc_status_t (*golioth_rpc_cb_fn)(
+typedef enum golioth_rpc_status (*golioth_rpc_cb_fn)(
         zcbor_state_t* request_params_array,
         zcbor_state_t* response_detail_map,
         void* callback_arg);
@@ -99,17 +99,17 @@ enum golioth_status golioth_rpc_register(
         void* callback_arg);
 
 /// Private struct to contain data about a single registered method
-typedef struct {
+struct golioth_rpc_method {
     const char* method;
     golioth_rpc_cb_fn callback;
     void* callback_arg;
-} golioth_rpc_method_t;
+};
 
 /// Private struct to contain RPC state data, stored in
 /// the golioth_coap_client_t struct.
-typedef struct {
-    golioth_rpc_method_t rpcs[CONFIG_GOLIOTH_RPC_MAX_NUM_METHODS];
+struct golioth_rpc {
+    struct golioth_rpc_method rpcs[CONFIG_GOLIOTH_RPC_MAX_NUM_METHODS];
     int num_rpcs;
-} golioth_rpc_t;
+};
 
 /// @}

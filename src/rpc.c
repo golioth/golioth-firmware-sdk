@@ -113,13 +113,13 @@ static void on_rpc(
         return;
     }
 
-    golioth_rpc_t* grpc = golioth_coap_client_get_rpc(client);
+    struct golioth_rpc* grpc = golioth_coap_client_get_rpc(client);
 
-    const golioth_rpc_method_t* matching_rpc = NULL;
-    golioth_rpc_status_t status = GOLIOTH_RPC_UNKNOWN;
+    const struct golioth_rpc_method* matching_rpc = NULL;
+    enum golioth_rpc_status status = GOLIOTH_RPC_UNKNOWN;
 
     for (int i = 0; i < grpc->num_rpcs; i++) {
-        const golioth_rpc_method_t* rpc = &grpc->rpcs[i];
+        const struct golioth_rpc_method* rpc = &grpc->rpcs[i];
         if (strlen(rpc->method) == method.len
             && strncmp(rpc->method, (char*)method.value, method.len) == 0) {
             matching_rpc = rpc;
@@ -190,7 +190,7 @@ enum golioth_status golioth_rpc_register(
         const char* method,
         golioth_rpc_cb_fn callback,
         void* callback_arg) {
-    golioth_rpc_t* grpc = golioth_coap_client_get_rpc(client);
+    struct golioth_rpc* grpc = golioth_coap_client_get_rpc(client);
 
     if (grpc->num_rpcs >= CONFIG_GOLIOTH_RPC_MAX_NUM_METHODS) {
         GLTH_LOGE(
@@ -200,7 +200,7 @@ enum golioth_status golioth_rpc_register(
         return GOLIOTH_ERR_MEM_ALLOC;
     }
 
-    golioth_rpc_method_t* rpc = &grpc->rpcs[grpc->num_rpcs];
+    struct golioth_rpc_method* rpc = &grpc->rpcs[grpc->num_rpcs];
 
     rpc->method = method;
     rpc->callback = callback;

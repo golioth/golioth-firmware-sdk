@@ -46,7 +46,7 @@ static golioth_settings_status_t on_loop_delay_setting(int32_t new_value, void* 
     return GOLIOTH_SETTINGS_SUCCESS;
 }
 
-static golioth_rpc_status_t on_multiply(
+static enum golioth_rpc_status on_multiply(
         zcbor_state_t* request_params_array,
         zcbor_state_t* response_detail_map,
         void* callback_arg) {
