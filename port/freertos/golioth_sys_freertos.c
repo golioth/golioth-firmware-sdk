@@ -130,7 +130,7 @@ void golioth_sys_timer_destroy(golioth_sys_timer_t timer) {
  * Threads
  *------------------------------------------------*/
 
-golioth_sys_thread_t golioth_sys_thread_create(const golioth_sys_thread_config_t *config) {
+golioth_sys_thread_t golioth_sys_thread_create(const struct golioth_thread_config *config) {
     TaskHandle_t task_handle = NULL;
     xTaskCreate(config->fn,
                 config->name,

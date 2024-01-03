@@ -257,7 +257,7 @@ static void* pthread_callback(void* arg) {
     wt->fn(wt->user_arg);
 }
 
-golioth_sys_thread_t golioth_sys_thread_create(const golioth_sys_thread_config_t *config) {
+golioth_sys_thread_t golioth_sys_thread_create(const struct golioth_thread_config *config) {
     // Intentionally ignoring from config:
     //      name
     //      stack_size

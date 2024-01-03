@@ -187,7 +187,7 @@ static void golioth_thread_main(void* p1, void* p2, void* p3) {
     fn(user_arg);
 }
 
-golioth_sys_thread_t golioth_sys_thread_create(const golioth_sys_thread_config_t *config) {
+golioth_sys_thread_t golioth_sys_thread_create(const struct golioth_thread_config *config) {
     // Intentionally ignoring from config:
     //      name
     //      stack_size

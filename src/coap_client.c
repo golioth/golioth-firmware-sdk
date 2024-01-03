@@ -1005,7 +1005,7 @@ struct golioth_client* golioth_client_create(const struct golioth_client_config*
         goto error;
     }
 
-    golioth_sys_thread_config_t thread_cfg =
+    struct golioth_thread_config thread_cfg =
     {
         .name = "coap_client",
         .fn = golioth_coap_client_thread,
