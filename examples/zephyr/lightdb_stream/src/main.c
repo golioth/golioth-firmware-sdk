@@ -77,7 +77,7 @@ static int get_temperature(struct sensor_value* val) {
 
 static void temperature_push_handler(
         struct golioth_client* client,
-        const golioth_response_t* response,
+        const struct golioth_response* response,
         const char* path,
         void* arg) {
     if (response->status != GOLIOTH_OK) {

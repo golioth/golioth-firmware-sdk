@@ -33,7 +33,7 @@ static void on_client_event(struct golioth_client* client, enum golioth_client_e
 
 static void counter_get_handler(
         struct golioth_client* client,
-        const golioth_response_t* response,
+        const struct golioth_response* response,
         const char* path,
         const uint8_t* payload,
         size_t payload_size,
@@ -89,7 +89,7 @@ static void counter_get_json_sync(struct golioth_client* client) {
 }
 
 static void counter_get_cbor_handler(struct golioth_client* client,
-                                     const golioth_response_t* response,
+                                     const struct golioth_response* response,
                                      const char* path,
                                      const uint8_t* payload,
                                      size_t payload_size,

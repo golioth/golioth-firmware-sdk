@@ -43,7 +43,7 @@ enum golioth_content_type
 };
 
 /// Response status and CoAP class/code
-typedef struct {
+struct golioth_response {
     /// Status to indicate whether a response was received
     ///
     /// One of:
@@ -55,7 +55,7 @@ typedef struct {
     uint8_t status_class;
     /// the 03 in 4.03
     uint8_t status_code;
-} golioth_response_t;
+};
 
 /// TLS authentication type
 typedef enum {
@@ -135,14 +135,14 @@ typedef void (*golioth_client_event_cb_fn)(
 /// @param arg User argument, copied from the original request. Can be NULL.
 typedef void (*golioth_get_cb_fn)(
         struct golioth_client* client,
-        const golioth_response_t* response,
+        const struct golioth_response* response,
         const char* path,
         const uint8_t* payload,
         size_t payload_size,
         void* arg);
 typedef void (*golioth_get_block_cb_fn)(
         struct golioth_client* client,
-        const golioth_response_t* response,
+        const struct golioth_response* response,
         const char* path,
         const uint8_t* payload,
         size_t payload_size,
@@ -162,7 +162,7 @@ typedef void (*golioth_get_block_cb_fn)(
 /// @param arg User argument, copied from the original request. Can be NULL.
 typedef void (*golioth_set_cb_fn)(
         struct golioth_client* client,
-        const golioth_response_t* response,
+        const struct golioth_response* response,
         const char* path,
         void* arg);
 

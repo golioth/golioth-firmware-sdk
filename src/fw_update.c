@@ -68,7 +68,7 @@ static golioth_status_t golioth_fw_update_report_state_sync(
 
 static void on_ota_manifest(
         struct golioth_client* client,
-        const golioth_response_t* response,
+        const struct golioth_response* response,
         const char* path,
         const uint8_t* payload,
         size_t payload_size,

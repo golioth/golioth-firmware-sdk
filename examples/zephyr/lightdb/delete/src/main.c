@@ -30,7 +30,7 @@ static void on_client_event(struct golioth_client* client, enum golioth_client_e
 
 static void counter_handler(
         struct golioth_client* client,
-        const golioth_response_t* response,
+        const struct golioth_response* response,
         const char* path,
         void* arg) {
     if (response->status != GOLIOTH_OK) {

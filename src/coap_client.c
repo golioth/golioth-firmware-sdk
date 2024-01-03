@@ -50,7 +50,7 @@ static void notify_observers(
         struct golioth_client* client,
         const uint8_t* data,
         size_t data_len,
-        const golioth_response_t* response) {
+        const struct golioth_response* response) {
     // scan observations, check for token match
     for (int i = 0; i < CONFIG_GOLIOTH_MAX_NUM_OBSERVATIONS; i++) {
         const golioth_coap_observe_info_t* obs_info = &client->observations[i];
@@ -90,7 +90,7 @@ static coap_response_t coap_response_handler(
         return COAP_RESPONSE_OK;
     }
 
-    golioth_response_t response = {
+    struct golioth_response response = {
             .status = (class == 2 ? GOLIOTH_OK : GOLIOTH_ERR_FAIL),
             .status_class = class,
             .status_code = code,
@@ -823,7 +823,7 @@ static golioth_status_t coap_io_loop_once(
 
         // Call user's callback with GOLIOTH_ERR_TIMEOUT
         // TODO - simplify, put callback directly in request which removes if/else branches
-        golioth_response_t response = {};
+        struct golioth_response response = {};
         response.status = GOLIOTH_ERR_TIMEOUT;
         if (request_msg.type == GOLIOTH_COAP_REQUEST_GET && request_msg.get.callback) {
             request_msg.get.callback(
