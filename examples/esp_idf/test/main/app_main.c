@@ -78,7 +78,7 @@ static enum golioth_rpc_status on_double(
     return GOLIOTH_RPC_OK;
 }
 
-static golioth_settings_status_t on_test_setting(int32_t new_value, void* arg) {
+static enum golioth_settings_status on_test_setting(int32_t new_value, void* arg) {
     GLTH_LOGI(TAG, "Setting LightDB TEST_SETTING to %" PRId32, new_value);
     golioth_lightdb_set_int_async(_client, "TEST_SETTING", new_value, NULL, NULL);
     return GOLIOTH_SETTINGS_SUCCESS;

@@ -35,7 +35,7 @@ struct golioth_client {
     size_t block_token_len;
     golioth_client_event_cb_fn event_callback;
     void* event_callback_arg;
-    golioth_settings_t settings;
+    struct golioth_settings settings;
     struct golioth_rpc rpc;
 };
 
@@ -1520,7 +1520,7 @@ uint32_t golioth_client_num_items_in_request_queue(struct golioth_client* client
     return golioth_mbox_num_messages(client->request_queue);
 }
 
-golioth_settings_t* golioth_coap_client_get_settings(struct golioth_client* client) {
+struct golioth_settings* golioth_coap_client_get_settings(struct golioth_client* client) {
     return &client->settings;
 }
 

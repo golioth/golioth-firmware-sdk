@@ -40,7 +40,7 @@ static void on_client_event(struct golioth_client* client, enum golioth_client_e
     GLTH_LOGI(TAG, "Golioth client %s", is_connected ? "connected" : "disconnected");
 }
 
-static golioth_settings_status_t on_loop_delay_setting(int32_t new_value, void* arg) {
+static enum golioth_settings_status on_loop_delay_setting(int32_t new_value, void* arg) {
     GLTH_LOGI(TAG, "Setting loop delay to %" PRId32 " s", new_value);
     _loop_delay_s = new_value;
     return GOLIOTH_SETTINGS_SUCCESS;
