@@ -65,11 +65,11 @@ enum golioth_auth_type {
     GOLIOTH_TLS_AUTH_TYPE_PKI,
 };
 
-/// Pre-Shared Key (PSK) credentials.
+/// Pre-Shared Key (PSK) credential.
 ///
 /// All memory is owned by user and must persist for the lifetime
 /// of the golioth client.
-typedef struct {
+struct golioth_psk_credential {
     /// PSK Identifier (e.g. "devicename@projectname")
     const char* psk_id;
     size_t psk_id_len;
@@ -77,7 +77,7 @@ typedef struct {
     /// Pre-shared key, secret password
     const char* psk;
     size_t psk_len;
-} golioth_psk_credentials_t;
+};
 
 /// Public Key Infrastructure (PKI) credentials (aka "certificates").
 ///
@@ -101,7 +101,7 @@ typedef struct {
 typedef struct {
     enum golioth_auth_type auth_type;
     union {
-        golioth_psk_credentials_t psk;
+        struct golioth_psk_credential psk;
         golioth_pki_credentials_t pki;
     };
 } golioth_tls_credentials_t;

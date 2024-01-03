@@ -582,7 +582,7 @@ static golioth_status_t create_session(
     enum golioth_auth_type auth_type = client->config.credentials.auth_type;
 
     if (auth_type == GOLIOTH_TLS_AUTH_TYPE_PSK) {
-        golioth_psk_credentials_t psk_creds = client->config.credentials.psk;
+        struct golioth_psk_credential psk_creds = client->config.credentials.psk;
 
         GLTH_LOGI(TAG, "Session PSK-ID: %.*s", (int)psk_creds.psk_id_len, psk_creds.psk_id);
 
