@@ -43,14 +43,14 @@ typedef void* golioth_sys_timer_t;
 
 typedef void (*golioth_sys_timer_fn_t)(golioth_sys_timer_t timer, void* user_arg);
 
-typedef struct {
+struct golioth_timer_config {
     const char* name;
     uint32_t expiration_ms;
     golioth_sys_timer_fn_t fn;
     void* user_arg;
-} golioth_sys_timer_config_t;
+};
 
-golioth_sys_timer_t golioth_sys_timer_create(const golioth_sys_timer_config_t *config);
+golioth_sys_timer_t golioth_sys_timer_create(const struct golioth_timer_config *config);
 bool golioth_sys_timer_start(golioth_sys_timer_t timer);
 bool golioth_sys_timer_reset(golioth_sys_timer_t timer);
 void golioth_sys_timer_destroy(golioth_sys_timer_t timer);

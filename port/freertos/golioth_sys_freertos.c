@@ -81,7 +81,7 @@ static TickType_t ms_to_ticks(uint32_t ms) {
     return (rounded_ms / portTICK_PERIOD_MS);
 }
 
-golioth_sys_timer_t golioth_sys_timer_create(const golioth_sys_timer_config_t *config) {
+golioth_sys_timer_t golioth_sys_timer_create(const struct golioth_timer_config *config) {
     assert(config->fn);  // timer callback function is required
 
     wrapped_timer_t* wrapped_timer = (wrapped_timer_t*)golioth_sys_malloc(sizeof(wrapped_timer_t));

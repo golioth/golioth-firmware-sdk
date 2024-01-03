@@ -118,7 +118,7 @@ int golioth_sys_sem_get_fd(golioth_sys_sem_t sem) {
 // Wrap timer_t to also capture user's config
 typedef struct {
     timer_t timer;
-    golioth_sys_timer_config_t config;
+    struct golioth_timer_config config;
 } wrapped_timer_t;
 
 static void on_timer(int sig, siginfo_t* si, void* uc) {
@@ -128,7 +128,7 @@ static void on_timer(int sig, siginfo_t* si, void* uc) {
     }
 }
 
-golioth_sys_timer_t golioth_sys_timer_create(const golioth_sys_timer_config_t *config) {
+golioth_sys_timer_t golioth_sys_timer_create(const struct golioth_timer_config *config) {
     static bool initialized = false;
     const int signo = SIGRTMIN;
 

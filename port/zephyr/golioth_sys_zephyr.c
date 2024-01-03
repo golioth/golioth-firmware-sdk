@@ -97,7 +97,7 @@ int golioth_sys_sem_get_fd(golioth_sys_sem_t sem) {
 struct golioth_timer {
     struct k_timer timer;
     struct k_work work;
-    golioth_sys_timer_config_t config;
+    struct golioth_timer_config config;
 };
 
 static void timer_handler_worker(struct k_work *work)
@@ -115,7 +115,7 @@ static void on_timer(struct k_timer* ztimer) {
     k_work_submit(&timer->work);
 }
 
-golioth_sys_timer_t golioth_sys_timer_create(const golioth_sys_timer_config_t *config) {
+golioth_sys_timer_t golioth_sys_timer_create(const struct golioth_timer_config *config) {
     struct golioth_timer* timer;
 
     timer = golioth_sys_malloc(sizeof(*timer));
