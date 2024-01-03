@@ -67,7 +67,7 @@ void app_main(void) {
                             .psk = psk,
                             .psk_len = strlen(psk),
                     }}};
-    golioth_client_t client = golioth_client_create(&config);
+    struct golioth_client* client = golioth_client_create(&config);
     assert(client);
 
     // golioth_basics will interact with each Golioth service and enter an endless loop.

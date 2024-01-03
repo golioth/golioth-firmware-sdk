@@ -33,7 +33,7 @@ static const char* _current_version = "1.2.3";
 
 static SemaphoreHandle_t _connected_sem;
 static SemaphoreHandle_t _disconnected_sem;
-static golioth_client_t _client;
+static struct golioth_client* _client;
 static uint32_t _initial_free_heap;
 static bool _wifi_connected;
 
@@ -43,7 +43,7 @@ static bool _wifi_connected;
 // I'm not sure exactly why this happens, but I suspect it's related to
 // Unity's UNITY_FAIL_AND_BAIL macro that gets called on failing assertions.
 
-static void on_client_event(golioth_client_t client, golioth_client_event_t event, void* arg) {
+static void on_client_event(struct golioth_client* client, golioth_client_event_t event, void* arg) {
     bool is_connected = (event == GOLIOTH_CLIENT_EVENT_CONNECTED);
     ESP_LOGI(TAG, "Golioth %s", is_connected ? "connected" : "disconnected");
     if (is_connected) {
@@ -197,7 +197,7 @@ static void test_lightdb_set_get_sync(void) {
 static bool _on_get_test_int2_called = false;
 static int32_t _test_int2_value = 0;
 static void on_get_test_int2(
-        golioth_client_t client,
+        struct golioth_client* client,
         const golioth_response_t* response,
         const char* path,
         const uint8_t* payload,
@@ -211,7 +211,7 @@ static void on_get_test_int2(
 
 static bool _on_set_test_int2_called = false;
 static void on_set_test_int2(
-        golioth_client_t client,
+        struct golioth_client* client,
         const golioth_response_t* response,
         const char* path,
         void* arg) {
@@ -274,7 +274,7 @@ static void test_lightdb_set_get_async(void) {
 
 static bool _on_test_timeout_called = false;
 static void on_test_timeout(
-        golioth_client_t client,
+        struct golioth_client* client,
         const golioth_response_t* response,
         const char* path,
         const uint8_t* payload,
@@ -378,7 +378,7 @@ static void test_client_destroy(void) {
 static bool _on_get_test_int3_called = false;
 static int32_t _test_int3_value = 0;
 static void on_test_int3(
-        golioth_client_t client,
+        struct golioth_client* client,
         const golioth_response_t* response,
         const char* path,
         const uint8_t* payload,

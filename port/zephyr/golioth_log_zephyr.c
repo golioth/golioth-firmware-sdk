@@ -28,17 +28,17 @@ struct cbpprintf_ctx {
 };
 
 struct golioth_log_ctx {
-    golioth_client_t client;
+    struct golioth_client* client;
     bool panic_mode;
     struct cbpprintf_ctx print_ctx;
 };
 
 static struct golioth_log_ctx log_ctx;
 
-typedef golioth_status_t (*glth_log_fn)(golioth_client_t, const char*, const char*, int32_t);
+typedef golioth_status_t (*glth_log_fn)(struct golioth_client*, const char*, const char*, int32_t);
 
 static golioth_status_t golioth_log_drop(
-        golioth_client_t client,
+        struct golioth_client* client,
         const char* tag,
         const char* log_message,
         int32_t timeout_s) {

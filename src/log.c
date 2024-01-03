@@ -34,7 +34,7 @@ static const char* _level_to_str[GOLIOTH_LOG_LEVEL_DEBUG + 1] = {
         [GOLIOTH_LOG_LEVEL_DEBUG] = "debug"};
 
 static golioth_status_t golioth_log_internal(
-        golioth_client_t client,
+        struct golioth_client* client,
         golioth_log_level_t level,
         const char* tag,
         const char* log_message,
@@ -89,7 +89,7 @@ cleanup:
 }
 
 golioth_status_t golioth_log_error_async(
-        golioth_client_t client,
+        struct golioth_client* client,
         const char* tag,
         const char* log_message,
         golioth_set_cb_fn callback,
@@ -106,7 +106,7 @@ golioth_status_t golioth_log_error_async(
 }
 
 golioth_status_t golioth_log_warn_async(
-        golioth_client_t client,
+        struct golioth_client* client,
         const char* tag,
         const char* log_message,
         golioth_set_cb_fn callback,
@@ -123,7 +123,7 @@ golioth_status_t golioth_log_warn_async(
 }
 
 golioth_status_t golioth_log_info_async(
-        golioth_client_t client,
+        struct golioth_client* client,
         const char* tag,
         const char* log_message,
         golioth_set_cb_fn callback,
@@ -140,7 +140,7 @@ golioth_status_t golioth_log_info_async(
 }
 
 golioth_status_t golioth_log_debug_async(
-        golioth_client_t client,
+        struct golioth_client* client,
         const char* tag,
         const char* log_message,
         golioth_set_cb_fn callback,
@@ -157,7 +157,7 @@ golioth_status_t golioth_log_debug_async(
 }
 
 golioth_status_t golioth_log_error_sync(
-        golioth_client_t client,
+        struct golioth_client* client,
         const char* tag,
         const char* log_message,
         int32_t timeout_s) {
@@ -166,7 +166,7 @@ golioth_status_t golioth_log_error_sync(
 }
 
 golioth_status_t golioth_log_warn_sync(
-        golioth_client_t client,
+        struct golioth_client* client,
         const char* tag,
         const char* log_message,
         int32_t timeout_s) {
@@ -175,7 +175,7 @@ golioth_status_t golioth_log_warn_sync(
 }
 
 golioth_status_t golioth_log_info_sync(
-        golioth_client_t client,
+        struct golioth_client* client,
         const char* tag,
         const char* log_message,
         int32_t timeout_s) {
@@ -184,7 +184,7 @@ golioth_status_t golioth_log_info_sync(
 }
 
 golioth_status_t golioth_log_debug_sync(
-        golioth_client_t client,
+        struct golioth_client* client,
         const char* tag,
         const char* log_message,
         int32_t timeout_s) {

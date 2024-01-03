@@ -41,7 +41,7 @@ extern "C" void app_main(void) {
     config.credentials.psk.psk = psk.c_str();
     config.credentials.psk.psk_len = psk.length();
 
-    golioth_client_t client = golioth_client_create(&config);
+    struct golioth_client* client = golioth_client_create(&config);
 
     int counter = 0;
     while (1) {

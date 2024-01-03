@@ -110,7 +110,7 @@ const golioth_ota_component_t* golioth_ota_find_component(
 /// waiting for a response from the server. The callback will be invoked whenever
 /// the manifest is changed on the Golioth server.
 golioth_status_t golioth_ota_observe_manifest_async(
-        golioth_client_t client,
+        struct golioth_client* client,
         golioth_get_cb_fn callback,
         void* arg);
 
@@ -143,7 +143,7 @@ golioth_status_t golioth_ota_observe_manifest_async(
 /// @return GOLIOTH_ERR_QUEUE_FULL - request queue is full, this request is dropped
 /// @return GOLIOTH_ERR_TIMEOUT - response not received from server, timeout occurred
 golioth_status_t golioth_ota_get_block_sync(
-        golioth_client_t client,
+        struct golioth_client* client,
         const char* package,
         const char* version,
         size_t block_index,
@@ -168,7 +168,7 @@ golioth_status_t golioth_ota_get_block_sync(
 /// @return GOLIOTH_ERR_QUEUE_FULL - request queue is full, this request is dropped
 /// @return GOLIOTH_ERR_TIMEOUT - response not received from server, timeout occurred
 golioth_status_t golioth_ota_report_state_sync(
-        golioth_client_t client,
+        struct golioth_client* client,
         golioth_ota_state_t state,
         golioth_ota_reason_t reason,
         const char* package,

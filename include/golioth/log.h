@@ -26,7 +26,7 @@
 /// @param callback Callback to call on response received or timeout. Can be NULL.
 /// @param callback_arg Callback argument, passed directly when callback invoked. Can be NULL.
 golioth_status_t golioth_log_error_async(
-        golioth_client_t client,
+        struct golioth_client* client,
         const char* tag,
         const char* log_message,
         golioth_set_cb_fn callback,
@@ -34,7 +34,7 @@ golioth_status_t golioth_log_error_async(
 
 /// Same as @ref golioth_log_error_async, but for warning level
 golioth_status_t golioth_log_warn_async(
-        golioth_client_t client,
+        struct golioth_client* client,
         const char* tag,
         const char* log_message,
         golioth_set_cb_fn callback,
@@ -42,7 +42,7 @@ golioth_status_t golioth_log_warn_async(
 
 /// Same as @ref golioth_log_error_async, but for info level
 golioth_status_t golioth_log_info_async(
-        golioth_client_t client,
+        struct golioth_client* client,
         const char* tag,
         const char* log_message,
         golioth_set_cb_fn callback,
@@ -50,7 +50,7 @@ golioth_status_t golioth_log_info_async(
 
 /// Same as @ref golioth_log_error_async, but for debug level
 golioth_status_t golioth_log_debug_async(
-        golioth_client_t client,
+        struct golioth_client* client,
         const char* tag,
         const char* log_message,
         golioth_set_cb_fn callback,
@@ -69,28 +69,28 @@ golioth_status_t golioth_log_debug_async(
 /// @param log_message String to log. Must be NULL-terminated.
 /// @param timeout_s The timeout, in seconds, for receiving a server response
 golioth_status_t golioth_log_error_sync(
-        golioth_client_t client,
+        struct golioth_client* client,
         const char* tag,
         const char* log_message,
         int32_t timeout_s);
 
 /// Same as @ref golioth_log_error_sync, but for warning level
 golioth_status_t golioth_log_warn_sync(
-        golioth_client_t client,
+        struct golioth_client* client,
         const char* tag,
         const char* log_message,
         int32_t timeout_s);
 
 /// Same as @ref golioth_log_error_sync, but for info level
 golioth_status_t golioth_log_info_sync(
-        golioth_client_t client,
+        struct golioth_client* client,
         const char* tag,
         const char* log_message,
         int32_t timeout_s);
 
 /// Same as @ref golioth_log_error_sync, but for debug level
 golioth_status_t golioth_log_debug_sync(
-        golioth_client_t client,
+        struct golioth_client* client,
         const char* tag,
         const char* log_message,
         int32_t timeout_s);

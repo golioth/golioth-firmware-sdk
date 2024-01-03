@@ -20,10 +20,10 @@ LOG_MODULE_REGISTER(lightdb_get, LOG_LEVEL_DBG);
 
 #define APP_TIMEOUT_S 1
 
-golioth_client_t client;
+struct golioth_client* client;
 static K_SEM_DEFINE(connected, 0, 1);
 
-static void on_client_event(golioth_client_t client, golioth_client_event_t event, void* arg) {
+static void on_client_event(struct golioth_client* client, golioth_client_event_t event, void* arg) {
     bool is_connected = (event == GOLIOTH_CLIENT_EVENT_CONNECTED);
     if (is_connected) {
         k_sem_give(&connected);
@@ -32,7 +32,7 @@ static void on_client_event(golioth_client_t client, golioth_client_event_t even
 }
 
 static void counter_get_handler(
-        golioth_client_t client,
+        struct golioth_client* client,
         const golioth_response_t* response,
         const char* path,
         const uint8_t* payload,
@@ -47,7 +47,7 @@ static void counter_get_handler(
     }
 }
 
-static void counter_get_async(golioth_client_t* client) {
+static void counter_get_async(struct golioth_client* client) {
     int err;
 
     err = golioth_lightdb_get_async(client, "counter", GOLIOTH_CONTENT_TYPE_JSON,
@@ -57,7 +57,7 @@ static void counter_get_async(golioth_client_t* client) {
     }
 }
 
-static void counter_get_sync(golioth_client_t* client) {
+static void counter_get_sync(struct golioth_client* client) {
     int32_t value;
     int err;
 
@@ -71,7 +71,7 @@ static void counter_get_sync(golioth_client_t* client) {
     }
 }
 
-static void counter_get_json_sync(golioth_client_t* client) {
+static void counter_get_json_sync(struct golioth_client* client) {
     uint8_t sbuf[128];
     size_t len = sizeof(sbuf);
     int err;
@@ -88,7 +88,7 @@ static void counter_get_json_sync(golioth_client_t* client) {
     }
 }
 
-static void counter_get_cbor_handler(golioth_client_t client,
+static void counter_get_cbor_handler(struct golioth_client* client,
                                      const golioth_response_t* response,
                                      const char* path,
                                      const uint8_t* payload,
@@ -114,7 +114,7 @@ static void counter_get_cbor_handler(golioth_client_t client,
     LOG_INF("Counter (CBOR async): %d", (uint32_t) counter);
 }
 
-static void counter_get_cbor_async(golioth_client_t* client)
+static void counter_get_cbor_async(struct golioth_client* client)
 {
     int err = golioth_lightdb_get_async(client,
                                         "",

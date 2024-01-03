@@ -38,7 +38,7 @@
 /// @return GOLIOTH_ERR_MEM_ALLOC - memory allocation error
 /// @return GOLIOTH_ERR_QUEUE_FULL - request queue is full, this request is dropped
 golioth_status_t golioth_lightdb_set_int_async(
-        golioth_client_t client,
+        struct golioth_client* client,
         const char* path,
         int32_t value,
         golioth_set_cb_fn callback,
@@ -64,7 +64,7 @@ golioth_status_t golioth_lightdb_set_int_async(
 /// @return GOLIOTH_ERR_QUEUE_FULL - request queue is full, this request is dropped
 /// @return GOLIOTH_ERR_TIMEOUT - response not received from server, timeout occurred
 golioth_status_t golioth_lightdb_set_int_sync(
-        golioth_client_t client,
+        struct golioth_client* client,
         const char* path,
         int32_t value,
         int32_t timeout_s);
@@ -73,7 +73,7 @@ golioth_status_t golioth_lightdb_set_int_sync(
 ///
 /// Same as @ref golioth_lightdb_set_int_async, but for type bool
 golioth_status_t golioth_lightdb_set_bool_async(
-        golioth_client_t client,
+        struct golioth_client* client,
         const char* path,
         bool value,
         golioth_set_cb_fn callback,
@@ -83,7 +83,7 @@ golioth_status_t golioth_lightdb_set_bool_async(
 ///
 /// Same as @ref golioth_lightdb_set_int_sync, but for type bool
 golioth_status_t golioth_lightdb_set_bool_sync(
-        golioth_client_t client,
+        struct golioth_client* client,
         const char* path,
         bool value,
         int32_t timeout_s);
@@ -92,14 +92,14 @@ golioth_status_t golioth_lightdb_set_bool_sync(
 ///
 /// Same as @ref golioth_lightdb_set_int_async, but for type float
 golioth_status_t golioth_lightdb_set_float_async(
-        golioth_client_t client,
+        struct golioth_client* client,
         const char* path,
         float value,
         golioth_set_cb_fn callback,
         void* callback_arg);
 
 golioth_status_t golioth_lightdb_set_float_sync(
-        golioth_client_t client,
+        struct golioth_client* client,
         const char* path,
         float value,
         int32_t timeout_s);
@@ -108,7 +108,7 @@ golioth_status_t golioth_lightdb_set_float_sync(
 ///
 /// Same as @ref golioth_lightdb_set_int_async, but for type string
 golioth_status_t golioth_lightdb_set_string_async(
-        golioth_client_t client,
+        struct golioth_client* client,
         const char* path,
         const char* str,
         size_t str_len,
@@ -116,7 +116,7 @@ golioth_status_t golioth_lightdb_set_string_async(
         void* callback_arg);
 
 golioth_status_t golioth_lightdb_set_string_sync(
-        golioth_client_t client,
+        struct golioth_client* client,
         const char* path,
         const char* str,
         size_t str_len,
@@ -143,7 +143,7 @@ golioth_status_t golioth_lightdb_set_string_sync(
 /// @return GOLIOTH_ERR_MEM_ALLOC - memory allocation error
 /// @return GOLIOTH_ERR_QUEUE_FULL - request queue is full, this request is dropped
 golioth_status_t golioth_lightdb_set_async(
-        golioth_client_t client,
+        struct golioth_client* client,
         const char* path,
         enum golioth_content_type content_type,
         const uint8_t* buf,
@@ -165,7 +165,7 @@ golioth_status_t golioth_lightdb_set_async(
 /// @param buf_len Length of buf
 /// @param timeout_s The timeout, in seconds, for receiving a server response
 golioth_status_t golioth_lightdb_set_sync(
-        golioth_client_t client,
+        struct golioth_client* client,
         const char* path,
         enum golioth_content_type content_type,
         const uint8_t* buf,
@@ -189,7 +189,7 @@ golioth_status_t golioth_lightdb_set_sync(
 /// @param callback Callback to call on response received or timeout. Can be NULL.
 /// @param callback_arg Callback argument, passed directly when callback invoked. Can be NULL.
 golioth_status_t golioth_lightdb_get_async(
-        golioth_client_t client,
+        struct golioth_client* client,
         const char* path,
         enum golioth_content_type content_type,
         golioth_get_cb_fn callback,
@@ -214,28 +214,28 @@ golioth_status_t golioth_lightdb_get_async(
 /// @return GOLIOTH_ERR_QUEUE_FULL - request queue is full, this request is dropped
 /// @return GOLIOTH_ERR_TIMEOUT - response not received from server, timeout occurred
 golioth_status_t golioth_lightdb_get_int_sync(
-        golioth_client_t client,
+        struct golioth_client* client,
         const char* path,
         int32_t* value,
         int32_t timeout_s);
 
 /// Similar to @ref golioth_lightdb_get_int_sync, but for type bool
 golioth_status_t golioth_lightdb_get_bool_sync(
-        golioth_client_t client,
+        struct golioth_client* client,
         const char* path,
         bool* value,
         int32_t timeout_s);
 
 /// Similar to @ref golioth_lightdb_get_int_sync, but for type float
 golioth_status_t golioth_lightdb_get_float_sync(
-        golioth_client_t client,
+        struct golioth_client* client,
         const char* path,
         float* value,
         int32_t timeout_s);
 
 /// Similar to @ref golioth_lightdb_get_int_sync, but for type string
 golioth_status_t golioth_lightdb_get_string_sync(
-        golioth_client_t client,
+        struct golioth_client* client,
         const char* path,
         char* strbuf,
         size_t strbuf_size,
@@ -243,7 +243,7 @@ golioth_status_t golioth_lightdb_get_string_sync(
 
 /// Similar to @ref golioth_lightdb_get_int_sync, but for objects
 golioth_status_t golioth_lightdb_get_sync(
-        golioth_client_t client,
+        struct golioth_client* client,
         const char* path,
         enum golioth_content_type content_type,
         uint8_t* buf,
@@ -269,7 +269,7 @@ golioth_status_t golioth_lightdb_get_sync(
 /// @return GOLIOTH_ERR_MEM_ALLOC - memory allocation error
 /// @return GOLIOTH_ERR_QUEUE_FULL - request queue is full, this request is dropped
 golioth_status_t golioth_lightdb_delete_async(
-        golioth_client_t client,
+        struct golioth_client* client,
         const char* path,
         golioth_set_cb_fn callback,
         void* callback_arg);
@@ -292,7 +292,7 @@ golioth_status_t golioth_lightdb_delete_async(
 /// @return GOLIOTH_ERR_QUEUE_FULL - request queue is full, this request is dropped
 /// @return GOLIOTH_ERR_TIMEOUT - response not received from server, timeout occurred
 golioth_status_t golioth_lightdb_delete_sync(
-        golioth_client_t client,
+        struct golioth_client* client,
         const char* path,
         int32_t timeout_s);
 
@@ -321,7 +321,7 @@ golioth_status_t golioth_lightdb_delete_sync(
 /// @return GOLIOTH_ERR_MEM_ALLOC - memory allocation error
 /// @return GOLIOTH_ERR_QUEUE_FULL - request queue is full, this request is dropped
 golioth_status_t golioth_lightdb_observe_async(
-        golioth_client_t client,
+        struct golioth_client* client,
         const char* path,
         golioth_get_cb_fn callback,
         void* callback_arg);

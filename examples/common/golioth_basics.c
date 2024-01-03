@@ -32,7 +32,7 @@ int32_t _loop_delay_s = 10;
 // Given if/when the we have a connection to Golioth
 static golioth_sys_sem_t _connected_sem;
 
-static void on_client_event(golioth_client_t client, golioth_client_event_t event, void* arg) {
+static void on_client_event(struct golioth_client* client, golioth_client_event_t event, void* arg) {
     bool is_connected = (event == GOLIOTH_CLIENT_EVENT_CONNECTED);
     if (is_connected) {
         golioth_sys_sem_give(_connected_sem);
@@ -78,7 +78,7 @@ static golioth_rpc_status_t on_multiply(
 
 // Callback function for asynchronous get request of LightDB path "my_int"
 static void on_get_my_int(
-        golioth_client_t client,
+        struct golioth_client* client,
         const golioth_response_t* response,
         const char* path,
         const uint8_t* payload,
@@ -97,7 +97,7 @@ static void on_get_my_int(
 
 // Callback function for asynchronous observation of LightDB path "desired/my_config"
 static void on_my_config(
-        golioth_client_t client,
+        struct golioth_client* client,
         const golioth_response_t* response,
         const char* path,
         const uint8_t* payload,
@@ -119,7 +119,7 @@ static void on_my_config(
 }
 
 
-void golioth_basics(golioth_client_t client) {
+void golioth_basics(struct golioth_client* client) {
     // Register a callback function that will be called by the client thread when
     // connect and disconnect events happen.
     //

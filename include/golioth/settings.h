@@ -117,7 +117,7 @@ typedef struct {
 /// @return GOLIOTH_ERR_NOT_IMPLEMENTED - If Golioth settings are disabled in config
 /// @return GOLIOTH_ERR_NULL - callback is NULL
 golioth_status_t golioth_settings_register_int(
-        golioth_client_t client,
+        struct golioth_client* client,
         const char* setting_name,
         golioth_int_setting_cb callback,
         void* callback_arg);
@@ -125,7 +125,7 @@ golioth_status_t golioth_settings_register_int(
 /// Same as @ref golioth_settings_register_int, but with specific min and
 /// max value which will be checked by this library.
 golioth_status_t golioth_settings_register_int_with_range(
-        golioth_client_t client,
+        struct golioth_client* client,
         const char* setting_name,
         int32_t min_val,
         int32_t max_val,
@@ -134,14 +134,14 @@ golioth_status_t golioth_settings_register_int_with_range(
 
 /// Same as @ref golioth_settings_register_int, but for type bool.
 golioth_status_t golioth_settings_register_bool(
-        golioth_client_t client,
+        struct golioth_client* client,
         const char* setting_name,
         golioth_bool_setting_cb callback,
         void* callback_arg);
 
 /// Same as @ref golioth_settings_register_int, but for type float.
 golioth_status_t golioth_settings_register_float(
-        golioth_client_t client,
+        struct golioth_client* client,
         const char* setting_name,
         golioth_float_setting_cb callback,
         void* callback_arg);

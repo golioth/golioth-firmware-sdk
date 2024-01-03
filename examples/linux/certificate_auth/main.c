@@ -51,7 +51,7 @@ int main(void) {
                             .private_key_len = client_key_len,
                     }}};
 
-    golioth_client_t client = golioth_client_create(&config);
+    struct golioth_client* client = golioth_client_create(&config);
     assert(client);
 
     bool connected = golioth_client_wait_for_connect(client, 1000);

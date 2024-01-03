@@ -35,7 +35,7 @@ typedef struct {
 } lightdb_get_response_t;
 
 golioth_status_t golioth_lightdb_set_int_async(
-        golioth_client_t client,
+        struct golioth_client* client,
         const char* path,
         int32_t value,
         golioth_set_cb_fn callback,
@@ -56,7 +56,7 @@ golioth_status_t golioth_lightdb_set_int_async(
 }
 
 golioth_status_t golioth_lightdb_set_bool_async(
-        golioth_client_t client,
+        struct golioth_client* client,
         const char* path,
         bool value,
         golioth_set_cb_fn callback,
@@ -76,7 +76,7 @@ golioth_status_t golioth_lightdb_set_bool_async(
 }
 
 golioth_status_t golioth_lightdb_set_float_async(
-        golioth_client_t client,
+        struct golioth_client* client,
         const char* path,
         float value,
         golioth_set_cb_fn callback,
@@ -97,7 +97,7 @@ golioth_status_t golioth_lightdb_set_float_async(
 }
 
 golioth_status_t golioth_lightdb_set_string_async(
-        golioth_client_t client,
+        struct golioth_client* client,
         const char* path,
         const char* str,
         size_t str_len,
@@ -130,7 +130,7 @@ golioth_status_t golioth_lightdb_set_string_async(
 }
 
 golioth_status_t golioth_lightdb_set_async(
-        golioth_client_t client,
+        struct golioth_client* client,
         const char* path,
         enum golioth_content_type content_type,
         const uint8_t* buf,
@@ -151,7 +151,7 @@ golioth_status_t golioth_lightdb_set_async(
 }
 
 golioth_status_t golioth_lightdb_get_async(
-        golioth_client_t client,
+        struct golioth_client* client,
         const char* path,
         enum golioth_content_type content_type,
         golioth_get_cb_fn callback,
@@ -168,7 +168,7 @@ golioth_status_t golioth_lightdb_get_async(
 }
 
 golioth_status_t golioth_lightdb_delete_async(
-        golioth_client_t client,
+        struct golioth_client* client,
         const char* path,
         golioth_set_cb_fn callback,
         void* callback_arg) {
@@ -183,7 +183,7 @@ golioth_status_t golioth_lightdb_delete_async(
 }
 
 golioth_status_t golioth_lightdb_observe_async(
-        golioth_client_t client,
+        struct golioth_client* client,
         const char* path,
         golioth_get_cb_fn callback,
         void* arg) {
@@ -197,7 +197,7 @@ golioth_status_t golioth_lightdb_observe_async(
 }
 
 golioth_status_t golioth_lightdb_set_int_sync(
-        golioth_client_t client,
+        struct golioth_client* client,
         const char* path,
         int32_t value,
         int32_t timeout_s) {
@@ -217,7 +217,7 @@ golioth_status_t golioth_lightdb_set_int_sync(
 }
 
 golioth_status_t golioth_lightdb_set_bool_sync(
-        golioth_client_t client,
+        struct golioth_client* client,
         const char* path,
         bool value,
         int32_t timeout_s) {
@@ -236,7 +236,7 @@ golioth_status_t golioth_lightdb_set_bool_sync(
 }
 
 golioth_status_t golioth_lightdb_set_float_sync(
-        golioth_client_t client,
+        struct golioth_client* client,
         const char* path,
         float value,
         int32_t timeout_s) {
@@ -256,7 +256,7 @@ golioth_status_t golioth_lightdb_set_float_sync(
 }
 
 golioth_status_t golioth_lightdb_set_string_sync(
-        golioth_client_t client,
+        struct golioth_client* client,
         const char* path,
         const char* str,
         size_t str_len,
@@ -288,7 +288,7 @@ golioth_status_t golioth_lightdb_set_string_sync(
 }
 
 golioth_status_t golioth_lightdb_set_sync(
-        golioth_client_t client,
+        struct golioth_client* client,
         const char* path,
         enum golioth_content_type content_type,
         const uint8_t* buf,
@@ -308,7 +308,7 @@ golioth_status_t golioth_lightdb_set_sync(
 }
 
 static void on_payload(
-        golioth_client_t client,
+        struct golioth_client* client,
         const golioth_response_t* response,
         const char* path,
         const uint8_t* payload,
@@ -352,7 +352,7 @@ static void on_payload(
 }
 
 golioth_status_t golioth_lightdb_get_int_sync(
-        golioth_client_t client,
+        struct golioth_client* client,
         const char* path,
         int32_t* value,
         int32_t timeout_s) {
@@ -376,7 +376,7 @@ golioth_status_t golioth_lightdb_get_int_sync(
 }
 
 golioth_status_t golioth_lightdb_get_bool_sync(
-        golioth_client_t client,
+        struct golioth_client* client,
         const char* path,
         bool* value,
         int32_t timeout_s) {
@@ -400,7 +400,7 @@ golioth_status_t golioth_lightdb_get_bool_sync(
 }
 
 golioth_status_t golioth_lightdb_get_float_sync(
-        golioth_client_t client,
+        struct golioth_client* client,
         const char* path,
         float* value,
         int32_t timeout_s) {
@@ -424,7 +424,7 @@ golioth_status_t golioth_lightdb_get_float_sync(
 }
 
 golioth_status_t golioth_lightdb_get_string_sync(
-        golioth_client_t client,
+        struct golioth_client* client,
         const char* path,
         char* strbuf,
         size_t strbuf_size,
@@ -450,7 +450,7 @@ golioth_status_t golioth_lightdb_get_string_sync(
 }
 
 golioth_status_t golioth_lightdb_get_sync(
-        golioth_client_t client,
+        struct golioth_client* client,
         const char* path,
         enum golioth_content_type content_type,
         uint8_t* buf,
@@ -480,7 +480,7 @@ golioth_status_t golioth_lightdb_get_sync(
 }
 
 golioth_status_t golioth_lightdb_delete_sync(
-        golioth_client_t client,
+        struct golioth_client* client,
         const char* path,
         int32_t timeout_s) {
     return golioth_coap_client_delete(

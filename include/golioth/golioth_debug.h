@@ -21,7 +21,7 @@
 #define LOG_TAG_DEFINE(tag) static __UNUSED const char* TAG = #tag
 #endif
 
-typedef void* golioth_client_t;
+struct golioth_client;
 
 typedef enum {
     GOLIOTH_DEBUG_LOG_LEVEL_NONE,
@@ -35,7 +35,7 @@ typedef enum {
 void golioth_debug_set_log_level(golioth_debug_log_level_t level);
 golioth_debug_log_level_t golioth_debug_get_log_level(void);
 void golioth_debug_hexdump(const char* tag, const void* addr, int len);
-void golioth_debug_set_client(golioth_client_t client);
+void golioth_debug_set_client(struct golioth_client* client);
 void golioth_debug_set_cloud_log_enabled(bool enable);
 void golioth_debug_printf(
         uint64_t tstamp_ms,

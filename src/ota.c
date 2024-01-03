@@ -74,7 +74,7 @@ const golioth_ota_component_t* golioth_ota_find_component(
 }
 
 golioth_status_t golioth_ota_observe_manifest_async(
-        golioth_client_t client,
+        struct golioth_client* client,
         golioth_get_cb_fn callback,
         void* arg) {
     return golioth_coap_client_observe_async(
@@ -82,7 +82,7 @@ golioth_status_t golioth_ota_observe_manifest_async(
 }
 
 golioth_status_t golioth_ota_report_state_sync(
-        golioth_client_t client,
+        struct golioth_client* client,
         golioth_ota_state_t state,
         golioth_ota_reason_t reason,
         const char* package,
@@ -251,7 +251,7 @@ golioth_status_t golioth_ota_payload_as_manifest(
 }
 
 static void on_block_rcvd(
-        golioth_client_t client,
+        struct golioth_client* client,
         const golioth_response_t* response,
         const char* path,
         const uint8_t* payload,
@@ -278,7 +278,7 @@ static void on_block_rcvd(
 }
 
 golioth_status_t golioth_ota_get_block_sync(
-        golioth_client_t client,
+        struct golioth_client* client,
         const char* package,
         const char* version,
         size_t block_index,
