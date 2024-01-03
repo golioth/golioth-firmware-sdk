@@ -97,18 +97,18 @@ struct golioth_pki_credential {
     size_t private_key_len;
 };
 
-/// TLS Authentication Credentials
-typedef struct {
+/// TLS Authentication Credential
+struct golioth_credential {
     enum golioth_auth_type auth_type;
     union {
         struct golioth_psk_credential psk;
         struct golioth_pki_credential pki;
     };
-} golioth_tls_credentials_t;
+};
 
 /// Golioth client configuration, passed into golioth_client_create
 typedef struct {
-    golioth_tls_credentials_t credentials;
+    struct golioth_credential credentials;
 } golioth_client_config_t;
 
 /// Callback function type for client events
