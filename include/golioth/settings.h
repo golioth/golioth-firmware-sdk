@@ -39,7 +39,7 @@
 /// @{
 
 /// Enumeration of Settings status codes
-typedef enum {
+enum golioth_settings_status {
     /// Setting applied successfully to the device, stored in NVS
     GOLIOTH_SETTINGS_SUCCESS = 0,
     /// The setting key is not recognized, this setting is unknown
@@ -54,16 +54,16 @@ typedef enum {
     GOLIOTH_SETTINGS_VALUE_STRING_TOO_LONG = 5,
     /// Other general error (e.g. I/O error)
     GOLIOTH_SETTINGS_GENERAL_ERROR = 6,
-} golioth_settings_status_t;
+};
 
 /// Different types of setting values
-typedef enum {
+enum golioth_settings_value_type {
     GOLIOTH_SETTINGS_VALUE_TYPE_UNKNOWN,
     GOLIOTH_SETTINGS_VALUE_TYPE_INT,
     GOLIOTH_SETTINGS_VALUE_TYPE_BOOL,
     GOLIOTH_SETTINGS_VALUE_TYPE_FLOAT,
     GOLIOTH_SETTINGS_VALUE_TYPE_STRING,
-} golioth_settings_value_type_t;
+};
 
 /// Callback function types for golioth_settings_register_*
 ///
@@ -72,17 +72,17 @@ typedef enum {
 ///
 /// @return GOLIOTH_SETTINGS_OK - the setting was applied successfully
 /// @return Otherwise - there was an error applying the setting
-typedef golioth_settings_status_t (*golioth_int_setting_cb)(int32_t new_value, void* arg);
-typedef golioth_settings_status_t (*golioth_bool_setting_cb)(bool new_value, void* arg);
-typedef golioth_settings_status_t (*golioth_float_setting_cb)(float new_value, void* arg);
-typedef golioth_settings_status_t (
+typedef enum golioth_settings_status (*golioth_int_setting_cb)(int32_t new_value, void* arg);
+typedef enum golioth_settings_status (*golioth_bool_setting_cb)(bool new_value, void* arg);
+typedef enum golioth_settings_status (*golioth_float_setting_cb)(float new_value, void* arg);
+typedef enum golioth_settings_status (
         *golioth_string_setting_cb)(const char* new_value, size_t new_value_len, void* arg);
 
 /// Private struct for storing a single setting
-typedef struct {
+struct golioth_setting {
     bool is_valid;
     const char* key;  // aka name
-    golioth_settings_value_type_t type;
+    enum golioth_settings_value_type type;
     union {
         golioth_int_setting_cb int_cb;
         golioth_bool_setting_cb bool_cb;
@@ -92,15 +92,15 @@ typedef struct {
     int32_t int_min_val;  // applies only to integers
     int32_t int_max_val;  // applies only to integers
     void* cb_arg;
-} golioth_setting_t;
+};
 
 /// Private struct to contain settings state data, stored in
 /// the golioth_coap_client_t struct.
-typedef struct {
+struct golioth_settings {
     bool initialized;
-    golioth_setting_t settings[CONFIG_GOLIOTH_MAX_NUM_SETTINGS];
+    struct golioth_setting settings[CONFIG_GOLIOTH_MAX_NUM_SETTINGS];
     size_t num_settings;
-} golioth_settings_t;
+};
 
 /// Register a specific setting of type int
 ///

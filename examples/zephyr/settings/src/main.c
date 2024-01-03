@@ -24,7 +24,7 @@ int32_t _loop_delay_s = 10;
 struct golioth_client* client;
 static K_SEM_DEFINE(connected, 0, 1);
 
-static golioth_settings_status_t on_loop_delay_setting(int32_t new_value, void* arg) {
+static enum golioth_settings_status on_loop_delay_setting(int32_t new_value, void* arg) {
     LOG_INF("Setting loop delay to %" PRId32 " s", new_value);
     _loop_delay_s = new_value;
     return GOLIOTH_SETTINGS_SUCCESS;
