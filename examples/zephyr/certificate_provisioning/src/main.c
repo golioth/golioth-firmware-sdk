@@ -34,7 +34,7 @@ static struct fs_mount_t littlefs_mnt = {
 struct golioth_client* client;
 static K_SEM_DEFINE(connected, 0, 1);
 
-static void on_client_event(struct golioth_client* client, golioth_client_event_t event, void* arg) {
+static void on_client_event(struct golioth_client* client, enum golioth_client_event event, void* arg) {
     bool is_connected = (event == GOLIOTH_CLIENT_EVENT_CONNECTED);
     if (is_connected) {
         k_sem_give(&connected);
