@@ -9,11 +9,12 @@
 #include <zcbor_encode.h>
 #include <golioth/golioth_status.h>
 #include <golioth/client.h>
-#include <golioth/config.h>
 
 /// @defgroup golioth_rpc golioth_rpc
 /// Functions for interacting with the Golioth Remote Procedure Call service
 /// @{
+
+struct golioth_rpc;
 
 /// Enumeration of RPC status codes, sent in the RPC response
 enum golioth_rpc_status {
@@ -82,9 +83,17 @@ typedef enum golioth_rpc_status (*golioth_rpc_cb_fn)(
         zcbor_state_t* response_detail_map,
         void* callback_arg);
 
-/// Register an RPC method
+/// Initialize the RPC service
 ///
 /// @param client Golioth client handle
+///
+/// @return pointer to golioth rpc struct
+/// @return NULL - Error initializing RPC service
+struct golioth_rpc* golioth_rpc_init(struct golioth_client* client);
+
+/// Register an RPC method
+///
+/// @param grpc Golioth RPC service handle
 /// @param method The name of the method to register
 /// @param callback The callback to be invoked, when an RPC request with matching method name
 ///         is received by the client.
@@ -93,23 +102,9 @@ typedef enum golioth_rpc_status (*golioth_rpc_cb_fn)(
 /// @return GOLIOTH_OK - RPC method successfully registered
 /// @return otherwise - Error registering RPC method
 enum golioth_status golioth_rpc_register(
-        struct golioth_client* client,
+        struct golioth_rpc* grpc,
         const char* method,
         golioth_rpc_cb_fn callback,
         void* callback_arg);
-
-/// Private struct to contain data about a single registered method
-struct golioth_rpc_method {
-    const char* method;
-    golioth_rpc_cb_fn callback;
-    void* callback_arg;
-};
-
-/// Private struct to contain RPC state data, stored in
-/// the golioth_coap_client_t struct.
-struct golioth_rpc {
-    struct golioth_rpc_method rpcs[CONFIG_GOLIOTH_RPC_MAX_NUM_METHODS];
-    int num_rpcs;
-};
 
 /// @}

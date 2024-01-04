@@ -65,12 +65,13 @@ int main(void) {
     const struct golioth_client_config* client_config = golioth_sample_credentials_get();
 
     struct golioth_client* client = golioth_client_create(client_config);
+    struct golioth_rpc* rpc = golioth_rpc_init(client);
 
     golioth_client_register_event_callback(client, on_client_event, NULL);
 
     k_sem_take(&connected, K_FOREVER);
 
-    int err = golioth_rpc_register(client, "multiply", on_multiply, NULL);
+    int err = golioth_rpc_register(rpc, "multiply", on_multiply, NULL);
 
     if (err) {
         LOG_ERR("Failed to register RPC: %d", err);

@@ -111,9 +111,11 @@ static void test_golioth_client_create(void) {
 
         TEST_ASSERT_NOT_NULL(_client);
 
+        struct golioth_rpc* rpc = golioth_rpc_init(_client);
         struct golioth_settings* settings = golioth_settings_init(_client);
+
         golioth_client_register_event_callback(_client, on_client_event, NULL);
-        golioth_rpc_register(_client, "double", on_double, NULL);
+        golioth_rpc_register(rpc, "double", on_double, NULL);
         golioth_settings_register_int(settings, "TEST_SETTING", on_test_setting, NULL);
     }
 }

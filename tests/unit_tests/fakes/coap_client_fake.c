@@ -1,7 +1,6 @@
 #include <fff.h>
 #include "coap_client_fake.h"
 
-DEFINE_FAKE_VALUE_FUNC(struct golioth_rpc*, golioth_coap_client_get_rpc, struct golioth_client*);
 DEFINE_FAKE_VALUE_FUNC(
         enum golioth_status,
         golioth_coap_client_observe_async,
