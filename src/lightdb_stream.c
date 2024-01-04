@@ -3,10 +3,11 @@
  *
  * SPDX-License-Identifier: Apache-2.0
  */
-#include "coap_client.h"
+#include <string.h>
 #include <golioth/lightdb_stream.h>
-#include "golioth_util.h"
 #include <golioth/golioth_sys.h>
+#include "coap_client.h"
+#include "golioth_util.h"
 
 #if defined(CONFIG_GOLIOTH_LIGHTDB_STREAM)
 
