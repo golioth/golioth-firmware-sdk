@@ -120,8 +120,9 @@ static void on_my_config(
 
 
 void golioth_basics(struct golioth_client* client) {
-    // Initialize the Settings service
+    // Initialize the Settings and RPC services
     struct golioth_settings* settings = golioth_settings_init(client);
+    struct golioth_rpc* rpc = golioth_rpc_init(client);
 
     // Register a callback function that will be called by the client thread when
     // connect and disconnect events happen.
@@ -221,7 +222,7 @@ void golioth_basics(struct golioth_client* client) {
     //
     // In this case, the device provides a "multiply" method, which takes two integer
     // input parameters and multiplies them, returning the resulting value.
-    golioth_rpc_register(client, "multiply", on_multiply, NULL);
+    golioth_rpc_register(rpc, "multiply", on_multiply, NULL);
 
     // We can register a callback for persistent settings. The Settings service
     // allows remote users to manage and push settings to devices.

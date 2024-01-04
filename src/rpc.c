@@ -8,6 +8,7 @@
 #include <zcbor_decode.h>
 #include <zcbor_encode.h>
 #include "coap_client.h"
+#include <golioth/config.h>
 #include <golioth/rpc.h>
 #include "golioth_util.h"
 #include <golioth/golioth_debug.h>
@@ -35,6 +36,20 @@ LOG_TAG_DEFINE(golioth_rpc);
 #if defined(CONFIG_GOLIOTH_RPC)
 
 #define GOLIOTH_RPC_PATH_PREFIX ".rpc/"
+
+/// Private struct to contain data about a single registered method
+struct golioth_rpc_method {
+    const char* method;
+    golioth_rpc_cb_fn callback;
+    void* callback_arg;
+};
+
+/// Private struct to contain RPC state data
+struct golioth_rpc {
+    struct golioth_client* client;
+    int num_rpcs;
+    struct golioth_rpc_method rpcs[CONFIG_GOLIOTH_RPC_MAX_NUM_METHODS];
+};
 
 static int params_decode(zcbor_state_t* zsd, void* value) {
     zcbor_state_t* params_zsd = value;
@@ -113,7 +128,7 @@ static void on_rpc(
         return;
     }
 
-    struct golioth_rpc* grpc = golioth_coap_client_get_rpc(client);
+    struct golioth_rpc* grpc = arg;
 
     const struct golioth_rpc_method* matching_rpc = NULL;
     enum golioth_rpc_status status = GOLIOTH_RPC_UNKNOWN;
@@ -185,13 +200,23 @@ static void on_rpc(
             GOLIOTH_SYS_WAIT_FOREVER);
 }
 
+struct golioth_rpc* golioth_rpc_init(struct golioth_client* client)
+{
+    struct golioth_rpc* grpc = golioth_sys_malloc(sizeof(struct golioth_rpc));
+
+    if (grpc != NULL) {
+        grpc->client = client;
+        grpc->num_rpcs = 0;
+    }
+
+    return grpc;
+}
+
 enum golioth_status golioth_rpc_register(
-        struct golioth_client* client,
+        struct golioth_rpc* grpc,
         const char* method,
         golioth_rpc_cb_fn callback,
         void* callback_arg) {
-    struct golioth_rpc* grpc = golioth_coap_client_get_rpc(client);
-
     if (grpc->num_rpcs >= CONFIG_GOLIOTH_RPC_MAX_NUM_METHODS) {
         GLTH_LOGE(
                 TAG,
@@ -209,7 +234,7 @@ enum golioth_status golioth_rpc_register(
     grpc->num_rpcs++;
     if (grpc->num_rpcs == 1) {
         return golioth_coap_client_observe_async(
-                client, GOLIOTH_RPC_PATH_PREFIX, "", GOLIOTH_CONTENT_TYPE_CBOR, on_rpc, NULL);
+                grpc->client, GOLIOTH_RPC_PATH_PREFIX, "", GOLIOTH_CONTENT_TYPE_CBOR, on_rpc, grpc);
     }
     return GOLIOTH_OK;
 }

@@ -35,7 +35,6 @@ struct golioth_client {
     size_t block_token_len;
     golioth_client_event_cb_fn event_callback;
     void* event_callback_arg;
-    struct golioth_rpc rpc;
 };
 
 static bool token_matches_request(const golioth_coap_request_msg_t* req, const coap_pdu_t* pdu) {
@@ -1517,10 +1516,6 @@ uint32_t golioth_client_num_items_in_request_queue(struct golioth_client* client
         return 0;
     }
     return golioth_mbox_num_messages(client->request_queue);
-}
-
-struct golioth_rpc* golioth_coap_client_get_rpc(struct golioth_client* client) {
-    return &client->rpc;
 }
 
 golioth_sys_thread_t golioth_client_get_thread(struct golioth_client* client) {
