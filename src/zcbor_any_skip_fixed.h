@@ -1,3 +1,8 @@
+/*
+ * Copyright (c) 2024 Golioth, Inc.
+ *
+ * SPDX-License-Identifier: Apache-2.0
+ */
 #ifndef __ZCBOR_ANY_SKIP_FIXED_H__
 #define __ZCBOR_ANY_SKIP_FIXED_H__
 

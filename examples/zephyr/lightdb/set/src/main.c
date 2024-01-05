@@ -1,7 +1,7 @@
 /*
- * copyright (c) 2023 golioth, inc.
+ * Copyright (c) 2023 Golioth, Inc.
  *
- * spdx-license-identifier: apache-2.0
+ * SPDX-License-Identifier: Apache-2.0
  */
 
 #include <zephyr/logging/log.h>

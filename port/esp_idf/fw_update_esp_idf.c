@@ -1,3 +1,8 @@
+/*
+ * Copyright (c) 2024 Golioth, Inc.
+ *
+ * SPDX-License-Identifier: Apache-2.0
+ */
 #include <golioth/fw_update.h>
 #include "esp_log.h"
 #include "esp_ota_ops.h"
