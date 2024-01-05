@@ -1,3 +1,8 @@
+/*
+ * Copyright (c) 2024 Golioth, Inc.
+ *
+ * SPDX-License-Identifier: Apache-2.0
+ */
 #ifndef __LIBCOAP_SYS_RANDOM_H__
 #define __LIBCOAP_SYS_RANDOM_H__
 

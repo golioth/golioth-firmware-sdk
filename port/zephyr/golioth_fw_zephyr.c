@@ -1,3 +1,8 @@
+/*
+ * Copyright (c) 2024 Golioth, Inc.
+ *
+ * SPDX-License-Identifier: Apache-2.0
+ */
 #include <zephyr/dfu/flash_img.h>
 #include <zephyr/dfu/mcuboot.h>
 #include <zephyr/storage/flash_map.h>

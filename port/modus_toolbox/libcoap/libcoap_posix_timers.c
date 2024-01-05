@@ -1,3 +1,8 @@
+/*
+ * Copyright (c) 2024 Golioth, Inc.
+ *
+ * SPDX-License-Identifier: Apache-2.0
+ */
 #include "libcoap_posix_timers.h"
 #include <FreeRTOS.h>
 #include <task.h>
