@@ -9,6 +9,7 @@ LOG_MODULE_REGISTER(lte_monitor);
 
 #include <modem/lte_lc.h>
 #include <zephyr/init.h>
+#include <zephyr/sys/reboot.h>
 
 static void lte_handler(const struct lte_lc_evt* const evt) {
     switch (evt->type) {
@@ -51,6 +52,13 @@ static void lte_handler(const struct lte_lc_evt* const evt) {
             switch (evt->modem_evt) {
                 case LTE_LC_MODEM_EVT_RESET_LOOP:
                     LOG_INF("Modem: Reset Loop detected");
+
+#if defined(CONFIG_GOLIOTH_SAMPLE_NRF91_RESET_LOOP_OVERRIDE)
+                    LOG_WRN("Attempting factory reset to override reset loop restriction");
+                    lte_lc_offline();
+                    lte_lc_factory_reset(LTE_LC_FACTORY_RESET_ALL);
+                    sys_reboot(SYS_REBOOT_COLD);
+#endif
                     break;
                 default:
                     break;
