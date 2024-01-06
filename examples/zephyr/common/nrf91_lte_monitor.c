@@ -47,6 +47,15 @@ static void lte_handler(const struct lte_lc_evt* const evt) {
                     break;
             }
             break;
+        case LTE_LC_EVT_MODEM_EVENT:
+            switch (evt->modem_evt) {
+                case LTE_LC_MODEM_EVT_RESET_LOOP:
+                    LOG_INF("Modem: Reset Loop detected");
+                    break;
+                default:
+                    break;
+            }
+            break;
         default:
             break;
     }
@@ -54,6 +63,7 @@ static void lte_handler(const struct lte_lc_evt* const evt) {
 
 static int nrf91_lte_monitor_init(void) {
     lte_lc_register_handler(lte_handler);
+    lte_lc_modem_events_enable();
 
     return 0;
 }
