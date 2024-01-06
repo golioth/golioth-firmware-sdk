@@ -21,9 +21,17 @@ async def test_lightdb_get(shell, device, credentials_file):
 
     time.sleep(2)
 
-    # Set credentials
+    # Set Golioth credential
+
+    golioth_cred = (await device.credentials.list())[0]
+    shell.exec_command(f"settings set golioth/psk-id {golioth_cred.identity}")
+    shell.exec_command(f"settings set golioth/psk {golioth_cred.key}")
+
+    # Set WiFi credential
 
     for setting in credentials['settings']:
+        if 'golioth' in setting:
+            continue
         shell.exec_command(f"settings set {setting} \"{credentials['settings'][setting]}\"")
 
     shell._device.clear_buffer()
