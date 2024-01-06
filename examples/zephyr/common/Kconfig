@@ -87,6 +87,16 @@ config GOLIOTH_SAMPLE_NRF91_LTE_MONITOR
 	help
 	  LTE Link Control events monitor for nRF91.
 
+config GOLIOTH_SAMPLE_NRF91_RESET_LOOP_OVERRIDE
+	bool "Automatically override modem reset loop restriction"
+	depends on GOLIOTH_SAMPLE_NRF91_LTE_MONITOR
+	help
+	  When selected, the device will automatically factory reset the modem
+	  when the modem reports that it has activated the reset loop restriction.
+	  This will remove the reset loop restriction.
+
+	  WARNING: It is not recommended to activate this setting in production.
+
 config GOLIOTH_SAMPLE_PSK_SETTINGS
        bool "Load credentials from persistent settings"
        default y if !GOLIOTH_SAMPLE_HARDCODED_CREDENTIALS
