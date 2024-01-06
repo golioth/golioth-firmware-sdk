@@ -119,7 +119,6 @@ jobs:
         env:
           hil_board: ${{ inputs.hil_board }}
           GOLIOTH_API_KEY: ${{ secrets.DEV_CI_PROJECT_API_KEY }}
-          GOLIOTH_DEVICE_NAME: ${{ runner.name }}-${{ inputs.hil_board }}
           GOLIOTH_CREDENTIALS_FILE: /opt/credentials/credentials_${{ inputs.hil_board }}.yml
         run: |
           source /opt/credentials/runner_env.sh
