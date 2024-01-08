@@ -11,7 +11,6 @@ tests:
     extra_configs:
       - CONFIG_SHELL_BACKEND_SERIAL_RX_RING_BUFFER_SIZE=128
       - CONFIG_SHELL_DEFAULT_TERMINAL_WIDTH=100
-      - CONFIG_GOLIOTH_COAP_HOST_URI="coaps://coap.golioth.dev"
       - CONFIG_GOLIOTH_SAMPLE_NRF91_RESET_LOOP_OVERRIDE=y
     platform_allow: >
       esp32_devkitc_wrover
