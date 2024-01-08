@@ -104,7 +104,7 @@ jobs:
           pip3 install -r zephyr/scripts/requirements-build-test.txt
           pip3 install -r zephyr/scripts/requirements-run-test.txt
 
-          pip3 install git+https://github.com/golioth/python-golioth-tools@v0.4.0
+          pip3 install git+https://github.com/golioth/python-golioth-tools@v0.5.0
       - name: Power Cycle USB Hub
         run: /opt/golioth-scripts/power-cycle-usb-hub.sh
       - name: Download build
@@ -118,7 +118,7 @@ jobs:
         shell: bash
         env:
           hil_board: ${{ inputs.hil_board }}
-          GOLIOTH_API_KEY: ${{ secrets.DEV_CI_PROJECT_API_KEY }}
+          GOLIOTH_API_KEY: ${{ secrets.PROD_CI_PROJECT_API_KEY }}
           GOLIOTH_CREDENTIALS_FILE: /opt/credentials/credentials_${{ inputs.hil_board }}.yml
         run: |
           source /opt/credentials/runner_env.sh
