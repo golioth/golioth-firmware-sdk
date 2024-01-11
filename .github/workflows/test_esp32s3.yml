@@ -146,7 +146,7 @@ jobs:
         goliothctl dfu --apiUrl $GOLIOTH_API_URL --projectId $GOLIOTH_PROJECT_ID release delete --release-tags 1.2.99 || echo "release not found"
         goliothctl dfu --apiUrl $GOLIOTH_API_URL --projectId $GOLIOTH_PROJECT_ID artifact delete 1.2.99 || echo "artifact not found"
         goliothctl dfu --apiUrl $GOLIOTH_API_URL --projectId $GOLIOTH_PROJECT_ID artifact create test_new.bin --version 1.2.99
-        goliothctl dfu --apiUrl $GOLIOTH_API_URL --projectId $GOLIOTH_PROJECT_ID release create --release-tags 1.2.99 --components main@1.2.99 --rollout true
+        goliothctl dfu --apiUrl $GOLIOTH_API_URL --projectId $GOLIOTH_PROJECT_ID release create --tags "esp-idf-legacy-test" --release-tags 1.2.99 --components main@1.2.99 --rollout true
     - name: Flash and Verify Serial Output
       shell: bash
       run: |
