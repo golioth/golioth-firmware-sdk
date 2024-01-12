@@ -39,7 +39,7 @@ Enable the settings shell by including the following configuration overlay
 file:
 
 ```sh
-$ west build -- -DEXTRA_CONF_FILE=../common/runtime_psk.conf
+$ west build -- -DEXTRA_CONF_FILE=../common/runtime_settings.conf
 ```
 
 Alternatively, you can add the following options to ``prj.conf``:
