@@ -59,6 +59,7 @@ jobs:
         zephyr/scripts/twister                                                \
               --platform ${{ inputs.west_board }}                             \
               -T modules/lib/golioth-firmware-sdk/examples/zephyr             \
+              --build-only                                                    \
               --package-artifacts test_artifacts_${{ inputs.west_board }}.tar
 
     - name: Save artifacts
