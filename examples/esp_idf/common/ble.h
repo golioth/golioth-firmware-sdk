@@ -6,11 +6,12 @@
 #pragma once
 
 #ifdef __cplusplus
-extern "C" {
+extern "C"
+{
 #endif
 
-/// Initialize and start the BLE stack
-void ble_init(const char *device_name);
+    /// Initialize and start the BLE stack
+    void ble_init(const char *device_name);
 
 #ifdef __cplusplus
 }

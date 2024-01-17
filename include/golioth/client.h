@@ -28,7 +28,8 @@
 struct golioth_client;
 
 /// Golioth client events
-enum golioth_client_event {
+enum golioth_client_event
+{
     /// Client was previously not connected, and is now connected
     GOLIOTH_CLIENT_EVENT_CONNECTED,
     /// Client was previously connected, and is now disconnected
@@ -36,13 +37,15 @@ enum golioth_client_event {
 };
 
 /// Golioth Content Type
-enum golioth_content_type {
+enum golioth_content_type
+{
     GOLIOTH_CONTENT_TYPE_JSON,
     GOLIOTH_CONTENT_TYPE_CBOR,
 };
 
 /// Response status and CoAP class/code
-struct golioth_response {
+struct golioth_response
+{
     /// Status to indicate whether a response was received
     ///
     /// One of:
@@ -57,7 +60,8 @@ struct golioth_response {
 };
 
 /// Authentication type
-enum golioth_auth_type {
+enum golioth_auth_type
+{
     /// Authenticate with pre-shared key (psk-id and psk)
     GOLIOTH_TLS_AUTH_TYPE_PSK,
     /// Authenticate with PKI certificates (CA cert, public client cert, private client key)
@@ -68,7 +72,8 @@ enum golioth_auth_type {
 ///
 /// All memory is owned by user and must persist for the lifetime
 /// of the golioth client.
-struct golioth_psk_credential {
+struct golioth_psk_credential
+{
     /// PSK Identifier (e.g. "devicename@projectname")
     const char *psk_id;
     size_t psk_id_len;
@@ -82,7 +87,8 @@ struct golioth_psk_credential {
 ///
 /// All memory is owned by user and must persist for the lifetime
 /// of the golioth client.
-struct golioth_pki_credential {
+struct golioth_pki_credential
+{
     // DER Common CA cert
     const uint8_t *ca_cert;
     size_t ca_cert_len;
@@ -97,16 +103,19 @@ struct golioth_pki_credential {
 };
 
 /// TLS Authentication Credential
-struct golioth_credential {
+struct golioth_credential
+{
     enum golioth_auth_type auth_type;
-    union {
+    union
+    {
         struct golioth_psk_credential psk;
         struct golioth_pki_credential pki;
     };
 };
 
 /// Golioth client configuration, passed into golioth_client_create
-struct golioth_client_config {
+struct golioth_client_config
+{
     struct golioth_credential credentials;
 };
 

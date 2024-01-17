@@ -6,7 +6,8 @@
 #pragma once
 
 #ifdef __cplusplus
-extern "C" {
+extern "C"
+{
 #endif
 
 #include <stdlib.h>
@@ -24,18 +25,18 @@ extern "C" {
 // Default string value to return in nvs_read_* functions if key not found in NVS
 #define NVS_DEFAULT_STR "unknown"
 
-void nvs_init(void);
+    void nvs_init(void);
 
-const char *nvs_read_wifi_ssid(void);
-const char *nvs_read_wifi_password(void);
-const char *nvs_read_golioth_psk_id(void);
-const char *nvs_read_golioth_psk(void);
+    const char *nvs_read_wifi_ssid(void);
+    const char *nvs_read_wifi_password(void);
+    const char *nvs_read_golioth_psk_id(void);
+    const char *nvs_read_golioth_psk(void);
 
-const char *nvs_read_str(const char *key, char *buf, size_t bufsize);
-bool nvs_write_str(const char *key, const char *str);
-bool nvs_erase_str(const char *key);
+    const char *nvs_read_str(const char *key, char *buf, size_t bufsize);
+    bool nvs_write_str(const char *key, const char *str);
+    bool nvs_erase_str(const char *key);
 
-bool nvs_credentials_are_set(void);
+    bool nvs_credentials_are_set(void);
 
 #ifdef __cplusplus
 }

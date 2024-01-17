@@ -22,13 +22,15 @@ extern const uint8_t client_key_end[] asm("_binary_client_key_der_end");
 
 static void on_client_event(struct golioth_client *client,
                             enum golioth_client_event event,
-                            void *arg) {
+                            void *arg)
+{
     ESP_LOGI(TAG,
              "Golioth client %s",
              event == GOLIOTH_CLIENT_EVENT_CONNECTED ? "connected" : "disconnected");
 }
 
-void app_main(void) {
+void app_main(void)
+{
     // Initialize NVS first. For this example, it is assumed that WiFi
     // credentials are stored in NVS.
     nvs_init();
@@ -70,7 +72,8 @@ void app_main(void) {
     golioth_client_register_event_callback(client, on_client_event, NULL);
 
     int counter = 0;
-    while (1) {
+    while (1)
+    {
         GLTH_LOGI(TAG, "Counter = %d", counter);
         counter++;
         golioth_sys_msleep(5000);

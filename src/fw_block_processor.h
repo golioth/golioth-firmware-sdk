@@ -15,13 +15,15 @@
 
 typedef enum golioth_status (*process_fn)(const uint8_t *in, size_t in_size, void *arg);
 
-typedef struct {
+typedef struct
+{
     uint32_t block_min_ms;
     float block_ema_ms;
     uint32_t block_max_ms;
 } block_latency_stats_t;
 
-typedef struct {
+typedef struct
+{
     /// Golioth client used for downloading
     struct golioth_client *client;
     /// Estimate of the total number blocks to download
@@ -43,7 +45,8 @@ typedef struct {
     void *output_fn_arg;
 } download_ctx_t;
 
-typedef struct {
+typedef struct
+{
 #if CONFIG_GOLIOTH_OTA_DECOMPRESS_METHOD_HEATSHRINK
     /// Statically allocated heatshrink decoder
     heatshrink_decoder hsd;
@@ -65,7 +68,8 @@ typedef struct {
     void *output_fn_arg;
 } decompress_ctx_t;
 
-typedef struct {
+typedef struct
+{
     /// Context struct for calls into bspatch()
     struct bspatch_ctx bspatch_ctx;
     /// Input stream, required by bspatch()
@@ -77,14 +81,16 @@ typedef struct {
     void *output_fn_arg;
 } patch_ctx_t;
 
-typedef struct {
+typedef struct
+{
     /// Number of bytes forwarded to fw_update_handle_block()
     int32_t bytes_handled;
     /// Size of the OTA component being handled
     size_t component_size;
 } handle_block_ctx_t;
 
-typedef struct {
+typedef struct
+{
     download_ctx_t download;
     decompress_ctx_t decompress;
     patch_ctx_t patch;

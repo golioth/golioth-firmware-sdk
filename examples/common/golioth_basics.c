@@ -34,15 +34,18 @@ static golioth_sys_sem_t _connected_sem;
 
 static void on_client_event(struct golioth_client *client,
                             enum golioth_client_event event,
-                            void *arg) {
+                            void *arg)
+{
     bool is_connected = (event == GOLIOTH_CLIENT_EVENT_CONNECTED);
-    if (is_connected) {
+    if (is_connected)
+    {
         golioth_sys_sem_give(_connected_sem);
     }
     GLTH_LOGI(TAG, "Golioth client %s", is_connected ? "connected" : "disconnected");
 }
 
-static enum golioth_settings_status on_loop_delay_setting(int32_t new_value, void *arg) {
+static enum golioth_settings_status on_loop_delay_setting(int32_t new_value, void *arg)
+{
     GLTH_LOGI(TAG, "Setting loop delay to %" PRId32 " s", new_value);
     _loop_delay_s = new_value;
     return GOLIOTH_SETTINGS_SUCCESS;
@@ -50,14 +53,16 @@ static enum golioth_settings_status on_loop_delay_setting(int32_t new_value, voi
 
 static enum golioth_rpc_status on_multiply(zcbor_state_t *request_params_array,
                                            zcbor_state_t *response_detail_map,
-                                           void *callback_arg) {
+                                           void *callback_arg)
+{
     double a, b;
     double value;
     bool ok;
 
     ok = zcbor_float_decode(request_params_array, &a)
         && zcbor_float_decode(request_params_array, &b);
-    if (!ok) {
+    if (!ok)
+    {
         GLTH_LOGE(TAG, "Failed to decode array items");
         return GOLIOTH_RPC_INVALID_ARGUMENT;
     }
@@ -68,7 +73,8 @@ static enum golioth_rpc_status on_multiply(zcbor_state_t *request_params_array,
 
     ok = zcbor_tstr_put_lit(response_detail_map, "value")
         && zcbor_float64_put(response_detail_map, value);
-    if (!ok) {
+    if (!ok)
+    {
         GLTH_LOGE(TAG, "Failed to encode value");
         return GOLIOTH_RPC_RESOURCE_EXHAUSTED;
     }
@@ -83,9 +89,11 @@ static void on_get_my_int(struct golioth_client *client,
                           const char *path,
                           const uint8_t *payload,
                           size_t payload_size,
-                          void *arg) {
+                          void *arg)
+{
     // It's a good idea to check the response status, to make sure the request didn't time out.
-    if (response->status != GOLIOTH_OK) {
+    if (response->status != GOLIOTH_OK)
+    {
         GLTH_LOGE(TAG, "on_get_my_int status = %s", golioth_status_to_str(response->status));
         return;
     }
@@ -101,13 +109,16 @@ static void on_my_config(struct golioth_client *client,
                          const char *path,
                          const uint8_t *payload,
                          size_t payload_size,
-                         void *arg) {
-    if (response->status != GOLIOTH_OK) {
+                         void *arg)
+{
+    if (response->status != GOLIOTH_OK)
+    {
         return;
     }
 
     // Payload might be null if desired/my_config is deleted, so ignore that case
-    if (golioth_payload_is_null(payload, payload_size)) {
+    if (golioth_payload_is_null(payload, payload_size))
+    {
         return;
     }
 
@@ -118,7 +129,8 @@ static void on_my_config(struct golioth_client *client,
 }
 
 
-void golioth_basics(struct golioth_client *client) {
+void golioth_basics(struct golioth_client *client)
+{
     // Initialize the Settings and RPC services
     struct golioth_settings *settings = golioth_settings_init(client);
     struct golioth_rpc *rpc = golioth_rpc_init(client);
@@ -181,16 +193,20 @@ void golioth_basics(struct golioth_client *client) {
     //
     // Any function provided by this SDK ending in _sync will have the same meaning.
     enum golioth_status status = golioth_lightdb_set_string_sync(client, "my_string", "asdf", 4, 5);
-    if (status != GOLIOTH_OK) {
+    if (status != GOLIOTH_OK)
+    {
         GLTH_LOGE(TAG, "Error setting string: %s", golioth_status_to_str(status));
     }
 
     // Read back the integer we set above
     int32_t readback_int = 0;
     status = golioth_lightdb_get_int_sync(client, "my_int", &readback_int, 5);
-    if (status == GOLIOTH_OK) {
+    if (status == GOLIOTH_OK)
+    {
         GLTH_LOGI(TAG, "Synchronously got my_int = %" PRId32, readback_int);
-    } else {
+    }
+    else
+    {
         GLTH_LOGE(TAG, "Synchronous get my_int failed: %s", golioth_status_to_str(status));
     }
 
@@ -231,7 +247,8 @@ void golioth_basics(struct golioth_client *client) {
     // once in a while.
     GLTH_LOGI(TAG, "Entering endless loop");
     int32_t counter = 0;
-    while (1) {
+    while (1)
+    {
         golioth_lightdb_set_int_async(client, "counter", counter, NULL, NULL);
         GLTH_LOGI(TAG, "Sending hello! %" PRId32, counter);
         counter++;

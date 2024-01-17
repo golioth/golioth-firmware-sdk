@@ -38,41 +38,48 @@ LOG_TAG_DEFINE(golioth_rpc);
 #define GOLIOTH_RPC_PATH_PREFIX ".rpc/"
 
 /// Private struct to contain data about a single registered method
-struct golioth_rpc_method {
+struct golioth_rpc_method
+{
     const char *method;
     golioth_rpc_cb_fn callback;
     void *callback_arg;
 };
 
 /// Private struct to contain RPC state data
-struct golioth_rpc {
+struct golioth_rpc
+{
     struct golioth_client *client;
     int num_rpcs;
     struct golioth_rpc_method rpcs[CONFIG_GOLIOTH_RPC_MAX_NUM_METHODS];
 };
 
-static int params_decode(zcbor_state_t *zsd, void *value) {
+static int params_decode(zcbor_state_t *zsd, void *value)
+{
     zcbor_state_t *params_zsd = value;
     bool ok;
 
     ok = zcbor_list_start_decode(zsd);
-    if (!ok) {
+    if (!ok)
+    {
         GLTH_LOGW(TAG, "Did not start CBOR list correctly");
         return -EBADMSG;
     }
 
     memcpy(params_zsd, zsd, sizeof(*params_zsd));
 
-    while (!zcbor_list_or_map_end(zsd)) {
+    while (!zcbor_list_or_map_end(zsd))
+    {
         ok = zcbor_any_skip(zsd, NULL);
-        if (!ok) {
+        if (!ok)
+        {
             GLTH_LOGW(TAG, "Failed to skip param (%d)", (int) zcbor_peek_error(zsd));
             return -EBADMSG;
         }
     }
 
     ok = zcbor_list_end_decode(zsd);
-    if (!ok) {
+    if (!ok)
+    {
         GLTH_LOGW(TAG, "Did not end CBOR list correctly");
         return -EBADMSG;
     }
@@ -85,7 +92,8 @@ static void on_rpc(struct golioth_client *client,
                    const char *path,
                    const uint8_t *payload,
                    size_t payload_size,
-                   void *arg) {
+                   void *arg)
+{
     ZCBOR_STATE_D(zsd, 2, payload, payload_size, 1);
     zcbor_state_t params_zsd;
     struct zcbor_string id, method;
@@ -99,14 +107,16 @@ static void on_rpc(struct golioth_client *client,
 
     GLTH_LOG_BUFFER_HEXDUMP(TAG, payload, min(64, payload_size), GOLIOTH_DEBUG_LOG_LEVEL_DEBUG);
 
-    if (payload_size == 3 && payload[1] == 'O' && payload[2] == 'K') {
+    if (payload_size == 3 && payload[1] == 'O' && payload[2] == 'K')
+    {
         /* Ignore "OK" response received after observing */
         return;
     }
 
     /* Decode request */
     err = zcbor_map_decode(zsd, map_entries, ARRAY_SIZE(map_entries));
-    if (err) {
+    if (err)
+    {
         GLTH_LOGE(TAG, "Failed to parse tstr map");
         return;
     }
@@ -116,13 +126,15 @@ static void on_rpc(struct golioth_client *client,
     ZCBOR_STATE_E(zse, 1, response_buf, sizeof(response_buf), 1);
 
     ok = zcbor_map_start_encode(zse, 1);
-    if (!ok) {
+    if (!ok)
+    {
         GLTH_LOGE(TAG, "Failed to encode RPC response map");
         return;
     }
 
     ok = zcbor_tstr_put_lit(zse, "id") && zcbor_tstr_encode(zse, &id);
-    if (!ok) {
+    if (!ok)
+    {
         GLTH_LOGE(TAG, "Failed to encode RPC '%s'", "id");
         return;
     }
@@ -132,16 +144,19 @@ static void on_rpc(struct golioth_client *client,
     const struct golioth_rpc_method *matching_rpc = NULL;
     enum golioth_rpc_status status = GOLIOTH_RPC_UNKNOWN;
 
-    for (int i = 0; i < grpc->num_rpcs; i++) {
+    for (int i = 0; i < grpc->num_rpcs; i++)
+    {
         const struct golioth_rpc_method *rpc = &grpc->rpcs[i];
         if (strlen(rpc->method) == method.len
-            && strncmp(rpc->method, (char *) method.value, method.len) == 0) {
+            && strncmp(rpc->method, (char *) method.value, method.len) == 0)
+        {
             matching_rpc = rpc;
             break;
         }
     }
 
-    if (matching_rpc) {
+    if (matching_rpc)
+    {
         GLTH_LOGD(TAG, "Calling registered RPC method: %s", matching_rpc->method);
 
         /**
@@ -149,13 +164,15 @@ static void on_rpc(struct golioth_client *client,
          * and encode context is inside the detail map.
          */
         ok = zcbor_tstr_put_lit(zse, "detail");
-        if (!ok) {
+        if (!ok)
+        {
             GLTH_LOGE(TAG, "Failed to encode RPC '%s'", "detail");
             return;
         }
 
         ok = zcbor_map_start_encode(zse, SIZE_MAX);
-        if (!ok) {
+        if (!ok)
+        {
             GLTH_LOGE(TAG, "Did not start CBOR map correctly");
             return;
         }
@@ -165,23 +182,28 @@ static void on_rpc(struct golioth_client *client,
         GLTH_LOGD(TAG, "RPC status code %d for call id :%.*s", status, id.len, id.value);
 
         ok = zcbor_map_end_encode(zse, SIZE_MAX);
-        if (!ok) {
+        if (!ok)
+        {
             GLTH_LOGE(TAG, "Failed to close '%s'", "detail");
             return;
         }
-    } else {
+    }
+    else
+    {
         GLTH_LOGW(TAG, "Method %.*s not registered", method.len, method.value);
     }
 
     ok = zcbor_tstr_put_lit(zse, "statusCode") && zcbor_uint64_put(zse, status);
-    if (!ok) {
+    if (!ok)
+    {
         GLTH_LOGE(TAG, "Failed to encode RPC '%s'", "statusCode");
         return;
     }
 
     /* root response map */
     ok = zcbor_map_end_encode(zse, 1);
-    if (!ok) {
+    if (!ok)
+    {
         GLTH_LOGE(TAG, "Failed to close '%s'", "root");
         return;
     }
@@ -198,10 +220,12 @@ static void on_rpc(struct golioth_client *client,
                             GOLIOTH_SYS_WAIT_FOREVER);
 }
 
-struct golioth_rpc *golioth_rpc_init(struct golioth_client *client) {
+struct golioth_rpc *golioth_rpc_init(struct golioth_client *client)
+{
     struct golioth_rpc *grpc = golioth_sys_malloc(sizeof(struct golioth_rpc));
 
-    if (grpc != NULL) {
+    if (grpc != NULL)
+    {
         grpc->client = client;
         grpc->num_rpcs = 0;
     }
@@ -212,8 +236,10 @@ struct golioth_rpc *golioth_rpc_init(struct golioth_client *client) {
 enum golioth_status golioth_rpc_register(struct golioth_rpc *grpc,
                                          const char *method,
                                          golioth_rpc_cb_fn callback,
-                                         void *callback_arg) {
-    if (grpc->num_rpcs >= CONFIG_GOLIOTH_RPC_MAX_NUM_METHODS) {
+                                         void *callback_arg)
+{
+    if (grpc->num_rpcs >= CONFIG_GOLIOTH_RPC_MAX_NUM_METHODS)
+    {
         GLTH_LOGE(TAG,
                   "Unable to register, can't register more than %d methods",
                   CONFIG_GOLIOTH_RPC_MAX_NUM_METHODS);
@@ -227,7 +253,8 @@ enum golioth_status golioth_rpc_register(struct golioth_rpc *grpc,
     rpc->callback_arg = callback_arg;
 
     grpc->num_rpcs++;
-    if (grpc->num_rpcs == 1) {
+    if (grpc->num_rpcs == 1)
+    {
         return golioth_coap_client_observe_async(grpc->client,
                                                  GOLIOTH_RPC_PATH_PREFIX,
                                                  "",

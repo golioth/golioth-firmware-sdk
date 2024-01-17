@@ -12,7 +12,8 @@ LOG_MODULE_REGISTER(test, LOG_LEVEL_DBG);
 
 void hil_test_entry(const struct golioth_client_config *config);
 
-int main(void) {
+int main(void)
+{
     net_connect();
 
     hil_test_entry(golioth_sample_credentials_get());

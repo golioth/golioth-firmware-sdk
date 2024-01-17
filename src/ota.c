@@ -22,13 +22,15 @@ LOG_TAG_DEFINE(golioth_ota);
 #define GOLIOTH_OTA_MANIFEST_PATH ".u/desired"
 #define GOLIOTH_OTA_COMPONENT_PATH_PREFIX ".u/c/"
 
-enum {
+enum
+{
     MANIFEST_KEY_SEQUENCE_NUMBER = 1,
     MANIFEST_KEY_HASH = 2,
     MANIFEST_KEY_COMPONENTS = 3,
 };
 
-enum {
+enum
+{
     COMPONENT_KEY_PACKAGE = 1,
     COMPONENT_KEY_VERSION = 2,
     COMPONENT_KEY_HASH = 3,
@@ -36,22 +38,26 @@ enum {
     COMPONENT_KEY_URI = 5,
 };
 
-typedef struct {
+typedef struct
+{
     uint8_t *buf;
     size_t *block_nbytes;
     bool *is_last;
 } block_get_output_params_t;
 
-struct component_tstr_value {
+struct component_tstr_value
+{
     char *value;
     size_t value_len;
 };
 
 static enum golioth_ota_state _state = GOLIOTH_OTA_STATE_IDLE;
 
-size_t golioth_ota_size_to_nblocks(size_t component_size) {
+size_t golioth_ota_size_to_nblocks(size_t component_size)
+{
     size_t nblocks = component_size / GOLIOTH_OTA_BLOCKSIZE;
-    if ((component_size % GOLIOTH_OTA_BLOCKSIZE) != 0) {
+    if ((component_size % GOLIOTH_OTA_BLOCKSIZE) != 0)
+    {
         nblocks++;
     }
     return nblocks;
@@ -59,13 +65,16 @@ size_t golioth_ota_size_to_nblocks(size_t component_size) {
 
 const struct golioth_ota_component *golioth_ota_find_component(
     const struct golioth_ota_manifest *manifest,
-    const char *package) {
+    const char *package)
+{
     // Scan the manifest until we find the component with matching package.
     const struct golioth_ota_component *found = NULL;
-    for (size_t i = 0; i < manifest->num_components; i++) {
+    for (size_t i = 0; i < manifest->num_components; i++)
+    {
         const struct golioth_ota_component *c = &manifest->components[i];
         bool matches = (0 == strcmp(c->package, package));
-        if (matches) {
+        if (matches)
+        {
             found = c;
             break;
         }
@@ -75,7 +84,8 @@ const struct golioth_ota_component *golioth_ota_find_component(
 
 enum golioth_status golioth_ota_observe_manifest_async(struct golioth_client *client,
                                                        golioth_get_cb_fn callback,
-                                                       void *arg) {
+                                                       void *arg)
+{
     return golioth_coap_client_observe_async(client,
                                              "",
                                              GOLIOTH_OTA_MANIFEST_PATH,
@@ -90,47 +100,57 @@ enum golioth_status golioth_ota_report_state_sync(struct golioth_client *client,
                                                   const char *package,
                                                   const char *current_version,
                                                   const char *target_version,
-                                                  int32_t timeout_s) {
+                                                  int32_t timeout_s)
+{
     uint8_t encode_buf[64];
     ZCBOR_STATE_E(zse, 1, encode_buf, sizeof(encode_buf), 1);
     bool ok;
 
     ok = zcbor_map_start_encode(zse, 1);
-    if (!ok) {
+    if (!ok)
+    {
         return GOLIOTH_ERR_MEM_ALLOC;
     }
 
     ok = zcbor_tstr_put_lit(zse, "s") && zcbor_uint32_put(zse, state);
-    if (!ok) {
+    if (!ok)
+    {
         return GOLIOTH_ERR_MEM_ALLOC;
     }
 
     ok = zcbor_tstr_put_lit(zse, "r") && zcbor_uint32_put(zse, reason);
-    if (!ok) {
+    if (!ok)
+    {
         return GOLIOTH_ERR_MEM_ALLOC;
     }
 
     ok = zcbor_tstr_put_lit(zse, "pkg") && zcbor_tstr_put_term(zse, package);
-    if (!ok) {
+    if (!ok)
+    {
         return GOLIOTH_ERR_MEM_ALLOC;
     }
 
-    if (current_version && current_version[0] != '\0') {
+    if (current_version && current_version[0] != '\0')
+    {
         ok = zcbor_tstr_put_lit(zse, "v") && zcbor_tstr_put_term(zse, current_version);
-        if (!ok) {
+        if (!ok)
+        {
             return GOLIOTH_ERR_MEM_ALLOC;
         }
     }
 
-    if (target_version && target_version[0] != '\0') {
+    if (target_version && target_version[0] != '\0')
+    {
         ok = zcbor_tstr_put_lit(zse, "t") && zcbor_tstr_put_term(zse, target_version);
-        if (!ok) {
+        if (!ok)
+        {
             return GOLIOTH_ERR_MEM_ALLOC;
         }
     }
 
     ok = zcbor_map_end_encode(zse, 1);
-    if (!ok) {
+    if (!ok)
+    {
         return GOLIOTH_ERR_MEM_ALLOC;
     }
 
@@ -147,17 +167,20 @@ enum golioth_status golioth_ota_report_state_sync(struct golioth_client *client,
                                    timeout_s);
 }
 
-static int component_entry_decode_value(zcbor_state_t *zsd, void *void_value) {
+static int component_entry_decode_value(zcbor_state_t *zsd, void *void_value)
+{
     struct component_tstr_value *value = void_value;
     struct zcbor_string tstr;
     bool ok;
 
     ok = zcbor_tstr_decode(zsd, &tstr);
-    if (!ok) {
+    if (!ok)
+    {
         return -EBADMSG;
     }
 
-    if (tstr.len > value->value_len) {
+    if (tstr.len > value->value_len)
+    {
         GLTH_LOGE(TAG, "Not enough space to store");
         return -ENOMEM;
     }
@@ -168,18 +191,21 @@ static int component_entry_decode_value(zcbor_state_t *zsd, void *void_value) {
     return 0;
 }
 
-static int components_decode(zcbor_state_t *zsd, void *value) {
+static int components_decode(zcbor_state_t *zsd, void *value)
+{
     struct golioth_ota_manifest *manifest = value;
     int err;
     bool ok;
 
     ok = zcbor_list_start_decode(zsd);
-    if (!ok) {
+    if (!ok)
+    {
         GLTH_LOGW(TAG, "Did not start CBOR list correctly");
         return -EBADMSG;
     }
 
-    for (size_t i = 0; i < ARRAY_SIZE(manifest->components) && !zcbor_list_or_map_end(zsd); i++) {
+    for (size_t i = 0; i < ARRAY_SIZE(manifest->components) && !zcbor_list_or_map_end(zsd); i++)
+    {
         struct golioth_ota_component *component = &manifest->components[i];
         struct component_tstr_value package = {
             component->package,
@@ -197,7 +223,8 @@ static int components_decode(zcbor_state_t *zsd, void *value) {
         };
 
         err = zcbor_map_decode(zsd, map_entries, ARRAY_SIZE(map_entries));
-        if (err) {
+        if (err)
+        {
             GLTH_LOGE(TAG, "Failed to decode component number %zu", i);
             return err;
         }
@@ -210,7 +237,8 @@ static int components_decode(zcbor_state_t *zsd, void *value) {
     }
 
     ok = zcbor_list_end_decode(zsd);
-    if (!ok) {
+    if (!ok)
+    {
         GLTH_LOGW(TAG, "Did not end CBOR list correctly");
         return -EBADMSG;
     }
@@ -220,7 +248,8 @@ static int components_decode(zcbor_state_t *zsd, void *value) {
 
 enum golioth_status golioth_ota_payload_as_manifest(const uint8_t *payload,
                                                     size_t payload_size,
-                                                    struct golioth_ota_manifest *manifest) {
+                                                    struct golioth_ota_manifest *manifest)
+{
     ZCBOR_STATE_D(zsd, 3, payload, payload_size, 1);
     int64_t manifest_sequence_number;
     struct zcbor_map_entry map_entries[] = {
@@ -234,8 +263,10 @@ enum golioth_status golioth_ota_payload_as_manifest(const uint8_t *payload,
     memset(manifest, 0, sizeof(*manifest));
 
     err = zcbor_map_decode(zsd, map_entries, ARRAY_SIZE(map_entries));
-    if (err) {
-        if (err == -ENOENT) {
+    if (err)
+    {
+        if (err == -ENOENT)
+        {
             return GOLIOTH_OK;
         }
 
@@ -254,11 +285,13 @@ static void on_block_rcvd(struct golioth_client *client,
                           const uint8_t *payload,
                           size_t payload_size,
                           bool is_last,
-                          void *arg) {
+                          void *arg)
+{
     assert(arg);
     assert(payload_size <= GOLIOTH_OTA_BLOCKSIZE);
 
-    if (response->status != GOLIOTH_OK) {
+    if (response->status != GOLIOTH_OK)
+    {
         return;
     }
 
@@ -266,7 +299,8 @@ static void on_block_rcvd(struct golioth_client *client,
     assert(out_params->buf);
     assert(out_params->block_nbytes);
 
-    if (out_params->is_last) {
+    if (out_params->is_last)
+    {
         *out_params->is_last = is_last;
     }
 
@@ -312,7 +346,8 @@ enum golioth_status golioth_ota_get_block_sync(struct golioth_client *client,
     return status;
 }
 
-enum golioth_ota_state golioth_ota_get_state(void) {
+enum golioth_ota_state golioth_ota_get_state(void)
+{
     return _state;
 }
 

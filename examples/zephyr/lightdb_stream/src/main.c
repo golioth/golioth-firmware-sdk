@@ -21,9 +21,11 @@ static K_SEM_DEFINE(connected, 0, 1);
 
 static void on_client_event(struct golioth_client *client,
                             enum golioth_client_event event,
-                            void *arg) {
+                            void *arg)
+{
     bool is_connected = (event == GOLIOTH_CLIENT_EVENT_CONNECTED);
-    if (is_connected) {
+    if (is_connected)
+    {
         k_sem_give(&connected);
     }
     LOG_INF("Golioth client %s", is_connected ? "connected" : "disconnected");
@@ -31,7 +33,8 @@ static void on_client_event(struct golioth_client *client,
 
 #if DT_NODE_HAS_STATUS(DT_ALIAS(temp0), okay)
 
-static int get_temperature(struct sensor_value *val) {
+static int get_temperature(struct sensor_value *val)
+{
     const struct device *dev = DEVICE_DT_GET(DT_ALIAS(temp0));
     static const enum sensor_channel temp_channels[] = {
         SENSOR_CHAN_AMBIENT_TEMP,
@@ -41,17 +44,22 @@ static int get_temperature(struct sensor_value *val) {
     int err;
 
     err = sensor_sample_fetch(dev);
-    if (err) {
+    if (err)
+    {
         LOG_ERR("Failed to fetch temperature sensor: %d", err);
         return err;
     }
 
-    for (i = 0; i < ARRAY_SIZE(temp_channels); i++) {
+    for (i = 0; i < ARRAY_SIZE(temp_channels); i++)
+    {
         err = sensor_channel_get(dev, temp_channels[i], val);
-        if (err == -ENOTSUP) {
+        if (err == -ENOTSUP)
+        {
             /* try next channel */
             continue;
-        } else if (err) {
+        }
+        else if (err)
+        {
             LOG_ERR("Failed to get temperature: %d", err);
             return err;
         }
@@ -62,7 +70,8 @@ static int get_temperature(struct sensor_value *val) {
 
 #else
 
-static int get_temperature(struct sensor_value *val) {
+static int get_temperature(struct sensor_value *val)
+{
     static int counter = 0;
 
     /* generate a temperature from 20 deg to 30 deg, with 0.5 deg step */
@@ -80,8 +89,10 @@ static int get_temperature(struct sensor_value *val) {
 static void temperature_push_handler(struct golioth_client *client,
                                      const struct golioth_response *response,
                                      const char *path,
-                                     void *arg) {
-    if (response->status != GOLIOTH_OK) {
+                                     void *arg)
+{
+    if (response->status != GOLIOTH_OK)
+    {
         LOG_WRN("Failed to push temperature: %d", response->status);
         return;
     }
@@ -91,7 +102,8 @@ static void temperature_push_handler(struct golioth_client *client,
     return;
 }
 
-static void temperature_push_async(const struct sensor_value *temp) {
+static void temperature_push_async(const struct sensor_value *temp)
+{
     char sbuf[sizeof("{\"temp\":-4294967295.123456}")];
     int err;
 
@@ -103,13 +115,15 @@ static void temperature_push_async(const struct sensor_value *temp) {
                                                 strlen(sbuf),
                                                 temperature_push_handler,
                                                 NULL);
-    if (err) {
+    if (err)
+    {
         LOG_WRN("Failed to push temperature: %d", err);
         return;
     }
 }
 
-static void temperature_push_sync(const struct sensor_value *temp) {
+static void temperature_push_sync(const struct sensor_value *temp)
+{
     char sbuf[sizeof("{\"temp\":-4294967295.123456}")];
     int err;
 
@@ -117,7 +131,8 @@ static void temperature_push_sync(const struct sensor_value *temp) {
 
     err = golioth_lightdb_stream_set_json_sync(client, "sensor", sbuf, strlen(sbuf), 1);
 
-    if (err) {
+    if (err)
+    {
         LOG_WRN("Failed to push temperature: %d", err);
         return;
     }
@@ -125,7 +140,8 @@ static void temperature_push_sync(const struct sensor_value *temp) {
     LOG_DBG("Temperature successfully pushed");
 }
 
-static void temperature_push_float_async(const struct sensor_value *temp) {
+static void temperature_push_float_async(const struct sensor_value *temp)
+{
     int err;
 
     err = golioth_lightdb_stream_set_float_async(client,
@@ -134,13 +150,15 @@ static void temperature_push_float_async(const struct sensor_value *temp) {
                                                  temperature_push_handler,
                                                  NULL);
 
-    if (err) {
+    if (err)
+    {
         LOG_WRN("Failed to push temperature: %d", err);
         return;
     }
 }
 
-int main(void) {
+int main(void)
+{
     struct sensor_value temp;
     int err;
 
@@ -159,10 +177,12 @@ int main(void) {
 
     k_sem_take(&connected, K_FOREVER);
 
-    while (true) {
+    while (true)
+    {
         /* Synchronous using JSON object */
         err = get_temperature(&temp);
-        if (err) {
+        if (err)
+        {
             k_sleep(K_SECONDS(1));
             continue;
         }
@@ -175,7 +195,8 @@ int main(void) {
 
         /* Callback-based using JSON object */
         err = get_temperature(&temp);
-        if (err) {
+        if (err)
+        {
             k_sleep(K_SECONDS(1));
             continue;
         }
@@ -187,7 +208,8 @@ int main(void) {
 
         /* Callback-based using float */
         err = get_temperature(&temp);
-        if (err) {
+        if (err)
+        {
             k_sleep(K_SECONDS(1));
             continue;
         }

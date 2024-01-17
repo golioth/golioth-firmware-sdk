@@ -7,18 +7,21 @@
 void setUp(void) {}
 void tearDown(void) {}
 
-void empty_ringbuf_has_zero_size(void) {
+void empty_ringbuf_has_zero_size(void)
+{
     RINGBUF_DEFINE(rb, 1, 8);
     TEST_ASSERT_EQUAL(0, ringbuf_size(&rb));
     TEST_ASSERT_TRUE(ringbuf_is_empty(&rb));
 }
 
-void capacity_is_what_i_asked_for(void) {
+void capacity_is_what_i_asked_for(void)
+{
     RINGBUF_DEFINE(rb, 1, 8);
     TEST_ASSERT_EQUAL(8, ringbuf_capacity(&rb));
 }
 
-void get_returns_the_oldest_item(void) {
+void get_returns_the_oldest_item(void)
+{
     RINGBUF_DEFINE(rb, 1, 8);
 
     uint8_t item1 = 4;
@@ -31,25 +34,29 @@ void get_returns_the_oldest_item(void) {
     TEST_ASSERT_EQUAL(4, item);
 }
 
-void get_when_empty_fails(void) {
+void get_when_empty_fails(void)
+{
     RINGBUF_DEFINE(rb, 1, 8);
     uint8_t item;
     TEST_ASSERT_FALSE(ringbuf_get(&rb, &item));
 }
 
-void put_when_full_fails(void) {
+void put_when_full_fails(void)
+{
     const size_t maxitems = 8;
     RINGBUF_DEFINE(rb, 1, maxitems);
 
     uint8_t item = 0;
-    for (size_t i = 0; i < maxitems; i++) {
+    for (size_t i = 0; i < maxitems; i++)
+    {
         TEST_ASSERT_TRUE(ringbuf_put(&rb, &item));
     }
     TEST_ASSERT_TRUE(ringbuf_is_full(&rb));
     TEST_ASSERT_FALSE(ringbuf_put(&rb, &item));
 }
 
-void can_peek(void) {
+void can_peek(void)
+{
     RINGBUF_DEFINE(rb, 1, 8);
 
     uint8_t item1 = 4;
@@ -63,7 +70,8 @@ void can_peek(void) {
     TEST_ASSERT_EQUAL(2, ringbuf_size(&rb));
 }
 
-void can_reset(void) {
+void can_reset(void)
+{
     RINGBUF_DEFINE(rb, 1, 8);
     uint8_t item = 0;
     TEST_ASSERT_TRUE(ringbuf_put(&rb, &item));
@@ -72,7 +80,8 @@ void can_reset(void) {
     TEST_ASSERT_EQUAL(0, ringbuf_size(&rb));
 }
 
-void array_wraparound(void) {
+void array_wraparound(void)
+{
     // Verify the size is reported correctly when the write pointer wraps
     // around in the internal array.
     //
@@ -95,12 +104,14 @@ void array_wraparound(void) {
     TEST_ASSERT_TRUE(ringbuf_is_empty(&rb));
 }
 
-void put_when_null_item_fails(void) {
+void put_when_null_item_fails(void)
+{
     RINGBUF_DEFINE(rb, 1, 1);
     TEST_ASSERT_FALSE(ringbuf_put(&rb, NULL));
 }
 
-int main(void) {
+int main(void)
+{
     UNITY_BEGIN();
     RUN_TEST(empty_ringbuf_has_zero_size);
     RUN_TEST(capacity_is_what_i_asked_for);

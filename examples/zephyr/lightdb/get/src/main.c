@@ -25,9 +25,11 @@ static K_SEM_DEFINE(connected, 0, 1);
 
 static void on_client_event(struct golioth_client *client,
                             enum golioth_client_event event,
-                            void *arg) {
+                            void *arg)
+{
     bool is_connected = (event == GOLIOTH_CLIENT_EVENT_CONNECTED);
-    if (is_connected) {
+    if (is_connected)
+    {
         k_sem_give(&connected);
     }
     LOG_INF("Golioth client %s", is_connected ? "connected" : "disconnected");
@@ -38,15 +40,20 @@ static void counter_get_handler(struct golioth_client *client,
                                 const char *path,
                                 const uint8_t *payload,
                                 size_t payload_size,
-                                void *arg) {
-    if ((response->status != GOLIOTH_OK) || golioth_payload_is_null(payload, payload_size)) {
+                                void *arg)
+{
+    if ((response->status != GOLIOTH_OK) || golioth_payload_is_null(payload, payload_size))
+    {
         LOG_WRN("Failed to get counter (async): %d", response->status);
-    } else {
+    }
+    else
+    {
         LOG_INF("Counter (async): %d", golioth_payload_as_int(payload, payload_size));
     }
 }
 
-static void counter_get_async(struct golioth_client *client) {
+static void counter_get_async(struct golioth_client *client)
+{
     int err;
 
     err = golioth_lightdb_get_async(client,
@@ -54,24 +61,30 @@ static void counter_get_async(struct golioth_client *client) {
                                     GOLIOTH_CONTENT_TYPE_JSON,
                                     counter_get_handler,
                                     NULL);
-    if (err) {
+    if (err)
+    {
         LOG_WRN("failed to get data from LightDB: %d", err);
     }
 }
 
-static void counter_get_sync(struct golioth_client *client) {
+static void counter_get_sync(struct golioth_client *client)
+{
     int32_t value;
     int err;
 
     err = golioth_lightdb_get_int_sync(client, "counter", &value, APP_TIMEOUT_S);
-    if (err) {
+    if (err)
+    {
         LOG_WRN("failed to get data from LightDB: %d", err);
-    } else {
+    }
+    else
+    {
         LOG_INF("Counter (sync): %d", value);
     }
 }
 
-static void counter_get_json_sync(struct golioth_client *client) {
+static void counter_get_json_sync(struct golioth_client *client)
+{
     uint8_t sbuf[128];
     size_t len = sizeof(sbuf);
     int err;
@@ -79,9 +92,12 @@ static void counter_get_json_sync(struct golioth_client *client) {
     /* Get root of LightDB State, but JSON can be returned for any path */
     err =
         golioth_lightdb_get_sync(client, "", GOLIOTH_CONTENT_TYPE_JSON, sbuf, &len, APP_TIMEOUT_S);
-    if (err || (0 == strlen(sbuf))) {
+    if (err || (0 == strlen(sbuf)))
+    {
         LOG_WRN("failed to get JSON data from LightDB: %d", err);
-    } else {
+    }
+    else
+    {
         LOG_HEXDUMP_INF(sbuf, strlen(sbuf), "LightDB JSON (sync)");
     }
 }
@@ -91,8 +107,10 @@ static void counter_get_cbor_handler(struct golioth_client *client,
                                      const char *path,
                                      const uint8_t *payload,
                                      size_t payload_size,
-                                     void *arg) {
-    if ((response->status != GOLIOTH_OK) || golioth_payload_is_null(payload, payload_size)) {
+                                     void *arg)
+{
+    if ((response->status != GOLIOTH_OK) || golioth_payload_is_null(payload, payload_size))
+    {
         LOG_WRN("Failed to get counter (async): %d", response->status);
         return;
     }
@@ -103,25 +121,29 @@ static void counter_get_cbor_handler(struct golioth_client *client,
         ZCBOR_TSTR_LIT_MAP_ENTRY("counter", zcbor_map_int64_decode, &counter);
 
     int err = zcbor_map_decode(zsd, &map_entry, 1);
-    if (err) {
+    if (err)
+    {
         LOG_WRN("Failed to decode CBOR data: %d", err);
     }
 
     LOG_INF("Counter (CBOR async): %d", (uint32_t) counter);
 }
 
-static void counter_get_cbor_async(struct golioth_client *client) {
+static void counter_get_cbor_async(struct golioth_client *client)
+{
     int err = golioth_lightdb_get_async(client,
                                         "",
                                         GOLIOTH_CONTENT_TYPE_CBOR,
                                         counter_get_cbor_handler,
                                         NULL);
-    if (err) {
+    if (err)
+    {
         LOG_WRN("Failed to get data from LightDB: %d", err);
     }
 }
 
-int main(void) {
+int main(void)
+{
     LOG_DBG("Start LightDB get sample");
 
     IF_ENABLED(CONFIG_GOLIOTH_SAMPLE_COMMON, (net_connect();))
@@ -137,7 +159,8 @@ int main(void) {
 
     k_sem_take(&connected, K_FOREVER);
 
-    while (true) {
+    while (true)
+    {
         LOG_INF("Before request (async)");
         counter_get_async(client);
         LOG_INF("After request (async)");

@@ -37,15 +37,18 @@ static K_SEM_DEFINE(connected, 0, 1);
 
 static void on_client_event(struct golioth_client *client,
                             enum golioth_client_event event,
-                            void *arg) {
+                            void *arg)
+{
     bool is_connected = (event == GOLIOTH_CLIENT_EVENT_CONNECTED);
-    if (is_connected) {
+    if (is_connected)
+    {
         k_sem_give(&connected);
     }
     LOG_INF("Golioth client %s", is_connected ? "connected" : "disconnected");
 }
 
-static int load_credential_from_fs(const char *path, uint8_t **buf_p, size_t *buf_len) {
+static int load_credential_from_fs(const char *path, uint8_t **buf_p, size_t *buf_len)
+{
     struct fs_file_t file;
     struct fs_dirent dirent;
 
@@ -53,16 +56,19 @@ static int load_credential_from_fs(const char *path, uint8_t **buf_p, size_t *bu
 
     int err = fs_stat(path, &dirent);
 
-    if (err < 0) {
+    if (err < 0)
+    {
         LOG_WRN("Could not stat %s, err: %d", path, err);
         goto finish;
     }
-    if (dirent.type != FS_DIR_ENTRY_FILE) {
+    if (dirent.type != FS_DIR_ENTRY_FILE)
+    {
         LOG_ERR("%s is not a file", path);
         err = -EISDIR;
         goto finish;
     }
-    if (dirent.size == 0) {
+    if (dirent.size == 0)
+    {
         LOG_ERR("%s is an empty file", path);
         err = -EINVAL;
         goto finish;
@@ -71,7 +77,8 @@ static int load_credential_from_fs(const char *path, uint8_t **buf_p, size_t *bu
 
     err = fs_open(&file, path, FS_O_READ);
 
-    if (err < 0) {
+    if (err < 0)
+    {
         LOG_ERR("Could not open %s", path);
         goto finish;
     }
@@ -82,7 +89,8 @@ static int load_credential_from_fs(const char *path, uint8_t **buf_p, size_t *bu
 
     void *cred_buf = malloc(dirent.size);
 
-    if (cred_buf == NULL) {
+    if (cred_buf == NULL)
+    {
         LOG_ERR("Could not allocate space to read credential");
         err = -ENOMEM;
         goto finish_with_file;
@@ -90,7 +98,8 @@ static int load_credential_from_fs(const char *path, uint8_t **buf_p, size_t *bu
 
     err = fs_read(&file, cred_buf, dirent.size);
 
-    if (err < 0) {
+    if (err < 0)
+    {
         LOG_ERR("Could not read %s, err: %d", path, err);
         free(cred_buf);
         goto finish_with_file;
@@ -109,13 +118,15 @@ finish:
     return err;
 }
 
-int main(void) {
+int main(void)
+{
     int counter = 0;
 
     LOG_DBG("Start certificate provisioning sample");
 
     int err = fs_mount(&littlefs_mnt);
-    if (err < 0) {
+    if (err < 0)
+    {
         LOG_ERR("Error mounting littlefs [%d]", err);
     }
 
@@ -126,7 +137,8 @@ int main(void) {
     load_credential_from_fs(CLIENT_CERTIFICATE_PATH, &tls_client_crt, &tls_client_crt_len);
     load_credential_from_fs(PRIVATE_KEY_PATH, &tls_client_key, &tls_client_key_len);
 
-    if (tls_client_crt != NULL && tls_client_key != NULL) {
+    if (tls_client_crt != NULL && tls_client_key != NULL)
+    {
         net_connect();
 
         struct golioth_client_config client_config = {
@@ -148,13 +160,18 @@ int main(void) {
         client = golioth_client_create(&client_config);
 
         golioth_client_register_event_callback(client, on_client_event, NULL);
-    } else {
+
+        k_sem_take(&connected, K_FOREVER);
+    }
+    else
+    {
         LOG_ERR("Error reading certificate credentials from filesystem");
     }
 
     k_sem_take(&connected, K_FOREVER);
 
-    while (true) {
+    while (true)
+    {
         LOG_INF("Sending hello! %d", counter);
 
         ++counter;

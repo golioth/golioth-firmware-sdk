@@ -23,9 +23,11 @@ static K_SEM_DEFINE(connected, 0, 1);
 
 static void on_client_event(struct golioth_client *client,
                             enum golioth_client_event event,
-                            void *arg) {
+                            void *arg)
+{
     bool is_connected = (event == GOLIOTH_CLIENT_EVENT_CONNECTED);
-    if (is_connected) {
+    if (is_connected)
+    {
         k_sem_give(&connected);
     }
     LOG_INF("Golioth client %s", is_connected ? "connected" : "disconnected");
@@ -34,8 +36,10 @@ static void on_client_event(struct golioth_client *client,
 static void counter_set_handler(struct golioth_client *client,
                                 const struct golioth_response *response,
                                 const char *path,
-                                void *arg) {
-    if (response->status != GOLIOTH_OK) {
+                                void *arg)
+{
+    if (response->status != GOLIOTH_OK)
+    {
         LOG_WRN("Failed to set counter: %d", response->status);
         return;
     }
@@ -45,21 +49,25 @@ static void counter_set_handler(struct golioth_client *client,
     return;
 }
 
-static void counter_set_async(int counter) {
+static void counter_set_async(int counter)
+{
     int err;
 
     err = golioth_lightdb_set_int_async(client, "counter", counter, counter_set_handler, NULL);
-    if (err) {
+    if (err)
+    {
         LOG_WRN("Failed to set counter: %d", err);
         return;
     }
 }
 
-static void counter_set_sync(int counter) {
+static void counter_set_sync(int counter)
+{
     int err;
 
     err = golioth_lightdb_set_int_sync(client, "counter", counter, APP_TIMEOUT_S);
-    if (err) {
+    if (err)
+    {
         LOG_WRN("Failed to set counter: %d", err);
         return;
     }
@@ -67,7 +75,8 @@ static void counter_set_sync(int counter) {
     LOG_DBG("Counter successfully set");
 }
 
-static void counter_set_json_async(int counter) {
+static void counter_set_json_async(int counter)
+{
     char sbuf[sizeof("{\"counter\":4294967295}")];
     int err;
 
@@ -80,36 +89,42 @@ static void counter_set_json_async(int counter) {
                                     strlen(sbuf),
                                     counter_set_handler,
                                     NULL);
-    if (err) {
+    if (err)
+    {
         LOG_WRN("Failed to set counter: %d", err);
         return;
     }
 }
 
-static void counter_set_cbor_sync(int counter) {
+static void counter_set_cbor_sync(int counter)
+{
     uint8_t buf[32];
     ZCBOR_STATE_E(zse, 1, buf, sizeof(buf), 1);
 
     bool ok = zcbor_map_start_encode(zse, 1);
-    if (!ok) {
+    if (!ok)
+    {
         LOG_ERR("Failed to start CBOR encoding");
         return;
     }
 
     ok = zcbor_tstr_put_lit(zse, "counter");
-    if (!ok) {
+    if (!ok)
+    {
         LOG_ERR("CBOR: Failed to encode counter name");
         return;
     }
 
     ok = zcbor_int32_put(zse, counter);
-    if (!ok) {
+    if (!ok)
+    {
         LOG_ERR("CBOR: failed to encode counter value");
         return;
     }
 
     ok = zcbor_map_end_encode(zse, 1);
-    if (!ok) {
+    if (!ok)
+    {
         LOG_ERR("Failed to close CBOR map object");
         return;
     }
@@ -122,14 +137,18 @@ static void counter_set_cbor_sync(int counter) {
                                        buf,
                                        payload_size,
                                        APP_TIMEOUT_S);
-    if (err != 0) {
+    if (err != 0)
+    {
         LOG_WRN("Failed to set counter: %d", err);
-    } else {
+    }
+    else
+    {
         LOG_DBG("Counter successfully set");
     }
 }
 
-int main(void) {
+int main(void)
+{
     int counter = 0;
 
     LOG_DBG("Start LightDB set sample");
@@ -147,7 +166,8 @@ int main(void) {
 
     k_sem_take(&connected, K_FOREVER);
 
-    while (true) {
+    while (true)
+    {
         /* Callback-based using int */
         LOG_DBG("Setting counter to %d", counter);
 

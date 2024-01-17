@@ -11,10 +11,13 @@ LOG_MODULE_REGISTER(lte_monitor);
 #include <zephyr/init.h>
 #include <zephyr/sys/reboot.h>
 
-static void lte_handler(const struct lte_lc_evt *const evt) {
-    switch (evt->type) {
+static void lte_handler(const struct lte_lc_evt *const evt)
+{
+    switch (evt->type)
+    {
         case LTE_LC_EVT_NW_REG_STATUS:
-            switch (evt->nw_reg_status) {
+            switch (evt->nw_reg_status)
+            {
                 case LTE_LC_NW_REG_NOT_REGISTERED:
                     LOG_INF("Network: Not registered");
                     break;
@@ -39,7 +42,8 @@ static void lte_handler(const struct lte_lc_evt *const evt) {
             }
             break;
         case LTE_LC_EVT_RRC_UPDATE:
-            switch (evt->rrc_mode) {
+            switch (evt->rrc_mode)
+            {
                 case LTE_LC_RRC_MODE_CONNECTED:
                     LOG_INF("RRC: Connected");
                     break;
@@ -49,7 +53,8 @@ static void lte_handler(const struct lte_lc_evt *const evt) {
             }
             break;
         case LTE_LC_EVT_MODEM_EVENT:
-            switch (evt->modem_evt) {
+            switch (evt->modem_evt)
+            {
                 case LTE_LC_MODEM_EVT_RESET_LOOP:
                     LOG_INF("Modem: Reset Loop detected");
 
@@ -69,7 +74,8 @@ static void lte_handler(const struct lte_lc_evt *const evt) {
     }
 }
 
-static int nrf91_lte_monitor_init(void) {
+static int nrf91_lte_monitor_init(void)
+{
     lte_lc_register_handler(lte_handler);
     lte_lc_modem_events_enable();
 

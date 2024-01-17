@@ -62,8 +62,10 @@
 #define GOLIOTH_MAIN_TASK_STACK_SIZE (5 * 1024)
 #define GOLIOTH_MAIN_TASK_PRIORITY (1)
 
-static void blink_task(void *arg) {
-    for (;;) {
+static void blink_task(void *arg)
+{
+    for (;;)
+    {
         vTaskDelay(LED_TOGGLE_INTERVAL_MS / portTICK_PERIOD_MS);
         cyhal_gpio_toggle(CYBSP_USER_LED);
     }
@@ -84,7 +86,8 @@ static void blink_task(void *arg) {
  *  int
  *
  ******************************************************************************/
-int main(void) {
+int main(void)
+{
     cy_rslt_t result;
 
     /* Initialize the device and board peripherals */
@@ -100,9 +103,12 @@ int main(void) {
 
 #ifdef CY_BOOT_USE_EXTERNAL_FLASH
     cy_en_smif_status_t qspi_status = qspi_init_sfdp(QSPI_SLAVE_SELECT_LINE);
-    if (CY_SMIF_SUCCESS == qspi_status) {
+    if (CY_SMIF_SUCCESS == qspi_status)
+    {
         printf("External Memory initialized w/ SFDP.");
-    } else {
+    }
+    else
+    {
         printf("External Memory initialization w/ SFDP FAILED: 0x%08" PRIx32,
                (uint32_t) qspi_status);
     }
@@ -147,7 +153,8 @@ int main(void) {
     /* Should never get here. */
     CY_ASSERT(0);
 
-    for (;;) {
+    for (;;)
+    {
         /* Toggle the user LED periodically */
         cyhal_system_delay_ms(LED_TOGGLE_INTERVAL_MS);
         cyhal_gpio_toggle(CYBSP_USER_LED);

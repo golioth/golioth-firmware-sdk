@@ -42,7 +42,8 @@
 struct golioth_settings;
 
 /// Enumeration of Settings status codes
-enum golioth_settings_status {
+enum golioth_settings_status
+{
     /// Setting applied successfully to the device, stored in NVS
     GOLIOTH_SETTINGS_SUCCESS = 0,
     /// The setting key is not recognized, this setting is unknown
@@ -60,7 +61,8 @@ enum golioth_settings_status {
 };
 
 /// Different types of setting values
-enum golioth_settings_value_type {
+enum golioth_settings_value_type
+{
     GOLIOTH_SETTINGS_VALUE_TYPE_UNKNOWN,
     GOLIOTH_SETTINGS_VALUE_TYPE_INT,
     GOLIOTH_SETTINGS_VALUE_TYPE_BOOL,

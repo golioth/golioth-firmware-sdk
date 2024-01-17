@@ -15,20 +15,24 @@
 #endif
 #endif
 
-enum {
+enum
+{
     ZCBOR_MAP_KEY_TYPE_U32,
     ZCBOR_MAP_KEY_TYPE_TSTR,
 };
 
-struct zcbor_map_key {
+struct zcbor_map_key
+{
     uint8_t type;
-    union {
+    union
+    {
         uint32_t u32;
         struct zcbor_string tstr;
     };
 };
 
-struct zcbor_map_entry {
+struct zcbor_map_entry
+{
     struct zcbor_map_key key;
     int (*decode)(zcbor_state_t *zsd, void *value);
     void *value;
@@ -40,8 +44,10 @@ struct zcbor_map_entry {
  * @retval true   Reached end of list or map
  * @retval false  There are more items (from list of map) to be processed
  */
-static inline bool zcbor_list_or_map_end(zcbor_state_t *state) {
-    if (state->indefinite_length_array) {
+static inline bool zcbor_list_or_map_end(zcbor_state_t *state)
+{
+    if (state->indefinite_length_array)
+    {
         return *state->payload == 0xff;
     }
 

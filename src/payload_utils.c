@@ -12,7 +12,8 @@
 
 #include <golioth/payload_utils.h>
 
-int32_t golioth_payload_as_int(const uint8_t *payload, size_t payload_size) {
+int32_t golioth_payload_as_int(const uint8_t *payload, size_t payload_size)
+{
     // Copy payload to a NULL-terminated string
     char value[12] = {};
     assert(payload_size <= sizeof(value));
@@ -21,7 +22,8 @@ int32_t golioth_payload_as_int(const uint8_t *payload, size_t payload_size) {
     return strtol(value, NULL, 10);
 }
 
-float golioth_payload_as_float(const uint8_t *payload, size_t payload_size) {
+float golioth_payload_as_float(const uint8_t *payload, size_t payload_size)
+{
     // Copy payload to a NULL-terminated string
     char value[32] = {};
     assert(payload_size <= sizeof(value));
@@ -30,19 +32,25 @@ float golioth_payload_as_float(const uint8_t *payload, size_t payload_size) {
     return strtof(value, NULL);
 }
 
-bool golioth_payload_as_bool(const uint8_t *payload, size_t payload_size) {
-    if (payload_size < 4) {
+bool golioth_payload_as_bool(const uint8_t *payload, size_t payload_size)
+{
+    if (payload_size < 4)
+    {
         return false;
     }
     return (0 == strncmp((const char *) payload, "true", 4));
 }
 
-bool golioth_payload_is_null(const uint8_t *payload, size_t payload_size) {
-    if (!payload || payload_size == 0) {
+bool golioth_payload_is_null(const uint8_t *payload, size_t payload_size)
+{
+    if (!payload || payload_size == 0)
+    {
         return true;
     }
-    if (payload_size >= 4) {
-        if (strncmp((const char *) payload, "null", 4) == 0) {
+    if (payload_size >= 4)
+    {
+        if (strncmp((const char *) payload, "null", 4) == 0)
+        {
             return true;
         }
     }

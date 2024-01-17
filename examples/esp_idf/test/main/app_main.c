@@ -45,24 +45,30 @@ static bool _wifi_connected;
 
 static void on_client_event(struct golioth_client *client,
                             enum golioth_client_event event,
-                            void *arg) {
+                            void *arg)
+{
     bool is_connected = (event == GOLIOTH_CLIENT_EVENT_CONNECTED);
     ESP_LOGI(TAG, "Golioth %s", is_connected ? "connected" : "disconnected");
-    if (is_connected) {
+    if (is_connected)
+    {
         xSemaphoreGive(_connected_sem);
-    } else {
+    }
+    else
+    {
         xSemaphoreGive(_disconnected_sem);
     }
 }
 
 static enum golioth_rpc_status on_double(zcbor_state_t *request_params_array,
                                          zcbor_state_t *response_detail_map,
-                                         void *callback_arg) {
+                                         void *callback_arg)
+{
     double value;
     bool ok;
 
     ok = zcbor_float_decode(request_params_array, &value);
-    if (!ok) {
+    if (!ok)
+    {
         GLTH_LOGE(TAG, "Failed to decode value to be doubled");
         return GOLIOTH_RPC_INVALID_ARGUMENT;
     }
@@ -71,7 +77,8 @@ static enum golioth_rpc_status on_double(zcbor_state_t *request_params_array,
 
     ok = zcbor_tstr_put_lit(response_detail_map, "value")
         && zcbor_float64_put(response_detail_map, value);
-    if (!ok) {
+    if (!ok)
+    {
         GLTH_LOGE(TAG, "Failed to encode value");
         return GOLIOTH_RPC_RESOURCE_EXHAUSTED;
     }
@@ -79,14 +86,17 @@ static enum golioth_rpc_status on_double(zcbor_state_t *request_params_array,
     return GOLIOTH_RPC_OK;
 }
 
-static enum golioth_settings_status on_test_setting(int32_t new_value, void *arg) {
+static enum golioth_settings_status on_test_setting(int32_t new_value, void *arg)
+{
     GLTH_LOGI(TAG, "Setting LightDB TEST_SETTING to %" PRId32, new_value);
     golioth_lightdb_set_int_async(_client, "TEST_SETTING", new_value, NULL, NULL);
     return GOLIOTH_SETTINGS_SUCCESS;
 }
 
-static void test_connects_to_wifi(void) {
-    if (_wifi_connected) {
+static void test_connects_to_wifi(void)
+{
+    if (_wifi_connected)
+    {
         return;
     }
     wifi_init(nvs_read_wifi_ssid(), nvs_read_wifi_password());
@@ -94,8 +104,10 @@ static void test_connects_to_wifi(void) {
     _wifi_connected = true;
 }
 
-static void test_golioth_client_create(void) {
-    if (!_client) {
+static void test_golioth_client_create(void)
+{
+    if (!_client)
+    {
         const char *psk_id = nvs_read_golioth_psk_id();
         const char *psk = nvs_read_golioth_psk();
 
@@ -125,7 +137,8 @@ static void test_golioth_client_create(void) {
     }
 }
 
-static void test_connects_to_golioth(void) {
+static void test_connects_to_golioth(void)
+{
     TEST_ASSERT_NOT_NULL(_client);
     TEST_ASSERT_EQUAL(GOLIOTH_OK, golioth_client_start(_client));
     TEST_ASSERT_EQUAL(
@@ -133,20 +146,24 @@ static void test_connects_to_golioth(void) {
         xSemaphoreTake(_connected_sem, TEST_RESPONSE_TIMEOUT_S * 1000 / portTICK_PERIOD_MS));
 }
 
-static void test_golioth_client_heap_usage(void) {
+static void test_golioth_client_heap_usage(void)
+{
     uint32_t post_connect_free_heap = esp_get_minimum_free_heap_size();
     int32_t golioth_heap_usage = _initial_free_heap - post_connect_free_heap;
     ESP_LOGI(TAG, "Estimated heap usage by Golioth stack = %" PRIu32, golioth_heap_usage);
     TEST_ASSERT_TRUE(golioth_heap_usage < 50000);
 }
 
-static void wait_for_empty_request_queue(void) {
+static void wait_for_empty_request_queue(void)
+{
     bool is_empty = false;
 
     // Wait up to 10 s for queue to be empty
     uint64_t timeout_ms = (xTaskGetTickCount() * portTICK_PERIOD_MS) + 5000;
-    while ((xTaskGetTickCount() * portTICK_PERIOD_MS) < timeout_ms) {
-        if (golioth_client_num_items_in_request_queue(_client) == 0) {
+    while ((xTaskGetTickCount() * portTICK_PERIOD_MS) < timeout_ms)
+    {
+        if (golioth_client_num_items_in_request_queue(_client) == 0)
+        {
             is_empty = true;
             break;
         }
@@ -156,7 +173,8 @@ static void wait_for_empty_request_queue(void) {
     TEST_ASSERT_TRUE(is_empty);
 }
 
-static void test_request_dropped_if_client_not_running(void) {
+static void test_request_dropped_if_client_not_running(void)
+{
     TEST_ASSERT_EQUAL(GOLIOTH_OK, golioth_client_stop(_client));
     TEST_ASSERT_EQUAL(pdTRUE, xSemaphoreTake(_disconnected_sem, 3000 / portTICK_PERIOD_MS));
 
@@ -179,7 +197,8 @@ static void test_request_dropped_if_client_not_running(void) {
     wait_for_empty_request_queue();
 }
 
-static void test_lightdb_set_get_sync(void) {
+static void test_lightdb_set_get_sync(void)
+{
     int randint = esp_random();
     ESP_LOGD(TAG, "randint = %d", randint);
     TEST_ASSERT_EQUAL(
@@ -208,7 +227,8 @@ static void on_get_test_int2(struct golioth_client *client,
                              const char *path,
                              const uint8_t *payload,
                              size_t payload_size,
-                             void *arg) {
+                             void *arg)
+{
     struct golioth_response *arg_response = (struct golioth_response *) arg;
     *arg_response = *response;
     _on_get_test_int2_called = true;
@@ -219,13 +239,15 @@ static bool _on_set_test_int2_called = false;
 static void on_set_test_int2(struct golioth_client *client,
                              const struct golioth_response *response,
                              const char *path,
-                             void *arg) {
+                             void *arg)
+{
     struct golioth_response *arg_response = (struct golioth_response *) arg;
     *arg_response = *response;
     _on_set_test_int2_called = true;
 }
 
-static void test_lightdb_set_get_async(void) {
+static void test_lightdb_set_get_async(void)
+{
     _on_set_test_int2_called = false;
     _on_get_test_int2_called = false;
     struct golioth_response set_async_response = {};
@@ -242,8 +264,10 @@ static void test_lightdb_set_get_async(void) {
     // Wait for response
     uint64_t timeout_ms =
         (xTaskGetTickCount() * portTICK_PERIOD_MS) + TEST_RESPONSE_TIMEOUT_S * 1000;
-    while ((xTaskGetTickCount() * portTICK_PERIOD_MS) < timeout_ms) {
-        if (_on_set_test_int2_called) {
+    while ((xTaskGetTickCount() * portTICK_PERIOD_MS) < timeout_ms)
+    {
+        if (_on_set_test_int2_called)
+        {
             break;
         }
         vTaskDelay(100 / portTICK_PERIOD_MS);
@@ -269,8 +293,10 @@ static void test_lightdb_set_get_async(void) {
                                                 &get_async_response));
 
     timeout_ms = (xTaskGetTickCount() * portTICK_PERIOD_MS) + TEST_RESPONSE_TIMEOUT_S * 1000;
-    while ((xTaskGetTickCount() * portTICK_PERIOD_MS) < timeout_ms) {
-        if (_on_get_test_int2_called) {
+    while ((xTaskGetTickCount() * portTICK_PERIOD_MS) < timeout_ms)
+    {
+        if (_on_get_test_int2_called)
+        {
             break;
         }
         vTaskDelay(100 / portTICK_PERIOD_MS);
@@ -288,14 +314,16 @@ static void on_test_timeout(struct golioth_client *client,
                             const char *path,
                             const uint8_t *payload,
                             size_t payload_size,
-                            void *arg) {
+                            void *arg)
+{
     struct golioth_response *arg_response = (struct golioth_response *) arg;
     *arg_response = *response;
     _on_test_timeout_called = true;
 }
 
 // This test takes about 30 seconds to complete
-static void test_request_timeout_if_packets_dropped(void) {
+static void test_request_timeout_if_packets_dropped(void)
+{
     golioth_client_set_packet_loss_percent(100);
 
     int32_t dummy = 0;
@@ -317,8 +345,10 @@ static void test_request_timeout_if_packets_dropped(void) {
 
     // Wait for async response to time out (must be longer than client task timeout of 10 s)
     uint64_t timeout_ms = (xTaskGetTickCount() * portTICK_PERIOD_MS) + 12000;
-    while ((xTaskGetTickCount() * portTICK_PERIOD_MS) < timeout_ms) {
-        if (_on_test_timeout_called) {
+    while ((xTaskGetTickCount() * portTICK_PERIOD_MS) < timeout_ms)
+    {
+        if (_on_test_timeout_called)
+        {
             break;
         }
         vTaskDelay(100 / portTICK_PERIOD_MS);
@@ -346,7 +376,8 @@ static void test_request_timeout_if_packets_dropped(void) {
     wait_for_empty_request_queue();
 }
 
-static void test_lightdb_error_if_path_not_found(void) {
+static void test_lightdb_error_if_path_not_found(void)
+{
     // Issue a sync GET request to an invalid path.
     // Verify a non-success response is received.
 
@@ -358,7 +389,8 @@ static void test_lightdb_error_if_path_not_found(void) {
         golioth_lightdb_get_int_sync(_client, "not_found", &dummy, TEST_RESPONSE_TIMEOUT_S));
 }
 
-static void test_client_task_stack_min_remaining(void) {
+static void test_client_task_stack_min_remaining(void)
+{
     // A bit of hack, but since we know the golioth_sys_thread_t is really
     // a FreeRTOS TaskHandle_t, just cast it directly.
     TaskHandle_t client_task = (TaskHandle_t) golioth_client_get_thread(_client);
@@ -374,7 +406,8 @@ static void test_client_task_stack_min_remaining(void) {
     TEST_ASSERT_TRUE(stack_unused >= CONFIG_GOLIOTH_COAP_THREAD_STACK_SIZE / 4);
 }
 
-static void test_client_destroy(void) {
+static void test_client_destroy(void)
+{
     TEST_ASSERT_EQUAL(GOLIOTH_OK, golioth_client_stop(_client));
     TEST_ASSERT_EQUAL(pdTRUE, xSemaphoreTake(_disconnected_sem, 3000 / portTICK_PERIOD_MS));
 
@@ -392,10 +425,12 @@ static void on_test_int3(struct golioth_client *client,
                          const char *path,
                          const uint8_t *payload,
                          size_t payload_size,
-                         void *arg) {
+                         void *arg)
+{
     ESP_LOG_BUFFER_HEXDUMP(TAG, payload, payload_size, ESP_LOG_DEBUG);
 
-    if (golioth_payload_is_null(payload, payload_size)) {
+    if (golioth_payload_is_null(payload, payload_size))
+    {
         return;
     }
 
@@ -403,7 +438,8 @@ static void on_test_int3(struct golioth_client *client,
     _test_int3_value = golioth_payload_as_int(payload, payload_size);
 }
 
-static void test_lightdb_observation(void) {
+static void test_lightdb_observation(void)
+{
     _on_get_test_int3_called = false;
     TEST_ASSERT_EQUAL(GOLIOTH_OK,
                       golioth_lightdb_observe_async(_client, "test_int3", on_test_int3, NULL));
@@ -413,8 +449,10 @@ static void test_lightdb_observation(void) {
     // It's possible this isn't received if test_int3 doesn't exist on the server.
     uint64_t timeout_ms =
         (xTaskGetTickCount() * portTICK_PERIOD_MS) + TEST_RESPONSE_TIMEOUT_S * 1000;
-    while ((xTaskGetTickCount() * portTICK_PERIOD_MS) < timeout_ms) {
-        if (_on_get_test_int3_called) {
+    while ((xTaskGetTickCount() * portTICK_PERIOD_MS) < timeout_ms)
+    {
+        if (_on_get_test_int3_called)
+        {
             break;
         }
         vTaskDelay(100 / portTICK_PERIOD_MS);
@@ -431,8 +469,10 @@ static void test_lightdb_observation(void) {
 
     // Wait up to 3 seconds to observe the new value
     timeout_ms = (xTaskGetTickCount() * portTICK_PERIOD_MS) + TEST_RESPONSE_TIMEOUT_S * 1000;
-    while ((xTaskGetTickCount() * portTICK_PERIOD_MS) < timeout_ms) {
-        if (_on_get_test_int3_called) {
+    while ((xTaskGetTickCount() * portTICK_PERIOD_MS) < timeout_ms)
+    {
+        if (_on_get_test_int3_called)
+        {
             break;
         }
         vTaskDelay(100 / portTICK_PERIOD_MS);
@@ -442,15 +482,18 @@ static void test_lightdb_observation(void) {
     TEST_ASSERT_EQUAL(randint, _test_int3_value);
 }
 
-static int built_in_test(int argc, char **argv) {
+static int built_in_test(int argc, char **argv)
+{
     UNITY_BEGIN();
     RUN_TEST(test_connects_to_wifi);
-    if (!_initial_free_heap) {
+    if (!_initial_free_heap)
+    {
         // Snapshot of heap usage after connecting to WiFi. This is baseline/reference
         // which we compare against when gauging how much RAM the Golioth client uses.
         _initial_free_heap = esp_get_minimum_free_heap_size();
     }
-    if (!_client) {
+    if (!_client)
+    {
         RUN_TEST(test_golioth_client_create);
         RUN_TEST(test_connects_to_golioth);
     }
@@ -468,10 +511,12 @@ static int built_in_test(int argc, char **argv) {
     return 0;
 }
 
-static int connect(int argc, char **argv) {
+static int connect(int argc, char **argv)
+{
     UNITY_BEGIN();
     RUN_TEST(test_connects_to_wifi);
-    if (!_client) {
+    if (!_client)
+    {
         RUN_TEST(test_golioth_client_create);
         RUN_TEST(test_connects_to_golioth);
     }
@@ -480,13 +525,15 @@ static int connect(int argc, char **argv) {
     return 0;
 }
 
-static int start_ota(int argc, char **argv) {
+static int start_ota(int argc, char **argv)
+{
     connect(0, NULL);
     golioth_fw_update_init(_client, _current_version);
     return 0;
 }
 
-void app_main(void) {
+void app_main(void)
+{
     nvs_init();
 
     _connected_sem = xSemaphoreCreateBinary();
@@ -517,7 +564,8 @@ void app_main(void) {
 
     shell_start();
 
-    while (1) {
+    while (1)
+    {
         vTaskDelay(100000 / portTICK_PERIOD_MS);
     };
 }

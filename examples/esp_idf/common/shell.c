@@ -35,7 +35,8 @@ static int reset(int argc, char **argv);
 static int tasks(int argc, char **argv);
 static int settings(int argc, char **argv);
 
-static struct {
+static struct
+{
     struct arg_dbl *timeout;
     struct arg_dbl *interval;
     struct arg_int *data_size;
@@ -45,7 +46,8 @@ static struct {
     struct arg_end *end;
 } _ping_args;
 
-typedef struct {
+typedef struct
+{
     const char *shell_key;
     const char *nvs_key;
 } shell_to_nvs_key_map_t;
@@ -98,19 +100,22 @@ static const esp_console_cmd_t _cmds[] = {
 static esp_console_cmd_t _custom_cmds[MAX_NUM_CUSTOM_COMMANDS];
 static size_t _num_custom_cmds;
 
-static int heap(int argc, char **argv) {
+static int heap(int argc, char **argv)
+{
     printf("Free: %" PRIu32 ", Free low watermark: %" PRIu32 "\n",
            esp_get_free_heap_size(),
            (uint32_t) heap_caps_get_minimum_free_size(MALLOC_CAP_DEFAULT));
     return 0;
 }
 
-static int version(int argc, char **argv) {
+static int version(int argc, char **argv)
+{
     esp_chip_info_t info;
     esp_chip_info(&info);
 
     uint32_t flash_size;
-    if (esp_flash_get_size(NULL, &flash_size) != ESP_OK) {
+    if (esp_flash_get_size(NULL, &flash_size) != ESP_OK)
+    {
         printf("Get flash size failed");
         return 1;
     }
@@ -130,15 +135,18 @@ static int version(int argc, char **argv) {
     return 0;
 }
 
-static int reset(int argc, char **argv) {
+static int reset(int argc, char **argv)
+{
     ESP_LOGI(TAG, "Resetting");
     esp_restart();
 }
 
-static int tasks(int argc, char **argv) {
+static int tasks(int argc, char **argv)
+{
     const size_t bytes_per_task = 40;
     char *task_list_buffer = malloc(uxTaskGetNumberOfTasks() * bytes_per_task);
-    if (task_list_buffer == NULL) {
+    if (task_list_buffer == NULL)
+    {
         ESP_LOGE(TAG, "failed to allocate buffer for vTaskList output");
         return 1;
     }
@@ -150,7 +158,8 @@ static int tasks(int argc, char **argv) {
     return 0;
 }
 
-static void cmd_ping_on_ping_success(esp_ping_handle_t hdl, void *args) {
+static void cmd_ping_on_ping_success(esp_ping_handle_t hdl, void *args)
+{
     uint8_t ttl;
     uint16_t seqno;
     uint32_t elapsed_time, recv_len;
@@ -168,7 +177,8 @@ static void cmd_ping_on_ping_success(esp_ping_handle_t hdl, void *args) {
            elapsed_time);
 }
 
-static void cmd_ping_on_ping_timeout(esp_ping_handle_t hdl, void *args) {
+static void cmd_ping_on_ping_timeout(esp_ping_handle_t hdl, void *args)
+{
     uint16_t seqno;
     ip_addr_t target_addr;
     esp_ping_get_profile(hdl, ESP_PING_PROF_SEQNO, &seqno, sizeof(seqno));
@@ -178,7 +188,8 @@ static void cmd_ping_on_ping_timeout(esp_ping_handle_t hdl, void *args) {
            seqno);
 }
 
-static void cmd_ping_on_ping_end(esp_ping_handle_t hdl, void *args) {
+static void cmd_ping_on_ping_end(esp_ping_handle_t hdl, void *args)
+{
     ip_addr_t target_addr;
     uint32_t transmitted;
     uint32_t received;
@@ -188,9 +199,12 @@ static void cmd_ping_on_ping_end(esp_ping_handle_t hdl, void *args) {
     esp_ping_get_profile(hdl, ESP_PING_PROF_IPADDR, &target_addr, sizeof(target_addr));
     esp_ping_get_profile(hdl, ESP_PING_PROF_DURATION, &total_time_ms, sizeof(total_time_ms));
     uint32_t loss = (uint32_t) ((1 - ((float) received) / transmitted) * 100);
-    if (IP_IS_V4(&target_addr)) {
+    if (IP_IS_V4(&target_addr))
+    {
         printf("\n--- %s ping statistics ---\n", inet_ntoa(*ip_2_ip4(&target_addr)));
-    } else {
+    }
+    else
+    {
         printf("\n--- %s ping statistics ---\n", inet6_ntoa(*ip_2_ip6(&target_addr)));
     }
     printf("%" PRIu32 " packets transmitted, %" PRIu32 " received, %" PRIu32
@@ -205,32 +219,39 @@ static void cmd_ping_on_ping_end(esp_ping_handle_t hdl, void *args) {
     esp_ping_delete_session(hdl);
 }
 
-static int ping(int argc, char **argv) {
+static int ping(int argc, char **argv)
+{
     esp_ping_config_t config = ESP_PING_DEFAULT_CONFIG();
 
     int nerrors = arg_parse(argc, argv, (void **) &_ping_args);
-    if (nerrors != 0) {
+    if (nerrors != 0)
+    {
         arg_print_errors(stderr, _ping_args.end, argv[0]);
         return 1;
     }
 
-    if (_ping_args.timeout->count > 0) {
+    if (_ping_args.timeout->count > 0)
+    {
         config.timeout_ms = (uint32_t) (_ping_args.timeout->dval[0] * 1000);
     }
 
-    if (_ping_args.interval->count > 0) {
+    if (_ping_args.interval->count > 0)
+    {
         config.interval_ms = (uint32_t) (_ping_args.interval->dval[0] * 1000);
     }
 
-    if (_ping_args.data_size->count > 0) {
+    if (_ping_args.data_size->count > 0)
+    {
         config.data_size = (uint32_t) (_ping_args.data_size->ival[0]);
     }
 
-    if (_ping_args.count->count > 0) {
+    if (_ping_args.count->count > 0)
+    {
         config.count = (uint32_t) (_ping_args.count->ival[0]);
     }
 
-    if (_ping_args.tos->count > 0) {
+    if (_ping_args.tos->count > 0)
+    {
         config.tos = (uint32_t) (_ping_args.tos->ival[0]);
     }
 
@@ -239,22 +260,29 @@ static int ping(int argc, char **argv) {
     ip_addr_t target_addr;
     memset(&target_addr, 0, sizeof(target_addr));
 
-    if (inet_pton(AF_INET6, _ping_args.host->sval[0], &sock_addr6.sin6_addr) == 1) {
+    if (inet_pton(AF_INET6, _ping_args.host->sval[0], &sock_addr6.sin6_addr) == 1)
+    {
         /* convert ip6 string to ip6 address */
         ipaddr_aton(_ping_args.host->sval[0], &target_addr);
-    } else {
+    }
+    else
+    {
         struct addrinfo hint;
         struct addrinfo *res = NULL;
         memset(&hint, 0, sizeof(hint));
         /* convert ip4 string or hostname to ip4 or ip6 address */
-        if (getaddrinfo(_ping_args.host->sval[0], NULL, &hint, &res) != 0) {
+        if (getaddrinfo(_ping_args.host->sval[0], NULL, &hint, &res) != 0)
+        {
             printf("ping: unknown host %s\n", _ping_args.host->sval[0]);
             return 1;
         }
-        if (res->ai_family == AF_INET) {
+        if (res->ai_family == AF_INET)
+        {
             struct in_addr addr4 = ((struct sockaddr_in *) (res->ai_addr))->sin_addr;
             inet_addr_to_ip4addr(ip_2_ip4(&target_addr), &addr4);
-        } else {
+        }
+        else
+        {
             struct in6_addr addr6 = ((struct sockaddr_in6 *) (res->ai_addr))->sin6_addr;
             inet6_addr_to_ip6addr(ip_2_ip6(&target_addr), &addr6);
         }
@@ -275,23 +303,28 @@ static int ping(int argc, char **argv) {
 }
 
 
-static const char *cli_key_to_nvs_key(const char *key) {
-    for (int i = 0; i < COUNT_OF(_key_map); i++) {
-        if (strcmp(key, _key_map[i].shell_key) == 0) {
+static const char *cli_key_to_nvs_key(const char *key)
+{
+    for (int i = 0; i < COUNT_OF(_key_map); i++)
+    {
+        if (strcmp(key, _key_map[i].shell_key) == 0)
+        {
             return _key_map[i].nvs_key;
         }
     }
     return NULL;
 }
 
-static int settings(int argc, char **argv) {
+static int settings(int argc, char **argv)
+{
     const char *usage =
         "usage:\n"
         "  settings get <key> [--json]\n"
         "  settings set <key> <value> [--json]\n"
         "  settings erase <key>\n";
 
-    if (argc < 3) {
+    if (argc < 3)
+    {
         printf(usage);
         return 1;
     }
@@ -300,64 +333,93 @@ static int settings(int argc, char **argv) {
     const char *cli_key = argv[2];
     const char *nvs_key = cli_key_to_nvs_key(cli_key);
 
-    if (!nvs_key) {
+    if (!nvs_key)
+    {
         printf("Unknown key: %s\n", cli_key);
         printf("Key must be one of:\n");
-        for (int i = 0; i < COUNT_OF(_key_map); i++) {
+        for (int i = 0; i < COUNT_OF(_key_map); i++)
+        {
             printf("   %s\n", _key_map[i].shell_key);
         }
         return 1;
     }
 
-    if (0 == strcmp(command, "get")) {
+    if (0 == strcmp(command, "get"))
+    {
         char valuebuf[128] = {};
         const char *value = nvs_read_str(nvs_key, valuebuf, sizeof(valuebuf));
         bool was_not_found = (0 == strcmp(value, NVS_DEFAULT_STR));
         bool json_output = ((argc >= 4) && (0 == strcmp(argv[3], "--json")));
-        if (json_output) {
-            if (was_not_found) {
+        if (json_output)
+        {
+            if (was_not_found)
+            {
                 printf("{\"status\": \"failed\", \"msg\": \"setting not found\"}\n");
-            } else {
+            }
+            else
+            {
                 printf("{\"status\": \"success\", \"value\": \"%s\"}\n", value);
             }
-        } else {
-            if (was_not_found) {
+        }
+        else
+        {
+            if (was_not_found)
+            {
                 printf("Setting not found\n");
-            } else {
+            }
+            else
+            {
                 printf("%s\n", value);
             }
         }
-    } else if (0 == strcmp(command, "set")) {
-        if (argc < 4) {
+    }
+    else if (0 == strcmp(command, "set"))
+    {
+        if (argc < 4)
+        {
             printf(usage);
             return 1;
         }
         const char *value = argv[3];
         bool success = nvs_write_str(nvs_key, value);
         bool json_output = ((argc >= 5) && (0 == strcmp(argv[4], "--json")));
-        if (json_output) {
-            if (success) {
+        if (json_output)
+        {
+            if (success)
+            {
                 printf("{\"status\": \"success\", \"msg\": \"setting %s saved as %s\"}\n",
                        cli_key,
                        value);
-            } else {
+            }
+            else
+            {
                 printf("{\"status\": \"failed\", \"msg\": \"failed to save setting %s:%s\"}\n",
                        cli_key,
                        value);
             }
-        } else {
-            if (success) {
+        }
+        else
+        {
+            if (success)
+            {
                 printf("Setting %s saved\n", cli_key);
-            } else {
+            }
+            else
+            {
                 printf("Failed to save setting %s\n", cli_key);
             }
         }
-    } else if (0 == strcmp(command, "erase")) {
+    }
+    else if (0 == strcmp(command, "erase"))
+    {
         bool success = nvs_erase_str(nvs_key);
-        if (success) {
+        if (success)
+        {
             printf("Erased key %s from NVS\n", cli_key);
         }
-    } else {
+    }
+    else
+    {
         printf(usage);
         return 1;
     }
@@ -365,7 +427,8 @@ static int settings(int argc, char **argv) {
     return 0;
 }
 
-static void register_ping_command(void) {
+static void register_ping_command(void)
+{
     _ping_args.timeout = arg_dbl0("W", "timeout", "<t>", "Time to wait for a response, in seconds");
     _ping_args.interval =
         arg_dbl0("i", "interval", "<t>", "Wait interval seconds between sending each packet");
@@ -384,21 +447,30 @@ static void register_ping_command(void) {
     ESP_ERROR_CHECK(esp_console_cmd_register(&ping_cmd));
 }
 
-void shell_input_line(const char *line, size_t line_len) {
+void shell_input_line(const char *line, size_t line_len)
+{
     int ret;
     esp_err_t err = esp_console_run(line, &ret);
-    if (err == ESP_ERR_NOT_FOUND) {
+    if (err == ESP_ERR_NOT_FOUND)
+    {
         printf("Unrecognized command\n");
-    } else if (err == ESP_ERR_INVALID_ARG) {
+    }
+    else if (err == ESP_ERR_INVALID_ARG)
+    {
         // command was empty
-    } else if (err == ESP_OK && ret != ESP_OK) {
+    }
+    else if (err == ESP_OK && ret != ESP_OK)
+    {
         printf("Command returned non-zero error code: 0x%x (%s)\n", ret, esp_err_to_name(ret));
-    } else if (err != ESP_OK) {
+    }
+    else if (err != ESP_OK)
+    {
         printf("Internal error: %s\n", esp_err_to_name(err));
     }
 }
 
-void shell_start(void) {
+void shell_start(void)
+{
     esp_console_repl_t *repl = NULL;
     esp_console_repl_config_t repl_config = ESP_CONSOLE_REPL_CONFIG_DEFAULT();
     repl_config.prompt = "esp32>";
@@ -417,11 +489,13 @@ void shell_start(void) {
 
     esp_console_register_help_command();
 
-    for (int i = 0; i < COUNT_OF(_cmds); i++) {
+    for (int i = 0; i < COUNT_OF(_cmds); i++)
+    {
         ESP_ERROR_CHECK(esp_console_cmd_register(&_cmds[i]));
     }
 
-    for (int i = 0; i < _num_custom_cmds; i++) {
+    for (int i = 0; i < _num_custom_cmds; i++)
+    {
         ESP_ERROR_CHECK(esp_console_cmd_register(&_custom_cmds[i]));
     }
 
@@ -430,8 +504,10 @@ void shell_start(void) {
     ESP_ERROR_CHECK(esp_console_start_repl(repl));
 }
 
-void shell_register_command(const esp_console_cmd_t *cmd) {
-    if (_num_custom_cmds >= MAX_NUM_CUSTOM_COMMANDS) {
+void shell_register_command(const esp_console_cmd_t *cmd)
+{
+    if (_num_custom_cmds >= MAX_NUM_CUSTOM_COMMANDS)
+    {
         ESP_LOGE(TAG, "Can't register more than %d custom commands", MAX_NUM_CUSTOM_COMMANDS);
         return;
     }

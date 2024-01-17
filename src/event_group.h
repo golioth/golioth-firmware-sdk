@@ -12,7 +12,8 @@
 // Similar in concept to FreeRTOS event groups:
 //  https://www.freertos.org/event-groups-API.html
 
-struct golioth_event_group {
+struct golioth_event_group
+{
     // Event bitmap
     uint32_t bitmap;
     // Protects access to bitmap

@@ -8,8 +8,10 @@
 
 /** Return value length from additional value.
  */
-static size_t additional_len(uint8_t additional) {
-    if (ZCBOR_VALUE_IS_1_BYTE <= additional && additional <= ZCBOR_VALUE_IS_8_BYTES) {
+static size_t additional_len(uint8_t additional)
+{
+    if (ZCBOR_VALUE_IS_1_BYTE <= additional && additional <= ZCBOR_VALUE_IS_8_BYTES)
+    {
         /* 24 => 1
          * 25 => 2
          * 26 => 4
@@ -28,25 +30,30 @@ static size_t additional_len(uint8_t additional) {
 
 
 #define FAIL_AND_DECR_IF(expr, err) \
-    do {                            \
-        if (expr) {                 \
+    do                              \
+    {                               \
+        if (expr)                   \
+        {                           \
             (state->payload)--;     \
             ZCBOR_ERR(err);         \
         }                           \
     } while (0)
 
 
-static bool initial_checks(zcbor_state_t *state) {
+static bool initial_checks(zcbor_state_t *state)
+{
     ZCBOR_CHECK_ERROR();
     ZCBOR_CHECK_PAYLOAD();
     return true;
 }
 
-#define INITIAL_CHECKS()              \
-    do {                              \
-        if (!initial_checks(state)) { \
-            ZCBOR_FAIL();             \
-        }                             \
+#define INITIAL_CHECKS()            \
+    do                              \
+    {                               \
+        if (!initial_checks(state)) \
+        {                           \
+            ZCBOR_FAIL();           \
+        }                           \
     } while (0)
 
 
@@ -68,7 +75,8 @@ static bool initial_checks(zcbor_state_t *state) {
  *          CBOR values are always big-endian, so this function converts from
  *          big to little-endian if necessary (@ref CONFIG_BIG_ENDIAN).
  */
-static bool value_extract(zcbor_state_t *state, void *const result, size_t result_len) {
+static bool value_extract(zcbor_state_t *state, void *const result, size_t result_len)
+{
     zcbor_trace();
     zcbor_assert_state(result_len != 0, "0-length result not supported.\r\n");
     zcbor_assert_state(result != NULL, NULL);
@@ -83,13 +91,16 @@ static bool value_extract(zcbor_state_t *state, void *const result, size_t resul
     (state->payload)++;
 
     memset(result, 0, result_len);
-    if (additional <= ZCBOR_VALUE_IN_HEADER) {
+    if (additional <= ZCBOR_VALUE_IN_HEADER)
+    {
 #ifdef CONFIG_BIG_ENDIAN
         u8_result[result_len - 1] = additional;
 #else
         u8_result[0] = additional;
 #endif /* CONFIG_BIG_ENDIAN */
-    } else {
+    }
+    else
+    {
         size_t len = additional_len(additional);
 
         FAIL_AND_DECR_IF(len > result_len, ZCBOR_ERR_INT_SIZE);
@@ -100,7 +111,8 @@ static bool value_extract(zcbor_state_t *state, void *const result, size_t resul
 #ifdef CONFIG_BIG_ENDIAN
         memcpy(&u8_result[result_len - len], state->payload, len);
 #else
-        for (size_t i = 0; i < len; i++) {
+        for (size_t i = 0; i < len; i++)
+        {
             u8_result[i] = (state->payload)[len - i - 1];
         }
 #endif /* CONFIG_BIG_ENDIAN */
@@ -112,7 +124,8 @@ static bool value_extract(zcbor_state_t *state, void *const result, size_t resul
     return true;
 }
 
-static bool array_end_expect(zcbor_state_t *state) {
+static bool array_end_expect(zcbor_state_t *state)
+{
     INITIAL_CHECKS();
     ZCBOR_ERR_IF(*state->payload != 0xFF, ZCBOR_ERR_WRONG_TYPE);
 
@@ -120,13 +133,15 @@ static bool array_end_expect(zcbor_state_t *state) {
     return true;
 }
 
-static bool zcbor_array_at_end(zcbor_state_t *state) {
+static bool zcbor_array_at_end(zcbor_state_t *state)
+{
     return ((!state->indefinite_length_array && (state->elem_count == 0))
             || (state->indefinite_length_array && (state->payload < state->payload_end)
                 && (*state->payload == 0xFF)));
 }
 
-bool zcbor_any_skip_fixed(zcbor_state_t *state, void *result) {
+bool zcbor_any_skip_fixed(zcbor_state_t *state, void *result)
+{
     zcbor_assert_state(result == NULL, "'any' type cannot be returned, only skipped.\r\n");
     (void) result;
 
@@ -138,10 +153,12 @@ bool zcbor_any_skip_fixed(zcbor_state_t *state, void *result) {
 
     memcpy(&state_copy, state, sizeof(zcbor_state_t));
 
-    while (major_type == ZCBOR_MAJOR_TYPE_TAG) {
+    while (major_type == ZCBOR_MAJOR_TYPE_TAG)
+    {
         uint32_t tag_dummy;
 
-        if (!zcbor_tag_decode(&state_copy, &tag_dummy)) {
+        if (!zcbor_tag_decode(&state_copy, &tag_dummy))
+        {
             ZCBOR_FAIL();
         }
         ZCBOR_ERR_IF(state_copy.payload >= state_copy.payload_end, ZCBOR_ERR_NO_PAYLOAD);
@@ -153,12 +170,14 @@ bool zcbor_any_skip_fixed(zcbor_state_t *state, void *result) {
         ((additional == ZCBOR_VALUE_IS_INDEFINITE_LENGTH)
          && ((major_type == ZCBOR_MAJOR_TYPE_LIST) || (major_type == ZCBOR_MAJOR_TYPE_MAP)));
 
-    if (!indefinite_length_array && !value_extract(&state_copy, &value, sizeof(value))) {
+    if (!indefinite_length_array && !value_extract(&state_copy, &value, sizeof(value)))
+    {
         /* Can happen because of elem_count (or payload_end) */
         ZCBOR_FAIL();
     }
 
-    switch (major_type) {
+    switch (major_type)
+    {
         case ZCBOR_MAJOR_TYPE_BSTR:
         case ZCBOR_MAJOR_TYPE_TSTR:
             /* 'value' is the length of the BSTR or TSTR.
@@ -173,18 +192,22 @@ bool zcbor_any_skip_fixed(zcbor_state_t *state, void *result) {
             value *= 2;
             /* fallthrough */
         case ZCBOR_MAJOR_TYPE_LIST:
-            if (indefinite_length_array) {
+            if (indefinite_length_array)
+            {
                 state_copy.payload++;
                 value = ZCBOR_LARGE_ELEM_COUNT;
             }
             state_copy.elem_count = (uint_fast32_t) value;
             state_copy.indefinite_length_array = indefinite_length_array;
-            while (!zcbor_array_at_end(&state_copy)) {
-                if (!zcbor_any_skip(&state_copy, NULL)) {
+            while (!zcbor_array_at_end(&state_copy))
+            {
+                if (!zcbor_any_skip(&state_copy, NULL))
+                {
                     ZCBOR_FAIL();
                 }
             }
-            if (indefinite_length_array && !array_end_expect(&state_copy)) {
+            if (indefinite_length_array && !array_end_expect(&state_copy))
+            {
                 ZCBOR_FAIL();
             }
             break;

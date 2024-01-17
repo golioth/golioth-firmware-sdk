@@ -11,22 +11,26 @@ LOG_MODULE_REGISTER(golioth_samples, LOG_LEVEL_DBG);
 #include <zephyr/net/net_if.h>
 #include <zephyr/net/dhcpv4.h>
 
-struct wait_data {
+struct wait_data
+{
     struct k_sem sem;
     struct net_mgmt_event_callback cb;
 };
 
 static void event_cb_handler(struct net_mgmt_event_callback *cb,
                              uint32_t mgmt_event,
-                             struct net_if *iface) {
+                             struct net_if *iface)
+{
     struct wait_data *wait = CONTAINER_OF(cb, struct wait_data, cb);
 
-    if (mgmt_event == cb->event_mask) {
+    if (mgmt_event == cb->event_mask)
+    {
         k_sem_give(&wait->sem);
     }
 }
 
-static void wait_for_net_event(struct net_if *iface, uint32_t event) {
+static void wait_for_net_event(struct net_if *iface, uint32_t event)
+{
     struct wait_data wait;
 
     wait.cb.handler = event_cb_handler;
@@ -40,10 +44,12 @@ static void wait_for_net_event(struct net_if *iface, uint32_t event) {
     net_mgmt_del_event_callback(&wait.cb);
 }
 
-void net_connect(void) {
+void net_connect(void)
+{
     struct net_if *iface = net_if_get_default();
 
-    if (IS_ENABLED(CONFIG_GOLIOTH_SAMPLE_DHCP_BIND)) {
+    if (IS_ENABLED(CONFIG_GOLIOTH_SAMPLE_DHCP_BIND))
+    {
         LOG_INF("Starting DHCP to obtain IP address");
         net_dhcpv4_start(iface);
     }

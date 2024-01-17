@@ -69,7 +69,8 @@
  *  configured number of times until the connection succeeds.
  *
  *******************************************************************************/
-cy_rslt_t connect_to_wifi_ap(void) {
+cy_rslt_t connect_to_wifi_ap(void)
+{
     cy_rslt_t result;
 
     /* Variables used by Wi-Fi connection manager.*/
@@ -82,7 +83,8 @@ cy_rslt_t connect_to_wifi_ap(void) {
     /* Initialize Wi-Fi connection manager. */
     result = cy_wcm_init(&wifi_config);
 
-    if (result != CY_RSLT_SUCCESS) {
+    if (result != CY_RSLT_SUCCESS)
+    {
         printf("Wi-Fi Connection Manager initialization failed!\n");
         return result;
     }
@@ -99,10 +101,12 @@ cy_rslt_t connect_to_wifi_ap(void) {
     wifi_conn_param.ap_credentials.security = WIFI_SECURITY_TYPE;
 
     /* Join the Wi-Fi AP. */
-    for (uint32_t conn_retries = 0; conn_retries < MAX_WIFI_CONN_RETRIES; conn_retries++) {
+    for (uint32_t conn_retries = 0; conn_retries < MAX_WIFI_CONN_RETRIES; conn_retries++)
+    {
         result = cy_wcm_connect_ap(&wifi_conn_param, &ip_address);
 
-        if (result == CY_RSLT_SUCCESS) {
+        if (result == CY_RSLT_SUCCESS)
+        {
             printf("Successfully connected to Wi-Fi network '%s'.\n",
                    wifi_conn_param.ap_credentials.SSID);
             printf("IP Address Assigned: %d.%d.%d.%d\n",
@@ -128,16 +132,19 @@ cy_rslt_t connect_to_wifi_ap(void) {
     return result;
 }
 
-void golioth_main_task(void *arg) {
+void golioth_main_task(void *arg)
+{
     /* Connect to Wi-Fi AP */
-    if (connect_to_wifi_ap() != CY_RSLT_SUCCESS) {
+    if (connect_to_wifi_ap() != CY_RSLT_SUCCESS)
+    {
         printf("\n Failed to connect to Wi-FI AP.\n");
         CY_ASSERT(0);
     }
 
     /* Secure Sockets initialized */
     cy_rslt_t result = cy_socket_init();
-    if (result != CY_RSLT_SUCCESS) {
+    if (result != CY_RSLT_SUCCESS)
+    {
         printf("Secure Sockets initialization failed!\n");
         CY_ASSERT(0);
     }

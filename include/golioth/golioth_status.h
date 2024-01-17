@@ -23,7 +23,8 @@
     STATUS(GOLIOTH_ERR_NO_MORE_DATA)
 
 #define GENERATE_GOLIOTH_STATUS_ENUM(code) code,
-enum golioth_status {
+enum golioth_status
+{
     FOREACH_GOLIOTH_STATUS(GENERATE_GOLIOTH_STATUS_ENUM) NUM_GOLIOTH_STATUS_CODES
 };
 
@@ -38,9 +39,11 @@ const char *golioth_status_to_str(enum golioth_status status);
 /// if they want to return early when an expression returns something
 /// other than GOLIOTH_OK.
 #define GOLIOTH_STATUS_RETURN_IF_ERROR(expr) \
-    do {                                     \
+    do                                       \
+    {                                        \
         enum golioth_status status = (expr); \
-        if (status != GOLIOTH_OK) {          \
+        if (status != GOLIOTH_OK)            \
+        {                                    \
             return status;                   \
         }                                    \
     } while (0)

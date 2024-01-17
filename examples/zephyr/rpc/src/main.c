@@ -18,14 +18,16 @@ static K_SEM_DEFINE(connected, 0, 1);
 
 static enum golioth_rpc_status on_multiply(zcbor_state_t *request_params_array,
                                            zcbor_state_t *response_detail_map,
-                                           void *callback_arg) {
+                                           void *callback_arg)
+{
     double a, b;
     double value;
     bool ok;
 
     ok = zcbor_float_decode(request_params_array, &a)
         && zcbor_float_decode(request_params_array, &b);
-    if (!ok) {
+    if (!ok)
+    {
         LOG_ERR("Failed to decode array items");
         return GOLIOTH_RPC_INVALID_ARGUMENT;
     }
@@ -36,7 +38,8 @@ static enum golioth_rpc_status on_multiply(zcbor_state_t *request_params_array,
 
     ok = zcbor_tstr_put_lit(response_detail_map, "value")
         && zcbor_float64_put(response_detail_map, value);
-    if (!ok) {
+    if (!ok)
+    {
         LOG_ERR("Failed to encode value");
         return GOLIOTH_RPC_RESOURCE_EXHAUSTED;
     }
@@ -46,15 +49,18 @@ static enum golioth_rpc_status on_multiply(zcbor_state_t *request_params_array,
 
 static void on_client_event(struct golioth_client *client,
                             enum golioth_client_event event,
-                            void *arg) {
+                            void *arg)
+{
     bool is_connected = (event == GOLIOTH_CLIENT_EVENT_CONNECTED);
-    if (is_connected) {
+    if (is_connected)
+    {
         k_sem_give(&connected);
     }
     LOG_INF("Golioth client %s", is_connected ? "connected" : "disconnected");
 }
 
-int main(void) {
+int main(void)
+{
     LOG_DBG("Start RPC sample");
 
     net_connect();
@@ -74,11 +80,13 @@ int main(void) {
 
     int err = golioth_rpc_register(rpc, "multiply", on_multiply, NULL);
 
-    if (err) {
+    if (err)
+    {
         LOG_ERR("Failed to register RPC: %d", err);
     }
 
-    while (true) {
+    while (true)
+    {
         k_sleep(K_SECONDS(5));
     }
 

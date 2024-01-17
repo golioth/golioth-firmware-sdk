@@ -128,17 +128,20 @@ static const struct ble_gatt_svc_def _svcs[] = {
 };
 // clang-format on
 
-static int read_credential_from_nvs(struct ble_gatt_access_ctxt *ctxt, nvs_read_fn read_fn) {
+static int read_credential_from_nvs(struct ble_gatt_access_ctxt *ctxt, nvs_read_fn read_fn)
+{
     const char *value = read_fn();
     int rc = os_mbuf_append(ctxt->om, value, strlen(value));
     return (rc == 0 ? 0 : BLE_ATT_ERR_INSUFFICIENT_RES);
 }
 
-static int write_credential_to_nvs(struct ble_gatt_access_ctxt *ctxt, const char *nvs_key) {
+static int write_credential_to_nvs(struct ble_gatt_access_ctxt *ctxt, const char *nvs_key)
+{
     static char buf[512];
     memset(buf, 0, sizeof(buf));
     int rc = ble_hs_mbuf_to_flat(ctxt->om, buf, sizeof(buf) - 1, NULL);
-    if (rc != 0) {
+    if (rc != 0)
+    {
         return BLE_ATT_ERR_UNLIKELY;
     }
     ESP_LOGD(TAG, "Setting %s to %s", nvs_key, buf);
@@ -149,52 +152,83 @@ static int write_credential_to_nvs(struct ble_gatt_access_ctxt *ctxt, const char
 static int golioth_prov_service_cb(uint16_t conn_handle,
                                    uint16_t attr_handle,
                                    struct ble_gatt_access_ctxt *ctxt,
-                                   void *arg) {
+                                   void *arg)
+{
     const ble_uuid_t *uuid = ctxt->chr->uuid;
 
-    if (ble_uuid_cmp(uuid, &gatt_svr_chr_golioth_prov_wifi_ssid_uuid.u) == 0) {
-        if (ctxt->op == BLE_GATT_ACCESS_OP_READ_CHR) {
+    if (ble_uuid_cmp(uuid, &gatt_svr_chr_golioth_prov_wifi_ssid_uuid.u) == 0)
+    {
+        if (ctxt->op == BLE_GATT_ACCESS_OP_READ_CHR)
+        {
             return read_credential_from_nvs(ctxt, nvs_read_wifi_ssid);
-        } else if (ctxt->op == BLE_GATT_ACCESS_OP_WRITE_CHR) {
+        }
+        else if (ctxt->op == BLE_GATT_ACCESS_OP_WRITE_CHR)
+        {
             return write_credential_to_nvs(ctxt, NVS_WIFI_SSID_KEY);
-        } else {
+        }
+        else
+        {
             assert(0);
             return BLE_ATT_ERR_UNLIKELY;
         }
-    } else if (ble_uuid_cmp(uuid, &gatt_svr_chr_golioth_prov_wifi_psk_uuid.u) == 0) {
-        if (ctxt->op == BLE_GATT_ACCESS_OP_READ_CHR) {
+    }
+    else if (ble_uuid_cmp(uuid, &gatt_svr_chr_golioth_prov_wifi_psk_uuid.u) == 0)
+    {
+        if (ctxt->op == BLE_GATT_ACCESS_OP_READ_CHR)
+        {
             return read_credential_from_nvs(ctxt, nvs_read_wifi_password);
-        } else if (ctxt->op == BLE_GATT_ACCESS_OP_WRITE_CHR) {
+        }
+        else if (ctxt->op == BLE_GATT_ACCESS_OP_WRITE_CHR)
+        {
             return write_credential_to_nvs(ctxt, NVS_WIFI_PASS_KEY);
-        } else {
+        }
+        else
+        {
             assert(0);
             return BLE_ATT_ERR_UNLIKELY;
         }
-    } else if (ble_uuid_cmp(uuid, &gatt_svr_chr_golioth_prov_golioth_psk_id_uuid.u) == 0) {
-        if (ctxt->op == BLE_GATT_ACCESS_OP_READ_CHR) {
+    }
+    else if (ble_uuid_cmp(uuid, &gatt_svr_chr_golioth_prov_golioth_psk_id_uuid.u) == 0)
+    {
+        if (ctxt->op == BLE_GATT_ACCESS_OP_READ_CHR)
+        {
             return read_credential_from_nvs(ctxt, nvs_read_golioth_psk_id);
-        } else if (ctxt->op == BLE_GATT_ACCESS_OP_WRITE_CHR) {
+        }
+        else if (ctxt->op == BLE_GATT_ACCESS_OP_WRITE_CHR)
+        {
             return write_credential_to_nvs(ctxt, NVS_GOLIOTH_PSK_ID_KEY);
-        } else {
+        }
+        else
+        {
             assert(0);
             return BLE_ATT_ERR_UNLIKELY;
         }
-    } else if (ble_uuid_cmp(uuid, &gatt_svr_chr_golioth_prov_golioth_psk_uuid.u) == 0) {
-        if (ctxt->op == BLE_GATT_ACCESS_OP_READ_CHR) {
+    }
+    else if (ble_uuid_cmp(uuid, &gatt_svr_chr_golioth_prov_golioth_psk_uuid.u) == 0)
+    {
+        if (ctxt->op == BLE_GATT_ACCESS_OP_READ_CHR)
+        {
             return read_credential_from_nvs(ctxt, nvs_read_golioth_psk);
-        } else if (ctxt->op == BLE_GATT_ACCESS_OP_WRITE_CHR) {
+        }
+        else if (ctxt->op == BLE_GATT_ACCESS_OP_WRITE_CHR)
+        {
             return write_credential_to_nvs(ctxt, NVS_GOLIOTH_PSK_KEY);
-        } else {
+        }
+        else
+        {
             assert(0);
             return BLE_ATT_ERR_UNLIKELY;
         }
-    } else {
+    }
+    else
+    {
         assert(0);
         return BLE_ATT_ERR_UNLIKELY;
     }
 }
 
-static int gatt_server_init(const struct ble_gatt_svc_def *services) {
+static int gatt_server_init(const struct ble_gatt_svc_def *services)
+{
     int rc = 0;
 
     ble_svc_gap_init();
@@ -202,13 +236,15 @@ static int gatt_server_init(const struct ble_gatt_svc_def *services) {
     ble_svc_ans_init();
 
     rc = ble_gatts_count_cfg(services);
-    if (rc != 0) {
+    if (rc != 0)
+    {
         ESP_LOGE(TAG, "ble_gatts_count_cfg error: %d", rc);
         return rc;
     }
 
     rc = ble_gatts_add_svcs(services);
-    if (rc != 0) {
+    if (rc != 0)
+    {
         ESP_LOGE(TAG, "ble_gatts_add_svcs error: %d", rc);
         return rc;
     }
@@ -216,10 +252,12 @@ static int gatt_server_init(const struct ble_gatt_svc_def *services) {
     return 0;
 }
 
-static void gatt_server_register_cb(struct ble_gatt_register_ctxt *ctxt, void *arg) {
+static void gatt_server_register_cb(struct ble_gatt_register_ctxt *ctxt, void *arg)
+{
     char buf[BLE_UUID_STR_LEN] = {};
 
-    switch (ctxt->op) {
+    switch (ctxt->op)
+    {
         case BLE_GATT_REGISTER_OP_SVC:
             ESP_LOGD(TAG,
                      "registered service %s with handle=%d",
@@ -248,7 +286,8 @@ static void gatt_server_register_cb(struct ble_gatt_register_ctxt *ctxt, void *a
     }
 }
 
-static void print_connection_desc(const struct ble_gap_conn_desc *desc) {
+static void print_connection_desc(const struct ble_gap_conn_desc *desc)
+{
     ESP_LOGD(TAG,
              "handle=%d our_ota_addr_type=%d our_ota_addr=%02x:%02x:%02x:%02x:%02x:%02x",
              desc->conn_handle,
@@ -303,30 +342,37 @@ static void print_connection_desc(const struct ble_gap_conn_desc *desc) {
 
 // NimBLE calls this when a GAP event occurs (for all connections).
 // Return 0 on success, non-zero on failure (event-dependent).
-static int on_ble_gap_event(struct ble_gap_event *event, void *arg) {
+static int on_ble_gap_event(struct ble_gap_event *event, void *arg)
+{
     struct ble_gap_conn_desc desc = {};
     int rc = 0;
 
     ESP_LOGD(TAG, "GAP event: %d", event->type);
 
-    switch (event->type) {
+    switch (event->type)
+    {
         case BLE_GAP_EVENT_CONNECT:
             // A new connection was established or a connection attempt failed
             ESP_LOGI(TAG,
                      "connection %s; status=%d ",
                      event->connect.status == 0 ? "established" : "failed",
                      event->connect.status);
-            if (event->connect.status == 0) {
+            if (event->connect.status == 0)
+            {
                 rc = ble_gap_conn_find(event->connect.conn_handle, &desc);
-                if (rc == 0) {
+                if (rc == 0)
+                {
                     print_connection_desc(&desc);
 
                     // Initiate GAP security procedure
                     rc = ble_gap_security_initiate(event->connect.conn_handle);
-                    if (rc != 0) {
+                    if (rc != 0)
+                    {
                         ESP_LOGE(TAG, "ble_gap_security_inititate failed: %d", rc);
                     }
-                } else {
+                }
+                else
+                {
                     ESP_LOGE(TAG, "ble_gap_conn_find failed: %d", rc);
                 }
             }
@@ -346,9 +392,12 @@ static int on_ble_gap_event(struct ble_gap_event *event, void *arg) {
             // The central has updated the connection parameters
             ESP_LOGI(TAG, "connection updated; status=%d ", event->conn_update.status);
             rc = ble_gap_conn_find(event->conn_update.conn_handle, &desc);
-            if (rc == 0) {
+            if (rc == 0)
+            {
                 print_connection_desc(&desc);
-            } else {
+            }
+            else
+            {
                 ESP_LOGE(TAG, "ble_gap_conn_find failed: %d", rc);
             }
             return 0;
@@ -409,7 +458,8 @@ static int on_ble_gap_event(struct ble_gap_event *event, void *arg) {
     return 0;
 }
 
-static void ble_advertise(void) {
+static void ble_advertise(void)
+{
     int rc = 0;
 
     // Set the default advertisement data included in our advertisements:
@@ -440,7 +490,8 @@ static void ble_advertise(void) {
     fields.uuids16_is_complete = 1;
 
     rc = ble_gap_adv_set_fields(&fields);
-    if (rc != 0) {
+    if (rc != 0)
+    {
         ESP_LOGE(TAG, "error setting advertisement fields; rc=%d", rc);
         return;
     }
@@ -456,28 +507,37 @@ static void ble_advertise(void) {
                            &adv_params,
                            on_ble_gap_event,
                            NULL);
-    if (rc != 0) {
-        if (rc == BLE_HS_ENOMEM) {
+    if (rc != 0)
+    {
+        if (rc == BLE_HS_ENOMEM)
+        {
             // This is expected if we have reached the maximum number of connections,
             // so don't log an error here.
-        } else if (rc == BLE_HS_EALREADY) {
+        }
+        else if (rc == BLE_HS_EALREADY)
+        {
             // Harmless - already advertising
-        } else {
+        }
+        else
+        {
             ESP_LOGE(TAG, "error starting advertisement; rc=%d", rc);
         }
         return;
     }
 }
 
-static void on_ble_reset(int reason) {
+static void on_ble_reset(int reason)
+{
     // If this gets called, all connections have been dropped, and we should wait
     // until on_ble_sync is called again to resume operation.
     ESP_LOGW(TAG, "Resetting state; reason = %d", reason);
 }
 
-static void on_ble_sync(void) {
+static void on_ble_sync(void)
+{
     int rc = ble_hs_util_ensure_addr(0);
-    if (rc != 0) {
+    if (rc != 0)
+    {
         ESP_LOGE(TAG, "ble_hs_util_ensure_addr error: %d", rc);
         return;
     }
@@ -485,7 +545,8 @@ static void on_ble_sync(void) {
     // Figure out address to use while advertising
     uint8_t own_addr_type = BLE_OWN_ADDR_PUBLIC;
     rc = ble_hs_id_infer_auto(0, &own_addr_type);
-    if (rc != 0) {
+    if (rc != 0)
+    {
         ESP_LOGE(TAG, "error determining address type: %d", rc);
         return;
     }
@@ -504,17 +565,20 @@ static void on_ble_sync(void) {
     ble_advertise();
 }
 
-static void ble_host_task(void *param) {
+static void ble_host_task(void *param)
+{
     ESP_LOGI(TAG, "BLE Host Task Started");
     // This function will return only when nimble_port_stop() is executed
     nimble_port_run();
     nimble_port_freertos_deinit();
 }
 
-void ble_init(const char *device_name) {
+void ble_init(const char *device_name)
+{
 #if ESP_IDF_VERSION_MAJOR == 4
     esp_err_t err = esp_nimble_hci_and_controller_init();
-    if (err != ESP_OK) {
+    if (err != ESP_OK)
+    {
         ESP_LOGE(TAG, "esp_nimble_hci_and_controller_init error: %d", err);
         return;
     }
@@ -535,19 +599,22 @@ void ble_init(const char *device_name) {
     ble_hs_cfg.sm_mitm = 0;  // no authentication
 
     // Initialize the GATT server
-    if (gatt_server_init(_svcs) != 0) {
+    if (gatt_server_init(_svcs) != 0)
+    {
         ESP_LOGE(TAG, "Failed to initialize GATT server");
         return;
     }
 
     // Set the default device name
-    if (ble_svc_gap_device_name_set(device_name) != 0) {
+    if (ble_svc_gap_device_name_set(device_name) != 0)
+    {
         ESP_LOGE(TAG, "Failed to set GAP device name");
         return;
     }
 
     int rc = ble_att_set_preferred_mtu(PREFERRED_ATT_MTU);
-    if (rc != 0) {
+    if (rc != 0)
+    {
         ESP_LOGE(TAG, "Failed to set preferred MTU");
         return;
     }

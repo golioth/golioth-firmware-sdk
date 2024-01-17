@@ -56,6 +56,7 @@ static const struct golioth_client_config _golioth_client_config_psk = {
 };
 #endif
 
-const struct golioth_client_config *golioth_sample_credentials_get(void) {
+const struct golioth_client_config *golioth_sample_credentials_get(void)
+{
     return &_golioth_client_config_psk;
 }

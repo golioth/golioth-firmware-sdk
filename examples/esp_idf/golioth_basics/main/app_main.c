@@ -16,7 +16,8 @@
 
 #define TAG "golioth_example"
 
-void app_main(void) {
+void app_main(void)
+{
     // Initialize NVS first. For this example, it is assumed that WiFi and Golioth
     // PSK credentials are stored in NVS.
     nvs_init();
@@ -31,8 +32,10 @@ void app_main(void) {
 
     // If the credentials haven't been set in NVS, we will wait here for the user
     // to input them via the shell.
-    if (!nvs_credentials_are_set()) {
-        while (1) {
+    if (!nvs_credentials_are_set())
+    {
+        while (1)
+        {
             golioth_sys_msleep(1000);
             ESP_LOGW(TAG, "WiFi and golioth credentials are not set");
             ESP_LOGW(TAG, "Use the shell settings commands to set them, then restart");
