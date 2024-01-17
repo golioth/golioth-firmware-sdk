@@ -5,7 +5,7 @@
  *
  * SPDX-License-Identifier: Apache-2.0
  */
- /*
+/*
  * Licensed to the Apache Software Foundation (ASF) under one
  * or more contributor license agreements.  See the NOTICE file
  * distributed with this work for additional information
@@ -23,7 +23,7 @@
  * specific language governing permissions and limitations
  * under the License.
  */
- /*******************************************************************************/
+/*******************************************************************************/
 
 #ifndef MCUBOOT_LOGGING_H
 #define MCUBOOT_LOGGING_H
@@ -31,11 +31,11 @@
 #include <stdbool.h>
 #include <stdio.h>
 
-#define MCUBOOT_LOG_LEVEL_OFF      0
-#define MCUBOOT_LOG_LEVEL_ERROR    1
-#define MCUBOOT_LOG_LEVEL_WARNING  2
-#define MCUBOOT_LOG_LEVEL_INFO     3
-#define MCUBOOT_LOG_LEVEL_DEBUG    4
+#define MCUBOOT_LOG_LEVEL_OFF 0
+#define MCUBOOT_LOG_LEVEL_ERROR 1
+#define MCUBOOT_LOG_LEVEL_WARNING 2
+#define MCUBOOT_LOG_LEVEL_INFO 3
+#define MCUBOOT_LOG_LEVEL_DEBUG 4
 
 /*
  * The compiled log level determines the maximum level that can be
@@ -51,52 +51,52 @@
 int sim_log_enabled(int level);
 #else
 static inline int sim_log_enabled(int level) {
-    (void)level;
+    (void) level;
     return 1;
 }
 #endif
 
 
 #if MCUBOOT_LOG_LEVEL >= MCUBOOT_LOG_LEVEL_ERROR
-#define MCUBOOT_LOG_ERR(_fmt, ...)                                      \
-    do {                                                                \
-        if (sim_log_enabled(MCUBOOT_LOG_LEVEL_ERROR) != 0) {                 \
-            (void)fprintf(stderr, "[ERR] " _fmt "\n\r", ##__VA_ARGS__); \
-        }                                                               \
-    } while ((bool)0)
+#define MCUBOOT_LOG_ERR(_fmt, ...)                                       \
+    do {                                                                 \
+        if (sim_log_enabled(MCUBOOT_LOG_LEVEL_ERROR) != 0) {             \
+            (void) fprintf(stderr, "[ERR] " _fmt "\n\r", ##__VA_ARGS__); \
+        }                                                                \
+    } while ((bool) 0)
 #else
 #define MCUBOOT_LOG_ERR(...) IGNORE(__VA_ARGS__)
 #endif
 
 #if MCUBOOT_LOG_LEVEL >= MCUBOOT_LOG_LEVEL_WARNING
-#define MCUBOOT_LOG_WRN(_fmt, ...)                                      \
-    do {                                                                \
-        if (sim_log_enabled(MCUBOOT_LOG_LEVEL_WARNING) != 0) {               \
-            (void)fprintf(stderr, "[WRN] " _fmt "\n\r", ##__VA_ARGS__); \
-        }                                                               \
-    } while ((bool)0)
+#define MCUBOOT_LOG_WRN(_fmt, ...)                                       \
+    do {                                                                 \
+        if (sim_log_enabled(MCUBOOT_LOG_LEVEL_WARNING) != 0) {           \
+            (void) fprintf(stderr, "[WRN] " _fmt "\n\r", ##__VA_ARGS__); \
+        }                                                                \
+    } while ((bool) 0)
 #else
 #define MCUBOOT_LOG_WRN(...) IGNORE(__VA_ARGS__)
 #endif
 
 #if MCUBOOT_LOG_LEVEL >= MCUBOOT_LOG_LEVEL_INFO
-#define MCUBOOT_LOG_INF(_fmt, ...)                                      \
-    do {                                                                \
-        if (sim_log_enabled(MCUBOOT_LOG_LEVEL_INFO) != 0) {                  \
-            (void)fprintf(stderr, "[INF] " _fmt "\n\r", ##__VA_ARGS__); \
-        }                                                               \
-    } while ((bool)0)
+#define MCUBOOT_LOG_INF(_fmt, ...)                                       \
+    do {                                                                 \
+        if (sim_log_enabled(MCUBOOT_LOG_LEVEL_INFO) != 0) {              \
+            (void) fprintf(stderr, "[INF] " _fmt "\n\r", ##__VA_ARGS__); \
+        }                                                                \
+    } while ((bool) 0)
 #else
 #define MCUBOOT_LOG_INF(...) IGNORE(__VA_ARGS__)
 #endif
 
 #if MCUBOOT_LOG_LEVEL >= MCUBOOT_LOG_LEVEL_DEBUG
-#define MCUBOOT_LOG_DBG(_fmt, ...)                                      \
-    do {                                                                \
-        if (sim_log_enabled(MCUBOOT_LOG_LEVEL_DEBUG) != 0) {                 \
-            (void)fprintf(stderr, "[DBG] " _fmt "\n\r", ##__VA_ARGS__); \
-        }                                                               \
-    } while ((bool)0)
+#define MCUBOOT_LOG_DBG(_fmt, ...)                                       \
+    do {                                                                 \
+        if (sim_log_enabled(MCUBOOT_LOG_LEVEL_DEBUG) != 0) {             \
+            (void) fprintf(stderr, "[DBG] " _fmt "\n\r", ##__VA_ARGS__); \
+        }                                                                \
+    } while ((bool) 0)
 #else
 #define MCUBOOT_LOG_DBG(...) IGNORE(__VA_ARGS__)
 #endif

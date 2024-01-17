@@ -90,8 +90,12 @@ cy_rslt_t connect_to_wifi_ap(void) {
 
     /* Set the Wi-Fi SSID, password and security type. */
     memset(&wifi_conn_param, 0, sizeof(cy_wcm_connect_params_t));
-    memcpy(wifi_conn_param.ap_credentials.SSID, GOLIOTH_SAMPLE_WIFI_SSID, sizeof(GOLIOTH_SAMPLE_WIFI_SSID));
-    memcpy(wifi_conn_param.ap_credentials.password, GOLIOTH_SAMPLE_WIFI_PSK, sizeof(GOLIOTH_SAMPLE_WIFI_PSK));
+    memcpy(wifi_conn_param.ap_credentials.SSID,
+           GOLIOTH_SAMPLE_WIFI_SSID,
+           sizeof(GOLIOTH_SAMPLE_WIFI_SSID));
+    memcpy(wifi_conn_param.ap_credentials.password,
+           GOLIOTH_SAMPLE_WIFI_PSK,
+           sizeof(GOLIOTH_SAMPLE_WIFI_PSK));
     wifi_conn_param.ap_credentials.security = WIFI_SECURITY_TYPE;
 
     /* Join the Wi-Fi AP. */
@@ -102,17 +106,18 @@ cy_rslt_t connect_to_wifi_ap(void) {
             printf("Successfully connected to Wi-Fi network '%s'.\n",
                    wifi_conn_param.ap_credentials.SSID);
             printf("IP Address Assigned: %d.%d.%d.%d\n",
-                   (uint8)ip_address.ip.v4,
-                   (uint8)(ip_address.ip.v4 >> 8),
-                   (uint8)(ip_address.ip.v4 >> 16),
-                   (uint8)(ip_address.ip.v4 >> 24));
+                   (uint8) ip_address.ip.v4,
+                   (uint8) (ip_address.ip.v4 >> 8),
+                   (uint8) (ip_address.ip.v4 >> 16),
+                   (uint8) (ip_address.ip.v4 >> 24));
             return result;
         }
 
-        printf("Connection to Wi-Fi network failed with error code %d."
-               "Retrying in %d ms...\n",
-               (int)result,
-               WIFI_CONN_RETRY_INTERVAL_MSEC);
+        printf(
+            "Connection to Wi-Fi network failed with error code %d."
+            "Retrying in %d ms...\n",
+            (int) result,
+            WIFI_CONN_RETRY_INTERVAL_MSEC);
 
         vTaskDelay(pdMS_TO_TICKS(WIFI_CONN_RETRY_INTERVAL_MSEC));
     }
@@ -123,7 +128,7 @@ cy_rslt_t connect_to_wifi_ap(void) {
     return result;
 }
 
-void golioth_main_task(void* arg) {
+void golioth_main_task(void *arg) {
     /* Connect to Wi-Fi AP */
     if (connect_to_wifi_ap() != CY_RSLT_SUCCESS) {
         printf("\n Failed to connect to Wi-FI AP.\n");
@@ -148,19 +153,17 @@ void golioth_main_task(void* arg) {
     //
     // As soon as the task starts, it will try to connect to Golioth using the
     // CoAP protocol over DTLS, with the PSK ID and PSK for authentication.
-    const char* psk_id = GOLIOTH_SAMPLE_PSK_ID;
-    const char* psk = GOLIOTH_SAMPLE_PSK;
+    const char *psk_id = GOLIOTH_SAMPLE_PSK_ID;
+    const char *psk = GOLIOTH_SAMPLE_PSK;
 
-    struct golioth_client_config config = {
-            .credentials = {
-                    .auth_type = GOLIOTH_TLS_AUTH_TYPE_PSK,
-                    .psk = {
-                            .psk_id = psk_id,
-                            .psk_id_len = strlen(psk_id),
-                            .psk = psk,
-                            .psk_len = strlen(psk),
-                    }}};
-    struct golioth_client* client = golioth_client_create(&config);
+    struct golioth_client_config config = {.credentials = {.auth_type = GOLIOTH_TLS_AUTH_TYPE_PSK,
+                                                           .psk = {
+                                                               .psk_id = psk_id,
+                                                               .psk_id_len = strlen(psk_id),
+                                                               .psk = psk,
+                                                               .psk_len = strlen(psk),
+                                                           }}};
+    struct golioth_client *client = golioth_client_create(&config);
     assert(client);
 
     // golioth_basics will interact with each Golioth service and enter an endless loop.

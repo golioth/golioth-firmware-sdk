@@ -10,7 +10,7 @@
 #include <stdlib.h>
 
 static enum golioth_debug_log_level _level = CONFIG_GOLIOTH_DEBUG_DEFAULT_LOG_LEVEL;
-static struct golioth_client* _client = NULL;
+static struct golioth_client *_client = NULL;
 static bool _cloud_log_enabled = CONFIG_GOLIOTH_AUTO_LOG_TO_CLOUD;
 
 void golioth_debug_set_log_level(enum golioth_debug_log_level level) {
@@ -22,12 +22,12 @@ enum golioth_debug_log_level golioth_debug_get_log_level(void) {
 }
 
 // Adapted from https://stackoverflow.com/a/7776146
-void golioth_debug_hexdump(const char* tag, const void* addr, int len) {
+void golioth_debug_hexdump(const char *tag, const void *addr, int len) {
     const int per_line = 16;
 
     int i;
     unsigned char buff[per_line + 1];
-    const unsigned char* pc = (const unsigned char*)addr;
+    const unsigned char *pc = (const unsigned char *) addr;
 
     if (len <= 0) {
         return;
@@ -80,12 +80,11 @@ void golioth_debug_hexdump(const char* tag, const void* addr, int len) {
 // recursion with golioth_log_X_async().
 //
 // If you must log, use printf instead.
-void golioth_debug_printf(
-        uint64_t tstamp_ms,
-        enum golioth_debug_log_level level,
-        const char* tag,
-        const char* format,
-        ...) {
+void golioth_debug_printf(uint64_t tstamp_ms,
+                          enum golioth_debug_log_level level,
+                          const char *tag,
+                          const char *format,
+                          ...) {
     if (!_cloud_log_enabled) {
         return;
     }
@@ -111,7 +110,7 @@ void golioth_debug_printf(
     }
 
     // Temporarily allocate a buffer to store the message
-    char* msg_buffer = golioth_sys_malloc(buffer_size);
+    char *msg_buffer = golioth_sys_malloc(buffer_size);
     if (!msg_buffer) {
         return;
     }
@@ -151,7 +150,7 @@ void golioth_debug_printf(
     golioth_sys_free(msg_buffer);
 }
 
-void golioth_debug_set_client(struct golioth_client* client) {
+void golioth_debug_set_client(struct golioth_client *client) {
     _client = client;
 }
 

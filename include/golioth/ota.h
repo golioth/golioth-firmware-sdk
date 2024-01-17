@@ -85,10 +85,9 @@ struct golioth_ota_manifest {
 ///
 /// @return GOLIOTH_OK - payload converted to struct golioth_ota_manifest
 /// @return GOLIOTH_ERR_INVALID_FORMAT - failed to parse manifest
-enum golioth_status golioth_ota_payload_as_manifest(
-        const uint8_t* payload,
-        size_t payload_size,
-        struct golioth_ota_manifest* manifest);
+enum golioth_status golioth_ota_payload_as_manifest(const uint8_t *payload,
+                                                    size_t payload_size,
+                                                    struct golioth_ota_manifest *manifest);
 
 /// Convert a size in bytes to the number of blocks required (of size up to GOLIOTH_OTA_BLOCKSIZE)
 size_t golioth_ota_size_to_nblocks(size_t component_size);
@@ -100,19 +99,18 @@ size_t golioth_ota_size_to_nblocks(size_t component_size);
 ///
 /// @return if found - pointer to component
 /// @return if not found - NULL
-const struct golioth_ota_component* golioth_ota_find_component(
-        const struct golioth_ota_manifest* manifest,
-        const char* package);
+const struct golioth_ota_component *golioth_ota_find_component(
+    const struct golioth_ota_manifest *manifest,
+    const char *package);
 
 /// Observe for the OTA manifest asynchronously
 ///
 /// This function will enqueue a request and return immediately without
 /// waiting for a response from the server. The callback will be invoked whenever
 /// the manifest is changed on the Golioth server.
-enum golioth_status golioth_ota_observe_manifest_async(
-        struct golioth_client* client,
-        golioth_get_cb_fn callback,
-        void* arg);
+enum golioth_status golioth_ota_observe_manifest_async(struct golioth_client *client,
+                                                       golioth_get_cb_fn callback,
+                                                       void *arg);
 
 /// Get a single artfifact block synchronously
 ///
@@ -142,15 +140,14 @@ enum golioth_status golioth_ota_observe_manifest_async(
 /// @return GOLIOTH_ERR_INVALID_STATE - client is not running, currently stopped
 /// @return GOLIOTH_ERR_QUEUE_FULL - request queue is full, this request is dropped
 /// @return GOLIOTH_ERR_TIMEOUT - response not received from server, timeout occurred
-enum golioth_status golioth_ota_get_block_sync(
-        struct golioth_client* client,
-        const char* package,
-        const char* version,
-        size_t block_index,
-        uint8_t* buf,
-        size_t* block_nbytes,
-        bool* is_last,
-        int32_t timeout_s);
+enum golioth_status golioth_ota_get_block_sync(struct golioth_client *client,
+                                               const char *package,
+                                               const char *version,
+                                               size_t block_index,
+                                               uint8_t *buf,
+                                               size_t *block_nbytes,
+                                               bool *is_last,
+                                               int32_t timeout_s);
 
 /// Report the state of OTA update to Golioth server synchronously
 ///
@@ -167,14 +164,13 @@ enum golioth_status golioth_ota_get_block_sync(
 /// @return GOLIOTH_ERR_INVALID_STATE - client is not running, currently stopped
 /// @return GOLIOTH_ERR_QUEUE_FULL - request queue is full, this request is dropped
 /// @return GOLIOTH_ERR_TIMEOUT - response not received from server, timeout occurred
-enum golioth_status golioth_ota_report_state_sync(
-        struct golioth_client* client,
-        enum golioth_ota_state state,
-        enum golioth_ota_reason reason,
-        const char* package,
-        const char* current_version,
-        const char* target_version,
-        int32_t timeout_s);
+enum golioth_status golioth_ota_report_state_sync(struct golioth_client *client,
+                                                  enum golioth_ota_state state,
+                                                  enum golioth_ota_reason reason,
+                                                  const char *package,
+                                                  const char *current_version,
+                                                  const char *target_version,
+                                                  int32_t timeout_s);
 
 /// Get the current state of OTA update
 ///

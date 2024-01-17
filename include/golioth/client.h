@@ -36,8 +36,7 @@ enum golioth_client_event {
 };
 
 /// Golioth Content Type
-enum golioth_content_type
-{
+enum golioth_content_type {
     GOLIOTH_CONTENT_TYPE_JSON,
     GOLIOTH_CONTENT_TYPE_CBOR,
 };
@@ -71,11 +70,11 @@ enum golioth_auth_type {
 /// of the golioth client.
 struct golioth_psk_credential {
     /// PSK Identifier (e.g. "devicename@projectname")
-    const char* psk_id;
+    const char *psk_id;
     size_t psk_id_len;
 
     /// Pre-shared key, secret password
-    const char* psk;
+    const char *psk;
     size_t psk_len;
 };
 
@@ -85,15 +84,15 @@ struct golioth_psk_credential {
 /// of the golioth client.
 struct golioth_pki_credential {
     // DER Common CA cert
-    const uint8_t* ca_cert;
+    const uint8_t *ca_cert;
     size_t ca_cert_len;
 
     /// DER Public client cert
-    const uint8_t* public_cert;
+    const uint8_t *public_cert;
     size_t public_cert_len;
 
     /// DER Private client key
-    const uint8_t* private_key;
+    const uint8_t *private_key;
     size_t private_key_len;
 };
 
@@ -116,10 +115,9 @@ struct golioth_client_config {
 /// @param client The client handle
 /// @param event The event that occurred
 /// @param arg User argument, copied from @ref golioth_client_register_event_callback. Can be NULL.
-typedef void (*golioth_client_event_cb_fn)(
-        struct golioth_client* client,
-        enum golioth_client_event event,
-        void* arg);
+typedef void (*golioth_client_event_cb_fn)(struct golioth_client *client,
+                                           enum golioth_client_event event,
+                                           void *arg);
 
 /// Callback function type for all asynchronous get and observe requests
 ///
@@ -133,21 +131,19 @@ typedef void (*golioth_client_event_cb_fn)(
 /// @param payload The application layer payload in the response packet. Can be NULL.
 /// @param payload_size The size of payload, in bytes
 /// @param arg User argument, copied from the original request. Can be NULL.
-typedef void (*golioth_get_cb_fn)(
-        struct golioth_client* client,
-        const struct golioth_response* response,
-        const char* path,
-        const uint8_t* payload,
-        size_t payload_size,
-        void* arg);
-typedef void (*golioth_get_block_cb_fn)(
-        struct golioth_client* client,
-        const struct golioth_response* response,
-        const char* path,
-        const uint8_t* payload,
-        size_t payload_size,
-        bool is_last,
-        void* arg);
+typedef void (*golioth_get_cb_fn)(struct golioth_client *client,
+                                  const struct golioth_response *response,
+                                  const char *path,
+                                  const uint8_t *payload,
+                                  size_t payload_size,
+                                  void *arg);
+typedef void (*golioth_get_block_cb_fn)(struct golioth_client *client,
+                                        const struct golioth_response *response,
+                                        const char *path,
+                                        const uint8_t *payload,
+                                        size_t payload_size,
+                                        bool is_last,
+                                        void *arg);
 
 /// Callback function type for all asynchronous set and delete requests
 ///
@@ -160,11 +156,10 @@ typedef void (*golioth_get_block_cb_fn)(
 /// @param response Response status and class/code
 /// @param path The path from the original request
 /// @param arg User argument, copied from the original request. Can be NULL.
-typedef void (*golioth_set_cb_fn)(
-        struct golioth_client* client,
-        const struct golioth_response* response,
-        const char* path,
-        void* arg);
+typedef void (*golioth_set_cb_fn)(struct golioth_client *client,
+                                  const struct golioth_response *response,
+                                  const char *path,
+                                  void *arg);
 
 /// Create a Golioth client
 ///
@@ -178,7 +173,7 @@ typedef void (*golioth_set_cb_fn)(
 ///
 /// @return Non-NULL The client handle (success)
 /// @return NULL There was an error creating the client
-struct golioth_client* golioth_client_create(const struct golioth_client_config* config);
+struct golioth_client *golioth_client_create(const struct golioth_client_config *config);
 
 /// Wait (block) until connected to Golioth, or timeout occurs.
 ///
@@ -188,7 +183,7 @@ struct golioth_client* golioth_client_create(const struct golioth_client_config*
 /// @param timeout_ms How long to wait, in milliseconds, or -1 to wait forever
 ///
 /// @return True, if connected, false otherwise.
-bool golioth_client_wait_for_connect(struct golioth_client* client, int timeout_ms);
+bool golioth_client_wait_for_connect(struct golioth_client *client, int timeout_ms);
 
 /// Start the Golioth client
 ///
@@ -199,7 +194,7 @@ bool golioth_client_wait_for_connect(struct golioth_client* client, int timeout_
 ///
 /// @return GOLIOTH_OK Client started
 /// @return GOLIOTH_ERR_NULL Client handle invalid
-enum golioth_status golioth_client_start(struct golioth_client* client);
+enum golioth_status golioth_client_start(struct golioth_client *client);
 
 /// Stop the Golioth client
 ///
@@ -215,14 +210,14 @@ enum golioth_status golioth_client_start(struct golioth_client* client);
 ///
 /// @return GOLIOTH_OK Client stopped
 /// @return GOLIOTH_ERR_NULL Client handle invalid
-enum golioth_status golioth_client_stop(struct golioth_client* client);
+enum golioth_status golioth_client_stop(struct golioth_client *client);
 
 /// Destroy a Golioth client
 ///
 /// Frees dynamically created resources from @ref golioth_client_create.
 ///
 /// @param client The handle of the client to destroy
-void golioth_client_destroy(struct golioth_client* client);
+void golioth_client_destroy(struct golioth_client *client);
 
 /// Returns whether the client is currently running
 ///
@@ -230,7 +225,7 @@ void golioth_client_destroy(struct golioth_client* client);
 ///
 /// @return true The client is running
 /// @return false The client is not running, or the client handle is not valid
-bool golioth_client_is_running(struct golioth_client* client);
+bool golioth_client_is_running(struct golioth_client *client);
 
 /// Returns whether the client is currently connected to Golioth servers.
 ///
@@ -241,17 +236,16 @@ bool golioth_client_is_running(struct golioth_client* client);
 ///
 /// @return true The client is connected to Golioth
 /// @return false The client is not connected, or the client handle is not valid
-bool golioth_client_is_connected(struct golioth_client* client);
+bool golioth_client_is_connected(struct golioth_client *client);
 
 /// Register a callback that will be called on client events (e.g. connected, disconnected)
 ///
 /// @param client The client handle
 /// @param callback Callback function to register
 /// @param arg Optional argument, forwarded directly to the callback when invoked. Can be NULL.
-void golioth_client_register_event_callback(
-        struct golioth_client* client,
-        golioth_client_event_cb_fn callback,
-        void* arg);
+void golioth_client_register_event_callback(struct golioth_client *client,
+                                            golioth_client_event_cb_fn callback,
+                                            void *arg);
 
 /// The number of items currently in the client thread request queue.
 ///
@@ -260,7 +254,7 @@ void golioth_client_register_event_callback(
 /// @param client The client handle
 ///
 /// @return The number of items currently in the client thread request queue.
-uint32_t golioth_client_num_items_in_request_queue(struct golioth_client* client);
+uint32_t golioth_client_num_items_in_request_queue(struct golioth_client *client);
 
 /// Simulate packet loss at a particular percentage (0 to 100).
 ///
@@ -275,6 +269,6 @@ void golioth_client_set_packet_loss_percent(uint8_t percent);
 /// @param client The client handle
 ///
 /// @return The thread handle of the client thread
-golioth_sys_thread_t golioth_client_get_thread(struct golioth_client* client);
+golioth_sys_thread_t golioth_client_get_thread(struct golioth_client *client);
 
 /// @}

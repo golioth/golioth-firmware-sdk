@@ -13,8 +13,8 @@
 
 #define MAX_DER_FILE_SIZE 2048
 
-static int read_file(const char* filepath, uint8_t* buffer, size_t buffer_size) {
-    FILE* fp = fopen(filepath, "rb");
+static int read_file(const char *filepath, uint8_t *buffer, size_t buffer_size) {
+    FILE *fp = fopen(filepath, "rb");
     if (!fp) {
         fprintf(stderr, "Failed to open file: %s\n", filepath);
         return -1;
@@ -31,27 +31,26 @@ int main(void) {
     uint8_t client_cert_der[MAX_DER_FILE_SIZE];
     uint8_t root_ca_der[MAX_DER_FILE_SIZE];
 
-    size_t client_key_len = read_file("certs/client.key.der", client_key_der, sizeof(client_key_der));
+    size_t client_key_len =
+        read_file("certs/client.key.der", client_key_der, sizeof(client_key_der));
     size_t client_cert_len =
-            read_file("certs/client.crt.der", client_cert_der, sizeof(client_cert_der));
+        read_file("certs/client.crt.der", client_cert_der, sizeof(client_cert_der));
     size_t root_ca_len = read_file("isrgrootx1.der", root_ca_der, sizeof(root_ca_der));
     if ((client_key_len <= 0) || (client_cert_len <= 0) || (root_ca_len <= 0)) {
         return 1;
     }
 
-    struct golioth_client_config config = {
-            .credentials = {
-                    .auth_type = GOLIOTH_TLS_AUTH_TYPE_PKI,
-                    .pki = {
-                            .ca_cert = root_ca_der,
-                            .ca_cert_len = root_ca_len,
-                            .public_cert = client_cert_der,
-                            .public_cert_len = client_cert_len,
-                            .private_key = client_key_der,
-                            .private_key_len = client_key_len,
-                    }}};
+    struct golioth_client_config config = {.credentials = {.auth_type = GOLIOTH_TLS_AUTH_TYPE_PKI,
+                                                           .pki = {
+                                                               .ca_cert = root_ca_der,
+                                                               .ca_cert_len = root_ca_len,
+                                                               .public_cert = client_cert_der,
+                                                               .public_cert_len = client_cert_len,
+                                                               .private_key = client_key_der,
+                                                               .private_key_len = client_key_len,
+                                                           }}};
 
-    struct golioth_client* client = golioth_client_create(&config);
+    struct golioth_client *client = golioth_client_create(&config);
     assert(client);
 
     bool connected = golioth_client_wait_for_connect(client, 1000);

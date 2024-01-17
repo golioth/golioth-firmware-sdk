@@ -16,10 +16,12 @@ LOG_MODULE_REGISTER(lightdb_stream, LOG_LEVEL_DBG);
 #include <zephyr/drivers/sensor.h>
 #include <zephyr/kernel.h>
 
-struct golioth_client* client;
+struct golioth_client *client;
 static K_SEM_DEFINE(connected, 0, 1);
 
-static void on_client_event(struct golioth_client* client, enum golioth_client_event event, void* arg) {
+static void on_client_event(struct golioth_client *client,
+                            enum golioth_client_event event,
+                            void *arg) {
     bool is_connected = (event == GOLIOTH_CLIENT_EVENT_CONNECTED);
     if (is_connected) {
         k_sem_give(&connected);
@@ -29,11 +31,11 @@ static void on_client_event(struct golioth_client* client, enum golioth_client_e
 
 #if DT_NODE_HAS_STATUS(DT_ALIAS(temp0), okay)
 
-static int get_temperature(struct sensor_value* val) {
-    const struct device* dev = DEVICE_DT_GET(DT_ALIAS(temp0));
+static int get_temperature(struct sensor_value *val) {
+    const struct device *dev = DEVICE_DT_GET(DT_ALIAS(temp0));
     static const enum sensor_channel temp_channels[] = {
-            SENSOR_CHAN_AMBIENT_TEMP,
-            SENSOR_CHAN_DIE_TEMP,
+        SENSOR_CHAN_AMBIENT_TEMP,
+        SENSOR_CHAN_DIE_TEMP,
     };
     int i;
     int err;
@@ -60,7 +62,7 @@ static int get_temperature(struct sensor_value* val) {
 
 #else
 
-static int get_temperature(struct sensor_value* val) {
+static int get_temperature(struct sensor_value *val) {
     static int counter = 0;
 
     /* generate a temperature from 20 deg to 30 deg, with 0.5 deg step */
@@ -75,11 +77,10 @@ static int get_temperature(struct sensor_value* val) {
 
 #endif
 
-static void temperature_push_handler(
-        struct golioth_client* client,
-        const struct golioth_response* response,
-        const char* path,
-        void* arg) {
+static void temperature_push_handler(struct golioth_client *client,
+                                     const struct golioth_response *response,
+                                     const char *path,
+                                     void *arg) {
     if (response->status != GOLIOTH_OK) {
         LOG_WRN("Failed to push temperature: %d", response->status);
         return;
@@ -90,21 +91,25 @@ static void temperature_push_handler(
     return;
 }
 
-static void temperature_push_async(const struct sensor_value* temp) {
+static void temperature_push_async(const struct sensor_value *temp) {
     char sbuf[sizeof("{\"temp\":-4294967295.123456}")];
     int err;
 
     snprintk(sbuf, sizeof(sbuf), "{\"temp\":%d.%06d}", temp->val1, abs(temp->val2));
 
-    err = golioth_lightdb_stream_set_json_async(
-            client, "sensor", sbuf, strlen(sbuf), temperature_push_handler, NULL);
+    err = golioth_lightdb_stream_set_json_async(client,
+                                                "sensor",
+                                                sbuf,
+                                                strlen(sbuf),
+                                                temperature_push_handler,
+                                                NULL);
     if (err) {
         LOG_WRN("Failed to push temperature: %d", err);
         return;
     }
 }
 
-static void temperature_push_sync(const struct sensor_value* temp) {
+static void temperature_push_sync(const struct sensor_value *temp) {
     char sbuf[sizeof("{\"temp\":-4294967295.123456}")];
     int err;
 
@@ -120,11 +125,14 @@ static void temperature_push_sync(const struct sensor_value* temp) {
     LOG_DBG("Temperature successfully pushed");
 }
 
-static void temperature_push_float_async(const struct sensor_value* temp) {
+static void temperature_push_float_async(const struct sensor_value *temp) {
     int err;
 
-    err = golioth_lightdb_stream_set_float_async(
-        client, "sensor/temp", sensor_value_to_double(temp), temperature_push_handler, NULL);
+    err = golioth_lightdb_stream_set_float_async(client,
+                                                 "sensor/temp",
+                                                 sensor_value_to_double(temp),
+                                                 temperature_push_handler,
+                                                 NULL);
 
     if (err) {
         LOG_WRN("Failed to push temperature: %d", err);
@@ -144,7 +152,7 @@ int main(void) {
      * device. For simplicity, we provide a utility to hardcode credentials as
      * kconfig options in the samples.
      */
-    const struct golioth_client_config* client_config = golioth_sample_credentials_get();
+    const struct golioth_client_config *client_config = golioth_sample_credentials_get();
 
     client = golioth_client_create(client_config);
     golioth_client_register_event_callback(client, on_client_event, NULL);

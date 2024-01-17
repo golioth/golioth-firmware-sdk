@@ -9,7 +9,7 @@
 
 golioth_event_group_t golioth_event_group_create(void) {
     golioth_event_group_t eg =
-            (golioth_event_group_t)golioth_sys_malloc(sizeof(struct golioth_event_group));
+        (golioth_event_group_t) golioth_sys_malloc(sizeof(struct golioth_event_group));
     memset(eg, 0, sizeof(struct golioth_event_group));
     eg->bitmap = 0;
     eg->bitmap_mutex = golioth_sys_sem_create(1, 1);
@@ -27,11 +27,10 @@ void golioth_event_group_set_bits(golioth_event_group_t eg, uint32_t bits_to_set
     golioth_sys_sem_give(eg->sem);
 }
 
-uint32_t golioth_event_group_wait_bits(
-        golioth_event_group_t eg,
-        uint32_t bits_to_wait_for,
-        bool clear_set_bits,
-        int32_t wait_timeout_ms) {
+uint32_t golioth_event_group_wait_bits(golioth_event_group_t eg,
+                                       uint32_t bits_to_wait_for,
+                                       bool clear_set_bits,
+                                       int32_t wait_timeout_ms) {
     uint32_t bitmap = 0;
 
     while (1) {

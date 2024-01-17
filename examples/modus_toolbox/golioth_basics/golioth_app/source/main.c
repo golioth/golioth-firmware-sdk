@@ -62,7 +62,7 @@
 #define GOLIOTH_MAIN_TASK_STACK_SIZE (5 * 1024)
 #define GOLIOTH_MAIN_TASK_PRIORITY (1)
 
-static void blink_task(void* arg) {
+static void blink_task(void *arg) {
     for (;;) {
         vTaskDelay(LED_TOGGLE_INTERVAL_MS / portTICK_PERIOD_MS);
         cyhal_gpio_toggle(CYBSP_USER_LED);
@@ -104,16 +104,18 @@ int main(void) {
         printf("External Memory initialized w/ SFDP.");
     } else {
         printf("External Memory initialization w/ SFDP FAILED: 0x%08" PRIx32,
-               (uint32_t)qspi_status);
+               (uint32_t) qspi_status);
     }
 #endif
 
     /* Initialize the User LED */
-    result = cyhal_gpio_init(
-            CYBSP_USER_LED, CYHAL_GPIO_DIR_OUTPUT, CYHAL_GPIO_DRIVE_STRONG, CYBSP_LED_STATE_OFF);
+    result = cyhal_gpio_init(CYBSP_USER_LED,
+                             CYHAL_GPIO_DIR_OUTPUT,
+                             CYHAL_GPIO_DRIVE_STRONG,
+                             CYBSP_LED_STATE_OFF);
     CY_ASSERT(result == CY_RSLT_SUCCESS);
 
-    (void)result; /* To avoid compiler warning in release build */
+    (void) result; /* To avoid compiler warning in release build */
 
     printf("\n=========================================================\n");
     printf("[GoliothApp] Version: %d.%d.%d, CPU: CM4\n",
@@ -125,19 +127,19 @@ int main(void) {
     /* Update watchdog timer to mark successful start up of application */
     cy_wdg_kick();
     cy_wdg_free();
-    printf("[GoliothApp] Watchdog timer started by the bootloader is now turned off to mark the successful start of Golioth app.\r\n");
+    printf(
+        "[GoliothApp] Watchdog timer started by the bootloader is now turned off to mark the successful start of Golioth app.\r\n");
 
     printf("[GoliothApp] User LED toggles at %d msec interval\r\n\n", LED_TOGGLE_INTERVAL_MS);
 
     /* Create the tasks. */
     xTaskCreate(blink_task, "Blink task", BLINK_TASK_STACK_SIZE, NULL, BLINK_TASK_PRIORITY, NULL);
-    xTaskCreate(
-            golioth_main_task,
-            "Golioth main task",
-            GOLIOTH_MAIN_TASK_STACK_SIZE,
-            NULL,
-            GOLIOTH_MAIN_TASK_PRIORITY,
-            NULL);
+    xTaskCreate(golioth_main_task,
+                "Golioth main task",
+                GOLIOTH_MAIN_TASK_STACK_SIZE,
+                NULL,
+                GOLIOTH_MAIN_TASK_PRIORITY,
+                NULL);
 
     /* Start the FreeRTOS scheduler. */
     vTaskStartScheduler();

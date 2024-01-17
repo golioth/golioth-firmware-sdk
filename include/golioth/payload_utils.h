@@ -20,7 +20,7 @@
 /// @param payload_size Size of payload, in bytes
 ///
 /// @return int32_t value returned from strtol(payload, NULL, 10)
-int32_t golioth_payload_as_int(const uint8_t* payload, size_t payload_size);
+int32_t golioth_payload_as_int(const uint8_t *payload, size_t payload_size);
 
 /// Convert raw byte payload into a float
 ///
@@ -28,7 +28,7 @@ int32_t golioth_payload_as_int(const uint8_t* payload, size_t payload_size);
 /// @param payload_size Size of payload, in bytes
 ///
 /// @return float value returned from strtof(payload, NULL)
-float golioth_payload_as_float(const uint8_t* payload, size_t payload_size);
+float golioth_payload_as_float(const uint8_t *payload, size_t payload_size);
 
 /// Convert raw byte payload into a bool
 ///
@@ -37,7 +37,7 @@ float golioth_payload_as_float(const uint8_t* payload, size_t payload_size);
 ///
 /// @return true - payload is exactly the string "true"
 /// @return false - otherwise
-bool golioth_payload_as_bool(const uint8_t* payload, size_t payload_size);
+bool golioth_payload_as_bool(const uint8_t *payload, size_t payload_size);
 
 /// Returns true if payload has no contents
 ///
@@ -48,6 +48,6 @@ bool golioth_payload_as_bool(const uint8_t* payload, size_t payload_size);
 /// @return true - payload_size is 0
 /// @return true - payload is exactly the string "null"
 /// @return false - otherwise
-bool golioth_payload_is_null(const uint8_t* payload, size_t payload_size);
+bool golioth_payload_is_null(const uint8_t *payload, size_t payload_size);
 
 /// @}

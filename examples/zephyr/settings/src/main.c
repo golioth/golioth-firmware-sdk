@@ -23,13 +23,15 @@ int32_t _loop_delay_s = 10;
 
 static K_SEM_DEFINE(connected, 0, 1);
 
-static enum golioth_settings_status on_loop_delay_setting(int32_t new_value, void* arg) {
+static enum golioth_settings_status on_loop_delay_setting(int32_t new_value, void *arg) {
     LOG_INF("Setting loop delay to %" PRId32 " s", new_value);
     _loop_delay_s = new_value;
     return GOLIOTH_SETTINGS_SUCCESS;
 }
 
-static void on_client_event(struct golioth_client* client, enum golioth_client_event event, void* arg) {
+static void on_client_event(struct golioth_client *client,
+                            enum golioth_client_event event,
+                            void *arg) {
     bool is_connected = (event == GOLIOTH_CLIENT_EVENT_CONNECTED);
     if (is_connected) {
         k_sem_give(&connected);
@@ -48,13 +50,13 @@ int main(void) {
      * device. For simplicity, we provide a utility to hardcode credentials as
      * kconfig options in the samples.
      */
-    const struct golioth_client_config* client_config = golioth_sample_credentials_get();
+    const struct golioth_client_config *client_config = golioth_sample_credentials_get();
 
-    struct golioth_client* client = golioth_client_create(client_config);
+    struct golioth_client *client = golioth_client_create(client_config);
 
     golioth_client_register_event_callback(client, on_client_event, NULL);
 
-    struct golioth_settings* settings = golioth_settings_init(client);
+    struct golioth_settings *settings = golioth_settings_init(client);
 
     golioth_settings_register_int_with_range(settings,
                                              "LOOP_DELAY_S",

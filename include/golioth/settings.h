@@ -75,11 +75,12 @@ enum golioth_settings_value_type {
 ///
 /// @return GOLIOTH_SETTINGS_OK - the setting was applied successfully
 /// @return Otherwise - there was an error applying the setting
-typedef enum golioth_settings_status (*golioth_int_setting_cb)(int32_t new_value, void* arg);
-typedef enum golioth_settings_status (*golioth_bool_setting_cb)(bool new_value, void* arg);
-typedef enum golioth_settings_status (*golioth_float_setting_cb)(float new_value, void* arg);
-typedef enum golioth_settings_status (
-        *golioth_string_setting_cb)(const char* new_value, size_t new_value_len, void* arg);
+typedef enum golioth_settings_status (*golioth_int_setting_cb)(int32_t new_value, void *arg);
+typedef enum golioth_settings_status (*golioth_bool_setting_cb)(bool new_value, void *arg);
+typedef enum golioth_settings_status (*golioth_float_setting_cb)(float new_value, void *arg);
+typedef enum golioth_settings_status (*golioth_string_setting_cb)(const char *new_value,
+                                                                  size_t new_value_len,
+                                                                  void *arg);
 
 /// Initialize the Settings service
 ///
@@ -87,7 +88,7 @@ typedef enum golioth_settings_status (
 ///
 /// @return pointer to golioth settings struct
 /// @return NULL - Error initializing Settings service
-struct golioth_settings* golioth_settings_init(struct golioth_client* client);
+struct golioth_settings *golioth_settings_init(struct golioth_client *client);
 
 /// Register a specific setting of type int
 ///
@@ -103,34 +104,30 @@ struct golioth_settings* golioth_settings_init(struct golioth_client* client);
 /// @return GOLIOTH_ERR_MEM_ALLOC - Max number of registered settings exceeded
 /// @return GOLIOTH_ERR_NOT_IMPLEMENTED - If Golioth settings are disabled in config
 /// @return GOLIOTH_ERR_NULL - callback is NULL
-enum golioth_status golioth_settings_register_int(
-        struct golioth_settings* settings,
-        const char* setting_name,
-        golioth_int_setting_cb callback,
-        void* callback_arg);
+enum golioth_status golioth_settings_register_int(struct golioth_settings *settings,
+                                                  const char *setting_name,
+                                                  golioth_int_setting_cb callback,
+                                                  void *callback_arg);
 
 /// Same as @ref golioth_settings_register_int, but with specific min and
 /// max value which will be checked by this library.
-enum golioth_status golioth_settings_register_int_with_range(
-        struct golioth_settings* settings,
-        const char* setting_name,
-        int32_t min_val,
-        int32_t max_val,
-        golioth_int_setting_cb callback,
-        void* callback_arg);
+enum golioth_status golioth_settings_register_int_with_range(struct golioth_settings *settings,
+                                                             const char *setting_name,
+                                                             int32_t min_val,
+                                                             int32_t max_val,
+                                                             golioth_int_setting_cb callback,
+                                                             void *callback_arg);
 
 /// Same as @ref golioth_settings_register_int, but for type bool.
-enum golioth_status golioth_settings_register_bool(
-        struct golioth_settings* settings,
-        const char* setting_name,
-        golioth_bool_setting_cb callback,
-        void* callback_arg);
+enum golioth_status golioth_settings_register_bool(struct golioth_settings *settings,
+                                                   const char *setting_name,
+                                                   golioth_bool_setting_cb callback,
+                                                   void *callback_arg);
 
 /// Same as @ref golioth_settings_register_int, but for type float.
-enum golioth_status golioth_settings_register_float(
-        struct golioth_settings* settings,
-        const char* setting_name,
-        golioth_float_setting_cb callback,
-        void* callback_arg);
+enum golioth_status golioth_settings_register_float(struct golioth_settings *settings,
+                                                    const char *setting_name,
+                                                    golioth_float_setting_cb callback,
+                                                    void *callback_arg);
 
 /// @}

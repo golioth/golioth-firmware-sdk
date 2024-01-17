@@ -26,14 +26,14 @@ extern "C" {
 
 void nvs_init(void);
 
-const char* nvs_read_wifi_ssid(void);
-const char* nvs_read_wifi_password(void);
-const char* nvs_read_golioth_psk_id(void);
-const char* nvs_read_golioth_psk(void);
+const char *nvs_read_wifi_ssid(void);
+const char *nvs_read_wifi_password(void);
+const char *nvs_read_golioth_psk_id(void);
+const char *nvs_read_golioth_psk(void);
 
-const char* nvs_read_str(const char* key, char* buf, size_t bufsize);
-bool nvs_write_str(const char* key, const char* str);
-bool nvs_erase_str(const char* key);
+const char *nvs_read_str(const char *key, char *buf, size_t bufsize);
+bool nvs_write_str(const char *key, const char *str);
+bool nvs_erase_str(const char *key);
 
 bool nvs_credentials_are_set(void);
 

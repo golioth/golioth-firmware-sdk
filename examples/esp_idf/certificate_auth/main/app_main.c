@@ -20,11 +20,12 @@ extern const uint8_t client_pem_end[] asm("_binary_client_crt_der_end");
 extern const uint8_t client_key_start[] asm("_binary_client_key_der_start");
 extern const uint8_t client_key_end[] asm("_binary_client_key_der_end");
 
-static void on_client_event(struct golioth_client* client, enum golioth_client_event event, void* arg) {
-    ESP_LOGI(
-            TAG,
-            "Golioth client %s",
-            event == GOLIOTH_CLIENT_EVENT_CONNECTED ? "connected" : "disconnected");
+static void on_client_event(struct golioth_client *client,
+                            enum golioth_client_event event,
+                            void *arg) {
+    ESP_LOGI(TAG,
+             "Golioth client %s",
+             event == GOLIOTH_CLIENT_EVENT_CONNECTED ? "connected" : "disconnected");
 }
 
 void app_main(void) {
@@ -43,18 +44,16 @@ void app_main(void) {
     size_t client_pem_len = client_pem_end - client_pem_start;
     size_t client_key_len = client_key_end - client_key_start;
 
-    struct golioth_client_config config = {
-            .credentials = {
-                    .auth_type = GOLIOTH_TLS_AUTH_TYPE_PKI,
-                    .pki = {
-                            .ca_cert = ca_pem_start,
-                            .ca_cert_len = ca_pem_len,
-                            .public_cert = client_pem_start,
-                            .public_cert_len = client_pem_len,
-                            .private_key = client_key_start,
-                            .private_key_len = client_key_len,
-                    }}};
-    struct golioth_client* client = golioth_client_create(&config);
+    struct golioth_client_config config = {.credentials = {.auth_type = GOLIOTH_TLS_AUTH_TYPE_PKI,
+                                                           .pki = {
+                                                               .ca_cert = ca_pem_start,
+                                                               .ca_cert_len = ca_pem_len,
+                                                               .public_cert = client_pem_start,
+                                                               .public_cert_len = client_pem_len,
+                                                               .private_key = client_key_start,
+                                                               .private_key_len = client_key_len,
+                                                           }}};
+    struct golioth_client *client = golioth_client_create(&config);
     assert(client);
 
     // Register a callback function that will be called by the client task when

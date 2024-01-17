@@ -7,4 +7,4 @@
 
 #include <golioth/client.h>
 
-void golioth_basics(struct golioth_client* client);
+void golioth_basics(struct golioth_client *client);

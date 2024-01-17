@@ -13,11 +13,10 @@
 #define WIFI_MAX_NUM_CHARS 32
 #define PSK_MAX_NUM_CHARS 127
 
-static const char* read_nvs_key_or_default(
-        const char* key,
-        char* out,
-        size_t outsize,
-        const char* defaultstr) {
+static const char *read_nvs_key_or_default(const char *key,
+                                           char *out,
+                                           size_t outsize,
+                                           const char *defaultstr) {
     nvs_handle_t handle;
     esp_err_t err = nvs_open(NVS_NAMESPACE, NVS_READWRITE, &handle);
     if (err != ESP_OK) {
@@ -37,31 +36,31 @@ void nvs_init(void) {
     ESP_ERROR_CHECK(nvs_flash_init());
 }
 
-const char* nvs_read_wifi_ssid(void) {
+const char *nvs_read_wifi_ssid(void) {
     static char buf[WIFI_MAX_NUM_CHARS + 1];
     return read_nvs_key_or_default(NVS_WIFI_SSID_KEY, buf, sizeof(buf), NVS_DEFAULT_STR);
 }
 
-const char* nvs_read_wifi_password(void) {
+const char *nvs_read_wifi_password(void) {
     static char buf[WIFI_MAX_NUM_CHARS + 1];
     return read_nvs_key_or_default(NVS_WIFI_PASS_KEY, buf, sizeof(buf), NVS_DEFAULT_STR);
 }
 
-const char* nvs_read_golioth_psk_id(void) {
+const char *nvs_read_golioth_psk_id(void) {
     static char buf[PSK_MAX_NUM_CHARS + 1];
     return read_nvs_key_or_default(NVS_GOLIOTH_PSK_ID_KEY, buf, sizeof(buf), NVS_DEFAULT_STR);
 }
 
-const char* nvs_read_golioth_psk(void) {
+const char *nvs_read_golioth_psk(void) {
     static char buf[PSK_MAX_NUM_CHARS + 1];
     return read_nvs_key_or_default(NVS_GOLIOTH_PSK_KEY, buf, sizeof(buf), NVS_DEFAULT_STR);
 }
 
-const char* nvs_read_str(const char* key, char* buf, size_t bufsize) {
+const char *nvs_read_str(const char *key, char *buf, size_t bufsize) {
     return read_nvs_key_or_default(key, buf, bufsize, NVS_DEFAULT_STR);
 }
 
-bool nvs_write_str(const char* key, const char* str) {
+bool nvs_write_str(const char *key, const char *str) {
     nvs_handle_t handle;
     esp_err_t err = nvs_open(NVS_NAMESPACE, NVS_READWRITE, &handle);
     if (err != ESP_OK) {
@@ -79,7 +78,7 @@ bool nvs_write_str(const char* key, const char* str) {
     return true;
 }
 
-bool nvs_erase_str(const char* key) {
+bool nvs_erase_str(const char *key) {
     nvs_handle_t handle;
     esp_err_t err = nvs_open(NVS_NAMESPACE, NVS_READWRITE, &handle);
     if (err != ESP_OK) {

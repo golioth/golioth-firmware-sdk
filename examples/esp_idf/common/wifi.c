@@ -26,14 +26,13 @@
 
 static EventGroupHandle_t s_wifi_event_group;
 static int s_retry_num = 0;
-const char* _ssid;
-const char* _password;
+const char *_ssid;
+const char *_password;
 
-static void event_handler(
-        void* arg,
-        esp_event_base_t event_base,
-        int32_t event_id,
-        void* event_data) {
+static void event_handler(void *arg,
+                          esp_event_base_t event_base,
+                          int32_t event_id,
+                          void *event_data) {
     if (event_base == WIFI_EVENT && event_id == WIFI_EVENT_STA_START) {
         esp_wifi_connect();
     } else if (event_base == WIFI_EVENT && event_id == WIFI_EVENT_STA_DISCONNECTED) {
@@ -47,14 +46,14 @@ static void event_handler(
         }
         ESP_LOGI(TAG, "connect to the AP fail");
     } else if (event_base == IP_EVENT && event_id == IP_EVENT_STA_GOT_IP) {
-        ip_event_got_ip_t* event = (ip_event_got_ip_t*)event_data;
+        ip_event_got_ip_t *event = (ip_event_got_ip_t *) event_data;
         ESP_LOGI(TAG, "WiFi Connected. Got IP:" IPSTR, IP2STR(&event->ip_info.ip));
         s_retry_num = 0;
         xEventGroupSetBits(s_wifi_event_group, WIFI_CONNECTED_BIT);
     }
 }
 
-void wifi_init(const char* ssid, const char* password) {
+void wifi_init(const char *ssid, const char *password) {
     _ssid = ssid;
     _password = password;
 
@@ -69,14 +68,14 @@ void wifi_init(const char* ssid, const char* password) {
     ESP_ERROR_CHECK(esp_wifi_init(&cfg));
     ESP_ERROR_CHECK(esp_event_handler_register(WIFI_EVENT, ESP_EVENT_ANY_ID, &event_handler, NULL));
     ESP_ERROR_CHECK(
-            esp_event_handler_register(IP_EVENT, IP_EVENT_STA_GOT_IP, &event_handler, NULL));
+        esp_event_handler_register(IP_EVENT, IP_EVENT_STA_GOT_IP, &event_handler, NULL));
     ESP_ERROR_CHECK(esp_wifi_set_storage(WIFI_STORAGE_RAM));
     ESP_ERROR_CHECK(esp_wifi_set_mode(WIFI_MODE_STA));
 
     wifi_config_t wifi_config = {};
     wifi_config.sta.threshold.authmode = WIFI_AUTH_WPA2_PSK;
-    strncpy((char*)wifi_config.sta.ssid, ssid, sizeof(wifi_config.sta.ssid) - 1);
-    strncpy((char*)wifi_config.sta.password, password, sizeof(wifi_config.sta.password) - 1);
+    strncpy((char *) wifi_config.sta.ssid, ssid, sizeof(wifi_config.sta.ssid) - 1);
+    strncpy((char *) wifi_config.sta.password, password, sizeof(wifi_config.sta.password) - 1);
     esp_wifi_set_config(WIFI_IF_STA, &wifi_config);
 
     ESP_ERROR_CHECK(esp_wifi_start());
@@ -85,12 +84,11 @@ void wifi_init(const char* ssid, const char* password) {
 static bool wifi_wait_for_connected_internal(TickType_t timeout_ticks) {
     assert(_ssid);
     assert(_password);
-    EventBits_t bits = xEventGroupWaitBits(
-            s_wifi_event_group,
-            WIFI_CONNECTED_BIT | WIFI_FAIL_BIT,
-            pdFALSE,
-            pdFALSE,
-            timeout_ticks);
+    EventBits_t bits = xEventGroupWaitBits(s_wifi_event_group,
+                                           WIFI_CONNECTED_BIT | WIFI_FAIL_BIT,
+                                           pdFALSE,
+                                           pdFALSE,
+                                           timeout_ticks);
     bool connected = false;
     if (bits & WIFI_CONNECTED_BIT) {
         ESP_LOGI(TAG, "Connected to AP SSID: %s", _ssid);
