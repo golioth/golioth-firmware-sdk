@@ -24,26 +24,36 @@ static const uint8_t tls_ca_crt[] = {
 };
 
 static const struct golioth_client_config _golioth_client_config_psk = {
-    .credentials = {.auth_type = GOLIOTH_TLS_AUTH_TYPE_PKI,
-                    .pki = {
-                        .ca_cert = tls_ca_crt,
-                        .ca_cert_len = sizeof(tls_ca_crt),
-                        .public_cert = tls_client_crt,
-                        .public_cert_len = sizeof(tls_client_crt),
-                        .private_key = tls_client_key,
-                        .private_key_len = sizeof(tls_client_key),
-                    }}};
+    .credentials =
+        {
+            .auth_type = GOLIOTH_TLS_AUTH_TYPE_PKI,
+            .pki =
+                {
+                    .ca_cert = tls_ca_crt,
+                    .ca_cert_len = sizeof(tls_ca_crt),
+                    .public_cert = tls_client_crt,
+                    .public_cert_len = sizeof(tls_client_crt),
+                    .private_key = tls_client_key,
+                    .private_key_len = sizeof(tls_client_key),
+                },
+        },
+};
 
 #else /* Using PSK Authentication */
 
 static const struct golioth_client_config _golioth_client_config_psk = {
-    .credentials = {.auth_type = GOLIOTH_TLS_AUTH_TYPE_PSK,
-                    .psk = {
-                        .psk_id = CONFIG_GOLIOTH_SAMPLE_PSK_ID,
-                        .psk_id_len = strlen(CONFIG_GOLIOTH_SAMPLE_PSK_ID),
-                        .psk = CONFIG_GOLIOTH_SAMPLE_PSK,
-                        .psk_len = strlen(CONFIG_GOLIOTH_SAMPLE_PSK),
-                    }}};
+    .credentials =
+        {
+            .auth_type = GOLIOTH_TLS_AUTH_TYPE_PSK,
+            .psk =
+                {
+                    .psk_id = CONFIG_GOLIOTH_SAMPLE_PSK_ID,
+                    .psk_id_len = strlen(CONFIG_GOLIOTH_SAMPLE_PSK_ID),
+                    .psk = CONFIG_GOLIOTH_SAMPLE_PSK,
+                    .psk_len = strlen(CONFIG_GOLIOTH_SAMPLE_PSK),
+                },
+        },
+};
 #endif
 
 const struct golioth_client_config *golioth_sample_credentials_get(void) {

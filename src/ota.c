@@ -274,15 +274,15 @@ static void on_block_rcvd(struct golioth_client *client,
     *out_params->block_nbytes = payload_size;
 }
 
-enum golioth_status golioth_ota_get_block_sync(
-    struct golioth_client *client,
-    const char *package,
-    const char *version,
-    size_t block_index,
-    uint8_t *buf,  // must be at least GOLIOTH_OTA_BLOCKSIZE bytes
-    size_t *block_nbytes,
-    bool *is_last,
-    int32_t timeout_s) {
+enum golioth_status golioth_ota_get_block_sync(struct golioth_client *client,
+                                               const char *package,
+                                               const char *version,
+                                               size_t block_index,
+                                               uint8_t *buf,  // >= GOLIOTH_OTA_BLOCKSIZE bytes
+                                               size_t *block_nbytes,
+                                               bool *is_last,
+                                               int32_t timeout_s)
+{
     char path[CONFIG_GOLIOTH_OTA_MAX_PACKAGE_NAME_LEN + CONFIG_GOLIOTH_OTA_MAX_VERSION_LEN + 2] =
         {};
     snprintf(path, sizeof(path), "%s@%s", package, version);

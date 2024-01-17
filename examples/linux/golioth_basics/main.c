@@ -25,13 +25,19 @@ int main(void) {
         return 1;
     }
 
-    struct golioth_client_config config = {.credentials = {.auth_type = GOLIOTH_TLS_AUTH_TYPE_PSK,
-                                                           .psk = {
-                                                               .psk_id = golioth_psk_id,
-                                                               .psk_id_len = strlen(golioth_psk_id),
-                                                               .psk = golioth_psk,
-                                                               .psk_len = strlen(golioth_psk),
-                                                           }}};
+    struct golioth_client_config config = {
+        .credentials =
+            {
+                .auth_type = GOLIOTH_TLS_AUTH_TYPE_PSK,
+                .psk =
+                    {
+                        .psk_id = golioth_psk_id,
+                        .psk_id_len = strlen(golioth_psk_id),
+                        .psk = golioth_psk,
+                        .psk_len = strlen(golioth_psk),
+                    },
+            },
+    };
 
     struct golioth_client *client = golioth_client_create(&config);
     assert(client);
