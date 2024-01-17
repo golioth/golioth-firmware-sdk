@@ -22,12 +22,17 @@ jobs:
       with:
         python-version: 3.x
         architecture: 'x64'
+    - name: Install clang-format
+      shell: bash
+      run: |
+        wget https://apt.llvm.org/llvm.sh
+        chmod +x llvm.sh
+        sudo ./llvm.sh 17
+        sudo apt install clang-format-17
     - name: Check code formatting
       shell: bash
       run: |
         git fetch --no-recurse-submodules
-        echo "Checking code format"
-        sudo apt install clang-format
         if [[ $GITHUB_EVENT_NAME == 'push' ]]; then
             BASE=${{ github.event.before }}
         else
