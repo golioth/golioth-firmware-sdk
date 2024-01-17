@@ -180,7 +180,8 @@ header file. */
 #define configASSERT(x) CY_UNUSED_PARAMETER(x)
 #else
 #define configASSERT(x)           \
-    if ((x) == 0) {               \
+    if ((x) == 0)                 \
+    {                             \
         taskDISABLE_INTERRUPTS(); \
         CY_HALT();                \
     }

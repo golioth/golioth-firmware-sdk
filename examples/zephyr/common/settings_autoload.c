@@ -7,7 +7,8 @@
 #include <zephyr/init.h>
 #include <zephyr/settings/settings.h>
 
-static int settings_autoload(void) {
+static int settings_autoload(void)
+{
     return settings_load();
 }
 

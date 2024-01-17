@@ -27,7 +27,8 @@ static void *_state_callback_arg;
 static struct golioth_fw_update_config _config;
 static fw_block_processor_ctx_t _fw_block_processor;
 
-static enum golioth_status download_and_write_flash(void) {
+static enum golioth_status download_and_write_flash(void)
+{
     assert(_main_component);
 
     GLTH_LOGI(TAG, "Image size = %" PRIu32, _main_component->size);
@@ -38,7 +39,8 @@ static enum golioth_status download_and_write_flash(void) {
 
     // Process blocks one at a time until there are no more blocks (GOLIOTH_ERR_NO_MORE_DATA),
     // or an error occurs.
-    while (fw_block_processor_process(&_fw_block_processor) == GOLIOTH_OK) {
+    while (fw_block_processor_process(&_fw_block_processor) == GOLIOTH_OK)
+    {
     }
 
     GLTH_LOGI(TAG, "Download took %" PRIu64 " ms", golioth_sys_now_ms() - start_time_ms);
@@ -56,8 +58,10 @@ static enum golioth_status golioth_fw_update_report_state_sync(struct golioth_cl
                                                                const char *package,
                                                                const char *current_version,
                                                                const char *target_version,
-                                                               int32_t timeout_s) {
-    if (_state_callback) {
+                                                               int32_t timeout_s)
+{
+    if (_state_callback)
+    {
         _state_callback(state, reason, _state_callback_arg);
     }
 
@@ -75,32 +79,39 @@ static void on_ota_manifest(struct golioth_client *client,
                             const char *path,
                             const uint8_t *payload,
                             size_t payload_size,
-                            void *arg) {
-    if (response->status != GOLIOTH_OK) {
+                            void *arg)
+{
+    if (response->status != GOLIOTH_OK)
+    {
         return;
     }
 
     GLTH_LOGD(TAG, "Received OTA manifest: %.*s", (int) payload_size, payload);
 
     enum golioth_ota_state state = golioth_ota_get_state();
-    if (state == GOLIOTH_OTA_STATE_DOWNLOADING) {
+    if (state == GOLIOTH_OTA_STATE_DOWNLOADING)
+    {
         GLTH_LOGW(TAG, "Ignoring manifest while download in progress");
         return;
     }
 
     enum golioth_status status =
         golioth_ota_payload_as_manifest(payload, payload_size, &_ota_manifest);
-    if (status != GOLIOTH_OK) {
+    if (status != GOLIOTH_OK)
+    {
         GLTH_LOGE(TAG, "Failed to parse manifest: %s", golioth_status_to_str(status));
         return;
     }
     golioth_sys_sem_give(_manifest_rcvd);
 }
 
-static bool manifest_version_is_different(const struct golioth_ota_manifest *manifest) {
+static bool manifest_version_is_different(const struct golioth_ota_manifest *manifest)
+{
     _main_component = golioth_ota_find_component(manifest, _config.fw_package_name);
-    if (_main_component) {
-        if (0 != strcmp(_config.current_version, _main_component->version)) {
+    if (_main_component)
+    {
+        if (0 != strcmp(_config.current_version, _main_component->version))
+        {
             GLTH_LOGI(TAG,
                       "Current version = %s, Target version = %s",
                       _config.current_version,
@@ -111,23 +122,28 @@ static bool manifest_version_is_different(const struct golioth_ota_manifest *man
     return false;
 }
 
-static void fw_update_thread(void *arg) {
+static void fw_update_thread(void *arg)
+{
     // If it's the first time booting a new OTA image,
     // wait for successful connection to Golioth.
     //
     // If we don't connect after 60 seconds, roll back to the old image.
-    if (fw_update_is_pending_verify()) {
+    if (fw_update_is_pending_verify())
+    {
         GLTH_LOGI(TAG, "Waiting for golioth client to connect before cancelling rollback");
         int seconds_elapsed = 0;
-        while (seconds_elapsed < 60) {
-            if (golioth_client_is_connected(_client)) {
+        while (seconds_elapsed < 60)
+        {
+            if (golioth_client_is_connected(_client))
+            {
                 break;
             }
             golioth_sys_msleep(1000);
             seconds_elapsed++;
         }
 
-        if (seconds_elapsed == 60) {
+        if (seconds_elapsed == 60)
+        {
             // We didn't connect to Golioth cloud, so something might be wrong with
             // this firmware. Roll back and reboot.
             GLTH_LOGW(TAG, "Failed to connect to Golioth");
@@ -136,7 +152,9 @@ static void fw_update_thread(void *arg) {
             GLTH_LOGW(TAG, "!!!");
             fw_update_rollback();
             fw_update_reboot();
-        } else {
+        }
+        else
+        {
             GLTH_LOGI(TAG, "Firmware updated successfully!");
             fw_update_cancel_rollback();
 
@@ -161,11 +179,13 @@ static void fw_update_thread(void *arg) {
 
     golioth_ota_observe_manifest_async(_client, on_ota_manifest, NULL);
 
-    while (1) {
+    while (1)
+    {
         GLTH_LOGI(TAG, "Waiting to receive OTA manifest");
         golioth_sys_sem_take(_manifest_rcvd, GOLIOTH_SYS_WAIT_FOREVER);
         GLTH_LOGI(TAG, "Received OTA manifest");
-        if (!manifest_version_is_different(&_ota_manifest)) {
+        if (!manifest_version_is_different(&_ota_manifest))
+        {
             GLTH_LOGI(TAG, "Manifest does not contain different firmware version. Nothing to do.");
             continue;
         }
@@ -179,7 +199,8 @@ static void fw_update_thread(void *arg) {
                                             _main_component->version,
                                             GOLIOTH_SYS_WAIT_FOREVER);
 
-        if (download_and_write_flash() != GOLIOTH_OK) {
+        if (download_and_write_flash() != GOLIOTH_OK)
+        {
             GLTH_LOGE(TAG, "Firmware download failed");
             fw_update_end();
 
@@ -195,7 +216,8 @@ static void fw_update_thread(void *arg) {
             continue;
         }
 
-        if (fw_update_validate() != GOLIOTH_OK) {
+        if (fw_update_validate() != GOLIOTH_OK)
+        {
             GLTH_LOGE(TAG, "Firmware validate failed");
             fw_update_end();
 
@@ -229,14 +251,16 @@ static void fw_update_thread(void *arg) {
                                             NULL,
                                             GOLIOTH_SYS_WAIT_FOREVER);
 
-        if (fw_update_change_boot_image() != GOLIOTH_OK) {
+        if (fw_update_change_boot_image() != GOLIOTH_OK)
+        {
             GLTH_LOGE(TAG, "Firmware change boot image failed");
             fw_update_end();
             continue;
         }
 
         int countdown = 5;
-        while (countdown > 0) {
+        while (countdown > 0)
+        {
             GLTH_LOGI(TAG, "Rebooting into new image in %d seconds", countdown);
             golioth_sys_msleep(1000);
             countdown--;
@@ -245,7 +269,8 @@ static void fw_update_thread(void *arg) {
     }
 }
 
-void golioth_fw_update_init(struct golioth_client *client, const char *current_version) {
+void golioth_fw_update_init(struct golioth_client *client, const char *current_version)
+{
     struct golioth_fw_update_config config = {
         .current_version = current_version,
         .fw_package_name = GOLIOTH_FW_UPDATE_DEFAULT_PACKAGE_NAME,
@@ -254,7 +279,8 @@ void golioth_fw_update_init(struct golioth_client *client, const char *current_v
 }
 
 void golioth_fw_update_init_with_config(struct golioth_client *client,
-                                        const struct golioth_fw_update_config *config) {
+                                        const struct golioth_fw_update_config *config)
+{
     static bool initialized = false;
 
     _client = client;
@@ -266,7 +292,8 @@ void golioth_fw_update_init_with_config(struct golioth_client *client,
               _config.fw_package_name,
               _config.current_version);
 
-    if (!initialized) {
+    if (!initialized)
+    {
         struct golioth_thread_config thread_cfg = {
             .name = "fw_update",
             .fn = fw_update_thread,
@@ -276,9 +303,12 @@ void golioth_fw_update_init_with_config(struct golioth_client *client,
         };
 
         golioth_sys_thread_t thread = golioth_sys_thread_create(&thread_cfg);
-        if (!thread) {
+        if (!thread)
+        {
             GLTH_LOGE(TAG, "Failed to create firmware update thread");
-        } else {
+        }
+        else
+        {
             initialized = true;
         }
     }
@@ -286,7 +316,8 @@ void golioth_fw_update_init_with_config(struct golioth_client *client,
 
 void golioth_fw_update_register_state_change_callback(
     golioth_fw_update_state_change_callback callback,
-    void *user_arg) {
+    void *user_arg)
+{
     _state_callback = callback;
     _state_callback_arg = user_arg;
 }

@@ -34,22 +34,29 @@ static struct golioth_client_config client_config = {
         },
 };
 
-static int golioth_settings_get(const char *name, char *dst, int val_len_max) {
+static int golioth_settings_get(const char *name, char *dst, int val_len_max)
+{
     uint8_t *val;
     size_t val_len;
 
-    if (!strcmp(name, "psk")) {
+    if (!strcmp(name, "psk"))
+    {
         val = golioth_dtls_psk;
         val_len = strlen(golioth_dtls_psk);
-    } else if (!strcmp(name, "psk-id")) {
+    }
+    else if (!strcmp(name, "psk-id"))
+    {
         val = golioth_dtls_psk_id;
         val_len = strlen(golioth_dtls_psk_id);
-    } else {
+    }
+    else
+    {
         LOG_WRN("Unsupported key '%s'", name);
         return -ENOENT;
     }
 
-    if (val_len > val_len_max) {
+    if (val_len > val_len_max)
+    {
         LOG_ERR("Not enough space (%zu %d)", val_len, val_len_max);
         return -ENOMEM;
     }
@@ -62,27 +69,34 @@ static int golioth_settings_get(const char *name, char *dst, int val_len_max) {
 static int golioth_settings_set(const char *name,
                                 size_t len_rd,
                                 settings_read_cb read_cb,
-                                void *cb_arg) {
+                                void *cb_arg)
+{
     uint8_t *buffer;
     size_t buffer_len;
     size_t *ret_len;
     ssize_t ret;
 
-    if (!strcmp(name, "psk")) {
+    if (!strcmp(name, "psk"))
+    {
         buffer = golioth_dtls_psk;
         buffer_len = sizeof(golioth_dtls_psk);
         ret_len = &client_config.credentials.psk.psk_len;
-    } else if (!strcmp(name, "psk-id")) {
+    }
+    else if (!strcmp(name, "psk-id"))
+    {
         buffer = golioth_dtls_psk_id;
         buffer_len = sizeof(golioth_dtls_psk_id);
         ret_len = &client_config.credentials.psk.psk_id_len;
-    } else {
+    }
+    else
+    {
         LOG_ERR("Unsupported key '%s'", name);
         return -ENOTSUP;
     }
 
     ret = read_cb(cb_arg, buffer, buffer_len);
-    if (ret < 0) {
+    if (ret < 0)
+    {
         LOG_ERR("Failed to read value: %d", (int) ret);
         return ret;
     }
@@ -92,10 +106,12 @@ static int golioth_settings_set(const char *name,
     return 0;
 }
 
-static int golioth_settings_init(void) {
+static int golioth_settings_init(void)
+{
     int err = settings_subsys_init();
 
-    if (err) {
+    if (err)
+    {
         LOG_ERR("Failed to initialize settings subsystem: %d", err);
         return err;
     }
@@ -112,6 +128,7 @@ SETTINGS_STATIC_HANDLER_DEFINE(golioth,
                                NULL,
                                NULL);
 
-const struct golioth_client_config *golioth_sample_credentials_get(void) {
+const struct golioth_client_config *golioth_sample_credentials_get(void)
+{
     return &client_config;
 }

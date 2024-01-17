@@ -12,7 +12,8 @@
 // This type must be atomic. If you are on an 8-bit CPU, you would change the type to uint8_t.
 typedef uint32_t ringbuf_index_t;
 
-typedef struct {
+typedef struct
+{
     volatile ringbuf_index_t write_index;
     volatile ringbuf_index_t read_index;
     uint8_t *buffer;

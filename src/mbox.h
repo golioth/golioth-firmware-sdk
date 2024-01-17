@@ -15,7 +15,8 @@
 /// The mutex is for preventing multiple producers from accessing the ringbuffer
 /// at once.
 
-struct golioth_mbox {
+struct golioth_mbox
+{
     ringbuf_t ringbuf;
     golioth_sys_sem_t fill_count_sem;
     golioth_sys_sem_t ringbuf_mutex;

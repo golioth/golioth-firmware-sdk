@@ -11,7 +11,8 @@
 
 #define GOLIOTH_FW_UPDATE_DEFAULT_PACKAGE_NAME "main"
 
-struct golioth_fw_update_config {
+struct golioth_fw_update_config
+{
     /// The current firmware version, NULL-terminated, shallow-copied from user. (e.g. "1.2.3")
     const char *current_version;
     /// The name of the package in the manifest for the main firmware, NULL-terminated,

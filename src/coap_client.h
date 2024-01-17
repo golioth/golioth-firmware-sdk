@@ -14,7 +14,8 @@
 #define RESPONSE_RECEIVED_EVENT_BIT (1 << 0)
 #define RESPONSE_TIMEOUT_EVENT_BIT (1 << 1)
 
-typedef struct {
+typedef struct
+{
     enum golioth_content_type content_type;
     // CoAP payload assumed to be dynamically allocated before enqueue
     // and freed after dequeue.
@@ -25,13 +26,15 @@ typedef struct {
     void *arg;
 } golioth_coap_post_params_t;
 
-typedef struct {
+typedef struct
+{
     enum golioth_content_type content_type;
     golioth_get_cb_fn callback;
     void *arg;
 } golioth_coap_get_params_t;
 
-typedef struct {
+typedef struct
+{
     enum golioth_content_type content_type;
     size_t block_index;
     size_t block_size;
@@ -39,18 +42,21 @@ typedef struct {
     void *arg;
 } golioth_coap_get_block_params_t;
 
-typedef struct {
+typedef struct
+{
     golioth_set_cb_fn callback;
     void *arg;
 } golioth_coap_delete_params_t;
 
-typedef struct {
+typedef struct
+{
     enum golioth_content_type content_type;
     golioth_get_cb_fn callback;
     void *arg;
 } golioth_coap_observe_params_t;
 
-typedef enum {
+typedef enum
+{
     GOLIOTH_COAP_REQUEST_EMPTY,
     GOLIOTH_COAP_REQUEST_GET,
     GOLIOTH_COAP_REQUEST_GET_BLOCK,
@@ -60,7 +66,8 @@ typedef enum {
     GOLIOTH_COAP_REQUEST_OBSERVE,
 } golioth_coap_request_type_t;
 
-typedef struct {
+typedef struct
+{
     // The CoAP path string (everything after coaps://coap.golioth.io/).
     // Assumption: path_prefix is a string literal (i.e. we don't need to strcpy).
     const char *path_prefix;
@@ -68,7 +75,8 @@ typedef struct {
     uint8_t token[8];
     size_t token_len;
     golioth_coap_request_type_t type;
-    union {
+    union
+    {
         golioth_coap_get_params_t get;
         golioth_coap_get_block_params_t get_block;
         golioth_coap_post_params_t post;
@@ -100,7 +108,8 @@ typedef struct {
     golioth_sys_sem_t request_complete_ack_sem;
 } golioth_coap_request_msg_t;
 
-typedef struct {
+typedef struct
+{
     bool in_use;
     golioth_coap_request_msg_t req;
 } golioth_coap_observe_info_t;

@@ -159,7 +159,8 @@
 // #define MCUBOOT_HAVE_ASSERT_H
 
 #define MCUBOOT_WATCHDOG_FEED()       \
-    do {                              \
+    do                                \
+    {                                 \
         /* TODO: to be implemented */ \
     } while (0)
 
@@ -173,7 +174,8 @@
  * No direct idle call implemented
  */
 #define MCUBOOT_CPU_IDLE() \
-    do {                   \
+    do                     \
+    {                      \
     } while (0)
 
 /*

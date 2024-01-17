@@ -23,7 +23,8 @@
 
 struct golioth_client;
 
-enum golioth_debug_log_level {
+enum golioth_debug_log_level
+{
     GOLIOTH_DEBUG_LOG_LEVEL_NONE,
     GOLIOTH_DEBUG_LOG_LEVEL_ERROR,
     GOLIOTH_DEBUG_LOG_LEVEL_WARN,

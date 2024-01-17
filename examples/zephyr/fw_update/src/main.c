@@ -22,15 +22,18 @@ static K_SEM_DEFINE(connected, 0, 1);
 
 static void on_client_event(struct golioth_client *client,
                             enum golioth_client_event event,
-                            void *arg) {
+                            void *arg)
+{
     bool is_connected = (event == GOLIOTH_CLIENT_EVENT_CONNECTED);
-    if (is_connected) {
+    if (is_connected)
+    {
         k_sem_give(&connected);
     }
     LOG_INF("Golioth client %s", is_connected ? "connected" : "disconnected");
 }
 
-int main(void) {
+int main(void)
+{
     LOG_DBG("Start FW Update sample");
 
     net_connect();

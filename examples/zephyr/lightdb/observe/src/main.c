@@ -22,9 +22,11 @@ static K_SEM_DEFINE(connected, 0, 1);
 
 static void on_client_event(struct golioth_client *client,
                             enum golioth_client_event event,
-                            void *arg) {
+                            void *arg)
+{
     bool is_connected = (event == GOLIOTH_CLIENT_EVENT_CONNECTED);
-    if (is_connected) {
+    if (is_connected)
+    {
         k_sem_give(&connected);
     }
     LOG_INF("Golioth client %s", is_connected ? "connected" : "disconnected");
@@ -35,8 +37,10 @@ static void counter_observe_handler(struct golioth_client *client,
                                     const char *path,
                                     const uint8_t *payload,
                                     size_t payload_size,
-                                    void *arg) {
-    if (response->status != GOLIOTH_OK) {
+                                    void *arg)
+{
+    if (response->status != GOLIOTH_OK)
+    {
         LOG_WRN("Failed to receive observed payload: %d", response->status);
         return;
     }
@@ -46,7 +50,8 @@ static void counter_observe_handler(struct golioth_client *client,
     return;
 }
 
-int main(void) {
+int main(void)
+{
     LOG_DBG("Start LightDB observe sample");
 
     IF_ENABLED(CONFIG_GOLIOTH_SAMPLE_COMMON, (net_connect();))
@@ -65,7 +70,8 @@ int main(void) {
     /* Observe LightDB State Path */
     golioth_lightdb_observe_async(client, "counter", counter_observe_handler, NULL);
 
-    while (true) {
+    while (true)
+    {
         k_sleep(K_SECONDS(5));
     }
 

@@ -13,13 +13,15 @@
 
 LOG_TAG_DEFINE(fw_block_processor);
 
-static void block_stats_init(block_latency_stats_t *stats) {
+static void block_stats_init(block_latency_stats_t *stats)
+{
     stats->block_min_ms = UINT32_MAX;
     stats->block_ema_ms = 0.0f;
     stats->block_max_ms = 0;
 }
 
-static void block_stats_update(block_latency_stats_t *stats, uint32_t block_latency_ms) {
+static void block_stats_update(block_latency_stats_t *stats, uint32_t block_latency_ms)
+{
     const float alpha = 0.01f;
     stats->block_min_ms = min(stats->block_min_ms, block_latency_ms);
     stats->block_ema_ms = alpha * (float) block_latency_ms + (1.0f - alpha) * stats->block_ema_ms;
@@ -29,7 +31,8 @@ static void block_stats_update(block_latency_stats_t *stats, uint32_t block_late
 static void download_init(download_ctx_t *ctx,
                           struct golioth_client *client,
                           const struct golioth_ota_component *ota_component,
-                          uint8_t *download_buf) {
+                          uint8_t *download_buf)
+{
     memset(ctx, 0, sizeof(*ctx));
     block_stats_init(&ctx->block_stats);
     ctx->ota_component = ota_component;
@@ -46,8 +49,10 @@ static void download_init(download_ctx_t *ctx,
     ctx->total_num_blocks = golioth_ota_size_to_nblocks(ota_component->size);
 }
 
-static enum golioth_status download_block(download_ctx_t *ctx) {
-    if (ctx->is_last_block) {
+static enum golioth_status download_block(download_ctx_t *ctx)
+{
+    if (ctx->is_last_block)
+    {
         // We've already downloaded the last block
         return GOLIOTH_ERR_NO_MORE_DATA;
     }
@@ -78,7 +83,8 @@ static enum golioth_status download_block(download_ctx_t *ctx) {
     return ctx->output_fn(ctx->download_buf, ctx->block_bytes_downloaded, ctx->output_fn_arg);
 }
 
-static void decompress_init(decompress_ctx_t *ctx) {
+static void decompress_init(decompress_ctx_t *ctx)
+{
     memset(ctx, 0, sizeof(*ctx));
 
 #if CONFIG_GOLIOTH_OTA_DECOMPRESS_METHOD_HEATSHRINK
@@ -90,25 +96,30 @@ static void decompress_init(decompress_ctx_t *ctx) {
 #endif
 }
 
-static int patch_old_read(const struct bspatch_stream_i *stream, void *buffer, int pos, int len) {
+static int patch_old_read(const struct bspatch_stream_i *stream, void *buffer, int pos, int len)
+{
     enum golioth_status status = fw_update_read_current_image_at_offset(buffer, len, pos);
-    if (status != GOLIOTH_OK) {
+    if (status != GOLIOTH_OK)
+    {
         return -1;
     }
     return 0;
 }
 
-static int patch_new_write(const struct bspatch_stream_n *stream, const void *buffer, int length) {
+static int patch_new_write(const struct bspatch_stream_n *stream, const void *buffer, int length)
+{
     patch_ctx_t *ctx = (patch_ctx_t *) stream->opaque;
     assert(ctx->output_fn);
     enum golioth_status status = ctx->output_fn(buffer, length, ctx->output_fn_arg);
-    if (status != GOLIOTH_OK) {
+    if (status != GOLIOTH_OK)
+    {
         return -1;
     }
     return 0;
 }
 
-static void patch_init(patch_ctx_t *ctx) {
+static void patch_init(patch_ctx_t *ctx)
+{
     memset(ctx, 0, sizeof(*ctx));
 
     ctx->old_stream.read = patch_old_read;
@@ -121,12 +132,14 @@ static void patch_init(patch_ctx_t *ctx) {
 #endif
 }
 
-static void handle_block_init(handle_block_ctx_t *ctx, size_t component_size) {
+static void handle_block_init(handle_block_ctx_t *ctx, size_t component_size)
+{
     memset(ctx, 0, sizeof(*ctx));
     ctx->component_size = component_size;
 }
 
-static enum golioth_status handle_block(const uint8_t *in_data, size_t in_data_size, void *arg) {
+static enum golioth_status handle_block(const uint8_t *in_data, size_t in_data_size, void *arg)
+{
     handle_block_ctx_t *ctx = (handle_block_ctx_t *) arg;
 
     enum golioth_status status = fw_update_handle_block(in_data,
@@ -141,16 +154,19 @@ static enum golioth_status handle_block(const uint8_t *in_data, size_t in_data_s
 #if CONFIG_GOLIOTH_OTA_DECOMPRESS_METHOD_HEATSHRINK
 static enum golioth_status decompress_heatshrink(decompress_ctx_t *ctx,
                                                  const uint8_t *in_data,
-                                                 size_t in_data_size) {
+                                                 size_t in_data_size)
+{
     size_t total_sunk = 0;
-    while (total_sunk < in_data_size) {
+    while (total_sunk < in_data_size)
+    {
         // Sink the compressed data
         size_t sunk = 0;
         HSD_sink_res sink_res = heatshrink_decoder_sink(&ctx->hsd,
                                                         (uint8_t *) &in_data[total_sunk],
                                                         in_data_size - total_sunk,
                                                         &sunk);
-        if (sink_res != HSDR_SINK_OK) {
+        if (sink_res != HSDR_SINK_OK)
+        {
             GLTH_LOGE(TAG, "sink error: %d, sunk = %" PRIu32, sink_res, (uint32_t) sunk);
             return GOLIOTH_ERR_FAIL;
         }
@@ -159,11 +175,13 @@ static enum golioth_status decompress_heatshrink(decompress_ctx_t *ctx,
         // Pull the uncompressed data out of the decoder
         HSD_poll_res pres;
         uint8_t decode_buffer[HEATSHRINK_STATIC_INPUT_BUFFER_SIZE];
-        do {
+        do
+        {
             size_t poll_sz = 0;
             pres =
                 heatshrink_decoder_poll(&ctx->hsd, decode_buffer, sizeof(decode_buffer), &poll_sz);
-            if (pres < 0) {
+            if (pres < 0)
+            {
                 GLTH_LOGE(TAG, "poll error: %d", pres);
                 return GOLIOTH_ERR_FAIL;
             }
@@ -181,12 +199,14 @@ static enum golioth_status decompress_heatshrink(decompress_ctx_t *ctx,
 #if CONFIG_GOLIOTH_OTA_DECOMPRESS_METHOD_ZLIB
 static enum golioth_status decompress_zlib(decompress_ctx_t *ctx,
                                            const uint8_t *in_data,
-                                           size_t in_data_size) {
+                                           size_t in_data_size)
+{
     GLTH_LOGD(TAG, "tinfl_decompress input: %zd", in_data_size);
 
     size_t in_buf_ofs = 0;
     tinfl_status status = TINFL_STATUS_HAS_MORE_OUTPUT;
-    while (status == TINFL_STATUS_HAS_MORE_OUTPUT) {
+    while (status == TINFL_STATUS_HAS_MORE_OUTPUT)
+    {
         // This is basically the inner loop of tinfl_decompress_mem_to_callback() in miniz_tinfl.c
         size_t in_buf_size = in_data_size - in_buf_ofs;
         size_t dst_buf_size = TINFL_LZ_DICT_SIZE - ctx->dict_ofs;
@@ -205,12 +225,14 @@ static enum golioth_status decompress_zlib(decompress_ctx_t *ctx,
         GLTH_LOGD(TAG, "tinfl_decompress status: %" PRId32, (int32_t) status);
 
         // If we got a negative status, return error
-        if (status < 0) {
+        if (status < 0)
+        {
             GLTH_LOGE(TAG, "tinfl_decompress error: %" PRId32, (int32_t) status);
             return GOLIOTH_ERR_FAIL;
         }
 
-        if (dst_buf_size > 0) {
+        if (dst_buf_size > 0)
+        {
             // output was generated by tinfl_decompress, forward to output_fn
             GOLIOTH_STATUS_RETURN_IF_ERROR(
                 ctx->output_fn(ctx->zlib_dict + ctx->dict_ofs, dst_buf_size, ctx->output_fn_arg));
@@ -226,13 +248,15 @@ static enum golioth_status decompress_zlib(decompress_ctx_t *ctx,
 
 static enum golioth_status decompress_none(decompress_ctx_t *ctx,
                                            const uint8_t *in_data,
-                                           size_t in_data_size) {
+                                           size_t in_data_size)
+{
     GOLIOTH_STATUS_RETURN_IF_ERROR(ctx->output_fn(in_data, in_data_size, ctx->output_fn_arg));
     ctx->bytes_out += in_data_size;
     return GOLIOTH_OK;
 }
 
-static enum golioth_status decompress(const uint8_t *in_data, size_t in_data_size, void *arg) {
+static enum golioth_status decompress(const uint8_t *in_data, size_t in_data_size, void *arg)
+{
     decompress_ctx_t *ctx = (decompress_ctx_t *) arg;
     assert(ctx->output_fn);
 
@@ -250,7 +274,8 @@ static enum golioth_status decompress(const uint8_t *in_data, size_t in_data_siz
     // TODO - compute sha256 of decompressed image and verify it matches manifest
 }
 
-static enum golioth_status patch(const uint8_t *in_data, size_t in_data_size, void *arg) {
+static enum golioth_status patch(const uint8_t *in_data, size_t in_data_size, void *arg)
+{
     patch_ctx_t *ctx = (patch_ctx_t *) arg;
     assert(ctx->output_fn);
 
@@ -261,7 +286,8 @@ static enum golioth_status patch(const uint8_t *in_data, size_t in_data_size, vo
 
     // Note: bspatch() will write data to new_stream, which calls patch_new_write()
     int err = bspatch(&ctx->bspatch_ctx, &ctx->old_stream, &ctx->new_stream, in_data, in_data_size);
-    if (err != BSPATCH_SUCCESS) {
+    if (err != BSPATCH_SUCCESS)
+    {
         GLTH_LOGE(TAG, "patch error: %d", err);
         return GOLIOTH_ERR_FAIL;
     }
@@ -272,7 +298,8 @@ static enum golioth_status patch(const uint8_t *in_data, size_t in_data_size, vo
 void fw_block_processor_init(fw_block_processor_ctx_t *ctx,
                              struct golioth_client *client,
                              const struct golioth_ota_component *component,
-                             uint8_t *download_buf) {
+                             uint8_t *download_buf)
+{
     memset(ctx, 0, sizeof(*ctx));
 
     download_init(&ctx->download, client, component, download_buf);
@@ -293,12 +320,14 @@ void fw_block_processor_init(fw_block_processor_ctx_t *ctx,
     ctx->patch.output_fn_arg = &ctx->handle_block;
 }
 
-enum golioth_status fw_block_processor_process(fw_block_processor_ctx_t *ctx) {
+enum golioth_status fw_block_processor_process(fw_block_processor_ctx_t *ctx)
+{
     // Call the first function in the block processing chain.
     return download_block(&ctx->download);
 }
 
-void fw_block_processor_log_results(const fw_block_processor_ctx_t *ctx) {
+void fw_block_processor_log_results(const fw_block_processor_ctx_t *ctx)
+{
     GLTH_LOGI(TAG, "Block Latency Stats:");
     GLTH_LOGI(TAG, "   Min: %" PRIu32 " ms", ctx->download.block_stats.block_min_ms);
     GLTH_LOGI(TAG, "   Ave: %.3f ms", ctx->download.block_stats.block_ema_ms);
@@ -306,7 +335,8 @@ void fw_block_processor_log_results(const fw_block_processor_ctx_t *ctx) {
     GLTH_LOGI(TAG, "Total bytes written: %" PRIu32, (uint32_t) ctx->handle_block.bytes_handled);
 
     int32_t decompress_delta = ctx->decompress.bytes_out - ctx->decompress.bytes_in;
-    if (decompress_delta > 0) {
+    if (decompress_delta > 0)
+    {
         GLTH_LOGI(TAG, "Compression saved %" PRId32 " bytes", decompress_delta);
     }
 }

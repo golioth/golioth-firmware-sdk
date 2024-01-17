@@ -50,7 +50,8 @@
 #ifdef __BOOTSIM__
 int sim_log_enabled(int level);
 #else
-static inline int sim_log_enabled(int level) {
+static inline int sim_log_enabled(int level)
+{
     (void) level;
     return 1;
 }
@@ -59,8 +60,10 @@ static inline int sim_log_enabled(int level) {
 
 #if MCUBOOT_LOG_LEVEL >= MCUBOOT_LOG_LEVEL_ERROR
 #define MCUBOOT_LOG_ERR(_fmt, ...)                                       \
-    do {                                                                 \
-        if (sim_log_enabled(MCUBOOT_LOG_LEVEL_ERROR) != 0) {             \
+    do                                                                   \
+    {                                                                    \
+        if (sim_log_enabled(MCUBOOT_LOG_LEVEL_ERROR) != 0)               \
+        {                                                                \
             (void) fprintf(stderr, "[ERR] " _fmt "\n\r", ##__VA_ARGS__); \
         }                                                                \
     } while ((bool) 0)
@@ -70,8 +73,10 @@ static inline int sim_log_enabled(int level) {
 
 #if MCUBOOT_LOG_LEVEL >= MCUBOOT_LOG_LEVEL_WARNING
 #define MCUBOOT_LOG_WRN(_fmt, ...)                                       \
-    do {                                                                 \
-        if (sim_log_enabled(MCUBOOT_LOG_LEVEL_WARNING) != 0) {           \
+    do                                                                   \
+    {                                                                    \
+        if (sim_log_enabled(MCUBOOT_LOG_LEVEL_WARNING) != 0)             \
+        {                                                                \
             (void) fprintf(stderr, "[WRN] " _fmt "\n\r", ##__VA_ARGS__); \
         }                                                                \
     } while ((bool) 0)
@@ -81,8 +86,10 @@ static inline int sim_log_enabled(int level) {
 
 #if MCUBOOT_LOG_LEVEL >= MCUBOOT_LOG_LEVEL_INFO
 #define MCUBOOT_LOG_INF(_fmt, ...)                                       \
-    do {                                                                 \
-        if (sim_log_enabled(MCUBOOT_LOG_LEVEL_INFO) != 0) {              \
+    do                                                                   \
+    {                                                                    \
+        if (sim_log_enabled(MCUBOOT_LOG_LEVEL_INFO) != 0)                \
+        {                                                                \
             (void) fprintf(stderr, "[INF] " _fmt "\n\r", ##__VA_ARGS__); \
         }                                                                \
     } while ((bool) 0)
@@ -92,8 +99,10 @@ static inline int sim_log_enabled(int level) {
 
 #if MCUBOOT_LOG_LEVEL >= MCUBOOT_LOG_LEVEL_DEBUG
 #define MCUBOOT_LOG_DBG(_fmt, ...)                                       \
-    do {                                                                 \
-        if (sim_log_enabled(MCUBOOT_LOG_LEVEL_DEBUG) != 0) {             \
+    do                                                                   \
+    {                                                                    \
+        if (sim_log_enabled(MCUBOOT_LOG_LEVEL_DEBUG) != 0)               \
+        {                                                                \
             (void) fprintf(stderr, "[DBG] " _fmt "\n\r", ##__VA_ARGS__); \
         }                                                                \
     } while ((bool) 0)

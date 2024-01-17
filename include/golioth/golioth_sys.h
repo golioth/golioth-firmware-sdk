@@ -43,7 +43,8 @@ typedef void *golioth_sys_timer_t;
 
 typedef void (*golioth_sys_timer_fn_t)(golioth_sys_timer_t timer, void *user_arg);
 
-struct golioth_timer_config {
+struct golioth_timer_config
+{
     const char *name;
     uint32_t expiration_ms;
     golioth_sys_timer_fn_t fn;
@@ -64,7 +65,8 @@ typedef void *golioth_sys_thread_t;
 
 typedef void (*golioth_sys_thread_fn_t)(void *user_arg);
 
-struct golioth_thread_config {
+struct golioth_thread_config
+{
     const char *name;
     golioth_sys_thread_fn_t fn;
     void *user_arg;
@@ -132,8 +134,10 @@ void golioth_sys_client_disconnected(void *client);
 
 #ifndef GLTH_LOGX
 #define GLTH_LOGX(COLOR, LEVEL, LEVEL_STR, TAG, ...)                       \
-    do {                                                                   \
-        if ((LEVEL) <= golioth_debug_get_log_level()) {                    \
+    do                                                                     \
+    {                                                                      \
+        if ((LEVEL) <= golioth_debug_get_log_level())                      \
+        {                                                                  \
             uint64_t now_ms = golioth_sys_now_ms();                        \
             printf(COLOR "%s (%" PRIu64 ") %s: ", LEVEL_STR, now_ms, TAG); \
             printf(__VA_ARGS__);                                           \
@@ -172,8 +176,10 @@ void golioth_sys_client_disconnected(void *client);
 
 #ifndef GLTH_LOG_BUFFER_HEXDUMP
 #define GLTH_LOG_BUFFER_HEXDUMP(TAG, payload, size, level) \
-    do {                                                   \
-        if ((level) <= golioth_debug_get_log_level()) {    \
+    do                                                     \
+    {                                                      \
+        if ((level) <= golioth_debug_get_log_level())      \
+        {                                                  \
             golioth_debug_hexdump(TAG, payload, size);     \
         }                                                  \
     } while (0);

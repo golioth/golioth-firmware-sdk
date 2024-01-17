@@ -20,7 +20,8 @@
 #define GOLIOTH_OTA_BLOCKSIZE 1024
 
 /// State of OTA update, reported to Golioth server
-enum golioth_ota_state {
+enum golioth_ota_state
+{
     /// No OTA update in progress
     GOLIOTH_OTA_STATE_IDLE,
     /// OTA is being downloaded and written to flash
@@ -32,7 +33,8 @@ enum golioth_ota_state {
 };
 
 /// A reason associated with state changes
-enum golioth_ota_reason {
+enum golioth_ota_reason
+{
     /// OTA update is ready to go. Also used for "no reason".
     GOLIOTH_OTA_REASON_READY,
     /// Firmware update was successful
@@ -56,7 +58,8 @@ enum golioth_ota_reason {
 };
 
 /// A component/artifact within an OTA manifest
-struct golioth_ota_component {
+struct golioth_ota_component
+{
     /// Artifact package name (e.g. "main")
     char package[CONFIG_GOLIOTH_OTA_MAX_PACKAGE_NAME_LEN + 1];
     /// Artifact version (e.g. "1.0.0")
@@ -68,7 +71,8 @@ struct golioth_ota_component {
 };
 
 /// An OTA manifest, composed of multiple components/artifacts
-struct golioth_ota_manifest {
+struct golioth_ota_manifest
+{
     /// OTA release sequence number
     int32_t seqnum;
     /// An array of artifacts

@@ -13,38 +13,46 @@ static enum golioth_debug_log_level _level = CONFIG_GOLIOTH_DEBUG_DEFAULT_LOG_LE
 static struct golioth_client *_client = NULL;
 static bool _cloud_log_enabled = CONFIG_GOLIOTH_AUTO_LOG_TO_CLOUD;
 
-void golioth_debug_set_log_level(enum golioth_debug_log_level level) {
+void golioth_debug_set_log_level(enum golioth_debug_log_level level)
+{
     _level = level;
 }
 
-enum golioth_debug_log_level golioth_debug_get_log_level(void) {
+enum golioth_debug_log_level golioth_debug_get_log_level(void)
+{
     return _level;
 }
 
 // Adapted from https://stackoverflow.com/a/7776146
-void golioth_debug_hexdump(const char *tag, const void *addr, int len) {
+void golioth_debug_hexdump(const char *tag, const void *addr, int len)
+{
     const int per_line = 16;
 
     int i;
     unsigned char buff[per_line + 1];
     const unsigned char *pc = (const unsigned char *) addr;
 
-    if (len <= 0) {
+    if (len <= 0)
+    {
         return;
     }
 
     // Output description if given.
-    if (tag != NULL) {
+    if (tag != NULL)
+    {
         printf("%s:\n", tag);
     }
 
     // Process every byte in the data.
-    for (i = 0; i < len; i++) {
+    for (i = 0; i < len; i++)
+    {
         // Multiple of per_line means new or first line (with line offset).
 
-        if ((i % per_line) == 0) {
+        if ((i % per_line) == 0)
+        {
             // Only print previous-line ASCII buffer for lines beyond first.
-            if (i != 0) {
+            if (i != 0)
+            {
                 printf("  %s\n", buff);
             }
 
@@ -56,16 +64,20 @@ void golioth_debug_hexdump(const char *tag, const void *addr, int len) {
         printf(" %02x", pc[i]);
 
         // And buffer a printable ASCII character for later.
-        if ((pc[i] < 0x20) || (pc[i] > 0x7e)) {  // isprint() may be better.
+        if ((pc[i] < 0x20) || (pc[i] > 0x7e))
+        {  // isprint() may be better.
             buff[i % per_line] = '.';
-        } else {
+        }
+        else
+        {
             buff[i % per_line] = pc[i];
         }
         buff[(i % per_line) + 1] = '\0';
     }
 
     // Pad out last line if not exactly per_line characters.
-    while ((i % per_line) != 0) {
+    while ((i % per_line) != 0)
+    {
         printf("   ");
         i++;
     }
@@ -84,18 +96,22 @@ void golioth_debug_printf(uint64_t tstamp_ms,
                           enum golioth_debug_log_level level,
                           const char *tag,
                           const char *format,
-                          ...) {
-    if (!_cloud_log_enabled) {
+                          ...)
+{
+    if (!_cloud_log_enabled)
+    {
         return;
     }
 
-    if (!_client) {
+    if (!_client)
+    {
         return;
     }
 
     // Avoid re-entering this function
     static bool log_in_progress = false;
-    if (log_in_progress) {
+    if (log_in_progress)
+    {
         return;
     }
 
@@ -105,13 +121,15 @@ void golioth_debug_printf(uint64_t tstamp_ms,
     int buffer_size = vsnprintf(NULL, 0, format, args) + 1;  // +1 for NULL
     va_end(args);
 
-    if (buffer_size <= 0) {
+    if (buffer_size <= 0)
+    {
         return;
     }
 
     // Temporarily allocate a buffer to store the message
     char *msg_buffer = golioth_sys_malloc(buffer_size);
-    if (!msg_buffer) {
+    if (!msg_buffer)
+    {
         return;
     }
 
@@ -125,7 +143,8 @@ void golioth_debug_printf(uint64_t tstamp_ms,
     // while calling the golioth_log_X_async functions, which might themselves
     // use GLTH_LOGX statements (which would cause infinite re-entrance).
     log_in_progress = true;
-    switch (level) {
+    switch (level)
+    {
         case GOLIOTH_DEBUG_LOG_LEVEL_ERROR:
             golioth_log_error_async(_client, tag, msg_buffer, NULL, NULL);
             break;
@@ -150,10 +169,12 @@ void golioth_debug_printf(uint64_t tstamp_ms,
     golioth_sys_free(msg_buffer);
 }
 
-void golioth_debug_set_client(struct golioth_client *client) {
+void golioth_debug_set_client(struct golioth_client *client)
+{
     _client = client;
 }
 
-void golioth_debug_set_cloud_log_enabled(bool enable) {
+void golioth_debug_set_cloud_log_enabled(bool enable)
+{
     _cloud_log_enabled = enable;
 }

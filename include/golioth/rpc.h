@@ -17,7 +17,8 @@
 struct golioth_rpc;
 
 /// Enumeration of RPC status codes, sent in the RPC response
-enum golioth_rpc_status {
+enum golioth_rpc_status
+{
     GOLIOTH_RPC_OK = 0,
     GOLIOTH_RPC_CANCELED = 1,
     GOLIOTH_RPC_UNKNOWN = 2,

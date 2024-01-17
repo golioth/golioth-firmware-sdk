@@ -12,7 +12,8 @@
 
 #include "golioth_basics.h"
 
-int main(void) {
+int main(void)
+{
     const struct golioth_client_config *config = golioth_sample_credentials_get();
 
     net_connect();

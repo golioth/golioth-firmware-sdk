@@ -7,7 +7,8 @@
 #include <golioth/golioth_sys.h>
 #include <string.h>  // memset
 
-golioth_event_group_t golioth_event_group_create(void) {
+golioth_event_group_t golioth_event_group_create(void)
+{
     golioth_event_group_t eg =
         (golioth_event_group_t) golioth_sys_malloc(sizeof(struct golioth_event_group));
     memset(eg, 0, sizeof(struct golioth_event_group));
@@ -17,7 +18,8 @@ golioth_event_group_t golioth_event_group_create(void) {
     return eg;
 }
 
-void golioth_event_group_set_bits(golioth_event_group_t eg, uint32_t bits_to_set) {
+void golioth_event_group_set_bits(golioth_event_group_t eg, uint32_t bits_to_set)
+{
     // Update the bitmap
     golioth_sys_sem_take(eg->bitmap_mutex, GOLIOTH_SYS_WAIT_FOREVER);
     eg->bitmap |= (bits_to_set);
@@ -30,10 +32,12 @@ void golioth_event_group_set_bits(golioth_event_group_t eg, uint32_t bits_to_set
 uint32_t golioth_event_group_wait_bits(golioth_event_group_t eg,
                                        uint32_t bits_to_wait_for,
                                        bool clear_set_bits,
-                                       int32_t wait_timeout_ms) {
+                                       int32_t wait_timeout_ms)
+{
     uint32_t bitmap = 0;
 
-    while (1) {
+    while (1)
+    {
         // Wait for the bitmap to change
         bool taken = golioth_sys_sem_take(eg->sem, wait_timeout_ms);
 
@@ -45,7 +49,8 @@ uint32_t golioth_event_group_wait_bits(golioth_event_group_t eg,
         // Check if one of the bits_to_wait_for was set
         bool got_a_bit = (bits_to_wait_for & bitmap);
 
-        if (got_a_bit && clear_set_bits) {
+        if (got_a_bit && clear_set_bits)
+        {
             // Clear the bits_to_wait_for
             eg->bitmap &= ~(bits_to_wait_for);
         }
@@ -53,7 +58,8 @@ uint32_t golioth_event_group_wait_bits(golioth_event_group_t eg,
         golioth_sys_sem_give(eg->bitmap_mutex);
 
         // Break out of loop on timeout or one of the bits was set
-        if (!taken || got_a_bit) {
+        if (!taken || got_a_bit)
+        {
             break;
         }
     }
@@ -61,8 +67,10 @@ uint32_t golioth_event_group_wait_bits(golioth_event_group_t eg,
     return bitmap;
 }
 
-void golioth_event_group_destroy(golioth_event_group_t eg) {
-    if (!eg) {
+void golioth_event_group_destroy(golioth_event_group_t eg)
+{
+    if (!eg)
+    {
         return;
     }
     golioth_sys_sem_destroy(eg->bitmap_mutex);
