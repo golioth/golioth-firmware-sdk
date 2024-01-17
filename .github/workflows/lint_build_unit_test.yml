@@ -38,7 +38,7 @@ jobs:
         else
             BASE=origin/$GITHUB_BASE_REF
         fi
-        REPO_ROOT=`pwd` ./scripts/lint/ci_check_clang_format.sh --merge-base $BASE
+        git clang-format-17 --verbose --extensions c,h --diff --diffstat $BASE
     - name: Run unit tests
       shell: bash
       run: |
