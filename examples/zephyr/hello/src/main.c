@@ -14,10 +14,12 @@ LOG_MODULE_REGISTER(hello_zephyr, LOG_LEVEL_DBG);
 
 #include <samples/common/net_connect.h>
 
-struct golioth_client* client;
+struct golioth_client *client;
 static K_SEM_DEFINE(connected, 0, 1);
 
-static void on_client_event(struct golioth_client* client, enum golioth_client_event event, void* arg) {
+static void on_client_event(struct golioth_client *client,
+                            enum golioth_client_event event,
+                            void *arg) {
     bool is_connected = (event == GOLIOTH_CLIENT_EVENT_CONNECTED);
     if (is_connected) {
         k_sem_give(&connected);
@@ -36,7 +38,7 @@ int main(void) {
      * device. For simplicity, we provide a utility to hardcode credentials as
      * kconfig options in the samples.
      */
-    const struct golioth_client_config* client_config = golioth_sample_credentials_get();
+    const struct golioth_client_config *client_config = golioth_sample_credentials_get();
 
     client = golioth_client_create(client_config);
 

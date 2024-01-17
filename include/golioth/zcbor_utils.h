@@ -7,7 +7,7 @@
 #include <zcbor_decode.h>
 
 /** Extract the major type, i.e. the first 3 bits of the header byte. */
-#define ZCBOR_MAJOR_TYPE(header_byte) ((zcbor_major_type_t)(((header_byte) >> 5) & 0x7))
+#define ZCBOR_MAJOR_TYPE(header_byte) ((zcbor_major_type_t) (((header_byte) >> 5) & 0x7))
 
 #if defined(ZCBOR_VERSION_MAJOR) && defined(ZCBOR_VERSION_MINOR)
 #if ZCBOR_VERSION_MAJOR == 0 && ZCBOR_VERSION_MINOR < 7
@@ -30,8 +30,8 @@ struct zcbor_map_key {
 
 struct zcbor_map_entry {
     struct zcbor_map_key key;
-    int (*decode)(zcbor_state_t* zsd, void* value);
-    void* value;
+    int (*decode)(zcbor_state_t *zsd, void *value);
+    void *value;
 };
 
 /**
@@ -40,7 +40,7 @@ struct zcbor_map_entry {
  * @retval true   Reached end of list or map
  * @retval false  There are more items (from list of map) to be processed
  */
-static inline bool zcbor_list_or_map_end(zcbor_state_t* state) {
+static inline bool zcbor_list_or_map_end(zcbor_state_t *state) {
     if (state->indefinite_length_array) {
         return *state->payload == 0xff;
     }
@@ -59,7 +59,7 @@ static inline bool zcbor_list_or_map_end(zcbor_state_t* state) {
  * @retval  0  On success
  * @retval <0  POSIX error code on error
  */
-int zcbor_map_int64_decode(zcbor_state_t* zsd, void* value);
+int zcbor_map_int64_decode(zcbor_state_t *zsd, void *value);
 
 /**
  * @brief Decode text string value from CBOR map
@@ -73,7 +73,7 @@ int zcbor_map_int64_decode(zcbor_state_t* zsd, void* value);
  * @retval  0  On success
  * @retval <0  POSIX error code on error
  */
-int zcbor_map_tstr_decode(zcbor_state_t* zsd, void* value);
+int zcbor_map_tstr_decode(zcbor_state_t *zsd, void *value);
 
 /**
  * @brief Decode CBOR map with specified entries
@@ -90,7 +90,7 @@ int zcbor_map_tstr_decode(zcbor_state_t* zsd, void* value);
  * @retval -ENOENT  Map was empty
  * @retval <0       Other error returned from @ entries decode callback
  */
-int zcbor_map_decode(zcbor_state_t* zsd, struct zcbor_map_entry* entries, size_t num_entries);
+int zcbor_map_decode(zcbor_state_t *zsd, struct zcbor_map_entry *entries, size_t num_entries);
 
 /**
  * @brief Define CBOR map entry to be decoded, referenced by uint32_t key
@@ -100,13 +100,13 @@ int zcbor_map_decode(zcbor_state_t* zsd, struct zcbor_map_entry* entries, size_t
  * @param _value   Value passed to decode callback
  */
 #define ZCBOR_U32_MAP_ENTRY(_u32, _decode, _value) \
-    { \
-        .key = \
-                { \
-                        .type = ZCBOR_MAP_KEY_TYPE_U32, \
-                        .u32 = _u32, \
-                }, \
-        .decode = _decode, .value = _value, \
+    {                                              \
+        .key =                                     \
+            {                                      \
+                .type = ZCBOR_MAP_KEY_TYPE_U32,    \
+                .u32 = _u32,                       \
+            },                                     \
+        .decode = _decode, .value = _value,        \
     }
 
 /**
@@ -116,12 +116,12 @@ int zcbor_map_decode(zcbor_state_t* zsd, struct zcbor_map_entry* entries, size_t
  * @param _decode    Map value decode callback
  * @param _value     Value passed to decode callback
  */
-#define ZCBOR_TSTR_LIT_MAP_ENTRY(_tstr_lit, _decode, _value) \
-    { \
-        .key = \
-                { \
-                        .type = ZCBOR_MAP_KEY_TYPE_TSTR, \
-                        .tstr = {(const uint8_t*)_tstr_lit, sizeof(_tstr_lit) - 1}, \
-                }, \
-        .decode = _decode, .value = _value, \
+#define ZCBOR_TSTR_LIT_MAP_ENTRY(_tstr_lit, _decode, _value)                  \
+    {                                                                         \
+        .key =                                                                \
+            {                                                                 \
+                .type = ZCBOR_MAP_KEY_TYPE_TSTR,                              \
+                .tstr = {(const uint8_t *) _tstr_lit, sizeof(_tstr_lit) - 1}, \
+            },                                                                \
+        .decode = _decode, .value = _value,                                   \
     }

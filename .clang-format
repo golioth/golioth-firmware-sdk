@@ -28,8 +28,8 @@ UseTab: Never
 # Spacing style
 Cpp11BracedListStyle: true
 DerivePointerAlignment: false
-PointerAlignment: Left
-SpaceAfterCStyleCast: false
+PointerAlignment: Right
+SpaceAfterCStyleCast: true
 SpaceAfterTemplateKeyword: false
 SpaceBeforeAssignmentOperators: true
 SpaceBeforeParens: ControlStatements
@@ -54,12 +54,13 @@ MacroBlockEnd: ''
 SortIncludes: false
 
 # Alignment & breaking
-AlignAfterOpenBracket: AlwaysBreak
+AlignAfterOpenBracket: Align
 AlignConsecutiveAssignments: false
 AlignConsecutiveDeclarations: false
-AlignEscapedNewlines: DontAlign
+AlignEscapedNewlines: Left
 AlignOperands: false
 AllowAllParametersOfDeclarationOnNextLine: false
+AllowAllArgumentsOnNextLine: false
 AllowShortBlocksOnASingleLine: false
 AllowShortCaseLabelsOnASingleLine: false
 AllowShortFunctionsOnASingleLine: Empty

@@ -20,7 +20,7 @@ struct golioth_event_group {
     // Signals that bitmap changed
     golioth_sys_sem_t sem;
 };
-typedef struct golioth_event_group* golioth_event_group_t;
+typedef struct golioth_event_group *golioth_event_group_t;
 
 golioth_event_group_t golioth_event_group_create(void);
 void golioth_event_group_set_bits(golioth_event_group_t eg, uint32_t bits_to_set);
@@ -30,12 +30,11 @@ void golioth_event_group_set_bits(golioth_event_group_t eg, uint32_t bits_to_set
 //
 // If clear_set_bits is true, the value returned will be the bitmap
 // value before the bits were cleared.
-uint32_t golioth_event_group_wait_bits(
-        golioth_event_group_t eg,
-        // Bitmap of bits to wait. Will return if/when any are set.
-        uint32_t bits_to_wait_for,
-        // If true, will automatically clear any set bits.
-        bool clear_set_bits,
-        // set to -1 to wait forever
-        int32_t wait_timeout_ms);
+uint32_t golioth_event_group_wait_bits(golioth_event_group_t eg,
+                                       // Bitmap of bits to wait. Will return if/when any are set.
+                                       uint32_t bits_to_wait_for,
+                                       // If true, will automatically clear any set bits.
+                                       bool clear_set_bits,
+                                       // set to -1 to wait forever
+                                       int32_t wait_timeout_ms);
 void golioth_event_group_destroy(golioth_event_group_t);

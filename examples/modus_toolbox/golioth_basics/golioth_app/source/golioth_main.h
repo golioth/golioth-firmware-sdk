@@ -74,7 +74,7 @@
 /*******************************************************************************
  * Function Prototype
  ********************************************************************************/
-void golioth_main_task(void* arg);
+void golioth_main_task(void *arg);
 
 #endif /* GOLIOTH_MAIN_H_ */
 

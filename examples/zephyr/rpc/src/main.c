@@ -16,10 +16,9 @@ LOG_MODULE_REGISTER(rpc_sample, LOG_LEVEL_DBG);
 
 static K_SEM_DEFINE(connected, 0, 1);
 
-static enum golioth_rpc_status on_multiply(
-    zcbor_state_t* request_params_array,
-    zcbor_state_t* response_detail_map,
-    void* callback_arg) {
+static enum golioth_rpc_status on_multiply(zcbor_state_t *request_params_array,
+                                           zcbor_state_t *response_detail_map,
+                                           void *callback_arg) {
     double a, b;
     double value;
     bool ok;
@@ -45,7 +44,9 @@ static enum golioth_rpc_status on_multiply(
     return GOLIOTH_RPC_OK;
 }
 
-static void on_client_event(struct golioth_client* client, enum golioth_client_event event, void* arg) {
+static void on_client_event(struct golioth_client *client,
+                            enum golioth_client_event event,
+                            void *arg) {
     bool is_connected = (event == GOLIOTH_CLIENT_EVENT_CONNECTED);
     if (is_connected) {
         k_sem_give(&connected);
@@ -62,10 +63,10 @@ int main(void) {
      * device. For simplicity, we provide a utility to hardcode credentials as
      * kconfig options in the samples.
      */
-    const struct golioth_client_config* client_config = golioth_sample_credentials_get();
+    const struct golioth_client_config *client_config = golioth_sample_credentials_get();
 
-    struct golioth_client* client = golioth_client_create(client_config);
-    struct golioth_rpc* rpc = golioth_rpc_init(client);
+    struct golioth_client *client = golioth_client_create(client_config);
+    struct golioth_rpc *rpc = golioth_rpc_init(client);
 
     golioth_client_register_event_callback(client, on_client_event, NULL);
 

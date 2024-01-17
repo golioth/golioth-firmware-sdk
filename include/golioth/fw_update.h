@@ -13,10 +13,10 @@
 
 struct golioth_fw_update_config {
     /// The current firmware version, NULL-terminated, shallow-copied from user. (e.g. "1.2.3")
-    const char* current_version;
+    const char *current_version;
     /// The name of the package in the manifest for the main firmware, NULL-terminated,
     /// shallow-copied from user (e.g. "main").
-    const char* fw_package_name;
+    const char *fw_package_name;
 };
 
 /// @defgroup golioth_fw_update golioth_fw_update
@@ -41,25 +41,23 @@ struct golioth_fw_update_config {
 /// @param client The client handle from @ref golioth_client_create
 /// @param current_version The current firmware version (e.g. "1.2.3"), shallow copy, must be
 ///     NULL-terminated
-void golioth_fw_update_init(struct golioth_client* client, const char* current_version);
+void golioth_fw_update_init(struct golioth_client *client, const char *current_version);
 
 /// Same as golioth_fw_update_init, but with additional configuration specified via struct.
 ///
 /// @param client The client handle from @ref golioth_client_create
 /// @param config The configuration struct (see @ref golioth_fw_update_config).
-void golioth_fw_update_init_with_config(
-        struct golioth_client* client,
-        const struct golioth_fw_update_config* config);
+void golioth_fw_update_init_with_config(struct golioth_client *client,
+                                        const struct golioth_fw_update_config *config);
 
 /// Function callback type, for FW update state change listeners
 ///
 /// @param state The new state being transitioned to
 /// @param reason The reason the state transition is happening
 /// @param user_arg Arbitraty user argument, can be NULL.
-typedef void (*golioth_fw_update_state_change_callback)(
-        enum golioth_ota_state state,
-        enum golioth_ota_reason reason,
-        void* user_arg);
+typedef void (*golioth_fw_update_state_change_callback)(enum golioth_ota_state state,
+                                                        enum golioth_ota_reason reason,
+                                                        void *user_arg);
 
 /// Register listener for FW update state changes.
 ///
@@ -69,8 +67,8 @@ typedef void (*golioth_fw_update_state_change_callback)(
 /// @param callback Function to be called when a state change happens
 /// @param user_arg Arbitraty user argument, can be NULL
 void golioth_fw_update_register_state_change_callback(
-        golioth_fw_update_state_change_callback callback,
-        void* user_arg);
+    golioth_fw_update_state_change_callback callback,
+    void *user_arg);
 
 //---------------------------------------------------------------------------
 // Backend API for firmware updates. Required to be implemented by port.
@@ -105,11 +103,10 @@ void fw_update_cancel_rollback(void);
 ///
 /// @return GOLIOTH_OK - Block handled
 /// @return Otherwise - error handling block, abort firmware update
-enum golioth_status fw_update_handle_block(
-        const uint8_t* block,
-        size_t block_size,
-        size_t offset,
-        size_t total_size);
+enum golioth_status fw_update_handle_block(const uint8_t *block,
+                                           size_t block_size,
+                                           size_t offset,
+                                           size_t total_size);
 
 /// Copy bufsize bytes of the currently running image at a specific offset
 /// into buf.
@@ -123,10 +120,9 @@ enum golioth_status fw_update_handle_block(
 ///
 /// @return GOLIOTH_OK - copied bufsize bytes into buf
 /// @return Otherwise - error copying bytes, abort firmware update
-enum golioth_status fw_update_read_current_image_at_offset(
-        uint8_t* buf,
-        size_t bufsize,
-        size_t offset);
+enum golioth_status fw_update_read_current_image_at_offset(uint8_t *buf,
+                                                           size_t bufsize,
+                                                           size_t offset);
 
 /// Post-download hook.
 ///

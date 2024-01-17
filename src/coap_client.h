@@ -18,17 +18,17 @@ typedef struct {
     enum golioth_content_type content_type;
     // CoAP payload assumed to be dynamically allocated before enqueue
     // and freed after dequeue.
-    uint8_t* payload;
+    uint8_t *payload;
     // Size of payload, in bytes
     size_t payload_size;
     golioth_set_cb_fn callback;
-    void* arg;
+    void *arg;
 } golioth_coap_post_params_t;
 
 typedef struct {
     enum golioth_content_type content_type;
     golioth_get_cb_fn callback;
-    void* arg;
+    void *arg;
 } golioth_coap_get_params_t;
 
 typedef struct {
@@ -36,18 +36,18 @@ typedef struct {
     size_t block_index;
     size_t block_size;
     golioth_get_block_cb_fn callback;
-    void* arg;
+    void *arg;
 } golioth_coap_get_block_params_t;
 
 typedef struct {
     golioth_set_cb_fn callback;
-    void* arg;
+    void *arg;
 } golioth_coap_delete_params_t;
 
 typedef struct {
     enum golioth_content_type content_type;
     golioth_get_cb_fn callback;
-    void* arg;
+    void *arg;
 } golioth_coap_observe_params_t;
 
 typedef enum {
@@ -63,7 +63,7 @@ typedef enum {
 typedef struct {
     // The CoAP path string (everything after coaps://coap.golioth.io/).
     // Assumption: path_prefix is a string literal (i.e. we don't need to strcpy).
-    const char* path_prefix;
+    const char *path_prefix;
     char path[CONFIG_GOLIOTH_COAP_MAX_PATH_LEN + 1];
     uint8_t token[8];
     size_t token_len;
@@ -105,62 +105,56 @@ typedef struct {
     golioth_coap_request_msg_t req;
 } golioth_coap_observe_info_t;
 
-enum golioth_status golioth_coap_client_empty(
-        struct golioth_client* client,
-        bool is_synchronous,
-        int32_t timeout_s);
+enum golioth_status golioth_coap_client_empty(struct golioth_client *client,
+                                              bool is_synchronous,
+                                              int32_t timeout_s);
 
-enum golioth_status golioth_coap_client_set(
-        struct golioth_client* client,
-        const char* path_prefix,
-        const char* path,
-        enum golioth_content_type content_type,
-        const uint8_t* payload,
-        size_t payload_size,
-        golioth_set_cb_fn callback,
-        void* callback_arg,
-        bool is_synchronous,
-        int32_t timeout_s);
+enum golioth_status golioth_coap_client_set(struct golioth_client *client,
+                                            const char *path_prefix,
+                                            const char *path,
+                                            enum golioth_content_type content_type,
+                                            const uint8_t *payload,
+                                            size_t payload_size,
+                                            golioth_set_cb_fn callback,
+                                            void *callback_arg,
+                                            bool is_synchronous,
+                                            int32_t timeout_s);
 
-enum golioth_status golioth_coap_client_delete(
-        struct golioth_client* client,
-        const char* path_prefix,
-        const char* path,
-        golioth_set_cb_fn callback,
-        void* callback_arg,
-        bool is_synchronous,
-        int32_t timeout_s);
+enum golioth_status golioth_coap_client_delete(struct golioth_client *client,
+                                               const char *path_prefix,
+                                               const char *path,
+                                               golioth_set_cb_fn callback,
+                                               void *callback_arg,
+                                               bool is_synchronous,
+                                               int32_t timeout_s);
 
-enum golioth_status golioth_coap_client_get(
-        struct golioth_client* client,
-        const char* path_prefix,
-        const char* path,
-        enum golioth_content_type content_type,
-        golioth_get_cb_fn callback,
-        void* callback_arg,
-        bool is_synchronous,
-        int32_t timeout_s);
+enum golioth_status golioth_coap_client_get(struct golioth_client *client,
+                                            const char *path_prefix,
+                                            const char *path,
+                                            enum golioth_content_type content_type,
+                                            golioth_get_cb_fn callback,
+                                            void *callback_arg,
+                                            bool is_synchronous,
+                                            int32_t timeout_s);
 
-enum golioth_status golioth_coap_client_get_block(
-        struct golioth_client* client,
-        const char* path_prefix,
-        const char* path,
-        enum golioth_content_type content_type,
-        size_t block_index,
-        size_t block_size,
-        golioth_get_block_cb_fn callback,
-        void* callback_arg,
-        bool is_synchronous,
-        int32_t timeout_s);
+enum golioth_status golioth_coap_client_get_block(struct golioth_client *client,
+                                                  const char *path_prefix,
+                                                  const char *path,
+                                                  enum golioth_content_type content_type,
+                                                  size_t block_index,
+                                                  size_t block_size,
+                                                  golioth_get_block_cb_fn callback,
+                                                  void *callback_arg,
+                                                  bool is_synchronous,
+                                                  int32_t timeout_s);
 
-enum golioth_status golioth_coap_client_observe_async(
-        struct golioth_client* client,
-        const char* path_prefix,
-        const char* path,
-        enum golioth_content_type content_type,
-        golioth_get_cb_fn callback,
-        void* callback_arg);
+enum golioth_status golioth_coap_client_observe_async(struct golioth_client *client,
+                                                      const char *path_prefix,
+                                                      const char *path,
+                                                      enum golioth_content_type content_type,
+                                                      golioth_get_cb_fn callback,
+                                                      void *callback_arg);
 
 /// Getters, for internal SDK code to access data within the
 /// coap client struct.
-golioth_sys_thread_t golioth_coap_client_get_thread(struct golioth_client* client);
+golioth_sys_thread_t golioth_coap_client_get_thread(struct golioth_client *client);

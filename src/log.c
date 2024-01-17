@@ -27,24 +27,23 @@ typedef enum {
     GOLIOTH_LOG_LEVEL_DEBUG
 } golioth_log_level_t;
 
-static const char* _level_to_str[GOLIOTH_LOG_LEVEL_DEBUG + 1] = {
-        [GOLIOTH_LOG_LEVEL_ERROR] = "error",
-        [GOLIOTH_LOG_LEVEL_WARN] = "warn",
-        [GOLIOTH_LOG_LEVEL_INFO] = "info",
-        [GOLIOTH_LOG_LEVEL_DEBUG] = "debug"};
+static const char *_level_to_str[GOLIOTH_LOG_LEVEL_DEBUG + 1] = {
+    [GOLIOTH_LOG_LEVEL_ERROR] = "error",
+    [GOLIOTH_LOG_LEVEL_WARN] = "warn",
+    [GOLIOTH_LOG_LEVEL_INFO] = "info",
+    [GOLIOTH_LOG_LEVEL_DEBUG] = "debug"};
 
-static enum golioth_status golioth_log_internal(
-        struct golioth_client* client,
-        golioth_log_level_t level,
-        const char* tag,
-        const char* log_message,
-        bool is_synchronous,
-        int32_t timeout_s,
-        golioth_set_cb_fn callback,
-        void* callback_arg) {
+static enum golioth_status golioth_log_internal(struct golioth_client *client,
+                                                golioth_log_level_t level,
+                                                const char *tag,
+                                                const char *log_message,
+                                                bool is_synchronous,
+                                                int32_t timeout_s,
+                                                golioth_set_cb_fn callback,
+                                                void *callback_arg) {
     assert(level <= GOLIOTH_LOG_LEVEL_DEBUG);
 
-    uint8_t* cbor_buf = malloc(CBOR_LOG_MAX_LEN);
+    uint8_t *cbor_buf = malloc(CBOR_LOG_MAX_LEN);
     enum golioth_status status = GOLIOTH_ERR_SERIALIZE;
     bool ok;
 
@@ -60,8 +59,8 @@ static enum golioth_status golioth_log_internal(
     }
 
     ok = zcbor_tstr_put_lit(zse, "level") && zcbor_tstr_put_term(zse, _level_to_str[level])
-            && zcbor_tstr_put_lit(zse, "module") && zcbor_tstr_put_term(zse, tag)
-            && zcbor_tstr_put_lit(zse, "msg") && zcbor_tstr_put_term(zse, log_message);
+        && zcbor_tstr_put_lit(zse, "module") && zcbor_tstr_put_term(zse, tag)
+        && zcbor_tstr_put_lit(zse, "msg") && zcbor_tstr_put_term(zse, log_message);
     if (!ok) {
         goto cleanup;
     }
@@ -71,123 +70,134 @@ static enum golioth_status golioth_log_internal(
         goto cleanup;
     }
 
-    status = golioth_coap_client_set(
-            client,
-            "",  // path-prefix unused
-            "logs",
-            GOLIOTH_CONTENT_TYPE_CBOR,
-            cbor_buf,
-            zse->payload - cbor_buf,
-            callback,
-            callback_arg,
-            is_synchronous,
-            timeout_s);
+    status = golioth_coap_client_set(client,
+                                     "",  // path-prefix unused
+                                     "logs",
+                                     GOLIOTH_CONTENT_TYPE_CBOR,
+                                     cbor_buf,
+                                     zse->payload - cbor_buf,
+                                     callback,
+                                     callback_arg,
+                                     is_synchronous,
+                                     timeout_s);
 
 cleanup:
     free(cbor_buf);
     return status;
 }
 
-enum golioth_status golioth_log_error_async(
-        struct golioth_client* client,
-        const char* tag,
-        const char* log_message,
-        golioth_set_cb_fn callback,
-        void* callback_arg) {
-    return golioth_log_internal(
-            client,
-            GOLIOTH_LOG_LEVEL_ERROR,
-            tag,
-            log_message,
-            false,
-            GOLIOTH_SYS_WAIT_FOREVER,
-            callback,
-            callback_arg);
+enum golioth_status golioth_log_error_async(struct golioth_client *client,
+                                            const char *tag,
+                                            const char *log_message,
+                                            golioth_set_cb_fn callback,
+                                            void *callback_arg) {
+    return golioth_log_internal(client,
+                                GOLIOTH_LOG_LEVEL_ERROR,
+                                tag,
+                                log_message,
+                                false,
+                                GOLIOTH_SYS_WAIT_FOREVER,
+                                callback,
+                                callback_arg);
 }
 
-enum golioth_status golioth_log_warn_async(
-        struct golioth_client* client,
-        const char* tag,
-        const char* log_message,
-        golioth_set_cb_fn callback,
-        void* callback_arg) {
-    return golioth_log_internal(
-            client,
-            GOLIOTH_LOG_LEVEL_WARN,
-            tag,
-            log_message,
-            false,
-            GOLIOTH_SYS_WAIT_FOREVER,
-            callback,
-            callback_arg);
+enum golioth_status golioth_log_warn_async(struct golioth_client *client,
+                                           const char *tag,
+                                           const char *log_message,
+                                           golioth_set_cb_fn callback,
+                                           void *callback_arg) {
+    return golioth_log_internal(client,
+                                GOLIOTH_LOG_LEVEL_WARN,
+                                tag,
+                                log_message,
+                                false,
+                                GOLIOTH_SYS_WAIT_FOREVER,
+                                callback,
+                                callback_arg);
 }
 
-enum golioth_status golioth_log_info_async(
-        struct golioth_client* client,
-        const char* tag,
-        const char* log_message,
-        golioth_set_cb_fn callback,
-        void* callback_arg) {
-    return golioth_log_internal(
-            client,
-            GOLIOTH_LOG_LEVEL_INFO,
-            tag,
-            log_message,
-            false,
-            GOLIOTH_SYS_WAIT_FOREVER,
-            callback,
-            callback_arg);
+enum golioth_status golioth_log_info_async(struct golioth_client *client,
+                                           const char *tag,
+                                           const char *log_message,
+                                           golioth_set_cb_fn callback,
+                                           void *callback_arg) {
+    return golioth_log_internal(client,
+                                GOLIOTH_LOG_LEVEL_INFO,
+                                tag,
+                                log_message,
+                                false,
+                                GOLIOTH_SYS_WAIT_FOREVER,
+                                callback,
+                                callback_arg);
 }
 
-enum golioth_status golioth_log_debug_async(
-        struct golioth_client* client,
-        const char* tag,
-        const char* log_message,
-        golioth_set_cb_fn callback,
-        void* callback_arg) {
-    return golioth_log_internal(
-            client,
-            GOLIOTH_LOG_LEVEL_DEBUG,
-            tag,
-            log_message,
-            false,
-            GOLIOTH_SYS_WAIT_FOREVER,
-            callback,
-            callback_arg);
+enum golioth_status golioth_log_debug_async(struct golioth_client *client,
+                                            const char *tag,
+                                            const char *log_message,
+                                            golioth_set_cb_fn callback,
+                                            void *callback_arg) {
+    return golioth_log_internal(client,
+                                GOLIOTH_LOG_LEVEL_DEBUG,
+                                tag,
+                                log_message,
+                                false,
+                                GOLIOTH_SYS_WAIT_FOREVER,
+                                callback,
+                                callback_arg);
 }
 
-enum golioth_status golioth_log_error_sync(
-        struct golioth_client* client,
-        const char* tag,
-        const char* log_message,
-        int32_t timeout_s) {
-    return golioth_log_internal(
-            client, GOLIOTH_LOG_LEVEL_ERROR, tag, log_message, true, timeout_s, NULL, NULL);
+enum golioth_status golioth_log_error_sync(struct golioth_client *client,
+                                           const char *tag,
+                                           const char *log_message,
+                                           int32_t timeout_s) {
+    return golioth_log_internal(client,
+                                GOLIOTH_LOG_LEVEL_ERROR,
+                                tag,
+                                log_message,
+                                true,
+                                timeout_s,
+                                NULL,
+                                NULL);
 }
 
-enum golioth_status golioth_log_warn_sync(
-        struct golioth_client* client,
-        const char* tag,
-        const char* log_message,
-        int32_t timeout_s) {
-    return golioth_log_internal(
-            client, GOLIOTH_LOG_LEVEL_WARN, tag, log_message, true, timeout_s, NULL, NULL);
+enum golioth_status golioth_log_warn_sync(struct golioth_client *client,
+                                          const char *tag,
+                                          const char *log_message,
+                                          int32_t timeout_s) {
+    return golioth_log_internal(client,
+                                GOLIOTH_LOG_LEVEL_WARN,
+                                tag,
+                                log_message,
+                                true,
+                                timeout_s,
+                                NULL,
+                                NULL);
 }
 
-enum golioth_status golioth_log_info_sync(
-        struct golioth_client* client,
-        const char* tag,
-        const char* log_message,
-        int32_t timeout_s) {
-    return golioth_log_internal(
-            client, GOLIOTH_LOG_LEVEL_INFO, tag, log_message, true, timeout_s, NULL, NULL);
+enum golioth_status golioth_log_info_sync(struct golioth_client *client,
+                                          const char *tag,
+                                          const char *log_message,
+                                          int32_t timeout_s) {
+    return golioth_log_internal(client,
+                                GOLIOTH_LOG_LEVEL_INFO,
+                                tag,
+                                log_message,
+                                true,
+                                timeout_s,
+                                NULL,
+                                NULL);
 }
 
-enum golioth_status golioth_log_debug_sync(
-        struct golioth_client* client,
-        const char* tag,
-        const char* log_message,
-        int32_t timeout_s) {
-    return golioth_log_internal(
-            client, GOLIOTH_LOG_LEVEL_DEBUG, tag, log_message, true, timeout_s, NULL, NULL);
+enum golioth_status golioth_log_debug_sync(struct golioth_client *client,
+                                           const char *tag,
+                                           const char *log_message,
+                                           int32_t timeout_s) {
+    return golioth_log_internal(client,
+                                GOLIOTH_LOG_LEVEL_DEBUG,
+                                tag,
+                                log_message,
+                                true,
+                                timeout_s,
+                                NULL,
+                                NULL);
 }

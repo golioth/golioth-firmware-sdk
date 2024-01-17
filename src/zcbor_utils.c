@@ -13,11 +13,10 @@ LOG_TAG_DEFINE(zcbor_utils);
 #include <golioth/zcbor_utils.h>
 #include "zcbor_any_skip_fixed.h"
 
-static struct zcbor_map_entry* map_entry_get(
-        struct zcbor_map_entry* entries,
-        size_t num_entries,
-        struct zcbor_map_key* key) {
-    for (struct zcbor_map_entry* entry = entries; entry < &entries[num_entries]; entry++) {
+static struct zcbor_map_entry *map_entry_get(struct zcbor_map_entry *entries,
+                                             size_t num_entries,
+                                             struct zcbor_map_key *key) {
+    for (struct zcbor_map_entry *entry = entries; entry < &entries[num_entries]; entry++) {
         switch (entry->key.type) {
             case ZCBOR_MAP_KEY_TYPE_U32:
                 if (entry->key.u32 == key->u32) {
@@ -36,7 +35,7 @@ static struct zcbor_map_entry* map_entry_get(
     return NULL;
 }
 
-int zcbor_map_int64_decode(zcbor_state_t* zsd, void* value) {
+int zcbor_map_int64_decode(zcbor_state_t *zsd, void *value) {
     bool ok;
 
     ok = zcbor_int64_decode(zsd, value);
@@ -47,7 +46,7 @@ int zcbor_map_int64_decode(zcbor_state_t* zsd, void* value) {
     return 0;
 }
 
-int zcbor_map_tstr_decode(zcbor_state_t* zsd, void* value) {
+int zcbor_map_tstr_decode(zcbor_state_t *zsd, void *value) {
     bool ok;
 
     ok = zcbor_tstr_decode(zsd, value);
@@ -58,7 +57,7 @@ int zcbor_map_tstr_decode(zcbor_state_t* zsd, void* value) {
     return 0;
 }
 
-static int zcbor_map_key_decode(zcbor_state_t* zsd, struct zcbor_map_key* key) {
+static int zcbor_map_key_decode(zcbor_state_t *zsd, struct zcbor_map_key *key) {
     zcbor_major_type_t major_type = ZCBOR_MAJOR_TYPE(*zsd->payload);
     bool ok;
 
@@ -88,8 +87,8 @@ static int zcbor_map_key_decode(zcbor_state_t* zsd, struct zcbor_map_key* key) {
     return -EBADMSG;
 }
 
-int zcbor_map_decode(zcbor_state_t* zsd, struct zcbor_map_entry* entries, size_t num_entries) {
-    struct zcbor_map_entry* entry;
+int zcbor_map_decode(zcbor_state_t *zsd, struct zcbor_map_entry *entries, size_t num_entries) {
+    struct zcbor_map_entry *entry;
     size_t num_decoded = 0;
     struct zcbor_map_key key;
     int err = 0;

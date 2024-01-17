@@ -12,13 +12,12 @@
 
 #include "golioth_basics.h"
 
-
 int main(void) {
     const struct golioth_client_config *config = golioth_sample_credentials_get();
 
     net_connect();
 
-    struct golioth_client* client = golioth_client_create(config);
+    struct golioth_client *client = golioth_client_create(config);
     assert(client);
     golioth_basics(client);
 

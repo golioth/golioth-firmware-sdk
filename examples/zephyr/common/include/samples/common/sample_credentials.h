@@ -21,6 +21,6 @@
  *
  * @return struct golioth_client_config configuration to use when creating a struct golioth_client*
  */
-const struct golioth_client_config* golioth_sample_credentials_get(void);
+const struct golioth_client_config *golioth_sample_credentials_get(void);
 
 #endif /* __GOLIOTH_INCLUDE_SAMPLE_CREDENTIALS_H__ */

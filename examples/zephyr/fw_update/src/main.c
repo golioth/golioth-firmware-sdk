@@ -16,11 +16,13 @@ LOG_MODULE_REGISTER(fw_update_sample, LOG_LEVEL_DBG);
 #include <samples/common/net_connect.h>
 
 // Current firmware version; update in prj.conf or via build argument
-static const char* _current_version = CONFIG_MCUBOOT_IMGTOOL_SIGN_VERSION;
+static const char *_current_version = CONFIG_MCUBOOT_IMGTOOL_SIGN_VERSION;
 
 static K_SEM_DEFINE(connected, 0, 1);
 
-static void on_client_event(struct golioth_client* client, enum golioth_client_event event, void* arg) {
+static void on_client_event(struct golioth_client *client,
+                            enum golioth_client_event event,
+                            void *arg) {
     bool is_connected = (event == GOLIOTH_CLIENT_EVENT_CONNECTED);
     if (is_connected) {
         k_sem_give(&connected);
@@ -37,9 +39,9 @@ int main(void) {
      * device. For simplicity, we provide a utility to hardcode credentials as
      * kconfig options in the samples.
      */
-    const struct golioth_client_config* client_config = golioth_sample_credentials_get();
+    const struct golioth_client_config *client_config = golioth_sample_credentials_get();
 
-    struct golioth_client* client = golioth_client_create(client_config);
+    struct golioth_client *client = golioth_client_create(client_config);
 
     golioth_client_register_event_callback(client, on_client_event, NULL);
 

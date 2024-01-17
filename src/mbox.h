@@ -20,10 +20,10 @@ struct golioth_mbox {
     golioth_sys_sem_t fill_count_sem;
     golioth_sys_sem_t ringbuf_mutex;
 };
-typedef struct golioth_mbox* golioth_mbox_t;
+typedef struct golioth_mbox *golioth_mbox_t;
 
 golioth_mbox_t golioth_mbox_create(size_t num_items, size_t item_size);
 size_t golioth_mbox_num_messages(golioth_mbox_t mbox);
-bool golioth_mbox_try_send(golioth_mbox_t mbox, const void* item);
-bool golioth_mbox_recv(golioth_mbox_t mbox, void* item, int32_t timeout_ms);
+bool golioth_mbox_try_send(golioth_mbox_t mbox, const void *item);
+bool golioth_mbox_recv(golioth_mbox_t mbox, void *item, int32_t timeout_ms);
 void golioth_mbox_destroy(golioth_mbox_t mbox);

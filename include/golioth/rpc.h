@@ -78,10 +78,9 @@ enum golioth_rpc_status {
 /// @return GOLIOTH_RPC_OK - if method was called successfully
 /// @return GOLIOTH_RPC_INVALID_ARGUMENT - if params were invalid
 /// @return otherwise - method failure
-typedef enum golioth_rpc_status (*golioth_rpc_cb_fn)(
-        zcbor_state_t* request_params_array,
-        zcbor_state_t* response_detail_map,
-        void* callback_arg);
+typedef enum golioth_rpc_status (*golioth_rpc_cb_fn)(zcbor_state_t *request_params_array,
+                                                     zcbor_state_t *response_detail_map,
+                                                     void *callback_arg);
 
 /// Initialize the RPC service
 ///
@@ -89,7 +88,7 @@ typedef enum golioth_rpc_status (*golioth_rpc_cb_fn)(
 ///
 /// @return pointer to golioth rpc struct
 /// @return NULL - Error initializing RPC service
-struct golioth_rpc* golioth_rpc_init(struct golioth_client* client);
+struct golioth_rpc *golioth_rpc_init(struct golioth_client *client);
 
 /// Register an RPC method
 ///
@@ -101,10 +100,9 @@ struct golioth_rpc* golioth_rpc_init(struct golioth_client* client);
 ///
 /// @return GOLIOTH_OK - RPC method successfully registered
 /// @return otherwise - Error registering RPC method
-enum golioth_status golioth_rpc_register(
-        struct golioth_rpc* grpc,
-        const char* method,
-        golioth_rpc_cb_fn callback,
-        void* callback_arg);
+enum golioth_status golioth_rpc_register(struct golioth_rpc *grpc,
+                                         const char *method,
+                                         golioth_rpc_cb_fn callback,
+                                         void *callback_arg);
 
 /// @}

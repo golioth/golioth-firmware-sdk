@@ -11,7 +11,7 @@ LOG_MODULE_REGISTER(lte_monitor);
 #include <zephyr/init.h>
 #include <zephyr/sys/reboot.h>
 
-static void lte_handler(const struct lte_lc_evt* const evt) {
+static void lte_handler(const struct lte_lc_evt *const evt) {
     switch (evt->type) {
         case LTE_LC_EVT_NW_REG_STATUS:
             switch (evt->nw_reg_status) {

@@ -18,10 +18,12 @@ LOG_MODULE_REGISTER(lightdb_set, LOG_LEVEL_DBG);
 
 #define APP_TIMEOUT_S 1
 
-struct golioth_client* client;
+struct golioth_client *client;
 static K_SEM_DEFINE(connected, 0, 1);
 
-static void on_client_event(struct golioth_client* client, enum golioth_client_event event, void* arg) {
+static void on_client_event(struct golioth_client *client,
+                            enum golioth_client_event event,
+                            void *arg) {
     bool is_connected = (event == GOLIOTH_CLIENT_EVENT_CONNECTED);
     if (is_connected) {
         k_sem_give(&connected);
@@ -29,11 +31,10 @@ static void on_client_event(struct golioth_client* client, enum golioth_client_e
     LOG_INF("Golioth client %s", is_connected ? "connected" : "disconnected");
 }
 
-static void counter_set_handler(
-        struct golioth_client* client,
-        const struct golioth_response* response,
-        const char* path,
-        void* arg) {
+static void counter_set_handler(struct golioth_client *client,
+                                const struct golioth_response *response,
+                                const char *path,
+                                void *arg) {
     if (response->status != GOLIOTH_OK) {
         LOG_WRN("Failed to set counter: %d", response->status);
         return;
@@ -72,60 +73,60 @@ static void counter_set_json_async(int counter) {
 
     snprintk(sbuf, sizeof(sbuf), "{\"counter\":%d}", counter);
 
-    err = golioth_lightdb_set_async(client, "", GOLIOTH_CONTENT_TYPE_JSON,
-                                    sbuf, strlen(sbuf), counter_set_handler, NULL);
+    err = golioth_lightdb_set_async(client,
+                                    "",
+                                    GOLIOTH_CONTENT_TYPE_JSON,
+                                    sbuf,
+                                    strlen(sbuf),
+                                    counter_set_handler,
+                                    NULL);
     if (err) {
         LOG_WRN("Failed to set counter: %d", err);
         return;
     }
 }
 
-static void counter_set_cbor_sync(int counter)
-{
+static void counter_set_cbor_sync(int counter) {
     uint8_t buf[32];
     ZCBOR_STATE_E(zse, 1, buf, sizeof(buf), 1);
 
     bool ok = zcbor_map_start_encode(zse, 1);
-    if (!ok)
-    {
+    if (!ok) {
         LOG_ERR("Failed to start CBOR encoding");
         return;
     }
 
     ok = zcbor_tstr_put_lit(zse, "counter");
-    if (!ok)
-    {
+    if (!ok) {
         LOG_ERR("CBOR: Failed to encode counter name");
         return;
     }
 
     ok = zcbor_int32_put(zse, counter);
-    if (!ok)
-    {
+    if (!ok) {
         LOG_ERR("CBOR: failed to encode counter value");
         return;
     }
 
     ok = zcbor_map_end_encode(zse, 1);
-    if (!ok)
-    {
+    if (!ok) {
         LOG_ERR("Failed to close CBOR map object");
         return;
     }
 
     size_t payload_size = (intptr_t) zse->payload - (intptr_t) buf;
 
-    int err = golioth_lightdb_set_sync(client, "", GOLIOTH_CONTENT_TYPE_CBOR,
-                             buf, payload_size, APP_TIMEOUT_S);
-    if (err != 0)
-    {
+    int err = golioth_lightdb_set_sync(client,
+                                       "",
+                                       GOLIOTH_CONTENT_TYPE_CBOR,
+                                       buf,
+                                       payload_size,
+                                       APP_TIMEOUT_S);
+    if (err != 0) {
         LOG_WRN("Failed to set counter: %d", err);
-    }
-    else
-    {
+    } else {
         LOG_DBG("Counter successfully set");
     }
-
 }
 
 int main(void) {
@@ -139,7 +140,7 @@ int main(void) {
      * device. For simplicity, we provide a utility to hardcode credentials as
      * kconfig options in the samples.
      */
-    const struct golioth_client_config* client_config = golioth_sample_credentials_get();
+    const struct golioth_client_config *client_config = golioth_sample_credentials_get();
 
     client = golioth_client_create(client_config);
     golioth_client_register_event_callback(client, on_client_event, NULL);
@@ -187,7 +188,6 @@ int main(void) {
 
         counter++;
         k_sleep(K_SECONDS(5));
-
     }
 
     return 0;

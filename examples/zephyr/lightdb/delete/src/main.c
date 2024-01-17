@@ -17,10 +17,12 @@ LOG_MODULE_REGISTER(lightdb_delete, LOG_LEVEL_DBG);
 
 #define APP_TIMEOUT_S 1
 
-struct golioth_client* client;
+struct golioth_client *client;
 static K_SEM_DEFINE(connected, 0, 1);
 
-static void on_client_event(struct golioth_client* client, enum golioth_client_event event, void* arg) {
+static void on_client_event(struct golioth_client *client,
+                            enum golioth_client_event event,
+                            void *arg) {
     bool is_connected = (event == GOLIOTH_CLIENT_EVENT_CONNECTED);
     if (is_connected) {
         k_sem_give(&connected);
@@ -28,11 +30,10 @@ static void on_client_event(struct golioth_client* client, enum golioth_client_e
     LOG_INF("Golioth client %s", is_connected ? "connected" : "disconnected");
 }
 
-static void counter_handler(
-        struct golioth_client* client,
-        const struct golioth_response* response,
-        const char* path,
-        void* arg) {
+static void counter_handler(struct golioth_client *client,
+                            const struct golioth_response *response,
+                            const char *path,
+                            void *arg) {
     if (response->status != GOLIOTH_OK) {
         LOG_WRN("Failed to deleted counter: %d", response->status);
         return;
@@ -43,7 +44,7 @@ static void counter_handler(
     return;
 }
 
-static void counter_delete_async(struct golioth_client* client) {
+static void counter_delete_async(struct golioth_client *client) {
     int err;
 
     err = golioth_lightdb_delete_async(client, "counter", counter_handler, NULL);
@@ -52,7 +53,7 @@ static void counter_delete_async(struct golioth_client* client) {
     }
 }
 
-static void counter_delete_sync(struct golioth_client* client) {
+static void counter_delete_sync(struct golioth_client *client) {
     int err;
 
     err = golioth_lightdb_delete_sync(client, "counter", APP_TIMEOUT_S);
@@ -72,7 +73,7 @@ int main(void) {
      * device. For simplicity, we provide a utility to hardcode credentials as
      * kconfig options in the samples.
      */
-    const struct golioth_client_config* client_config = golioth_sample_credentials_get();
+    const struct golioth_client_config *client_config = golioth_sample_credentials_get();
 
     client = golioth_client_create(client_config);
     golioth_client_register_event_callback(client, on_client_event, NULL);

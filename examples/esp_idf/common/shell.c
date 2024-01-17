@@ -29,83 +29,83 @@
 
 #define MAX_NUM_CUSTOM_COMMANDS 16
 
-static int heap(int argc, char** argv);
-static int version(int argc, char** argv);
-static int reset(int argc, char** argv);
-static int tasks(int argc, char** argv);
-static int settings(int argc, char** argv);
+static int heap(int argc, char **argv);
+static int version(int argc, char **argv);
+static int reset(int argc, char **argv);
+static int tasks(int argc, char **argv);
+static int settings(int argc, char **argv);
 
 static struct {
-    struct arg_dbl* timeout;
-    struct arg_dbl* interval;
-    struct arg_int* data_size;
-    struct arg_int* count;
-    struct arg_int* tos;
-    struct arg_str* host;
-    struct arg_end* end;
+    struct arg_dbl *timeout;
+    struct arg_dbl *interval;
+    struct arg_int *data_size;
+    struct arg_int *count;
+    struct arg_int *tos;
+    struct arg_str *host;
+    struct arg_end *end;
 } _ping_args;
 
 typedef struct {
-    const char* shell_key;
-    const char* nvs_key;
+    const char *shell_key;
+    const char *nvs_key;
 } shell_to_nvs_key_map_t;
 
 // Map from CLI key to internal NVS keys.
 // Can't use CLI keys directly in NVS due to character length
 // limitation in NVS.
 static const shell_to_nvs_key_map_t _key_map[4] = {
-        {"wifi/ssid", NVS_WIFI_SSID_KEY},
-        {"wifi/psk", NVS_WIFI_PASS_KEY},
-        {"golioth/psk-id", NVS_GOLIOTH_PSK_ID_KEY},
-        {"golioth/psk", NVS_GOLIOTH_PSK_KEY},
+    {"wifi/ssid", NVS_WIFI_SSID_KEY},
+    {"wifi/psk", NVS_WIFI_PASS_KEY},
+    {"golioth/psk-id", NVS_GOLIOTH_PSK_ID_KEY},
+    {"golioth/psk", NVS_GOLIOTH_PSK_KEY},
 };
 
 static const esp_console_cmd_t _cmds[] = {
-        {
-                .command = "heap",
-                .help = "Get the current size of free heap memory, and min ever heap size",
-                .hint = NULL,
-                .func = heap,
-        },
-        {
-                .command = "version",
-                .help = "Get version of chip and SDK",
-                .hint = NULL,
-                .func = version,
-        },
-        {
-                .command = "reset",
-                .help = "Software reset of the chip",
-                .hint = NULL,
-                .func = reset,
-        },
-        {
-                .command = "tasks",
-                .help = "Get information about running tasks and stack high watermark (HWM)",
-                .hint = NULL,
-                .func = tasks,
-        },
-        {
-                .command = "settings",
-                .help = "Get/Set/Erase settings by key",
-                .hint = NULL,
-                .func = settings,
-        },
-        // There's a "ping" command too, see register_ping_command()
+    {
+        .command = "heap",
+        .help = "Get the current size of free heap memory, and min ever heap size",
+        .hint = NULL,
+        .func = heap,
+    },
+    {
+        .command = "version",
+        .help = "Get version of chip and SDK",
+        .hint = NULL,
+        .func = version,
+    },
+    {
+        .command = "reset",
+        .help = "Software reset of the chip",
+        .hint = NULL,
+        .func = reset,
+    },
+    {
+        .command = "tasks",
+        .help = "Get information about running tasks and stack high watermark (HWM)",
+        .hint = NULL,
+        .func = tasks,
+    },
+    {
+        .command = "settings",
+        .help = "Get/Set/Erase settings by key",
+        .hint = NULL,
+        .func = settings,
+    },
+    // There's a "ping" command too, see register_ping_command()
 };
 
 // Commands added with shell_register_commands
 static esp_console_cmd_t _custom_cmds[MAX_NUM_CUSTOM_COMMANDS];
 static size_t _num_custom_cmds;
 
-static int heap(int argc, char** argv) {
+static int heap(int argc, char **argv) {
     printf("Free: %" PRIu32 ", Free low watermark: %" PRIu32 "\n",
            esp_get_free_heap_size(),
-           (uint32_t)heap_caps_get_minimum_free_size(MALLOC_CAP_DEFAULT));
+           (uint32_t) heap_caps_get_minimum_free_size(MALLOC_CAP_DEFAULT));
     return 0;
 }
 
-static int version(int argc, char** argv) {
+static int version(int argc, char **argv) {
     esp_chip_info_t info;
     esp_chip_info(&info);
 
@@ -130,14 +130,14 @@ static int version(int argc, char** argv) {
     return 0;
 }
 
-static int reset(int argc, char** argv) {
+static int reset(int argc, char **argv) {
     ESP_LOGI(TAG, "Resetting");
     esp_restart();
 }
 
-static int tasks(int argc, char** argv) {
+static int tasks(int argc, char **argv) {
     const size_t bytes_per_task = 40;
-    char* task_list_buffer = malloc(uxTaskGetNumberOfTasks() * bytes_per_task);
+    char *task_list_buffer = malloc(uxTaskGetNumberOfTasks() * bytes_per_task);
     if (task_list_buffer == NULL) {
         ESP_LOGE(TAG, "failed to allocate buffer for vTaskList output");
         return 1;
@@ -150,7 +150,7 @@ static int tasks(int argc, char** argv) {
     return 0;
 }
 
-static void cmd_ping_on_ping_success(esp_ping_handle_t hdl, void* args) {
+static void cmd_ping_on_ping_success(esp_ping_handle_t hdl, void *args) {
     uint8_t ttl;
     uint16_t seqno;
     uint32_t elapsed_time, recv_len;
@@ -162,21 +162,23 @@ static void cmd_ping_on_ping_success(esp_ping_handle_t hdl, void* args) {
     esp_ping_get_profile(hdl, ESP_PING_PROF_TIMEGAP, &elapsed_time, sizeof(elapsed_time));
     printf("%" PRIu32 " bytes from %s icmp_seq=%" PRIu16 " ttl=%" PRIu8 " time=%" PRIu32 " ms\n",
            recv_len,
-           ipaddr_ntoa((ip_addr_t*)&target_addr),
+           ipaddr_ntoa((ip_addr_t *) &target_addr),
            seqno,
            ttl,
            elapsed_time);
 }
 
-static void cmd_ping_on_ping_timeout(esp_ping_handle_t hdl, void* args) {
+static void cmd_ping_on_ping_timeout(esp_ping_handle_t hdl, void *args) {
     uint16_t seqno;
     ip_addr_t target_addr;
     esp_ping_get_profile(hdl, ESP_PING_PROF_SEQNO, &seqno, sizeof(seqno));
     esp_ping_get_profile(hdl, ESP_PING_PROF_IPADDR, &target_addr, sizeof(target_addr));
-    printf("From %s icmp_seq=%" PRIu16 " timeout\n", ipaddr_ntoa((ip_addr_t*)&target_addr), seqno);
+    printf("From %s icmp_seq=%" PRIu16 " timeout\n",
+           ipaddr_ntoa((ip_addr_t *) &target_addr),
+           seqno);
 }
 
-static void cmd_ping_on_ping_end(esp_ping_handle_t hdl, void* args) {
+static void cmd_ping_on_ping_end(esp_ping_handle_t hdl, void *args) {
     ip_addr_t target_addr;
     uint32_t transmitted;
     uint32_t received;
@@ -185,7 +187,7 @@ static void cmd_ping_on_ping_end(esp_ping_handle_t hdl, void* args) {
     esp_ping_get_profile(hdl, ESP_PING_PROF_REPLY, &received, sizeof(received));
     esp_ping_get_profile(hdl, ESP_PING_PROF_IPADDR, &target_addr, sizeof(target_addr));
     esp_ping_get_profile(hdl, ESP_PING_PROF_DURATION, &total_time_ms, sizeof(total_time_ms));
-    uint32_t loss = (uint32_t)((1 - ((float)received) / transmitted) * 100);
+    uint32_t loss = (uint32_t) ((1 - ((float) received) / transmitted) * 100);
     if (IP_IS_V4(&target_addr)) {
         printf("\n--- %s ping statistics ---\n", inet_ntoa(*ip_2_ip4(&target_addr)));
     } else {
@@ -203,33 +205,33 @@ static void cmd_ping_on_ping_end(esp_ping_handle_t hdl, void* args) {
     esp_ping_delete_session(hdl);
 }
 
-static int ping(int argc, char** argv) {
+static int ping(int argc, char **argv) {
     esp_ping_config_t config = ESP_PING_DEFAULT_CONFIG();
 
-    int nerrors = arg_parse(argc, argv, (void**)&_ping_args);
+    int nerrors = arg_parse(argc, argv, (void **) &_ping_args);
     if (nerrors != 0) {
         arg_print_errors(stderr, _ping_args.end, argv[0]);
         return 1;
     }
 
     if (_ping_args.timeout->count > 0) {
-        config.timeout_ms = (uint32_t)(_ping_args.timeout->dval[0] * 1000);
+        config.timeout_ms = (uint32_t) (_ping_args.timeout->dval[0] * 1000);
     }
 
     if (_ping_args.interval->count > 0) {
-        config.interval_ms = (uint32_t)(_ping_args.interval->dval[0] * 1000);
+        config.interval_ms = (uint32_t) (_ping_args.interval->dval[0] * 1000);
     }
 
     if (_ping_args.data_size->count > 0) {
-        config.data_size = (uint32_t)(_ping_args.data_size->ival[0]);
+        config.data_size = (uint32_t) (_ping_args.data_size->ival[0]);
     }
 
     if (_ping_args.count->count > 0) {
-        config.count = (uint32_t)(_ping_args.count->ival[0]);
+        config.count = (uint32_t) (_ping_args.count->ival[0]);
     }
 
     if (_ping_args.tos->count > 0) {
-        config.tos = (uint32_t)(_ping_args.tos->ival[0]);
+        config.tos = (uint32_t) (_ping_args.tos->ival[0]);
     }
 
     // parse IP address
@@ -242,7 +244,7 @@ static int ping(int argc, char** argv) {
         ipaddr_aton(_ping_args.host->sval[0], &target_addr);
     } else {
         struct addrinfo hint;
-        struct addrinfo* res = NULL;
+        struct addrinfo *res = NULL;
         memset(&hint, 0, sizeof(hint));
         /* convert ip4 string or hostname to ip4 or ip6 address */
         if (getaddrinfo(_ping_args.host->sval[0], NULL, &hint, &res) != 0) {
@@ -250,10 +252,10 @@ static int ping(int argc, char** argv) {
             return 1;
         }
         if (res->ai_family == AF_INET) {
-            struct in_addr addr4 = ((struct sockaddr_in*)(res->ai_addr))->sin_addr;
+            struct in_addr addr4 = ((struct sockaddr_in *) (res->ai_addr))->sin_addr;
             inet_addr_to_ip4addr(ip_2_ip4(&target_addr), &addr4);
         } else {
-            struct in6_addr addr6 = ((struct sockaddr_in6*)(res->ai_addr))->sin6_addr;
+            struct in6_addr addr6 = ((struct sockaddr_in6 *) (res->ai_addr))->sin6_addr;
             inet6_addr_to_ip6addr(ip_2_ip6(&target_addr), &addr6);
         }
         freeaddrinfo(res);
@@ -261,11 +263,10 @@ static int ping(int argc, char** argv) {
     config.target_addr = target_addr;
 
     /* set callback functions */
-    esp_ping_callbacks_t cbs = {
-            .cb_args = NULL,
-            .on_ping_success = cmd_ping_on_ping_success,
-            .on_ping_timeout = cmd_ping_on_ping_timeout,
-            .on_ping_end = cmd_ping_on_ping_end};
+    esp_ping_callbacks_t cbs = {.cb_args = NULL,
+                                .on_ping_success = cmd_ping_on_ping_success,
+                                .on_ping_timeout = cmd_ping_on_ping_timeout,
+                                .on_ping_end = cmd_ping_on_ping_end};
     esp_ping_handle_t ping;
     esp_ping_new_session(&config, &cbs, &ping);
     esp_ping_start(ping);
@@ -274,7 +275,7 @@ static int ping(int argc, char** argv) {
 }
 
 
-static const char* cli_key_to_nvs_key(const char* key) {
+static const char *cli_key_to_nvs_key(const char *key) {
     for (int i = 0; i < COUNT_OF(_key_map); i++) {
         if (strcmp(key, _key_map[i].shell_key) == 0) {
             return _key_map[i].nvs_key;
@@ -283,21 +284,21 @@ static const char* cli_key_to_nvs_key(const char* key) {
     return NULL;
 }
 
-static int settings(int argc, char** argv) {
-    const char* usage =
-            "usage:\n"
-            "  settings get <key> [--json]\n"
-            "  settings set <key> <value> [--json]\n"
-            "  settings erase <key>\n";
+static int settings(int argc, char **argv) {
+    const char *usage =
+        "usage:\n"
+        "  settings get <key> [--json]\n"
+        "  settings set <key> <value> [--json]\n"
+        "  settings erase <key>\n";
 
     if (argc < 3) {
         printf(usage);
         return 1;
     }
 
-    const char* command = argv[1];
-    const char* cli_key = argv[2];
-    const char* nvs_key = cli_key_to_nvs_key(cli_key);
+    const char *command = argv[1];
+    const char *cli_key = argv[2];
+    const char *nvs_key = cli_key_to_nvs_key(cli_key);
 
     if (!nvs_key) {
         printf("Unknown key: %s\n", cli_key);
@@ -310,7 +311,7 @@ static int settings(int argc, char** argv) {
 
     if (0 == strcmp(command, "get")) {
         char valuebuf[128] = {};
-        const char* value = nvs_read_str(nvs_key, valuebuf, sizeof(valuebuf));
+        const char *value = nvs_read_str(nvs_key, valuebuf, sizeof(valuebuf));
         bool was_not_found = (0 == strcmp(value, NVS_DEFAULT_STR));
         bool json_output = ((argc >= 4) && (0 == strcmp(argv[3], "--json")));
         if (json_output) {
@@ -331,7 +332,7 @@ static int settings(int argc, char** argv) {
             printf(usage);
             return 1;
         }
-        const char* value = argv[3];
+        const char *value = argv[3];
         bool success = nvs_write_str(nvs_key, value);
         bool json_output = ((argc >= 5) && (0 == strcmp(argv[4], "--json")));
         if (json_output) {
@@ -367,24 +368,23 @@ static int settings(int argc, char** argv) {
 static void register_ping_command(void) {
     _ping_args.timeout = arg_dbl0("W", "timeout", "<t>", "Time to wait for a response, in seconds");
     _ping_args.interval =
-            arg_dbl0("i", "interval", "<t>", "Wait interval seconds between sending each packet");
+        arg_dbl0("i", "interval", "<t>", "Wait interval seconds between sending each packet");
     _ping_args.data_size =
-            arg_int0("s", "size", "<n>", "Specify the number of data bytes to be sent");
+        arg_int0("s", "size", "<n>", "Specify the number of data bytes to be sent");
     _ping_args.count = arg_int0("c", "count", "<n>", "Stop after sending count packets");
     _ping_args.tos =
-            arg_int0("Q", "tos", "<n>", "Set Type of Service related bits in IP datagrams");
+        arg_int0("Q", "tos", "<n>", "Set Type of Service related bits in IP datagrams");
     _ping_args.host = arg_str1(NULL, NULL, "<host>", "Host address");
     _ping_args.end = arg_end(1);
-    const esp_console_cmd_t ping_cmd = {
-            .command = "ping",
-            .help = "send ICMP ECHO_REQUEST to network hosts",
-            .hint = NULL,
-            .func = &ping,
-            .argtable = &_ping_args};
+    const esp_console_cmd_t ping_cmd = {.command = "ping",
+                                        .help = "send ICMP ECHO_REQUEST to network hosts",
+                                        .hint = NULL,
+                                        .func = &ping,
+                                        .argtable = &_ping_args};
     ESP_ERROR_CHECK(esp_console_cmd_register(&ping_cmd));
 }
 
-void shell_input_line(const char* line, size_t line_len) {
+void shell_input_line(const char *line, size_t line_len) {
     int ret;
     esp_err_t err = esp_console_run(line, &ret);
     if (err == ESP_ERR_NOT_FOUND) {
@@ -399,7 +399,7 @@ void shell_input_line(const char* line, size_t line_len) {
 }
 
 void shell_start(void) {
-    esp_console_repl_t* repl = NULL;
+    esp_console_repl_t *repl = NULL;
     esp_console_repl_config_t repl_config = ESP_CONSOLE_REPL_CONFIG_DEFAULT();
     repl_config.prompt = "esp32>";
 
@@ -411,7 +411,7 @@ void shell_start(void) {
     ESP_ERROR_CHECK(esp_console_new_repl_usb_cdc(&cdc_config, &repl_config, &repl));
 #elif CONFIG_ESP_CONSOLE_USB_SERIAL_JTAG
     esp_console_dev_usb_serial_jtag_config_t usbjtag_config =
-            ESP_CONSOLE_DEV_USB_SERIAL_JTAG_CONFIG_DEFAULT();
+        ESP_CONSOLE_DEV_USB_SERIAL_JTAG_CONFIG_DEFAULT();
     ESP_ERROR_CHECK(esp_console_new_repl_usb_serial_jtag(&usbjtag_config, &repl_config, &repl));
 #endif
 
@@ -430,7 +430,7 @@ void shell_start(void) {
     ESP_ERROR_CHECK(esp_console_start_repl(repl));
 }
 
-void shell_register_command(const esp_console_cmd_t* cmd) {
+void shell_register_command(const esp_console_cmd_t *cmd) {
     if (_num_custom_cmds >= MAX_NUM_CUSTOM_COMMANDS) {
         ESP_LOGE(TAG, "Can't register more than %d custom commands", MAX_NUM_CUSTOM_COMMANDS);
         return;

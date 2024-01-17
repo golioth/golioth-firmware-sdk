@@ -16,18 +16,17 @@ struct wait_data {
     struct net_mgmt_event_callback cb;
 };
 
-static void event_cb_handler(
-    struct net_mgmt_event_callback* cb,
-    uint32_t mgmt_event,
-    struct net_if* iface) {
-    struct wait_data* wait = CONTAINER_OF(cb, struct wait_data, cb);
+static void event_cb_handler(struct net_mgmt_event_callback *cb,
+                             uint32_t mgmt_event,
+                             struct net_if *iface) {
+    struct wait_data *wait = CONTAINER_OF(cb, struct wait_data, cb);
 
     if (mgmt_event == cb->event_mask) {
         k_sem_give(&wait->sem);
     }
 }
 
-static void wait_for_net_event(struct net_if* iface, uint32_t event) {
+static void wait_for_net_event(struct net_if *iface, uint32_t event) {
     struct wait_data wait;
 
     wait.cb.handler = event_cb_handler;
@@ -42,7 +41,7 @@ static void wait_for_net_event(struct net_if* iface, uint32_t event) {
 }
 
 void net_connect(void) {
-    struct net_if* iface = net_if_get_default();
+    struct net_if *iface = net_if_get_default();
 
     if (IS_ENABLED(CONFIG_GOLIOTH_SAMPLE_DHCP_BIND)) {
         LOG_INF("Starting DHCP to obtain IP address");

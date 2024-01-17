@@ -26,15 +26,16 @@ static const uint8_t tls_ca_crt[] = {
 
 FS_LITTLEFS_DECLARE_DEFAULT_CONFIG(cstorage);
 
-static struct fs_mount_t littlefs_mnt = {
-    .type = FS_LITTLEFS,
-    .fs_data = &cstorage,
-    .storage_dev = (void*)STORAGE_PARTITION_ID,
-    .mnt_point = "/lfs1"};
-struct golioth_client* client;
+static struct fs_mount_t littlefs_mnt = {.type = FS_LITTLEFS,
+                                         .fs_data = &cstorage,
+                                         .storage_dev = (void *) STORAGE_PARTITION_ID,
+                                         .mnt_point = "/lfs1"};
+struct golioth_client *client;
 static K_SEM_DEFINE(connected, 0, 1);
 
-static void on_client_event(struct golioth_client* client, enum golioth_client_event event, void* arg) {
+static void on_client_event(struct golioth_client *client,
+                            enum golioth_client_event event,
+                            void *arg) {
     bool is_connected = (event == GOLIOTH_CLIENT_EVENT_CONNECTED);
     if (is_connected) {
         k_sem_give(&connected);
@@ -42,7 +43,7 @@ static void on_client_event(struct golioth_client* client, enum golioth_client_e
     LOG_INF("Golioth client %s", is_connected ? "connected" : "disconnected");
 }
 
-static int load_credential_from_fs(const char* path, uint8_t** buf_p, size_t* buf_len) {
+static int load_credential_from_fs(const char *path, uint8_t **buf_p, size_t *buf_len) {
     struct fs_file_t file;
     struct fs_dirent dirent;
 
@@ -77,7 +78,7 @@ static int load_credential_from_fs(const char* path, uint8_t** buf_p, size_t* bu
      * allocated for the life of the program.
      */
 
-    void* cred_buf = malloc(dirent.size);
+    void *cred_buf = malloc(dirent.size);
 
     if (cred_buf == NULL) {
         LOG_ERR("Could not allocate space to read credential");
@@ -116,8 +117,8 @@ int main(void) {
         LOG_ERR("Error mounting littlefs [%d]", err);
     }
 
-    uint8_t* tls_client_crt = NULL;
-    uint8_t* tls_client_key = NULL;
+    uint8_t *tls_client_crt = NULL;
+    uint8_t *tls_client_key = NULL;
     size_t tls_client_crt_len, tls_client_key_len;
 
     load_credential_from_fs(CLIENT_CERTIFICATE_PATH, &tls_client_crt, &tls_client_crt_len);
@@ -127,16 +128,15 @@ int main(void) {
         net_connect();
 
         struct golioth_client_config client_config = {
-            .credentials = {
-                .auth_type = GOLIOTH_TLS_AUTH_TYPE_PKI,
-                .pki = {
-                    .ca_cert = tls_ca_crt,
-                    .ca_cert_len = sizeof(tls_ca_crt),
-                    .public_cert = tls_client_crt,
-                    .public_cert_len = tls_client_crt_len,
-                    .private_key = tls_client_key,
-                    .private_key_len = tls_client_key_len,
-                }}};
+            .credentials = {.auth_type = GOLIOTH_TLS_AUTH_TYPE_PKI,
+                            .pki = {
+                                .ca_cert = tls_ca_crt,
+                                .ca_cert_len = sizeof(tls_ca_crt),
+                                .public_cert = tls_client_crt,
+                                .public_cert_len = tls_client_crt_len,
+                                .private_key = tls_client_key,
+                                .private_key_len = tls_client_key_len,
+                            }}};
 
         client = golioth_client_create(&client_config);
 

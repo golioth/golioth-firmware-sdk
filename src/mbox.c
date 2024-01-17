@@ -12,13 +12,13 @@
 LOG_TAG_DEFINE(golioth_mbox);
 
 golioth_mbox_t golioth_mbox_create(size_t num_items, size_t item_size) {
-    golioth_mbox_t new_mbox = (golioth_mbox_t)golioth_sys_malloc(sizeof(struct golioth_mbox));
+    golioth_mbox_t new_mbox = (golioth_mbox_t) golioth_sys_malloc(sizeof(struct golioth_mbox));
     assert(new_mbox);
     memset(new_mbox, 0, sizeof(struct golioth_mbox));
 
     // Allocate storage for the items in the ringbuffer
     size_t bufsize = RINGBUF_BUFFER_SIZE(item_size, num_items);
-    new_mbox->ringbuf.buffer = (uint8_t*)golioth_sys_malloc(bufsize);
+    new_mbox->ringbuf.buffer = (uint8_t *) golioth_sys_malloc(bufsize);
     assert(new_mbox->ringbuf.buffer);
     memset(new_mbox->ringbuf.buffer, 0, bufsize);
 
@@ -30,12 +30,11 @@ golioth_mbox_t golioth_mbox_create(size_t num_items, size_t item_size) {
     assert(ringbuf_capacity(&new_mbox->ringbuf) == num_items);
     assert(ringbuf_size(&new_mbox->ringbuf) == 0);
 
-    GLTH_LOGI(
-            TAG,
-            "Mbox created, bufsize: %" PRIu32 ", num_items: %" PRIu32 ", item_size: %" PRIu32,
-            (uint32_t)bufsize,
-            (uint32_t)num_items,
-            (uint32_t)item_size);
+    GLTH_LOGI(TAG,
+              "Mbox created, bufsize: %" PRIu32 ", num_items: %" PRIu32 ", item_size: %" PRIu32,
+              (uint32_t) bufsize,
+              (uint32_t) num_items,
+              (uint32_t) item_size);
 
     return new_mbox;
 }
@@ -45,7 +44,7 @@ size_t golioth_mbox_num_messages(golioth_mbox_t mbox) {
     return ringbuf_size(&mbox->ringbuf);
 }
 
-bool golioth_mbox_try_send(golioth_mbox_t mbox, const void* item) {
+bool golioth_mbox_try_send(golioth_mbox_t mbox, const void *item) {
     assert(mbox);
 
     bool ret = golioth_sys_sem_take(mbox->ringbuf_mutex, GOLIOTH_SYS_WAIT_FOREVER);
@@ -61,7 +60,7 @@ bool golioth_mbox_try_send(golioth_mbox_t mbox, const void* item) {
     return sent;
 }
 
-bool golioth_mbox_recv(golioth_mbox_t mbox, void* item, int32_t timeout_ms) {
+bool golioth_mbox_recv(golioth_mbox_t mbox, void *item, int32_t timeout_ms) {
     assert(mbox);
     bool received = golioth_sys_sem_take(mbox->fill_count_sem, timeout_ms);
     if (received) {

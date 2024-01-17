@@ -37,13 +37,13 @@ enum {
 };
 
 typedef struct {
-    uint8_t* buf;
-    size_t* block_nbytes;
-    bool* is_last;
+    uint8_t *buf;
+    size_t *block_nbytes;
+    bool *is_last;
 } block_get_output_params_t;
 
 struct component_tstr_value {
-    char* value;
+    char *value;
     size_t value_len;
 };
 
@@ -57,13 +57,13 @@ size_t golioth_ota_size_to_nblocks(size_t component_size) {
     return nblocks;
 }
 
-const struct golioth_ota_component* golioth_ota_find_component(
-        const struct golioth_ota_manifest* manifest,
-        const char* package) {
+const struct golioth_ota_component *golioth_ota_find_component(
+    const struct golioth_ota_manifest *manifest,
+    const char *package) {
     // Scan the manifest until we find the component with matching package.
-    const struct golioth_ota_component* found = NULL;
+    const struct golioth_ota_component *found = NULL;
     for (size_t i = 0; i < manifest->num_components; i++) {
-        const struct golioth_ota_component* c = &manifest->components[i];
+        const struct golioth_ota_component *c = &manifest->components[i];
         bool matches = (0 == strcmp(c->package, package));
         if (matches) {
             found = c;
@@ -73,22 +73,24 @@ const struct golioth_ota_component* golioth_ota_find_component(
     return found;
 }
 
-enum golioth_status golioth_ota_observe_manifest_async(
-        struct golioth_client* client,
-        golioth_get_cb_fn callback,
-        void* arg) {
-    return golioth_coap_client_observe_async(
-            client, "", GOLIOTH_OTA_MANIFEST_PATH, GOLIOTH_CONTENT_TYPE_CBOR, callback, arg);
+enum golioth_status golioth_ota_observe_manifest_async(struct golioth_client *client,
+                                                       golioth_get_cb_fn callback,
+                                                       void *arg) {
+    return golioth_coap_client_observe_async(client,
+                                             "",
+                                             GOLIOTH_OTA_MANIFEST_PATH,
+                                             GOLIOTH_CONTENT_TYPE_CBOR,
+                                             callback,
+                                             arg);
 }
 
-enum golioth_status golioth_ota_report_state_sync(
-        struct golioth_client* client,
-        enum golioth_ota_state state,
-        enum golioth_ota_reason reason,
-        const char* package,
-        const char* current_version,
-        const char* target_version,
-        int32_t timeout_s) {
+enum golioth_status golioth_ota_report_state_sync(struct golioth_client *client,
+                                                  enum golioth_ota_state state,
+                                                  enum golioth_ota_reason reason,
+                                                  const char *package,
+                                                  const char *current_version,
+                                                  const char *target_version,
+                                                  int32_t timeout_s) {
     uint8_t encode_buf[64];
     ZCBOR_STATE_E(zse, 1, encode_buf, sizeof(encode_buf), 1);
     bool ok;
@@ -133,21 +135,20 @@ enum golioth_status golioth_ota_report_state_sync(
     }
 
     _state = state;
-    return golioth_coap_client_set(
-            client,
-            GOLIOTH_OTA_COMPONENT_PATH_PREFIX,
-            package,
-            GOLIOTH_CONTENT_TYPE_CBOR,
-            encode_buf,
-            zse->payload - encode_buf,
-            NULL,
-            NULL,
-            true,
-            timeout_s);
+    return golioth_coap_client_set(client,
+                                   GOLIOTH_OTA_COMPONENT_PATH_PREFIX,
+                                   package,
+                                   GOLIOTH_CONTENT_TYPE_CBOR,
+                                   encode_buf,
+                                   zse->payload - encode_buf,
+                                   NULL,
+                                   NULL,
+                                   true,
+                                   timeout_s);
 }
 
-static int component_entry_decode_value(zcbor_state_t* zsd, void* void_value) {
-    struct component_tstr_value* value = void_value;
+static int component_entry_decode_value(zcbor_state_t *zsd, void *void_value) {
+    struct component_tstr_value *value = void_value;
     struct zcbor_string tstr;
     bool ok;
 
@@ -167,8 +168,8 @@ static int component_entry_decode_value(zcbor_state_t* zsd, void* void_value) {
     return 0;
 }
 
-static int components_decode(zcbor_state_t* zsd, void* value) {
-    struct golioth_ota_manifest* manifest = value;
+static int components_decode(zcbor_state_t *zsd, void *value) {
+    struct golioth_ota_manifest *manifest = value;
     int err;
     bool ok;
 
@@ -179,20 +180,20 @@ static int components_decode(zcbor_state_t* zsd, void* value) {
     }
 
     for (size_t i = 0; i < ARRAY_SIZE(manifest->components) && !zcbor_list_or_map_end(zsd); i++) {
-        struct golioth_ota_component* component = &manifest->components[i];
+        struct golioth_ota_component *component = &manifest->components[i];
         struct component_tstr_value package = {
-                component->package,
-                sizeof(component->package) - 1,
+            component->package,
+            sizeof(component->package) - 1,
         };
         struct component_tstr_value version = {
-                component->version,
-                sizeof(component->version) - 1,
+            component->version,
+            sizeof(component->version) - 1,
         };
         int64_t component_size;
         struct zcbor_map_entry map_entries[] = {
-                ZCBOR_U32_MAP_ENTRY(COMPONENT_KEY_PACKAGE, component_entry_decode_value, &package),
-                ZCBOR_U32_MAP_ENTRY(COMPONENT_KEY_VERSION, component_entry_decode_value, &version),
-                ZCBOR_U32_MAP_ENTRY(COMPONENT_KEY_SIZE, zcbor_map_int64_decode, &component_size),
+            ZCBOR_U32_MAP_ENTRY(COMPONENT_KEY_PACKAGE, component_entry_decode_value, &package),
+            ZCBOR_U32_MAP_ENTRY(COMPONENT_KEY_VERSION, component_entry_decode_value, &version),
+            ZCBOR_U32_MAP_ENTRY(COMPONENT_KEY_SIZE, zcbor_map_int64_decode, &component_size),
         };
 
         err = zcbor_map_decode(zsd, map_entries, ARRAY_SIZE(map_entries));
@@ -202,9 +203,8 @@ static int components_decode(zcbor_state_t* zsd, void* value) {
         }
 
         component->size = component_size;
-        component->is_compressed =
-                (CONFIG_GOLIOTH_OTA_DECOMPRESS_METHOD_HEATSHRINK
-                 || CONFIG_GOLIOTH_OTA_DECOMPRESS_METHOD_ZLIB);
+        component->is_compressed = (CONFIG_GOLIOTH_OTA_DECOMPRESS_METHOD_HEATSHRINK
+                                    || CONFIG_GOLIOTH_OTA_DECOMPRESS_METHOD_ZLIB);
 
         manifest->num_components++;
     }
@@ -218,18 +218,16 @@ static int components_decode(zcbor_state_t* zsd, void* value) {
     return 0;
 }
 
-enum golioth_status golioth_ota_payload_as_manifest(
-        const uint8_t* payload,
-        size_t payload_size,
-        struct golioth_ota_manifest* manifest) {
+enum golioth_status golioth_ota_payload_as_manifest(const uint8_t *payload,
+                                                    size_t payload_size,
+                                                    struct golioth_ota_manifest *manifest) {
     ZCBOR_STATE_D(zsd, 3, payload, payload_size, 1);
     int64_t manifest_sequence_number;
     struct zcbor_map_entry map_entries[] = {
-            ZCBOR_U32_MAP_ENTRY(
-                    MANIFEST_KEY_SEQUENCE_NUMBER,
-                    zcbor_map_int64_decode,
-                    &manifest_sequence_number),
-            ZCBOR_U32_MAP_ENTRY(MANIFEST_KEY_COMPONENTS, components_decode, manifest),
+        ZCBOR_U32_MAP_ENTRY(MANIFEST_KEY_SEQUENCE_NUMBER,
+                            zcbor_map_int64_decode,
+                            &manifest_sequence_number),
+        ZCBOR_U32_MAP_ENTRY(MANIFEST_KEY_COMPONENTS, components_decode, manifest),
     };
     int err;
 
@@ -250,14 +248,13 @@ enum golioth_status golioth_ota_payload_as_manifest(
     return GOLIOTH_OK;
 }
 
-static void on_block_rcvd(
-        struct golioth_client* client,
-        const struct golioth_response* response,
-        const char* path,
-        const uint8_t* payload,
-        size_t payload_size,
-        bool is_last,
-        void* arg) {
+static void on_block_rcvd(struct golioth_client *client,
+                          const struct golioth_response *response,
+                          const char *path,
+                          const uint8_t *payload,
+                          size_t payload_size,
+                          bool is_last,
+                          void *arg) {
     assert(arg);
     assert(payload_size <= GOLIOTH_OTA_BLOCKSIZE);
 
@@ -265,7 +262,7 @@ static void on_block_rcvd(
         return;
     }
 
-    block_get_output_params_t* out_params = (block_get_output_params_t*)arg;
+    block_get_output_params_t *out_params = (block_get_output_params_t *) arg;
     assert(out_params->buf);
     assert(out_params->block_nbytes);
 
@@ -278,21 +275,21 @@ static void on_block_rcvd(
 }
 
 enum golioth_status golioth_ota_get_block_sync(
-        struct golioth_client* client,
-        const char* package,
-        const char* version,
-        size_t block_index,
-        uint8_t* buf,  // must be at least GOLIOTH_OTA_BLOCKSIZE bytes
-        size_t* block_nbytes,
-        bool* is_last,
-        int32_t timeout_s) {
+    struct golioth_client *client,
+    const char *package,
+    const char *version,
+    size_t block_index,
+    uint8_t *buf,  // must be at least GOLIOTH_OTA_BLOCKSIZE bytes
+    size_t *block_nbytes,
+    bool *is_last,
+    int32_t timeout_s) {
     char path[CONFIG_GOLIOTH_OTA_MAX_PACKAGE_NAME_LEN + CONFIG_GOLIOTH_OTA_MAX_VERSION_LEN + 2] =
-            {};
+        {};
     snprintf(path, sizeof(path), "%s@%s", package, version);
     block_get_output_params_t out_params = {
-            .buf = buf,
-            .block_nbytes = block_nbytes,
-            .is_last = is_last,
+        .buf = buf,
+        .block_nbytes = block_nbytes,
+        .is_last = is_last,
     };
 
     // TODO - use Content-Format 10742 (application/octet-stream with heatshink encoding)
@@ -301,17 +298,16 @@ enum golioth_status golioth_ota_get_block_sync(
     // Ref: https://golioth.atlassian.net/wiki/spaces/EN/pages/262275073/OTA+Compressed+Artifacts
 
     enum golioth_status status = GOLIOTH_OK;
-    status = golioth_coap_client_get_block(
-            client,
-            GOLIOTH_OTA_COMPONENT_PATH_PREFIX,
-            path,
-            GOLIOTH_CONTENT_TYPE_JSON,
-            block_index,
-            GOLIOTH_OTA_BLOCKSIZE,
-            on_block_rcvd,
-            &out_params,
-            true,
-            timeout_s);
+    status = golioth_coap_client_get_block(client,
+                                           GOLIOTH_OTA_COMPONENT_PATH_PREFIX,
+                                           path,
+                                           GOLIOTH_CONTENT_TYPE_JSON,
+                                           block_index,
+                                           GOLIOTH_OTA_BLOCKSIZE,
+                                           on_block_rcvd,
+                                           &out_params,
+                                           true,
+                                           timeout_s);
 
     return status;
 }
@@ -320,4 +316,4 @@ enum golioth_ota_state golioth_ota_get_state(void) {
     return _state;
 }
 
-#endif // CONFIG_GOLIOTH_FW_UPDATE
+#endif  // CONFIG_GOLIOTH_FW_UPDATE

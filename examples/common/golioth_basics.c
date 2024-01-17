@@ -21,7 +21,7 @@
 LOG_TAG_DEFINE(golioth_basics);
 
 // Current firmware version
-static const char* _current_version = "1.2.5";
+static const char *_current_version = "1.2.5";
 
 // Configurable via LightDB State at path "desired/my_config"
 int32_t _my_config = 0;
@@ -32,7 +32,9 @@ int32_t _loop_delay_s = 10;
 // Given if/when the we have a connection to Golioth
 static golioth_sys_sem_t _connected_sem;
 
-static void on_client_event(struct golioth_client* client, enum golioth_client_event event, void* arg) {
+static void on_client_event(struct golioth_client *client,
+                            enum golioth_client_event event,
+                            void *arg) {
     bool is_connected = (event == GOLIOTH_CLIENT_EVENT_CONNECTED);
     if (is_connected) {
         golioth_sys_sem_give(_connected_sem);
@@ -40,22 +42,21 @@ static void on_client_event(struct golioth_client* client, enum golioth_client_e
     GLTH_LOGI(TAG, "Golioth client %s", is_connected ? "connected" : "disconnected");
 }
 
-static enum golioth_settings_status on_loop_delay_setting(int32_t new_value, void* arg) {
+static enum golioth_settings_status on_loop_delay_setting(int32_t new_value, void *arg) {
     GLTH_LOGI(TAG, "Setting loop delay to %" PRId32 " s", new_value);
     _loop_delay_s = new_value;
     return GOLIOTH_SETTINGS_SUCCESS;
 }
 
-static enum golioth_rpc_status on_multiply(
-        zcbor_state_t* request_params_array,
-        zcbor_state_t* response_detail_map,
-        void* callback_arg) {
+static enum golioth_rpc_status on_multiply(zcbor_state_t *request_params_array,
+                                           zcbor_state_t *response_detail_map,
+                                           void *callback_arg) {
     double a, b;
     double value;
     bool ok;
 
     ok = zcbor_float_decode(request_params_array, &a)
-            && zcbor_float_decode(request_params_array, &b);
+        && zcbor_float_decode(request_params_array, &b);
     if (!ok) {
         GLTH_LOGE(TAG, "Failed to decode array items");
         return GOLIOTH_RPC_INVALID_ARGUMENT;
@@ -66,7 +67,7 @@ static enum golioth_rpc_status on_multiply(
     GLTH_LOGD(TAG, "%lf * %lf = %lf", a, b, value);
 
     ok = zcbor_tstr_put_lit(response_detail_map, "value")
-            && zcbor_float64_put(response_detail_map, value);
+        && zcbor_float64_put(response_detail_map, value);
     if (!ok) {
         GLTH_LOGE(TAG, "Failed to encode value");
         return GOLIOTH_RPC_RESOURCE_EXHAUSTED;
@@ -77,13 +78,12 @@ static enum golioth_rpc_status on_multiply(
 
 
 // Callback function for asynchronous get request of LightDB path "my_int"
-static void on_get_my_int(
-        struct golioth_client* client,
-        const struct golioth_response* response,
-        const char* path,
-        const uint8_t* payload,
-        size_t payload_size,
-        void* arg) {
+static void on_get_my_int(struct golioth_client *client,
+                          const struct golioth_response *response,
+                          const char *path,
+                          const uint8_t *payload,
+                          size_t payload_size,
+                          void *arg) {
     // It's a good idea to check the response status, to make sure the request didn't time out.
     if (response->status != GOLIOTH_OK) {
         GLTH_LOGE(TAG, "on_get_my_int status = %s", golioth_status_to_str(response->status));
@@ -96,13 +96,12 @@ static void on_get_my_int(
 }
 
 // Callback function for asynchronous observation of LightDB path "desired/my_config"
-static void on_my_config(
-        struct golioth_client* client,
-        const struct golioth_response* response,
-        const char* path,
-        const uint8_t* payload,
-        size_t payload_size,
-        void* arg) {
+static void on_my_config(struct golioth_client *client,
+                         const struct golioth_response *response,
+                         const char *path,
+                         const uint8_t *payload,
+                         size_t payload_size,
+                         void *arg) {
     if (response->status != GOLIOTH_OK) {
         return;
     }
@@ -119,10 +118,10 @@ static void on_my_config(
 }
 
 
-void golioth_basics(struct golioth_client* client) {
+void golioth_basics(struct golioth_client *client) {
     // Initialize the Settings and RPC services
-    struct golioth_settings* settings = golioth_settings_init(client);
-    struct golioth_rpc* rpc = golioth_rpc_init(client);
+    struct golioth_settings *settings = golioth_settings_init(client);
+    struct golioth_rpc *rpc = golioth_rpc_init(client);
 
     // Register a callback function that will be called by the client thread when
     // connect and disconnect events happen.

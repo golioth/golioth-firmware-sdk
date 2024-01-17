@@ -26,7 +26,7 @@ uint64_t golioth_sys_now_ms(void);
  *------------------------------------------------*/
 
 // Opaque handle for semaphore
-typedef void* golioth_sys_sem_t;
+typedef void *golioth_sys_sem_t;
 
 golioth_sys_sem_t golioth_sys_sem_create(uint32_t sem_max_count, uint32_t sem_initial_count);
 bool golioth_sys_sem_take(golioth_sys_sem_t sem, int32_t ms_to_wait);
@@ -39,15 +39,15 @@ int golioth_sys_sem_get_fd(golioth_sys_sem_t sem);
  *------------------------------------------------*/
 
 // Opaque handle for timers
-typedef void* golioth_sys_timer_t;
+typedef void *golioth_sys_timer_t;
 
-typedef void (*golioth_sys_timer_fn_t)(golioth_sys_timer_t timer, void* user_arg);
+typedef void (*golioth_sys_timer_fn_t)(golioth_sys_timer_t timer, void *user_arg);
 
 struct golioth_timer_config {
-    const char* name;
+    const char *name;
     uint32_t expiration_ms;
     golioth_sys_timer_fn_t fn;
-    void* user_arg;
+    void *user_arg;
 };
 
 golioth_sys_timer_t golioth_sys_timer_create(const struct golioth_timer_config *config);
@@ -60,14 +60,14 @@ void golioth_sys_timer_destroy(golioth_sys_timer_t timer);
  *------------------------------------------------*/
 
 // Opaque handle for threads
-typedef void* golioth_sys_thread_t;
+typedef void *golioth_sys_thread_t;
 
-typedef void (*golioth_sys_thread_fn_t)(void* user_arg);
+typedef void (*golioth_sys_thread_fn_t)(void *user_arg);
 
 struct golioth_thread_config {
-    const char* name;
+    const char *name;
     golioth_sys_thread_fn_t fn;
-    void* user_arg;
+    void *user_arg;
     int32_t stack_size;  // in bytes
     int32_t prio;        // large numbers == high priority
 };
@@ -107,8 +107,8 @@ void golioth_sys_thread_destroy(golioth_sys_thread_t thread);
 
 // Can be used to adjust behavior based on client connection status,
 // e.g. to turn logging backends on and off.
-void golioth_sys_client_connected(void* client);
-void golioth_sys_client_disconnected(void* client);
+void golioth_sys_client_connected(void *client);
+void golioth_sys_client_disconnected(void *client);
 
 /*--------------------------------------------------
  * Logging
@@ -131,16 +131,16 @@ void golioth_sys_client_disconnected(void* client);
 #define LOG_COLOR_V
 
 #ifndef GLTH_LOGX
-#define GLTH_LOGX(COLOR, LEVEL, LEVEL_STR, TAG, ...) \
-    do { \
-        if ((LEVEL) <= golioth_debug_get_log_level()) { \
-            uint64_t now_ms = golioth_sys_now_ms(); \
+#define GLTH_LOGX(COLOR, LEVEL, LEVEL_STR, TAG, ...)                       \
+    do {                                                                   \
+        if ((LEVEL) <= golioth_debug_get_log_level()) {                    \
+            uint64_t now_ms = golioth_sys_now_ms();                        \
             printf(COLOR "%s (%" PRIu64 ") %s: ", LEVEL_STR, now_ms, TAG); \
-            printf(__VA_ARGS__); \
-            golioth_debug_printf(now_ms, LEVEL, TAG, __VA_ARGS__); \
-            printf("%s", LOG_RESET_COLOR); \
-            puts(""); \
-        } \
+            printf(__VA_ARGS__);                                           \
+            golioth_debug_printf(now_ms, LEVEL, TAG, __VA_ARGS__);         \
+            printf("%s", LOG_RESET_COLOR);                                 \
+            puts("");                                                      \
+        }                                                                  \
     } while (0)
 #endif
 
@@ -172,10 +172,10 @@ void golioth_sys_client_disconnected(void* client);
 
 #ifndef GLTH_LOG_BUFFER_HEXDUMP
 #define GLTH_LOG_BUFFER_HEXDUMP(TAG, payload, size, level) \
-    do { \
-        if ((level) <= golioth_debug_get_log_level()) { \
-            golioth_debug_hexdump(TAG, payload, size); \
-        } \
+    do {                                                   \
+        if ((level) <= golioth_debug_get_log_level()) {    \
+            golioth_debug_hexdump(TAG, payload, size);     \
+        }                                                  \
     } while (0);
 #endif
 

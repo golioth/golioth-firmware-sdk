@@ -39,20 +39,20 @@ LOG_TAG_DEFINE(golioth_rpc);
 
 /// Private struct to contain data about a single registered method
 struct golioth_rpc_method {
-    const char* method;
+    const char *method;
     golioth_rpc_cb_fn callback;
-    void* callback_arg;
+    void *callback_arg;
 };
 
 /// Private struct to contain RPC state data
 struct golioth_rpc {
-    struct golioth_client* client;
+    struct golioth_client *client;
     int num_rpcs;
     struct golioth_rpc_method rpcs[CONFIG_GOLIOTH_RPC_MAX_NUM_METHODS];
 };
 
-static int params_decode(zcbor_state_t* zsd, void* value) {
-    zcbor_state_t* params_zsd = value;
+static int params_decode(zcbor_state_t *zsd, void *value) {
+    zcbor_state_t *params_zsd = value;
     bool ok;
 
     ok = zcbor_list_start_decode(zsd);
@@ -66,7 +66,7 @@ static int params_decode(zcbor_state_t* zsd, void* value) {
     while (!zcbor_list_or_map_end(zsd)) {
         ok = zcbor_any_skip(zsd, NULL);
         if (!ok) {
-            GLTH_LOGW(TAG, "Failed to skip param (%d)", (int)zcbor_peek_error(zsd));
+            GLTH_LOGW(TAG, "Failed to skip param (%d)", (int) zcbor_peek_error(zsd));
             return -EBADMSG;
         }
     }
@@ -80,20 +80,19 @@ static int params_decode(zcbor_state_t* zsd, void* value) {
     return 0;
 }
 
-static void on_rpc(
-        struct golioth_client* client,
-        const struct golioth_response* response,
-        const char* path,
-        const uint8_t* payload,
-        size_t payload_size,
-        void* arg) {
+static void on_rpc(struct golioth_client *client,
+                   const struct golioth_response *response,
+                   const char *path,
+                   const uint8_t *payload,
+                   size_t payload_size,
+                   void *arg) {
     ZCBOR_STATE_D(zsd, 2, payload, payload_size, 1);
     zcbor_state_t params_zsd;
     struct zcbor_string id, method;
     struct zcbor_map_entry map_entries[] = {
-            ZCBOR_TSTR_LIT_MAP_ENTRY("id", zcbor_map_tstr_decode, &id),
-            ZCBOR_TSTR_LIT_MAP_ENTRY("method", zcbor_map_tstr_decode, &method),
-            ZCBOR_TSTR_LIT_MAP_ENTRY("params", params_decode, &params_zsd),
+        ZCBOR_TSTR_LIT_MAP_ENTRY("id", zcbor_map_tstr_decode, &id),
+        ZCBOR_TSTR_LIT_MAP_ENTRY("method", zcbor_map_tstr_decode, &method),
+        ZCBOR_TSTR_LIT_MAP_ENTRY("params", params_decode, &params_zsd),
     };
     int err;
     bool ok;
@@ -128,15 +127,15 @@ static void on_rpc(
         return;
     }
 
-    struct golioth_rpc* grpc = arg;
+    struct golioth_rpc *grpc = arg;
 
-    const struct golioth_rpc_method* matching_rpc = NULL;
+    const struct golioth_rpc_method *matching_rpc = NULL;
     enum golioth_rpc_status status = GOLIOTH_RPC_UNKNOWN;
 
     for (int i = 0; i < grpc->num_rpcs; i++) {
-        const struct golioth_rpc_method* rpc = &grpc->rpcs[i];
+        const struct golioth_rpc_method *rpc = &grpc->rpcs[i];
         if (strlen(rpc->method) == method.len
-            && strncmp(rpc->method, (char*)method.value, method.len) == 0) {
+            && strncmp(rpc->method, (char *) method.value, method.len) == 0) {
             matching_rpc = rpc;
             break;
         }
@@ -187,22 +186,20 @@ static void on_rpc(
         return;
     }
 
-    golioth_coap_client_set(
-            client,
-            GOLIOTH_RPC_PATH_PREFIX,
-            "status",
-            GOLIOTH_CONTENT_TYPE_CBOR,
-            response_buf,
-            zse->payload - response_buf,
-            NULL,
-            NULL,
-            false,
-            GOLIOTH_SYS_WAIT_FOREVER);
+    golioth_coap_client_set(client,
+                            GOLIOTH_RPC_PATH_PREFIX,
+                            "status",
+                            GOLIOTH_CONTENT_TYPE_CBOR,
+                            response_buf,
+                            zse->payload - response_buf,
+                            NULL,
+                            NULL,
+                            false,
+                            GOLIOTH_SYS_WAIT_FOREVER);
 }
 
-struct golioth_rpc* golioth_rpc_init(struct golioth_client* client)
-{
-    struct golioth_rpc* grpc = golioth_sys_malloc(sizeof(struct golioth_rpc));
+struct golioth_rpc *golioth_rpc_init(struct golioth_client *client) {
+    struct golioth_rpc *grpc = golioth_sys_malloc(sizeof(struct golioth_rpc));
 
     if (grpc != NULL) {
         grpc->client = client;
@@ -212,20 +209,18 @@ struct golioth_rpc* golioth_rpc_init(struct golioth_client* client)
     return grpc;
 }
 
-enum golioth_status golioth_rpc_register(
-        struct golioth_rpc* grpc,
-        const char* method,
-        golioth_rpc_cb_fn callback,
-        void* callback_arg) {
+enum golioth_status golioth_rpc_register(struct golioth_rpc *grpc,
+                                         const char *method,
+                                         golioth_rpc_cb_fn callback,
+                                         void *callback_arg) {
     if (grpc->num_rpcs >= CONFIG_GOLIOTH_RPC_MAX_NUM_METHODS) {
-        GLTH_LOGE(
-                TAG,
-                "Unable to register, can't register more than %d methods",
-                CONFIG_GOLIOTH_RPC_MAX_NUM_METHODS);
+        GLTH_LOGE(TAG,
+                  "Unable to register, can't register more than %d methods",
+                  CONFIG_GOLIOTH_RPC_MAX_NUM_METHODS);
         return GOLIOTH_ERR_MEM_ALLOC;
     }
 
-    struct golioth_rpc_method* rpc = &grpc->rpcs[grpc->num_rpcs];
+    struct golioth_rpc_method *rpc = &grpc->rpcs[grpc->num_rpcs];
 
     rpc->method = method;
     rpc->callback = callback;
@@ -233,8 +228,12 @@ enum golioth_status golioth_rpc_register(
 
     grpc->num_rpcs++;
     if (grpc->num_rpcs == 1) {
-        return golioth_coap_client_observe_async(
-                grpc->client, GOLIOTH_RPC_PATH_PREFIX, "", GOLIOTH_CONTENT_TYPE_CBOR, on_rpc, grpc);
+        return golioth_coap_client_observe_async(grpc->client,
+                                                 GOLIOTH_RPC_PATH_PREFIX,
+                                                 "",
+                                                 GOLIOTH_CONTENT_TYPE_CBOR,
+                                                 on_rpc,
+                                                 grpc);
     }
     return GOLIOTH_OK;
 }

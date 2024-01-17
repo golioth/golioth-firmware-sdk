@@ -32,7 +32,7 @@
  */
 
 /* Uncomment for RSA signature support */
-//#define MCUBOOT_SIGN_RSA
+// #define MCUBOOT_SIGN_RSA
 
 /* Uncomment for ECDSA signatures using curve P-256. */
 // #define MCUBOOT_SIGN_EC256
@@ -55,9 +55,9 @@
 #else
 /* Using SWAP w Scratch by default.
  * Uncomment which is needed. */
-#define MCUBOOT_SWAP_USING_SCRATCH  1
+#define MCUBOOT_SWAP_USING_SCRATCH 1
 // #define MCUBOOT_SWAP_USING_MOVE     1
-#define MCUBOOT_SWAP_USING_STATUS   1
+#define MCUBOOT_SWAP_USING_STATUS 1
 #endif
 
 /* This definition is used in boot_copy_region function to define
@@ -156,11 +156,11 @@
 /* Uncomment if your platform has its own mcuboot_config/mcuboot_assert.h.
  * If so, it must provide an ASSERT macro for use by bootutil. Otherwise,
  * "assert" is used. */
-//#define MCUBOOT_HAVE_ASSERT_H
+// #define MCUBOOT_HAVE_ASSERT_H
 
-#define MCUBOOT_WATCHDOG_FEED()         \
-    do {                                \
-        /* TODO: to be implemented */   \
+#define MCUBOOT_WATCHDOG_FEED()       \
+    do {                              \
+        /* TODO: to be implemented */ \
     } while (0)
 
 /* Uncomment these if support of encrypted upgrade image is needed */
@@ -179,7 +179,7 @@
 /*
  * Do not save ENCTLV by default
  */
-//#define MCUBOOT_SWAP_SAVE_ENCTLV 1
+// #define MCUBOOT_SWAP_SAVE_ENCTLV 1
 
 /* INFO: Misc functionality defines */
 /*
@@ -189,8 +189,8 @@
 #define MCUBOOT_DATA_SHARING
 */
 /* Use basic fault injection hardening profile */
-//#define MCUBOOT_FIH_PROFILE_LOW
+// #define MCUBOOT_FIH_PROFILE_LOW
 
-//#define MCUBOOT_FIH_PROFILE_MEDIUM
+// #define MCUBOOT_FIH_PROFILE_MEDIUM
 
 #endif /* MCUBOOT_CONFIG_H */
