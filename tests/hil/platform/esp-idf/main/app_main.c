@@ -42,13 +42,19 @@ void app_main(void) {
     const char *psk_id = nvs_read_golioth_psk_id();
     const char *psk = nvs_read_golioth_psk();
 
-    struct golioth_client_config config = {.credentials = {.auth_type = GOLIOTH_TLS_AUTH_TYPE_PSK,
-                                                           .psk = {
-                                                               .psk_id = psk_id,
-                                                               .psk_id_len = strlen(psk_id),
-                                                               .psk = psk,
-                                                               .psk_len = strlen(psk),
-                                                           }}};
+    struct golioth_client_config config = {
+        .credentials =
+            {
+                .auth_type = GOLIOTH_TLS_AUTH_TYPE_PSK,
+                .psk =
+                    {
+                        .psk_id = psk_id,
+                        .psk_id_len = strlen(psk_id),
+                        .psk = psk,
+                        .psk_len = strlen(psk),
+                    },
+            },
+    };
 
     // Run HIL test
     hil_test_entry(&config);

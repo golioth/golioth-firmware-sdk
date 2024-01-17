@@ -581,31 +581,37 @@ static enum golioth_status create_session(struct golioth_client *client,
     } else if (auth_type == GOLIOTH_TLS_AUTH_TYPE_PKI) {
         struct golioth_pki_credential pki_creds = client->config.credentials.pki;
 
-        coap_dtls_pki_t dtls_pki = {.version = COAP_DTLS_PKI_SETUP_VERSION,
-                                    .verify_peer_cert = 1,
-                                    .check_common_ca = 1,
-                                    .allow_self_signed = 0,
-                                    .allow_expired_certs = 0,
-                                    .cert_chain_validation = 1,
-                                    .cert_chain_verify_depth = 3,
-                                    .check_cert_revocation = 1,
-                                    .allow_no_crl = 1,
-                                    .allow_expired_crl = 0,
-                                    .allow_bad_md_hash = 0,
-                                    .allow_short_rsa_length = 1,
-                                    .is_rpk_not_cert = 0,
-                                    .validate_cn_call_back = validate_cn_call_back,
-                                    .client_sni = client_sni,
-                                    .pki_key = {.key_type = COAP_PKI_KEY_ASN1,
-                                                .key.asn1 = {
-                                                    .ca_cert = pki_creds.ca_cert,
-                                                    .ca_cert_len = pki_creds.ca_cert_len,
-                                                    .public_cert = pki_creds.public_cert,
-                                                    .public_cert_len = pki_creds.public_cert_len,
-                                                    .private_key = pki_creds.private_key,
-                                                    .private_key_len = pki_creds.private_key_len,
-                                                    .private_key_type = COAP_ASN1_PKEY_EC,
-                                                }}};
+        coap_dtls_pki_t dtls_pki = {
+            .version = COAP_DTLS_PKI_SETUP_VERSION,
+            .verify_peer_cert = 1,
+            .check_common_ca = 1,
+            .allow_self_signed = 0,
+            .allow_expired_certs = 0,
+            .cert_chain_validation = 1,
+            .cert_chain_verify_depth = 3,
+            .check_cert_revocation = 1,
+            .allow_no_crl = 1,
+            .allow_expired_crl = 0,
+            .allow_bad_md_hash = 0,
+            .allow_short_rsa_length = 1,
+            .is_rpk_not_cert = 0,
+            .validate_cn_call_back = validate_cn_call_back,
+            .client_sni = client_sni,
+            .pki_key =
+                {
+                    .key_type = COAP_PKI_KEY_ASN1,
+                    .key.asn1 =
+                        {
+                            .ca_cert = pki_creds.ca_cert,
+                            .ca_cert_len = pki_creds.ca_cert_len,
+                            .public_cert = pki_creds.public_cert,
+                            .public_cert_len = pki_creds.public_cert_len,
+                            .private_key = pki_creds.private_key,
+                            .private_key_len = pki_creds.private_key_len,
+                            .private_key_type = COAP_ASN1_PKEY_EC,
+                        },
+                },
+        };
         *session =
             coap_new_client_session_pki(context, NULL, &dst_addr, COAP_PROTO_DTLS, &dtls_pki);
     } else {

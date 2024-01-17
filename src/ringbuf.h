@@ -25,11 +25,13 @@ typedef struct {
 // Convenience macro that defines two variables in the current scope:
 //      uint8_t <name>_buffer; // internal use only
 //      ringbuf_t <name>;      // user's initialized ringbuf_t
-#define RINGBUF_DEFINE(name, item_sz, max_num_items)                              \
-    uint8_t name##_buffer[RINGBUF_BUFFER_SIZE(item_sz, max_num_items)];           \
-    ringbuf_t name = {.buffer = name##_buffer,                                    \
-                      .buffer_size = RINGBUF_BUFFER_SIZE(item_sz, max_num_items), \
-                      .item_size = item_sz};
+#define RINGBUF_DEFINE(name, item_sz, max_num_items)                    \
+    uint8_t name##_buffer[RINGBUF_BUFFER_SIZE(item_sz, max_num_items)]; \
+    ringbuf_t name = {                                                  \
+        .buffer = name##_buffer,                                        \
+        .buffer_size = RINGBUF_BUFFER_SIZE(item_sz, max_num_items),     \
+        .item_size = item_sz,                                           \
+    };
 
 bool ringbuf_put(ringbuf_t *ringbuf, const void *item);
 bool ringbuf_get(ringbuf_t *ringbuf, void *item);

@@ -100,13 +100,18 @@ static void test_golioth_client_create(void) {
         const char *psk = nvs_read_golioth_psk();
 
         struct golioth_client_config config = {
-            .credentials = {.auth_type = GOLIOTH_TLS_AUTH_TYPE_PSK,
-                            .psk = {
-                                .psk_id = psk_id,
-                                .psk_id_len = strlen(psk_id),
-                                .psk = psk,
-                                .psk_len = strlen(psk),
-                            }}};
+            .credentials =
+                {
+                    .auth_type = GOLIOTH_TLS_AUTH_TYPE_PSK,
+                    .psk =
+                        {
+                            .psk_id = psk_id,
+                            .psk_id_len = strlen(psk_id),
+                            .psk = psk,
+                            .psk_len = strlen(psk),
+                        },
+                },
+        };
         _client = golioth_client_create(&config);
 
         TEST_ASSERT_NOT_NULL(_client);

@@ -156,13 +156,19 @@ void golioth_main_task(void *arg) {
     const char *psk_id = GOLIOTH_SAMPLE_PSK_ID;
     const char *psk = GOLIOTH_SAMPLE_PSK;
 
-    struct golioth_client_config config = {.credentials = {.auth_type = GOLIOTH_TLS_AUTH_TYPE_PSK,
-                                                           .psk = {
-                                                               .psk_id = psk_id,
-                                                               .psk_id_len = strlen(psk_id),
-                                                               .psk = psk,
-                                                               .psk_len = strlen(psk),
-                                                           }}};
+    struct golioth_client_config config = {
+        .credentials =
+            {
+                .auth_type = GOLIOTH_TLS_AUTH_TYPE_PSK,
+                .psk =
+                    {
+                        .psk_id = psk_id,
+                        .psk_id_len = strlen(psk_id),
+                        .psk = psk,
+                        .psk_len = strlen(psk),
+                    },
+            },
+    };
     struct golioth_client *client = golioth_client_create(&config);
     assert(client);
 

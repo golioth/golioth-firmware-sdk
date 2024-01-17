@@ -26,10 +26,12 @@ static const uint8_t tls_ca_crt[] = {
 
 FS_LITTLEFS_DECLARE_DEFAULT_CONFIG(cstorage);
 
-static struct fs_mount_t littlefs_mnt = {.type = FS_LITTLEFS,
-                                         .fs_data = &cstorage,
-                                         .storage_dev = (void *) STORAGE_PARTITION_ID,
-                                         .mnt_point = "/lfs1"};
+static struct fs_mount_t littlefs_mnt = {
+    .type = FS_LITTLEFS,
+    .fs_data = &cstorage,
+    .storage_dev = (void *) STORAGE_PARTITION_ID,
+    .mnt_point = "/lfs1",
+};
 struct golioth_client *client;
 static K_SEM_DEFINE(connected, 0, 1);
 
@@ -128,15 +130,20 @@ int main(void) {
         net_connect();
 
         struct golioth_client_config client_config = {
-            .credentials = {.auth_type = GOLIOTH_TLS_AUTH_TYPE_PKI,
-                            .pki = {
-                                .ca_cert = tls_ca_crt,
-                                .ca_cert_len = sizeof(tls_ca_crt),
-                                .public_cert = tls_client_crt,
-                                .public_cert_len = tls_client_crt_len,
-                                .private_key = tls_client_key,
-                                .private_key_len = tls_client_key_len,
-                            }}};
+            .credentials =
+                {
+                    .auth_type = GOLIOTH_TLS_AUTH_TYPE_PKI,
+                    .pki =
+                        {
+                            .ca_cert = tls_ca_crt,
+                            .ca_cert_len = sizeof(tls_ca_crt),
+                            .public_cert = tls_client_crt,
+                            .public_cert_len = tls_client_crt_len,
+                            .private_key = tls_client_key,
+                            .private_key_len = tls_client_key_len,
+                        },
+                },
+        };
 
         client = golioth_client_create(&client_config);
 

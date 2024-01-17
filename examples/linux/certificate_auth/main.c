@@ -40,15 +40,21 @@ int main(void) {
         return 1;
     }
 
-    struct golioth_client_config config = {.credentials = {.auth_type = GOLIOTH_TLS_AUTH_TYPE_PKI,
-                                                           .pki = {
-                                                               .ca_cert = root_ca_der,
-                                                               .ca_cert_len = root_ca_len,
-                                                               .public_cert = client_cert_der,
-                                                               .public_cert_len = client_cert_len,
-                                                               .private_key = client_key_der,
-                                                               .private_key_len = client_key_len,
-                                                           }}};
+    struct golioth_client_config config = {
+        .credentials =
+            {
+                .auth_type = GOLIOTH_TLS_AUTH_TYPE_PKI,
+                .pki =
+                    {
+                        .ca_cert = root_ca_der,
+                        .ca_cert_len = root_ca_len,
+                        .public_cert = client_cert_der,
+                        .public_cert_len = client_cert_len,
+                        .private_key = client_key_der,
+                        .private_key_len = client_key_len,
+                    },
+            },
+    };
 
     struct golioth_client *client = golioth_client_create(&config);
     assert(client);
