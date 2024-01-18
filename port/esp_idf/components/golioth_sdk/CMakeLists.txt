@@ -31,6 +31,7 @@ idf_component_register(
         "${sdk_port}/esp_idf/fw_update_esp_idf.c"
         "${sdk_src}/golioth_status.c"
         "${sdk_src}/coap_client.c"
+        "${sdk_src}/coap_client_libcoap.c"
         "${sdk_src}/log.c"
         "${sdk_src}/lightdb_state.c"
         "${sdk_src}/stream.c"
