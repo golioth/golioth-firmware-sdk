@@ -138,7 +138,7 @@ config GOLIOTH_LIGHTDB_STATE
     help
         Enable the Golioth LightDB State service
 
-config GOLIOTH_LIGHTDB_STREAM
+config GOLIOTH_STREAM
     bool "Golioth LightDB Stream service"
     help
         Enable the Golioth LightDB Stream service

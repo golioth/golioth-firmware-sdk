@@ -5,10 +5,10 @@
  */
 
 #include <zephyr/logging/log.h>
-LOG_MODULE_REGISTER(lightdb_stream, LOG_LEVEL_DBG);
+LOG_MODULE_REGISTER(stream, LOG_LEVEL_DBG);
 
 #include <golioth/client.h>
-#include <golioth/lightdb_stream.h>
+#include <golioth/stream.h>
 #include <samples/common/sample_credentials.h>
 #include <samples/common/net_connect.h>
 #include <stdlib.h>
@@ -109,12 +109,12 @@ static void temperature_push_async(const struct sensor_value *temp)
 
     snprintk(sbuf, sizeof(sbuf), "{\"temp\":%d.%06d}", temp->val1, abs(temp->val2));
 
-    err = golioth_lightdb_stream_set_json_async(client,
-                                                "sensor",
-                                                sbuf,
-                                                strlen(sbuf),
-                                                temperature_push_handler,
-                                                NULL);
+    err = golioth_stream_set_json_async(client,
+                                        "sensor",
+                                        sbuf,
+                                        strlen(sbuf),
+                                        temperature_push_handler,
+                                        NULL);
     if (err)
     {
         LOG_WRN("Failed to push temperature: %d", err);
@@ -129,7 +129,7 @@ static void temperature_push_sync(const struct sensor_value *temp)
 
     snprintk(sbuf, sizeof(sbuf), "{\"temp\":%d.%06d}", temp->val1, abs(temp->val2));
 
-    err = golioth_lightdb_stream_set_json_sync(client, "sensor", sbuf, strlen(sbuf), 1);
+    err = golioth_stream_set_json_sync(client, "sensor", sbuf, strlen(sbuf), 1);
 
     if (err)
     {
@@ -144,11 +144,11 @@ static void temperature_push_float_async(const struct sensor_value *temp)
 {
     int err;
 
-    err = golioth_lightdb_stream_set_float_async(client,
-                                                 "sensor/temp",
-                                                 sensor_value_to_double(temp),
-                                                 temperature_push_handler,
-                                                 NULL);
+    err = golioth_stream_set_float_async(client,
+                                         "sensor/temp",
+                                         sensor_value_to_double(temp),
+                                         temperature_push_handler,
+                                         NULL);
 
     if (err)
     {
