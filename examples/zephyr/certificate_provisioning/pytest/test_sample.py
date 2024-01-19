@@ -3,6 +3,7 @@ import pytest
 import subprocess
 import datetime
 import logging
+from time import sleep
 
 LOGGER = logging.getLogger(__name__)
 PROJ_NAME = 'firmware_ci'
@@ -24,12 +25,14 @@ async def test_credentials(shell, project, device_name, device_port, certificate
     # Ensure there are no credentials currently stored on device
 
     shell._device.readlines_until(regex=".*Start certificate provisioning sample", timeout=90.0)
+    sleep(5) # Time for fs bringup and in case nRF9160 reset loop reboot happens
     shell.exec_command(f'fs rm {FS_CRT_PATH}')
     shell.exec_command(f'fs rm {FS_KEY_PATH}')
     shell.exec_command(f'fs rm {FS_SUBDIR}')
     shell._device.clear_buffer()
     shell._device.write('kernel reboot cold\n\n'.encode())
     shell._device.readlines_until(regex=".*Start certificate provisioning sample", timeout=90.0)
+    sleep(5) # Time for fs bringup and in case nRF9160 reset loop reboot happens
 
     # Check cloud to verify device does not exist
 
@@ -67,6 +70,7 @@ async def test_credentials(shell, project, device_name, device_port, certificate
     # Await connection
 
     shell._device.readlines_until(regex=".*Golioth client connected", timeout=90.0)
+    shell._device.readlines_until(regex=".*Sending hello! 2", timeout=20.0)
 
     # Check cloud to verify device was created
     device = await project.device_by_name(device_name)
