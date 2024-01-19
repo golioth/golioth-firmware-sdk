@@ -10,7 +10,7 @@
 #include <golioth/client.h>
 #include <golioth/fw_update.h>
 #include <golioth/lightdb_state.h>
-#include <golioth/lightdb_stream.h>
+#include <golioth/stream.h>
 #include <golioth/payload_utils.h>
 #include <golioth/rpc.h>
 #include <golioth/settings.h>
@@ -230,7 +230,7 @@ void golioth_basics(struct golioth_client *client)
     golioth_lightdb_observe_async(client, "desired/my_config", on_my_config, NULL);
 
     // LightDB Stream functions are nearly identical to LightDB state.
-    golioth_lightdb_stream_set_int_async(client, "my_stream_int", 15, NULL, NULL);
+    golioth_stream_set_int_async(client, "my_stream_int", 15, NULL, NULL);
 
     // We can register Remote Procedure Call (RPC) methods. RPCs allow
     // remote users to "call a function" on the device.

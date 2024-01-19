@@ -39,7 +39,7 @@ set(sdk_srcs
     "${sdk_src}/coap_client.c"
     "${sdk_src}/log.c"
     "${sdk_src}/lightdb_state.c"
-    "${sdk_src}/lightdb_stream.c"
+    "${sdk_src}/stream.c"
     "${sdk_src}/rpc.c"
     "${sdk_src}/ota.c"
     "${sdk_src}/payload_utils.c"

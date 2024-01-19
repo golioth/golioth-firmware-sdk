@@ -51,7 +51,7 @@ zephyr_library_sources(
     ../../src/fw_block_processor.c
     ../../src/fw_update.c
     ../../src/lightdb_state.c
-    ../../src/lightdb_stream.c
+    ../../src/stream.c
     ../../src/log.c
     ../../src/mbox.c
     ../../src/ota.c
