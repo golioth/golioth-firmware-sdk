@@ -141,11 +141,11 @@ int main(void) {
         client = golioth_client_create(&client_config);
 
         golioth_client_register_event_callback(client, on_client_event, NULL);
-
-        k_sem_take(&connected, K_FOREVER);
     } else {
         LOG_ERR("Error reading certificate credentials from filesystem");
     }
+
+    k_sem_take(&connected, K_FOREVER);
 
     while (true) {
         LOG_INF("Sending hello! %d", counter);
