@@ -1,4 +1,3 @@
-from golioth import Client
 import logging
 import pytest
 import time
@@ -6,33 +5,15 @@ import yaml
 
 LOGGER = logging.getLogger(__name__)
 
-UPDATE_VERSION = '255.8.9'
-UPDATE_PACKAGE = 'main'
-API_URL = "https://api.golioth.io"
-CI_PROJ_NAME = "firmware_ci"
-
 pytestmark = pytest.mark.anyio
 
-async def test_fw_update(shell, project, device, credentials_file, west_board):
+async def test_fw_update(shell, project, device, credentials_file, fw_info, release):
     # Read credentials
 
     with open(credentials_file, 'r') as f:
         credentials = yaml.safe_load(f)
 
     time.sleep(2)
-
-    # Add blueprint to device
-
-    LOGGER.info(f"Board name: {west_board}")
-
-    blueprint_id = await project.blueprints.get_id(west_board)
-    await device.add_blueprint(blueprint_id)
-
-    # Generate tag name and add to device
-
-    tag_name = device.name.lower().replace('-','_')
-    tag = await project.tags.create(tag_name)
-    await device.add_tag(tag.id)
 
     # Set Golioth credential
 
@@ -54,21 +35,10 @@ async def test_fw_update(shell, project, device, credentials_file, west_board):
 
     shell._device.readlines_until(regex=".*Nothing to do.", timeout=90.0)
 
-    # Find Artifact that matches this device and desired update version
 
-    artifact_id = None
-    all_artifacts = await project.artifacts.get_all()
-    for a in all_artifacts:
-        if (a.blueprint == blueprint_id and
-            a.version == UPDATE_VERSION and
-            a.package == UPDATE_PACKAGE):
-            artifact_id = a.id
+    # Rollout the release
 
-    assert artifact_id != None, f'Unable to find Artifact {UPDATE_PACKAGE}-{UPDATE_VERSION} with blueprint: {west_board}'
-
-    # Create release
-
-    release = await project.releases.create([artifact_id], [], [tag.id], True)
+    await project.releases.rollout_set(release.id, True)
 
     # Monitor block download and watch for reboot after update
 
@@ -94,11 +64,5 @@ async def test_fw_update(shell, project, device, credentials_file, west_board):
     d_package = device_check.info['metadata']['update']['main']['package']
     d_version = device_check.info['metadata']['update']['main']['version']
 
-    assert d_package == 'main', f'Expected firmware package "main" but got "%s"'.format(d_package)
-    assert d_version == '255.8.9', f'Expected firmware version "255.8.9" but got "%s"'.format(d_version)
-
-    # Clean Up
-
-    await project.releases.delete(release.id)
-    await device.remove_tag(tag.id)
-    await project.tags.delete(tag.id)
+    assert d_package == fw_info['package'], f'Expected firmware package "{fw_info["package"]}" but got "%s"'.format(d_package)
+    assert d_version == fw_info['version'], f'Expected firmware version "{fw_info["version"]}" but got "%s"'.format(d_version)
