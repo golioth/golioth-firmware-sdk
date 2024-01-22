@@ -7,24 +7,18 @@
 #include <assert.h>
 
 #include <golioth/client.h>
+#include <samples/common/net_connect.h>
+#include <samples/common/sample_credentials.h>
+
 #include "golioth_basics.h"
 
-#include <samples/common/net_connect.h>
 
 int main(void) {
-    struct golioth_client_config config = {
-            .credentials = {
-                    .auth_type = GOLIOTH_TLS_AUTH_TYPE_PSK,
-                    .psk = {
-                            .psk_id = CONFIG_GOLIOTH_SAMPLE_PSK_ID,
-                            .psk_id_len = strlen(CONFIG_GOLIOTH_SAMPLE_PSK_ID),
-                            .psk = CONFIG_GOLIOTH_SAMPLE_PSK,
-                            .psk_len = strlen(CONFIG_GOLIOTH_SAMPLE_PSK),
-                    }}};
+    const struct golioth_client_config *config = golioth_sample_credentials_get();
 
     net_connect();
 
-    struct golioth_client* client = golioth_client_create(&config);
+    struct golioth_client* client = golioth_client_create(config);
     assert(client);
     golioth_basics(client);
 
