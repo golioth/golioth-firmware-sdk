@@ -46,7 +46,7 @@ jobs:
         pip3 install -r zephyr/scripts/requirements-build-test.txt
         pip3 install -r zephyr/scripts/requirements-run-test.txt
         # Needed for TF-M
-        pip3 install cryptography pyasn1 pyyaml cbor>=1.0.0 imgtool>=1.9.0 jinja2 click
+        pip3 install cryptography==41.0.7 pyasn1 pyyaml cbor>=1.0.0 imgtool>=1.9.0 jinja2 click
 
     - name: Download binary blobs
       if: ${{ inputs.binary_blob }}
