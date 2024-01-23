@@ -13,6 +13,22 @@ if GOLIOTH_SAMPLE_COMMON
 
 rsource "Kconfig.defconfig"
 
+choice GOLIOTH_SAMPLE_AUTH_TYPE
+	prompt "Authentication type"
+
+config GOLIOTH_SAMPLE_AUTH_TYPE_PSK
+	bool "PSK"
+	depends on GOLIOTH_AUTH_METHOD_PSK
+
+config GOLIOTH_SAMPLE_AUTH_TYPE_PKI
+	bool "PKI"
+	depends on GOLIOTH_AUTH_METHOD_CERT
+
+config GOLIOTH_SAMPLE_AUTH_TYPE_TAG
+	bool "Tag"
+
+endchoice
+
 config GOLIOTH_SAMPLE_HARDCODED_CREDENTIALS
 	bool "Hardcoded credentials"
 	default n
