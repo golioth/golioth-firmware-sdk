@@ -197,7 +197,7 @@ Edit the `prj.conf` file and update the firmware version number:
 
 ```config
 # Firmware version used in FW update process
-CONFIG_GOLIOTH_SAMPLE_FW_VERSION="1.2.4"
+CONFIG_MCUBOOT_IMGTOOL_SIGN_VERSION="1.2.4"
 ```
 
 Build the firmware update but do not flash it to the device. The binary

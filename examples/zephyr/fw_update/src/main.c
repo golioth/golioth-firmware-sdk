@@ -16,7 +16,7 @@ LOG_MODULE_REGISTER(fw_update_sample, LOG_LEVEL_DBG);
 #include <samples/common/net_connect.h>
 
 // Current firmware version; update in prj.conf or via build argument
-static const char* _current_version = CONFIG_GOLIOTH_SAMPLE_FW_VERSION;
+static const char* _current_version = CONFIG_MCUBOOT_IMGTOOL_SIGN_VERSION;
 
 static K_SEM_DEFINE(connected, 0, 1);
 
