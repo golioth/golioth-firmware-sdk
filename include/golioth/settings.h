@@ -132,4 +132,9 @@ enum golioth_status golioth_settings_register_float(struct golioth_settings *set
                                                     golioth_float_setting_cb callback,
                                                     void *callback_arg);
 
+/// Same as @ref golioth_settings_register_int, but for type string.
+enum golioth_status golioth_settings_register_string(struct golioth_settings *settings,
+                                                     const char *setting_name,
+                                                     golioth_string_setting_cb callback,
+                                                     void *callback_arg);
 /// @}
