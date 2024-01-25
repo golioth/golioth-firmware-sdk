@@ -19,7 +19,7 @@ jobs:
       with:
         submodules: 'recursive'
     - name: Setup Python
-      uses: actions/setup-python@v4
+      uses: actions/setup-python@v5
       with:
         python-version: 3.x
         architecture: 'x64'
@@ -39,7 +39,7 @@ jobs:
             build/partition_table/partition-table.bin \
             build/ota_data_initial.bin
     - name: Upload tarball
-      uses: actions/upload-artifact@v3
+      uses: actions/upload-artifact@v4
       with:
         name: build.tar.gz
         path: examples/esp_idf/test/build.tar.gz
@@ -57,7 +57,7 @@ jobs:
         cd examples/esp_idf/test
         cp build/test.bin test_new.bin
     - name: Upload 1.2.99 binary
-      uses: actions/upload-artifact@v3
+      uses: actions/upload-artifact@v4
       with:
         name: test_new.bin
         path: examples/esp_idf/test/test_new.bin
@@ -107,7 +107,7 @@ jobs:
     - name: Checkout repository without submodules
       uses: actions/checkout@v4
     - name: Download build tarball
-      uses: actions/download-artifact@v3
+      uses: actions/download-artifact@v4
       with:
         name: build.tar.gz
         path: examples/esp_idf/test
@@ -116,7 +116,7 @@ jobs:
         cd examples/esp_idf/test
         tar xvf build.tar.gz
     - name: Download 1.2.99 binary
-      uses: actions/download-artifact@v3
+      uses: actions/download-artifact@v4
       with:
         name: test_new.bin
         path: examples/esp_idf/test

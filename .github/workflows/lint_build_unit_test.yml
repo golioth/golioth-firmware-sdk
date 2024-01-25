@@ -18,7 +18,7 @@ jobs:
         # bound of commits in a single PR.
         fetch-depth: 15
     - name: Setup Python
-      uses: actions/setup-python@v4
+      uses: actions/setup-python@v5
       with:
         python-version: 3.x
         architecture: 'x64'
@@ -48,7 +48,7 @@ jobs:
       with:
         submodules: 'recursive'
     - name: Setup Python
-      uses: actions/setup-python@v4
+      uses: actions/setup-python@v5
       with:
         python-version: 3.x
         architecture: 'x64'
@@ -77,7 +77,7 @@ jobs:
       with:
         submodules: 'recursive'
     - name: Setup Python
-      uses: actions/setup-python@v4
+      uses: actions/setup-python@v5
       with:
         python-version: 3.x
         architecture: 'x64'
@@ -116,7 +116,7 @@ jobs:
       with:
         submodules: 'recursive'
     - name: Setup Python
-      uses: actions/setup-python@v4
+      uses: actions/setup-python@v5
       with:
         python-version: 3.x
         architecture: 'x64'
@@ -139,7 +139,7 @@ jobs:
       with:
         submodules: 'recursive'
     - name: Setup Python
-      uses: actions/setup-python@v4
+      uses: actions/setup-python@v5
       with:
         python-version: 3.x
         architecture: 'x64'

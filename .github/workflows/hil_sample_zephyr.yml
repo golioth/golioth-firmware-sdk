@@ -63,7 +63,7 @@ jobs:
               --package-artifacts test_artifacts_${{ inputs.west_board }}.tar
 
     - name: Save artifacts
-      uses: actions/upload-artifact@v3
+      uses: actions/upload-artifact@v4
       with:
         name: test_artifacts_${{ inputs.west_board }}
         path: test_artifacts_${{ inputs.west_board }}.tar
@@ -117,7 +117,7 @@ jobs:
       - name: Power Cycle USB Hub
         run: /opt/golioth-scripts/power-cycle-usb-hub.sh
       - name: Download build
-        uses: actions/download-artifact@v3
+        uses: actions/download-artifact@v4
         with:
           name: test_artifacts_${{ inputs.west_board }}
           path: .
@@ -146,7 +146,7 @@ jobs:
                 --west-flash="--skip-rebuild,--dev-id=${!SNR_VAR}"
 
       - name: Upload artifacts
-        uses: actions/upload-artifact@v3
+        uses: actions/upload-artifact@v4
         if: ${{ always() }}
         with:
           name: twister-run-artifacts-${{ inputs.hil_board }}
