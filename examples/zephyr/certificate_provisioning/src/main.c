@@ -118,8 +118,7 @@ finish:
     return err;
 }
 
-int main(void)
-{
+int main(void) {
     int counter = 0;
 
     LOG_DBG("Start certificate provisioning sample");
