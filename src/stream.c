@@ -110,38 +110,20 @@ enum golioth_status golioth_stream_set_string_async(struct golioth_client *clien
     return status;
 }
 
-enum golioth_status golioth_stream_set_json_async(struct golioth_client *client,
-                                                  const char *path,
-                                                  const char *json_str,
-                                                  size_t json_str_len,
-                                                  golioth_set_cb_fn callback,
-                                                  void *callback_arg)
+enum golioth_status golioth_stream_set_async(struct golioth_client *client,
+                                             const char *path,
+                                             enum golioth_content_type content_type,
+                                             const uint8_t *buf,
+                                             size_t buf_len,
+                                             golioth_set_cb_fn callback,
+                                             void *callback_arg)
 {
     return golioth_coap_client_set(client,
                                    GOLIOTH_STREAM_PATH_PREFIX,
                                    path,
-                                   GOLIOTH_CONTENT_TYPE_JSON,
-                                   (const uint8_t *) json_str,
-                                   json_str_len,
-                                   callback,
-                                   callback_arg,
-                                   false,
-                                   GOLIOTH_SYS_WAIT_FOREVER);
-}
-
-enum golioth_status golioth_stream_set_cbor_async(struct golioth_client *client,
-                                                  const char *path,
-                                                  const uint8_t *cbor_data,
-                                                  size_t cbor_data_len,
-                                                  golioth_set_cb_fn callback,
-                                                  void *callback_arg)
-{
-    return golioth_coap_client_set(client,
-                                   GOLIOTH_STREAM_PATH_PREFIX,
-                                   path,
-                                   GOLIOTH_CONTENT_TYPE_CBOR,
-                                   cbor_data,
-                                   cbor_data_len,
+                                   content_type,
+                                   buf,
+                                   buf_len,
                                    callback,
                                    callback_arg,
                                    false,
@@ -236,36 +218,19 @@ enum golioth_status golioth_stream_set_string_sync(struct golioth_client *client
     return status;
 }
 
-enum golioth_status golioth_stream_set_json_sync(struct golioth_client *client,
-                                                 const char *path,
-                                                 const char *json_str,
-                                                 size_t json_str_len,
-                                                 int32_t timeout_s)
+enum golioth_status golioth_stream_set_sync(struct golioth_client *client,
+                                            const char *path,
+                                            enum golioth_content_type content_type,
+                                            const uint8_t *buf,
+                                            size_t buf_len,
+                                            int32_t timeout_s)
 {
     return golioth_coap_client_set(client,
                                    GOLIOTH_STREAM_PATH_PREFIX,
                                    path,
-                                   GOLIOTH_CONTENT_TYPE_JSON,
-                                   (const uint8_t *) json_str,
-                                   json_str_len,
-                                   NULL,
-                                   NULL,
-                                   true,
-                                   timeout_s);
-}
-
-enum golioth_status golioth_stream_set_cbor_sync(struct golioth_client *client,
-                                                 const char *path,
-                                                 const uint8_t *cbor_data,
-                                                 size_t cbor_data_len,
-                                                 int32_t timeout_s)
-{
-    return golioth_coap_client_set(client,
-                                   GOLIOTH_STREAM_PATH_PREFIX,
-                                   path,
-                                   GOLIOTH_CONTENT_TYPE_CBOR,
-                                   cbor_data,
-                                   cbor_data_len,
+                                   content_type,
+                                   buf,
+                                   buf_len,
                                    NULL,
                                    NULL,
                                    true,

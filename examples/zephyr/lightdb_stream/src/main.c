@@ -109,12 +109,13 @@ static void temperature_push_async(const struct sensor_value *temp)
 
     snprintk(sbuf, sizeof(sbuf), "{\"temp\":%d.%06d}", temp->val1, abs(temp->val2));
 
-    err = golioth_stream_set_json_async(client,
-                                        "sensor",
-                                        sbuf,
-                                        strlen(sbuf),
-                                        temperature_push_handler,
-                                        NULL);
+    err = golioth_stream_set_async(client,
+                                   "sensor",
+                                   GOLIOTH_CONTENT_TYPE_JSON,
+                                   sbuf,
+                                   strlen(sbuf),
+                                   temperature_push_handler,
+                                   NULL);
     if (err)
     {
         LOG_WRN("Failed to push temperature: %d", err);
@@ -129,7 +130,12 @@ static void temperature_push_sync(const struct sensor_value *temp)
 
     snprintk(sbuf, sizeof(sbuf), "{\"temp\":%d.%06d}", temp->val1, abs(temp->val2));
 
-    err = golioth_stream_set_json_sync(client, "sensor", sbuf, strlen(sbuf), 1);
+    err = golioth_stream_set_sync(client,
+                                  "sensor",
+                                  GOLIOTH_CONTENT_TYPE_JSON,
+                                  sbuf,
+                                  strlen(sbuf),
+                                  1);
 
     if (err)
     {
