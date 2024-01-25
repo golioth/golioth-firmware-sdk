@@ -137,13 +137,19 @@ jobs:
           export PATH=$PATH:$(go env GOPATH)/bin
           PORT_VAR=CI_${hil_board^^}_PORT
           SNR_VAR=CI_${hil_board^^}_SNR
+          if [ hil_board = 'mimxrt1060_evkb' ]; then
+              export WEST_FLASH_VARS="--skip-rebuild,--reset-after-load,--dev-id=${!SNR_VAR}"
+          else
+              export WEST_FLASH_VARS="--skip-rebuild,--dev-id=${!SNR_VAR}"
+          fi
           zephyr/scripts/twister                                    \
                 -p ${{ inputs.west_board }}                         \
                 -T modules/lib/golioth-firmware-sdk/examples/zephyr \
                 --device-testing                                    \
                 --device-serial ${!PORT_VAR}                        \
                 --test-only                                         \
-                --west-flash="--skip-rebuild,--dev-id=${!SNR_VAR}"
+                --west-flash="${WEST_FLASH_VARS}"                   \
+                -v
 
       - name: Upload artifacts
         uses: actions/upload-artifact@v4

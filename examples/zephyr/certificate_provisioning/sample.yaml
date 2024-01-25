@@ -12,6 +12,7 @@ tests:
       - CONFIG_GOLIOTH_SAMPLE_NRF91_RESET_LOOP_OVERRIDE=y
     platform_allow: >
       mimxrt1024_evk
+      mimxrt1060_evkb
       nrf9160dk_nrf9160_ns
   sample.golioth.certificate_provisioning.buildonly:
     build_only: true

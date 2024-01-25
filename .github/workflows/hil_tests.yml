@@ -72,6 +72,11 @@ jobs:
             manifest: .ci-west-zephyr.yml
             run_tests: true
 
+          - hil_board: mimxrt1060_evkb
+            west_board: mimxrt1060_evkb
+            manifest: .ci-west-zephyr.yml
+            run_tests: true
+
           - hil_board: nrf52840dk
             west_board: nrf52840dk_nrf52840
             manifest: .ci-west-zephyr.yml
