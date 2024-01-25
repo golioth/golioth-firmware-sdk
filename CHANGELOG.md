@@ -7,8 +7,12 @@ and this project adheres to [Semantic Versioning](https://semver.org/spec/v2.0.0
 ## [0.10.0] - TBA
 
 ### Breaking Changes
-- Remove `golioth_` prefix from filenames and move header files
-  under `golioth/` folder.
+- Remove `golioth_` prefix from filenames and move header files under
+  `golioth/` folder.
+- Stream: change `json` and `cbor` object set calls to specify type in
+  the parameters (instead of separate function calls). This matches the
+  approach taken in the LightDB State module:
+  `golioth_stream_set_async/sync`
 
 ## [0.9.0] - 2023-11-08
 

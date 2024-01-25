@@ -116,14 +116,15 @@ enum golioth_status golioth_stream_set_string_sync(struct golioth_client *client
                                                    size_t str_len,
                                                    int32_t timeout_s);
 
-/// Set a JSON object (encoded as a string) in LightDB strean at a particular path asynchronously
+/// Set an object in LightDB stream at a particular path asynchronously
 ///
-/// Similar to @ref golioth_stream_set_int_async.
-///
+/// Similar to @ref golioth_stream_set_int_async, but content_type must be specified
+////
 /// @param client The client handle from @ref golioth_client_create
-/// @param path The path in LightDB strean to set (e.g. "my_obj")
-/// @param json_str A JSON object encoded as a string (e.g. "{ \"string_key\": \"value\"}")
-/// @param json_str_len Length of json_str, not including NULL terminator
+/// @param path The path in LightDB stream to set (e.g. "my_obj")
+/// @param content_type The serialization format of buf
+/// @param buf A buffer containing the object to send
+/// @param buf_len Length of buf
 /// @param callback Callback to call on response received or timeout. Can be NULL.
 /// @param callback_arg Callback argument, passed directly when callback invoked. Can be NULL.
 ///
@@ -132,41 +133,29 @@ enum golioth_status golioth_stream_set_string_sync(struct golioth_client *client
 /// @return GOLIOTH_ERR_INVALID_STATE - client is not running, currently stopped
 /// @return GOLIOTH_ERR_MEM_ALLOC - memory allocation error
 /// @return GOLIOTH_ERR_QUEUE_FULL - request queue is full, this request is dropped
-enum golioth_status golioth_stream_set_json_async(struct golioth_client *client,
-                                                  const char *path,
-                                                  const char *json_str,
-                                                  size_t json_str_len,
-                                                  golioth_set_cb_fn callback,
-                                                  void *callback_arg);
+enum golioth_status golioth_stream_set_async(struct golioth_client *client,
+                                             const char *path,
+                                             enum golioth_content_type content_type,
+                                             const uint8_t *buf,
+                                             size_t buf_len,
+                                             golioth_set_cb_fn callback,
+                                             void *callback_arg);
 
-/// Set a JSON object (encoded as a string) in LightDB strean at a particular path synchronously
+/// Set an object in LightDB stream at a particular path synchronously
 ///
-/// Similar to @ref golioth_stream_set_int_sync.
+/// Similar to @ref golioth_stream_set_int_sync, but content_type must be specified
 ///
 /// @param client The client handle from @ref golioth_client_create
 /// @param path The path in LightDB stream to set (e.g. "my_obj")
-/// @param json_str A JSON object encoded as a string (e.g. "{ \"string_key\": \"value\"}")
-/// @param json_str_len Length of json_str, not including NULL terminator
+/// @param content_type The serialization format of buf
+/// @param buf A buffer containing the object to send
+/// @param buf_len Length of buf
 /// @param timeout_s The timeout, in seconds, for receiving a server response
-enum golioth_status golioth_stream_set_json_sync(struct golioth_client *client,
-                                                 const char *path,
-                                                 const char *json_str,
-                                                 size_t json_str_len,
-                                                 int32_t timeout_s);
-
-/// Similar to @ref golioth_stream_set_json_async, but for CBOR
-enum golioth_status golioth_stream_set_cbor_async(struct golioth_client *client,
-                                                  const char *path,
-                                                  const uint8_t *cbor_data,
-                                                  size_t cbor_data_len,
-                                                  golioth_set_cb_fn callback,
-                                                  void *callback_arg);
-
-/// Similar to @ref golioth_stream_set_json_sync, but for CBOR
-enum golioth_status golioth_stream_set_cbor_sync(struct golioth_client *client,
-                                                 const char *path,
-                                                 const uint8_t *cbor_data,
-                                                 size_t cbor_data_len,
-                                                 int32_t timeout_s);
+enum golioth_status golioth_stream_set_sync(struct golioth_client *client,
+                                            const char *path,
+                                            enum golioth_content_type content_type,
+                                            const uint8_t *buf,
+                                            size_t buf_len,
+                                            int32_t timeout_s);
 
 /// @}
