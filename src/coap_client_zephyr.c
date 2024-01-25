@@ -56,7 +56,7 @@ static uint8_t rx_buffer[CONFIG_GOLIOTH_COAP_CLIENT_RX_BUF_SIZE];
 
 static struct zsock_pollfd fds[NUM_POLLFDS];
 
-static const sec_tag_t sec_tag_list[] = {
+static sec_tag_t sec_tag_list[] = {
     CONFIG_GOLIOTH_COAP_CLIENT_CREDENTIALS_TAG,
 };
 
@@ -1152,6 +1152,13 @@ static int credentials_set_pki(const struct golioth_pki_credential *pki)
     return 1;
 }
 
+static int credentials_set_tag(int tag)
+{
+    sec_tag_list[0] = tag;
+
+    return 0;
+}
+
 static int credentials_set(const struct golioth_client_config *config)
 {
     const struct golioth_credential *credentials = &config->credentials;
@@ -1162,6 +1169,8 @@ static int credentials_set(const struct golioth_client_config *config)
             return credentials_set_psk(&credentials->psk);
         case GOLIOTH_TLS_AUTH_TYPE_PKI:
             return credentials_set_pki(&credentials->pki);
+        case GOLIOTH_TLS_AUTH_TYPE_TAG:
+            return credentials_set_tag(credentials->tag);
     }
 
     return -ENOTSUP;
