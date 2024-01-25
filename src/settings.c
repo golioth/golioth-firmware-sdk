@@ -540,4 +540,29 @@ enum golioth_status golioth_settings_register_float(struct golioth_settings *set
     return GOLIOTH_OK;
 }
 
+enum golioth_status golioth_settings_register_string(struct golioth_settings *settings,
+                                                     const char *setting_name,
+                                                     golioth_string_setting_cb callback,
+                                                     void *callback_arg)
+{
+    if (!callback)
+    {
+        GLTH_LOGE(TAG, "Callback must not be NULL");
+        return GOLIOTH_ERR_NULL;
+    }
+
+    struct golioth_setting *new_setting = alloc_setting(settings);
+    if (!new_setting)
+    {
+        return GOLIOTH_ERR_MEM_ALLOC;
+    }
+
+    new_setting->is_valid = true;
+    new_setting->key = setting_name;
+    new_setting->type = GOLIOTH_SETTINGS_VALUE_TYPE_STRING;
+    new_setting->string_cb = callback;
+    new_setting->cb_arg = callback_arg;
+
+    return GOLIOTH_OK;
+}
 #endif  // CONFIG_GOLIOTH_SETTINGS
