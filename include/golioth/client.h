@@ -66,6 +66,8 @@ enum golioth_auth_type
     GOLIOTH_TLS_AUTH_TYPE_PSK,
     /// Authenticate with PKI certificates (CA cert, public client cert, private client key)
     GOLIOTH_TLS_AUTH_TYPE_PKI,
+    /// Authenticate with TLS credential tag (Zephyr specific)
+    GOLIOTH_TLS_AUTH_TYPE_TAG,
 };
 
 /// Pre-Shared Key (PSK) credential.
@@ -110,6 +112,7 @@ struct golioth_credential
     {
         struct golioth_psk_credential psk;
         struct golioth_pki_credential pki;
+        int tag;
     };
 };
 
