@@ -6,7 +6,12 @@ jobs:
     steps:
       - uses: actions/checkout@v4
       - name: Install Doxygen
-        run: sudo apt install doxygen graphviz
+        run: |
+          sudo apt install wget graphviz
+          wget https://www.doxygen.nl/files/doxygen-1.10.0.linux.bin.tar.gz
+          tar -xvf doxygen-1.10.0.linux.bin.tar.gz
+          cd doxygen-1.10.0
+          sudo make install
       - name: Generate Doxygen
         run: |
           cd docs/doxygen
