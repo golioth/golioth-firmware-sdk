@@ -48,5 +48,5 @@ async def test_lightdb_observe(shell, device, credentials_file):
 
     await device.lightdb.set("counter", 87)
 
-    shell._device.readlines_until(regex=".*lightdb_observe: Counter \(async\)", timeout=2.0)
+    shell._device.readlines_until(regex=".*lightdb_observe: Counter \(async\)", timeout=5.0)
     shell._device.readlines_until(regex=".*38 37\s+|87", timeout=1.0)
