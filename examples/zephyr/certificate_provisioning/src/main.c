@@ -160,8 +160,6 @@ int main(void)
         client = golioth_client_create(&client_config);
 
         golioth_client_register_event_callback(client, on_client_event, NULL);
-
-        k_sem_take(&connected, K_FOREVER);
     }
     else
     {
