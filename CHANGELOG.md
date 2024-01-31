@@ -56,6 +56,8 @@ and this project adheres to [Semantic Versioning](https://semver.org/spec/v2.0.0
 - remote_shell - This was an experimental feature that was never
   released. If you are interested in remote shell functionality in
   the future, please reach out to Golioth!
+- Integration guide - see docs.golioth.io for the latest documentation
+  on integration Golioth into your product
 
 ### Fixed:
 - Various documentation fixes
