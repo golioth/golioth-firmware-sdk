@@ -15,8 +15,6 @@ LOG_MODULE_REGISTER(lightdb_observe, LOG_LEVEL_DBG);
 
 #include <samples/common/net_connect.h>
 
-#define APP_TIMEOUT_S 1
-
 struct golioth_client *client;
 static K_SEM_DEFINE(connected, 0, 1);
 
