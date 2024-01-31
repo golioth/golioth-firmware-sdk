@@ -958,6 +958,7 @@ static void golioth_coap_client_thread(void *arg)
         }
 
         LOG_INF("Golioth CoAP client connected");
+        client->session_connected = true;
 
         golioth_sys_client_connected(client);
         if (client->event_callback)
