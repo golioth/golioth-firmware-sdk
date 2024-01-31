@@ -415,6 +415,18 @@ static struct golioth_setting *alloc_setting(struct golioth_settings *settings)
     return &settings->settings[settings->num_settings++];
 }
 
+static enum golioth_status request_settings(struct golioth_settings *settings)
+{
+    return golioth_coap_client_get(settings->client,
+                                   SETTINGS_PATH_PREFIX,
+                                   "",
+                                   GOLIOTH_CONTENT_TYPE_CBOR,
+                                   on_settings,
+                                   settings,
+                                   false,
+                                   GOLIOTH_SYS_WAIT_FOREVER);
+}
+
 struct golioth_settings *golioth_settings_init(struct golioth_client *client)
 {
     struct golioth_settings *gsettings = golioth_sys_malloc(sizeof(struct golioth_settings));
@@ -485,7 +497,7 @@ enum golioth_status golioth_settings_register_int_with_range(struct golioth_sett
     new_setting->int_max_val = max_val;
     new_setting->cb_arg = callback_arg;
 
-    return GOLIOTH_OK;
+    return request_settings(settings);
 }
 
 enum golioth_status golioth_settings_register_bool(struct golioth_settings *settings,
@@ -511,7 +523,7 @@ enum golioth_status golioth_settings_register_bool(struct golioth_settings *sett
     new_setting->bool_cb = callback;
     new_setting->cb_arg = callback_arg;
 
-    return GOLIOTH_OK;
+    return request_settings(settings);
 }
 
 enum golioth_status golioth_settings_register_float(struct golioth_settings *settings,
@@ -537,7 +549,7 @@ enum golioth_status golioth_settings_register_float(struct golioth_settings *set
     new_setting->float_cb = callback;
     new_setting->cb_arg = callback_arg;
 
-    return GOLIOTH_OK;
+    return request_settings(settings);
 }
 
 enum golioth_status golioth_settings_register_string(struct golioth_settings *settings,
@@ -563,6 +575,6 @@ enum golioth_status golioth_settings_register_string(struct golioth_settings *se
     new_setting->string_cb = callback;
     new_setting->cb_arg = callback_arg;
 
-    return GOLIOTH_OK;
+    return request_settings(settings);
 }
 #endif  // CONFIG_GOLIOTH_SETTINGS
