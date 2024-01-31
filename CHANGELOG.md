@@ -4,15 +4,66 @@ All notable changes to this project will be documented in this file.
 The format is based on [Keep a Changelog](https://keepachangelog.com/en/1.0.0/),
 and this project adheres to [Semantic Versioning](https://semver.org/spec/v2.0.0.html).
 
-## [0.10.0] - TBA
+## [0.10.0] - 2024-01-31
+
+### Highlights
+- The Zephyr CoAP library is now used instead of libcoap for Zephyr ports
+- Zephyr ports can specify a TLS credential tag to use for authentication,
+  in particular this will enable the use of offloaded DTLS sockets.
 
 ### Breaking Changes
 - Remove `golioth_` prefix from filenames and move header files under
   `golioth/` folder.
-- Stream: change `json` and `cbor` object set calls to specify type in
-  the parameters (instead of separate function calls). This matches the
-  approach taken in the LightDB State module:
-  `golioth_stream_set_async/sync`
+- Remove `golioth.h` header - users must now include individual headers
+  for each service that they use.
+- Stream and State: change `json` and `cbor` object set calls to specify
+  type in the parameters (instead of separate function calls).
+- RPC: This service must now be initialized prior to use by calling
+  `golioth_rpc_init(client);`
+- Settings: This service must now be initialzied prior to use by calling
+  `golioth_settings_init(client);`
+- Services (e.g. stream, fw_update, etc.) are disabled by default - be
+  sure to enable them in your project configuration.
+- Typedefs have been removed throughout the codebase - instead use the
+  underlying struct or enum types
+- Remove `lightdb_` from `lightdb_stream` functions to differentiate from LIghtDB State
+
+### Added:
+- Automated Hardware-in-the-Loop test framework
+- Basic cross-platform connection HIL test
+- Tests for all Zephyr examples
+- Add kconfig option for default log level for SDK logs
+- Lightb State examples now show how to use CBOR
+
+### Changed:
+- Improved network connection management
+- Wait for network traffic and request queue concurrently - this
+  removes the need to wakeup every 1 second to check for requests
+- Pass structs by reference instead of value in golioth_sys_* APIs
+- Use bool instead of int for binary Kconfig options
+- Improved organization of Kconfig options
+- ESP-IDF examples use FreeRTOS APIs directly instead of Golioth
+  abstractions
+- LightDB State and Stream are now separate services in the SDK
+- DFU example has been renamed to `fw_update`
+- Use golioth_content_type enum instead of libcoap content types
+
+### Removed:
+- Magtag demo for ESP-IDF - this hardware is out of stock
+- Golioth time module - this was a thin wrapper around golioth_sys
+- golioth_statistics module - this internal memory tracking module
+  is being replaced by out-of-source tooling
+- remote_shell - This was an experimental feature that was never
+  released. If you are interested in remote shell functionality in
+  the future, please reach out to Golioth!
+
+### Fixed:
+- Various documentation fixes
+- Removed double check for CONFIG_GOLIOTH_SAMPLE_COMMON
+- Fix stack overflow in logging thread
+- Drop logs with unsupported log levels
+- Attempting to use a disabled service now fails at build time instead
+  of at run time
 
 ## [0.9.0] - 2023-11-08
 
