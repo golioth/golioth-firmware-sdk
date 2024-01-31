@@ -10,14 +10,14 @@ The structural architecture of the SDK is depicted below:
 
 There are 4 main layers in the SDK:
 
-1. User API: These are the header files in `src/include` that represent the entire
+1. User API: These are the header files in `include/golioth` that represent the entire
    surface area of the user-facing API (types and functions the user can call).
 2. SDK core: The `.c` files in `src`. Contains a CoAP client implementation (based
-   on `libcoap`), and implements the User API layer. This is where most of the
-   actual work is happening in the SDK.
+   on `libcoap` for most platforms), and implements the User API layer. This is where
+   most of the actual work is happening in the SDK.
 3. Platform API: Abstraction layer for the platform and OS. This makes it easier
    to port the SDK core to different OSes and platforms. This API is defined
-   in `src/include/golioth_sys.h` and `src/include/golioth_fw_update.h`.
+   in `include/golioth/golioth_sys.h` and `include/golioth/fw_update.h`.
    The SDK depends on this API for creating semaphores, timers, threads, and for
    applying firmware updates (e.g. with MCUboot).
 4. Platform Port: This is the implementation of the Platform API for a specific
@@ -29,7 +29,7 @@ The SDK has three direct external dependencies:
 
 1. `libcoap`: Implements CoAP client protocol
 2. `cJSON`: Serialization of application layer data in JSON format
-3. `QCBOR`: Serialization of application layer data in CBOR format
+3. `ZCBOR`: Serialization of application layer data in CBOR format
 
 The `libcoap` library has its own dependencies on TLS and networking libraries.
 For new ports, it may be necessary to also port `libcoap` to the platform.
@@ -42,9 +42,9 @@ and either POSIX sockets or `lwip` for networking.
 docs/                         # Doxygen and documentation
 examples/                     # Example apps
   <platform>                  # <platform>-specific example apps
-    golioth_basics/           # The golioth_basics example. Every platform should have one.
     ...
 external/                     # External dependencies
+include/                      # Public facing header files
 port/                         # Platform ports
   <platform>/
     libcoap/                  # (optional) port of libcoap to <platform>
@@ -87,7 +87,8 @@ mkdir examples/<platform>/hello_world
 Add a `main.c` file with the following contents:
 
 ```c
-#include "golioth.h"
+#include <golioth/client.h>
+#include <golioth/golioth_sys.h>
 #include <stdio.h>
 
 LOG_TAG_DEFINE(main);
@@ -129,45 +130,8 @@ supports MCUboot, you could use `port/modus_toolbox/fw_update_mcuboot.c`.
 Create stub implementations of the required functions to get the project
 to properly link.
 
-These are all of the functions declared in `src/include/golioth_sys.h` and
-in `src/include/golioth_fw_update.h` (the ones with prefix `fw_update_`).
-
-golioth_sys required functions:
-```
-void golioth_sys_msleep(uint32_t ms);
-uint64_t golioth_sys_now_ms(void);
-golioth_sys_sem_t golioth_sys_sem_create(uint32_t sem_max_count, uint32_t sem_initial_count);
-bool golioth_sys_sem_take(golioth_sys_sem_t sem, int32_t ms_to_wait);
-bool golioth_sys_sem_give(golioth_sys_sem_t sem);
-void golioth_sys_sem_destroy(golioth_sys_sem_t sem);
-golioth_sys_timer_t golioth_sys_timer_create(golioth_sys_timer_config_t config);
-bool golioth_sys_timer_start(golioth_sys_timer_t timer);
-bool golioth_sys_timer_reset(golioth_sys_timer_t timer);
-void golioth_sys_timer_destroy(golioth_sys_timer_t timer);
-golioth_sys_thread_t golioth_sys_thread_create(golioth_sys_thread_config_t config);
-void golioth_sys_thread_destroy(golioth_sys_thread_t thread);
-```
-
-fw_update required functions:
-```
-bool fw_update_is_pending_verify(void);
-void fw_update_rollback(void);
-void fw_update_reboot(void);
-void fw_update_cancel_rollback(void);
-golioth_status_t fw_update_handle_block(
-        const uint8_t* block,
-        size_t block_size,
-        size_t offset,
-        size_t total_size);
-golioth_status_t fw_update_read_current_image_at_offset(
-        uint8_t* buf,
-        size_t bufsize,
-        size_t offset);
-void fw_update_post_download(void);
-golioth_status_t fw_update_validate(void);
-golioth_status_t fw_update_change_boot_image(void);
-void fw_update_end(void);
-```
+See `include/golioth/golioth_sys.h` and `include/golioth/fw_update.h` for the
+required functions to implement
 
 ### Compile and Run Hello, World
 
@@ -193,7 +157,7 @@ examples/common/golioth_basics.c
 Change your `main.c` file to match this:
 
 ```c
-#include "golioth.h"
+#include <golioth/client.h>
 #include "golioth_basics.h"
 #include <stdio.h>
 #include <string.h>
@@ -211,7 +175,7 @@ int main(void) {
 
     // TODO: wait for connection to network
 
-    golioth_client_config_t config = {
+    struct golioth_client_config config = {
         .credentials = {
             .auth_type = GOLIOTH_TLS_AUTH_TYPE_PSK,
             .psk = {
@@ -223,7 +187,7 @@ int main(void) {
         }
     };
 
-    golioth_client_t client = golioth_client_create(&config);
+    struct golioth_client *client = golioth_client_create(&config);
     assert(client);
     golioth_basics(client);
 
@@ -250,7 +214,7 @@ the proper Golioth credentials in `main.c`).
 The final step is to implement the `fw_update` port, which handles the platform
 side of OTA firmware updates. This entails writing the OTA image to flash,
 notifying the bootloader to use the new image, and rolling back to prior boot
-images. See the Doxygen descriptions in `src/include/golioth_fw_update.h` for
+images. See the Doxygen descriptions in `include/golioth/fw_update.h` for
 more details.
 
 If your platform supports MCUboot, you can leverage
