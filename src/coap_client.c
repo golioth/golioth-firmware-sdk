@@ -237,7 +237,11 @@ enum golioth_status golioth_coap_client_set(struct golioth_client *client,
     bool sent = golioth_mbox_try_send(client->request_queue, &request_msg);
     if (!sent)
     {
-        GLTH_LOGW(TAG, "Failed to enqueue request, queue full");
+        /* NOTE: Logging a message here when cloud logging is enabled can cause
+         *       a loop where the logging thread attempts to enqueue a message,
+         *       the mbox is full, so coap_client writes a log, which the
+         *       logging thread attempts to send to the cloud, and so on.
+         */
         if (payload_size > 0)
         {
             golioth_sys_free(request_payload);
