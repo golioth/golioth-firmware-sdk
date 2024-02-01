@@ -499,8 +499,7 @@ free_req:
 static void on_keepalive(golioth_sys_timer_t timer, void *arg)
 {
     struct golioth_client *client = arg;
-    if (client->is_running && golioth_client_num_items_in_request_queue(client) == 0
-        && !client->pending_req)
+    if (client->is_running && golioth_client_num_items_in_request_queue(client) == 0)
     {
         golioth_coap_client_empty(client, false, GOLIOTH_SYS_WAIT_FOREVER);
     }
