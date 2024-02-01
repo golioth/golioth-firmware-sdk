@@ -160,6 +160,21 @@ void golioth_basics(struct golioth_client *client)
     // view at console.golioth.io.
     GLTH_LOGI(TAG, "Hello, Golioth!");
 
+    // We can also "observe" paths in LightDB state. The Golioth cloud will notify
+    // our client whenever the resource at that path changes, without needing
+    // to poll.
+    //
+    // This can be used to implement the "digital twin" concept that is common in IoT.
+    //
+    // In this case, we will observe the path desired/my_config for changes.
+    // The callback will read the value, update it locally, then delete the path
+    // to indicate that the desired state was processed (the "twins" should be
+    // in sync at that point).
+    //
+    // If you want to try this out, log into Golioth console (console.golioth.io),
+    // go to the "LightDB State" tab, and add a new item for desired/my_config.
+    // Once set, the on_my_config callback function should be called here.
+    golioth_lightdb_observe_async(client, "desired/my_config", on_my_config, NULL);
 
     // For OTA, we will spawn a background thread that will listen for firmware
     // updates from Golioth and automatically update firmware on the device
@@ -212,22 +227,6 @@ void golioth_basics(struct golioth_client *client)
 
     // To asynchronously get a value from LightDB, a callback function must be provided
     golioth_lightdb_get_async(client, "my_int", GOLIOTH_CONTENT_TYPE_JSON, on_get_my_int, NULL);
-
-    // We can also "observe" paths in LightDB state. The Golioth cloud will notify
-    // our client whenever the resource at that path changes, without needing
-    // to poll.
-    //
-    // This can be used to implement the "digital twin" concept that is common in IoT.
-    //
-    // In this case, we will observe the path desired/my_config for changes.
-    // The callback will read the value, update it locally, then delete the path
-    // to indicate that the desired state was processed (the "twins" should be
-    // in sync at that point).
-    //
-    // If you want to try this out, log into Golioth console (console.golioth.io),
-    // go to the "LightDB State" tab, and add a new item for desired/my_config.
-    // Once set, the on_my_config callback function should be called here.
-    golioth_lightdb_observe_async(client, "desired/my_config", on_my_config, NULL);
 
     // LightDB Stream functions are nearly identical to LightDB state.
     golioth_stream_set_int_async(client, "my_stream_int", 15, NULL, NULL);
