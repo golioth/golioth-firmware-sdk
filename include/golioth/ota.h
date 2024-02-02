@@ -18,6 +18,13 @@
 
 /// Maximum size of an OTA block, in bytes
 #define GOLIOTH_OTA_BLOCKSIZE 1024
+/// Size of a SHA256 of Artifact Binary in bytes
+#define GOLIOTH_OTA_COMPONENT_HASH_LEN 64
+/// Maximum size of Binary Detected Type in bytes
+#define GOLIOTH_OTA_MAX_COMPONENT_BOOTLOADER_NAME_LEN 7
+/// Maximum size of Relative URI to download binary (+ 7 bytes for Path)
+#define GOLIOTH_OTA_MAX_COMPONENT_URI_LEN \
+    (CONFIG_GOLIOTH_OTA_MAX_PACKAGE_NAME_LEN + CONFIG_GOLIOTH_OTA_MAX_VERSION_LEN + 7)
 
 /// State of OTA update, reported to Golioth server
 enum golioth_ota_state
@@ -68,6 +75,12 @@ struct golioth_ota_component
     int32_t size;
     /// True, if the component is compressed and requires decompression
     bool is_compressed;
+    /// Artifact Hash
+    char hash[GOLIOTH_OTA_COMPONENT_HASH_LEN + 1];
+    /// Artifact uri (e.g. "/.u/c/main@1.2.3")
+    char uri[GOLIOTH_OTA_MAX_COMPONENT_URI_LEN + 1];
+    /// Artifact bootloader ("mcuboot" or "default"")
+    char bootloader[GOLIOTH_OTA_MAX_COMPONENT_BOOTLOADER_NAME_LEN + 1];
 };
 
 /// An OTA manifest, composed of multiple components/artifacts

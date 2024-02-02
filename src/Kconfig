@@ -70,23 +70,23 @@ config GOLIOTH_OTA_THREAD_STACK_SIZE
 
 config GOLIOTH_OTA_MAX_PACKAGE_NAME_LEN
     int "Golioth maximum OTA component package name length"
-    default 64
+    default 16
     help
         Maximum number of characters in the package name of a single
         OTA component.
 
 config GOLIOTH_OTA_MAX_VERSION_LEN
     int "Golioth maximum OTA component version length"
-    default 64
+    default 16
     help
         Maximum number of characters in the version string of a single
         OTA component.
 
 config GOLIOTH_OTA_MAX_NUM_COMPONENTS
     int "Golioth maximum OTA number of components"
-    default 4
+    default 1
     help
-        Maximum number of components in an OTA manifest
+        Maximum number of components in an OTA manifest.
 
 config GOLIOTH_OTA_DECOMPRESS
     bool "Enable decompression of OTA artifacts"
