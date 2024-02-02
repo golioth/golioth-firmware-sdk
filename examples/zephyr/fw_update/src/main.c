@@ -37,7 +37,9 @@ static void on_client_event(struct golioth_client *client,
 
 int main(void)
 {
-    LOG_DBG("Start FW Update sample");
+    LOG_INF("CI Testing fw_update artifact");
+    LOG_INF("Golioth Firmware SDK version: %s", CONFIG_GOLIOTH_CI_TESTING_SDK_VER);
+
 
     net_connect();
 
