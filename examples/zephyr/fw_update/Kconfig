@@ -1,4 +1,10 @@
 # Copyright (c) 2021 Golioth, Inc.
 # SPDX-License-Identifier: Apache-2.0
 
+config GOLIOTH_CI_TESTING_SDK_VER
+    string "The Golioth Firmware SDK version used to compile"
+    default "Unspecified"
+    help
+        Specify in prj.conf to indicated SDK used for artifact build
+
 source "Kconfig.zephyr"
