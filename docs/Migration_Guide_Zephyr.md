@@ -211,7 +211,7 @@ highlights the most commonly needed changes.
 
     ```c
     /* Config for Certificate authentication */
-    golioth_client_config_t client_config = {
+    struct golioth_client_config client_config = {
         .credentials =
             {
                 .auth_type = GOLIOTH_TLS_AUTH_TYPE_PKI,
@@ -228,7 +228,7 @@ highlights the most commonly needed changes.
     };
 
     /* Config for PSK authentication */
-    golioth_client_config_t client_config = {
+    struct golioth_client_config client_config = {
         .credentials =
             {
                 .auth_type = GOLIOTH_TLS_AUTH_TYPE_PSK,
@@ -243,7 +243,7 @@ highlights the most commonly needed changes.
     };
 
     /* Config for credential tag authentication */
-    golioth_client_config_t client_config = {
+    struct golioth_client_config client_config = {
         .credentials =
             {
                 .auth_type = GOLIOTH_TLS_AUTH_TYPE_TAG,
