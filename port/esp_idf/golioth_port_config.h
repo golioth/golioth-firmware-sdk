@@ -5,6 +5,7 @@
  */
 #pragma once
 
+#include <sdkconfig.h>
 #include <esp_log.h>
 
 #define GLTH_LOG_BUFFER_HEXDUMP ESP_LOG_BUFFER_HEXDUMP
