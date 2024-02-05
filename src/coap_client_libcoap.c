@@ -904,6 +904,11 @@ static enum golioth_status coap_io_loop_once(struct golioth_client *client,
         return GOLIOTH_ERR_IO;
     }
 
+    if (request_msg.got_nack)
+    {
+        return GOLIOTH_ERR_NACK;
+    }
+
     if (time_spent_waiting_ms >= timeout_ms)
     {
         GLTH_LOGE(TAG, "Timeout: never got a response from the server");
