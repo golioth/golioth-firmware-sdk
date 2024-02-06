@@ -8,12 +8,18 @@ LOGGER = logging.getLogger(__name__)
 pytestmark = pytest.mark.anyio
 
 async def test_fw_update(shell, project, device, credentials_file, fw_info, release):
+
+    # Wait for app to start running or 10 seconds to pass so runtime settings are ready.
+
+    try:
+        shell._device.readlines_until(regex=".*Start FW Update sample.", timeout=10.0)
+    except:
+        pass
+
     # Read credentials
 
     with open(credentials_file, 'r') as f:
         credentials = yaml.safe_load(f)
-
-    time.sleep(2)
 
     # Set Golioth credential
 
