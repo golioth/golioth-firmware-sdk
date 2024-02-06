@@ -44,27 +44,30 @@ You should generate a new device certificate for every new device.
 
 ```
 cd certs
-../../../../scripts/certificates/generate_device_certificate.sh <project_id> <device_name>
+../../../../scripts/certificates/generate_device_certificate.sh <project_id> <certificate_id>
 ```
 
 * `project_id` must match the project ID in Golioth.
   This can be found in the Golioth console by clicking on `Projects` and
   using the `Project ID` column.
-* `device_name`: this is the name of the new device. It's a string, and can be anything.
+* `certificate_id`: this is the certificate identifier of the new device. It's an
+  immutable string once set, and can be anything. It must be unique in the project.
+  We recommend using an existing unique identifier tied to the hardware, such as
+  serial number or MAC address.
 
 This will create three files in the `certs` directory:
 
 ```
-<project_id>-<device_name>.crt.der (public, cert presented to server)
-<project_id>-<device_name>.key.der (private, used for signing/decrypting)
+<project_id>-<certificate_id>.crt.der (public, cert presented to server)
+<project_id>-<certificate_id>.key.der (private, used for signing/decrypting)
 ```
 
 Copy the first two files to new files with standard names (required for project to run):
 
 ```
 cd certs
-cp <project_id>-<device_name>.crt.der client.crt.der
-cp <project_id>-<device_name>.key.der client.key.der
+cp <project_id>-<certificate_id>.crt.der client.crt.der
+cp <project_id>-<certificate_id>.key.der client.key.der
 ```
 
 ## A note about root_ca.pem
