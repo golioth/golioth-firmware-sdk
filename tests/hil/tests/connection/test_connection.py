@@ -1,4 +1,12 @@
-def test_connect(board):
+import pytest
+
+pytestmark = pytest.mark.anyio
+
+async def test_connect(board, device):
+    # Set Golioth credentials
+    golioth_cred = (await device.credentials.list())[0]
+    board.set_golioth_psk_credentials(golioth_cred.identity, golioth_cred.key)
+
     # Reset board
     board.reset()
 

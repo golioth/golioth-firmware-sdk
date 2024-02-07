@@ -68,7 +68,7 @@ jobs:
     runs-on: [ is_active, "has_${{ inputs.hil_board }}" ]
 
     container:
-      image: golioth/golioth-hil-base:280d655
+      image: golioth/golioth-hil-base:af8e4f5
       volumes:
         - /dev:/dev
         - /home/golioth/credentials:/opt/credentials
@@ -81,6 +81,7 @@ jobs:
         run: |
           pip install pytest
           pip install tests/hil/scripts/pytest-hil
+          pip install git+https://github.com/golioth/python-golioth-tools@v0.5.1
       - name: Power Cycle USB Hub
         run: /opt/golioth-scripts/power-cycle-usb-hub.sh
       - name: Download build
@@ -96,4 +97,4 @@ jobs:
           source /opt/credentials/runner_env.sh
           PORT_VAR=CI_${hil_board^^}_PORT
           SNR_VAR=CI_${hil_board^^}_SNR
-          pytest --rootdir . tests/hil/tests/connection --board ${hil_board} --port ${!PORT_VAR} --credentials-file /opt/credentials/credentials_${hil_board}.yml --fw-image ${{ inputs.binary_name }} --serial-number ${!SNR_VAR}
+          pytest --rootdir . tests/hil/tests/connection --board ${hil_board} --port ${!PORT_VAR} --credentials-file /opt/credentials/credentials_${hil_board}.yml --fw-image ${{ inputs.binary_name }} --serial-number ${!SNR_VAR} --api-key ${{ secrets.PROD_CI_PROJECT_API_KEY }}

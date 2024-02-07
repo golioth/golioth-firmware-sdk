@@ -23,9 +23,6 @@ class Board(ABC):
             credentials = yaml.safe_load(f)
             settings = credentials['settings']
 
-        # Set PSK credentials
-        self.set_golioth_psk_credentials(settings['golioth/psk-id'], settings['golioth/psk'])
-
         # Set WiFi credentials
         if self.USES_WIFI:
             self.set_wifi_credentials(settings['wifi/ssid'], settings['wifi/psk'])
