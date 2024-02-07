@@ -39,6 +39,7 @@ jobs:
       manifest: ${{ matrix.manifest }}
       binary_name: ${{ matrix.binary_name}}
       binary_blob: ${{ matrix.binary_blob }}
+    secrets: inherit
 
   hil_test_esp-idf:
     strategy:
@@ -55,6 +56,7 @@ jobs:
     with:
       hil_board: ${{ matrix.hil_board }}
       idf_target: ${{ matrix.idf_target }}
+    secrets: inherit
 
   hil_sample_zephyr:
     strategy:
