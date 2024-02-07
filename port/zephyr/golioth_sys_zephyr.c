@@ -3,9 +3,8 @@
  *
  * SPDX-License-Identifier: Apache-2.0
  */
-#include <unistd.h>
 #include <zephyr/kernel.h>
-#include <zephyr/posix/poll.h>
+#include <zephyr/net/socket.h>
 #include <zephyr/posix/sys/eventfd.h>
 
 #include <golioth/golioth_sys.h>
@@ -47,14 +46,14 @@ golioth_sys_sem_t golioth_sys_sem_create(uint32_t sem_max_count, uint32_t sem_in
 bool golioth_sys_sem_take(golioth_sys_sem_t sem, int32_t ms_to_wait) {
     int fd = SEM_TO_FD(sem);
     while (true) {
-        struct pollfd pfd = {
+        struct zsock_pollfd pfd = {
             .fd = fd,
-            .events = POLLIN,
+            .events = ZSOCK_POLLIN,
         };
         eventfd_t val;
         int ret;
 
-        ret = poll(&pfd, 1, ms_to_wait);
+        ret = zsock_poll(&pfd, 1, ms_to_wait);
         if (ret < 0) {
             if (errno == EINTR) {
                 GLTH_LOGI(TAG, "EINTR");
@@ -83,7 +82,7 @@ bool golioth_sys_sem_give(golioth_sys_sem_t sem) {
 }
 
 void golioth_sys_sem_destroy(golioth_sys_sem_t sem) {
-    close(SEM_TO_FD(sem));
+    zsock_close(SEM_TO_FD(sem));
 }
 
 int golioth_sys_sem_get_fd(golioth_sys_sem_t sem) {
