@@ -4,10 +4,6 @@
  * SPDX-License-Identifier: Apache-2.0
  */
 #include <assert.h>
-#include <stdbool.h>
-#include <string.h>
-#include <sys/param.h>  // MIN
-#include <time.h>
 #include <golioth/golioth_debug.h>
 #include <golioth/golioth_sys.h>
 #include "coap_client.h"
