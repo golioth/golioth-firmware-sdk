@@ -6,9 +6,7 @@
 #include <assert.h>
 #include <stdbool.h>
 #include <string.h>
-#include <netdb.h>      // struct addrinfo
 #include <sys/param.h>  // MIN
-#include <sys/select.h>
 #include <time.h>
 #include <golioth/golioth_debug.h>
 #include <golioth/golioth_sys.h>
@@ -21,7 +19,8 @@
 #include "zephyr_coap_req.h"
 #include "zephyr_coap_utils.h"
 
-#include <sys/eventfd.h>
+#include <zephyr/net/socket.h>
+#include <zephyr/posix/sys/eventfd.h>
 #include <zephyr/sys/atomic.h>
 #include <zephyr/net/tls_credentials.h>
 

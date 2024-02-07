@@ -26,8 +26,6 @@ if GOLIOTH_FW_UPDATE
 
 config EVENTFD_MAX
 	default 14
-config POSIX_MAX_FDS
-	default 23
 
 endif # GOLIOTH_FW_UPDATE
 endif # EVENTFD
@@ -96,6 +94,10 @@ config NET_BUF_TX_COUNT
 
 config MAIN_STACK_SIZE
 	default 4096
+
+config POSIX_MAX_FDS
+	default 23 if GOLIOTH_FW_UPDATE
+	default 16
 
 config REBOOT
 	default y
