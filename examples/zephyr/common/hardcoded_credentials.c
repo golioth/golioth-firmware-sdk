@@ -48,9 +48,9 @@ static const struct golioth_client_config _golioth_client_config = {
             .psk =
                 {
                     .psk_id = CONFIG_GOLIOTH_SAMPLE_PSK_ID,
-                    .psk_id_len = strlen(CONFIG_GOLIOTH_SAMPLE_PSK_ID),
+                    .psk_id_len = sizeof(CONFIG_GOLIOTH_SAMPLE_PSK_ID) - 1,
                     .psk = CONFIG_GOLIOTH_SAMPLE_PSK,
-                    .psk_len = strlen(CONFIG_GOLIOTH_SAMPLE_PSK),
+                    .psk_len = sizeof(CONFIG_GOLIOTH_SAMPLE_PSK) - 1,
                 },
         },
 };
