@@ -2,10 +2,9 @@ from abc import ABC, abstractmethod
 import serial
 from time import time, sleep
 import re
-import yaml
 
 class Board(ABC):
-    def __init__(self, port, baud, credentials_file, fw_image, serial_number):
+    def __init__(self, port, baud, wifi_ssid, wifi_psk, fw_image, serial_number):
         if serial_number:
             self.serial_number = serial_number
         self.port = port
@@ -18,14 +17,9 @@ class Board(ABC):
 
         self.serial_device = serial.Serial(port, baud, timeout=1)
 
-        # Read credentials
-        with open(credentials_file, 'r') as f:
-            credentials = yaml.safe_load(f)
-            settings = credentials['settings']
-
         # Set WiFi credentials
         if self.USES_WIFI:
-            self.set_wifi_credentials(settings['wifi/ssid'], settings['wifi/psk'])
+            self.set_wifi_credentials(wifi_ssid, wifi_psk)
 
     def wait_for_regex_in_line(self, regex, timeout_s=20, log=True):
         start_time = time()
