@@ -44,13 +44,13 @@ async def test_fw_update(shell, project, device, wifi_ssid, wifi_psk, fw_info, r
     shell._device.readlines_until(regex=".*Downloading block index.", timeout=90.0)
     LOGGER.info("Block download has begun!")
 
-    ##FIXME: remove these lines for now because the nRF9160 doesn't send this message
-    ##       when this is fixed, the timeout for "Current firmware" should be changed back to 90.0
-    #
-    # shell._device.readlines_until(regex=".*Rebooting into new image.", timeout=600.0)
-    # LOGGER.info("Download complete, restarting to perform update.")
+    shell._device.readlines_until(regex=".*Rebooting into new image.", timeout=600.0)
+    LOGGER.info("Download complete, restarting to perform update.")
 
-    shell._device.readlines_until(regex=".*Current firmware version: main - 255.8.9.", timeout=600.0)
+    # Test for board to run new firmware and report to Golioth
+
+    shell._device.readlines_until(regex=".*Current firmware version: main - 255.8.9.",
+                                  timeout=120.0)
     LOGGER.info("Device reported expected update version")
 
     shell._device.readlines_until(regex=".*Nothing to do.", timeout=30.0)
