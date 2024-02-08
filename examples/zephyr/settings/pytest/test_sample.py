@@ -6,7 +6,7 @@ import yaml
 
 pytestmark = pytest.mark.anyio
 
-async def test_settings(shell, project, device, credentials_file):
+async def test_settings(shell, project, device, wifi_ssid, wifi_psk):
     # Delete any existing device-level settings
 
     settings = await device.settings.get_all()
@@ -18,11 +18,6 @@ async def test_settings(shell, project, device, credentials_file):
 
     await project.settings.set('LOOP_DELAY_S', 1)
 
-    # Read credentials
-
-    with open(credentials_file, 'r') as f:
-        credentials = yaml.safe_load(f)
-
     time.sleep(2)
 
     # Set Golioth credential
@@ -33,10 +28,8 @@ async def test_settings(shell, project, device, credentials_file):
 
     # Set WiFi credential
 
-    for setting in credentials['settings']:
-        if 'golioth' in setting:
-            continue
-        shell.exec_command(f"settings set {setting} \"{credentials['settings'][setting]}\"")
+    shell.exec_command(f"settings set wifi/ssid \"{wifi_ssid}\"")
+    shell.exec_command(f"settings set wifi/psk \"{wifi_psk}\"")
 
     shell._device.clear_buffer()
     shell._device.write('kernel reboot cold\n\n'.encode())

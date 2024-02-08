@@ -131,7 +131,6 @@ jobs:
           GOLIOTH_API_KEY: ${{ secrets.PROD_CI_PROJECT_API_KEY }}
           WIFI_SSID: ${{ secrets[format('{0}_WIFI_SSID', runner.name)] }}
           WIFI_PSK: ${{ secrets[format('{0}_WIFI_PSK', runner.name)] }}
-          GOLIOTH_CREDENTIALS_FILE: /opt/credentials/credentials_${{ inputs.hil_board }}.yml
         run: |
           source /opt/credentials/runner_env.sh
           export PATH=$PATH:/opt/SEGGER/JLink

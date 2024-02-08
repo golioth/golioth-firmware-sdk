@@ -7,7 +7,7 @@ LOGGER = logging.getLogger(__name__)
 
 pytestmark = pytest.mark.anyio
 
-async def test_fw_update(shell, project, device, credentials_file, fw_info, release):
+async def test_fw_update(shell, project, device, wifi_ssid, wifi_psk, fw_info, release):
 
     # Wait for app to start running or 10 seconds to pass so runtime settings are ready.
 
@@ -15,11 +15,6 @@ async def test_fw_update(shell, project, device, credentials_file, fw_info, rele
         shell._device.readlines_until(regex=".*Start FW Update sample.", timeout=10.0)
     except:
         pass
-
-    # Read credentials
-
-    with open(credentials_file, 'r') as f:
-        credentials = yaml.safe_load(f)
 
     # Set Golioth credential
 
@@ -29,10 +24,8 @@ async def test_fw_update(shell, project, device, credentials_file, fw_info, rele
 
     # Set WiFi credential
 
-    for setting in credentials['settings']:
-        if 'golioth' in setting:
-            continue
-        shell.exec_command(f"settings set {setting} \"{credentials['settings'][setting]}\"")
+    shell.exec_command(f"settings set wifi/ssid \"{wifi_ssid}\"")
+    shell.exec_command(f"settings set wifi/psk \"{wifi_psk}\"")
 
     shell._device.clear_buffer()
     shell._device.write('kernel reboot cold\n\n'.encode())
