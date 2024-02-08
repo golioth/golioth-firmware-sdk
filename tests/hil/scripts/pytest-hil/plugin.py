@@ -12,14 +12,13 @@ def pytest_addoption(parser):
             help="The port to which the device is attached (eg: /dev/ttyACM0)")
     parser.addoption("--baud", type=int, default=115200,
             help="Serial port baud rate (default: 115200)")
-    parser.addoption(
-        "--credentials-file", action="store", type=str,
-        help="YAML formatted settings file"
-    )
     parser.addoption("--fw-image", type=str,
             help="Firmware binary to program to device")
     parser.addoption("--serial-number", type=str,
             help="Serial number to identify on-board debugger")
+    parser.addoption("--wifi-ssid", type=str, help="WiFi SSID")
+    parser.addoption("--wifi-psk", type=str, help="WiFi PSK")
+
 
 @pytest.fixture(scope="session")
 def board_name(request):
@@ -34,10 +33,6 @@ def baud(request):
     return request.config.getoption("--baud")
 
 @pytest.fixture(scope="session")
-def credentials_file(request):
-    return request.config.getoption("--credentials-file")
-
-@pytest.fixture(scope="session")
 def fw_image(request):
     return request.config.getoption("--fw-image")
 
@@ -45,18 +40,25 @@ def fw_image(request):
 def serial_number(request):
     return request.config.getoption("--serial-number")
 
+@pytest.fixture(scope="session")
+def wifi_ssid(request):
+    return request.config.getoption("--wifi-ssid")
+
+@pytest.fixture(scope="session")
+def wifi_psk(request):
+    return request.config.getoption("--wifi-psk")
 
 @pytest.fixture(scope="module")
-def board(board_name, port, baud, credentials_file, fw_image, serial_number):
+def board(board_name, port, baud, wifi_ssid, wifi_psk, fw_image, serial_number):
     if board_name.lower() == "esp-idf":
-        return ESPIDFBoard(port, baud, credentials_file, fw_image, serial_number)
+        return ESPIDFBoard(port, baud, wifi_ssid, wifi_psk, fw_image, serial_number)
     elif board_name.lower() == "esp32_devkitc_wrover":
-        return ESP32DevKitCWROVER(port, baud, credentials_file, fw_image, serial_number)
+        return ESP32DevKitCWROVER(port, baud, wifi_ssid, wifi_psk, fw_image, serial_number)
     elif board_name.lower() == "nrf52840dk":
-        return nRF52840DK(port, baud, credentials_file, fw_image, serial_number)
+        return nRF52840DK(port, baud, wifi_ssid, wifi_psk, fw_image, serial_number)
     elif board_name.lower() == "nrf9160dk":
-        return nRF9160DK(port, baud, credentials_file, fw_image, serial_number)
+        return nRF9160DK(port, baud, wifi_ssid, wifi_psk, fw_image, serial_number)
     elif board_name.lower() == "mimxrt1024_evk":
-        return MIMXRT1024EVK(port, baud, credentials_file, fw_image, serial_number)
+        return MIMXRT1024EVK(port, baud, wifi_ssid, wifi_psk, fw_image, serial_number)
     else:
         raise ValueError("Unknown board")

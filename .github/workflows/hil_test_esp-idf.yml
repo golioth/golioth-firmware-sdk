@@ -69,4 +69,10 @@ jobs:
         run: |
           source /opt/credentials/runner_env.sh
           PORT_VAR=CI_${hil_board^^}_PORT
-          pytest --rootdir . tests/hil/tests/connection --board esp-idf --port ${!PORT_VAR} --credentials-file /opt/credentials/credentials_${hil_board}.yml --fw-image merged.bin --api-key ${{ secrets.PROD_CI_PROJECT_API_KEY }}
+          pytest --rootdir . tests/hil/tests/connection                       \
+            --board esp-idf                                                   \
+            --port ${!PORT_VAR}                                               \
+            --fw-image merged.bin                                             \
+            --api-key ${{ secrets.PROD_CI_PROJECT_API_KEY }}                  \
+            --wifi-ssid ${{ secrets[format('{0}_WIFI_SSID', runner.name)] }}  \
+            --wifi-psk ${{ secrets[format('{0}_WIFI_PSK', runner.name)] }}
