@@ -9,17 +9,12 @@ LOGGER = logging.getLogger(__name__)
 
 pytestmark = pytest.mark.anyio
 
-async def test_lightdb_delete(shell, device, credentials_file):
+async def test_lightdb_delete(shell, device, wifi_ssid, wifi_psk):
     # Set counter in lightdb state
 
     await device.lightdb.set("counter", 34)
     counter = await device.lightdb.get("counter")
     assert counter == 34
-
-    # Read credentials
-
-    with open(credentials_file, 'r') as f:
-        credentials = yaml.safe_load(f)
 
     time.sleep(2)
 
@@ -31,10 +26,8 @@ async def test_lightdb_delete(shell, device, credentials_file):
 
     # Set WiFi credential
 
-    for setting in credentials['settings']:
-        if 'golioth' in setting:
-            continue
-        shell.exec_command(f"settings set {setting} \"{credentials['settings'][setting]}\"")
+    shell.exec_command(f"settings set wifi/ssid \"{wifi_ssid}\"")
+    shell.exec_command(f"settings set wifi/psk \"{wifi_psk}\"")
 
     shell._device.clear_buffer()
     shell._device.write('kernel reboot cold\n\n'.encode())
