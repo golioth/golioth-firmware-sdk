@@ -544,7 +544,7 @@ int golioth_coap_req_cb(struct golioth_client *client,
     if (err)
     {
         LOG_ERR("Failed to create new CoAP GET request: %d", err);
-        goto free_req;
+        return err;
     }
 
     if (method == COAP_METHOD_GET && (flags & GOLIOTH_COAP_REQ_OBSERVE))
