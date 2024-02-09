@@ -1,0 +1,611 @@
+From bf6fa089a1c288c9c30b053bd0f75826c83d2184 Mon Sep 17 00:00:00 2001
+From: Marcin Niestroj <m.niestroj@emb.dev>
+Date: Fri, 10 Nov 2023 22:07:10 +0100
+Subject: [PATCH] drivers: net: nsos: add DNS offload support
+
+Extend driver to support DNS by offloading getaddrinfo() and freeaddrinfo()
+APIs.
+
+Signed-off-by: Marcin Niestroj <m.niestroj@emb.dev>
+---
+ drivers/net/CMakeLists.txt |   2 +
+ drivers/net/nsos.h         |  22 ++++
+ drivers/net/nsos_adapt.c   | 210 +++++++++++++++++++++++++++++++++++++
+ drivers/net/nsos_dns.c     |  65 ++++++++++++
+ drivers/net/nsos_dns.h     |  36 +++++++
+ drivers/net/nsos_sockets.c | 132 +++++++++++++++++++++++
+ 6 files changed, 467 insertions(+)
+ create mode 100644 drivers/net/nsos_dns.c
+ create mode 100644 drivers/net/nsos_dns.h
+
+diff --git a/drivers/net/CMakeLists.txt b/drivers/net/CMakeLists.txt
+index d839b9690c3..10dae7521ca 100644
+--- a/drivers/net/CMakeLists.txt
++++ b/drivers/net/CMakeLists.txt
+@@ -14,8 +14,10 @@ if(CONFIG_NET_NATIVE_OFFLOADED_SOCKETS)
+   zephyr_library_include_directories(
+     ${ZEPHYR_BASE}/subsys/net/lib/sockets
+   )
++  zephyr_library_sources(nsos_dns.c)
+   zephyr_library_sources(nsos_errno.c)
+   zephyr_library_sources(nsos_sockets.c)
+   target_sources(native_simulator INTERFACE nsos_adapt.c)
++  target_sources(native_simulator INTERFACE nsos_dns.c)
+   target_sources(native_simulator INTERFACE nsos_errno.c)
+ endif()
+diff --git a/drivers/net/nsos.h b/drivers/net/nsos.h
+index 238a8429df9..3f8f09a6a8d 100644
+--- a/drivers/net/nsos.h
++++ b/drivers/net/nsos.h
+@@ -76,6 +76,21 @@ struct nsos_mid_pollfd {
+ 	short revents;
+ };
+ 
++struct nsos_mid_addrinfo {
++	int                       ai_flags;
++	int                       ai_family;
++	int                       ai_socktype;
++	int                       ai_protocol;
++	size_t                    ai_addrlen;
++	struct nsos_mid_sockaddr *ai_addr;
++	char                     *ai_canonname;
++	struct nsos_mid_addrinfo *ai_next;
++
++	/* internal */
++	void *zephyr_data;
++	void *host_data;
++};
++
+ static inline void nsos_socket_flag_convert(int *flags_a, int flag_a,
+ 					    int *flags_b, int flag_b)
+ {
+@@ -98,4 +113,11 @@ int nsos_adapt_sendto(int fd, const void *buf, size_t len, int flags,
+ int nsos_adapt_recvfrom(int fd, void *buf, size_t len, int flags,
+ 			struct nsos_mid_sockaddr *addr, size_t *addrlen);
+ 
++
++int nsos_adapt_getaddrinfo(const char *node, const char *service,
++			   const struct nsos_mid_addrinfo *hints,
++			   struct nsos_mid_addrinfo **res,
++			   int *system_errno);
++void nsos_adapt_freeaddrinfo(struct nsos_mid_addrinfo *res);
++
+ #endif /* __DRIVERS_NET_NSOS_H__ */
+diff --git a/drivers/net/nsos_adapt.c b/drivers/net/nsos_adapt.c
+index bdcede54b47..4dd193c7759 100644
+--- a/drivers/net/nsos_adapt.c
++++ b/drivers/net/nsos_adapt.c
+@@ -11,18 +11,27 @@
+  */
+ 
+ #include <errno.h>
++#include <netdb.h>
+ #include <netinet/in.h>
+ #include <poll.h>
++#include <stdlib.h>
++#include <string.h>
+ #include <sys/socket.h>
+ #include <unistd.h>
+ 
+ #include "nsos.h"
++#include "nsos_dns.h"
+ #include "nsos_errno.h"
+ 
+ #include "nsi_tracing.h"
+ 
+ #include <stdio.h>
+ 
++#ifndef CONTAINER_OF
++#define CONTAINER_OF(ptr, type, field)                               \
++		((type *)(((char *)(ptr)) - offsetof(type, field)))
++#endif
++
+ int nsos_adapt_get_errno(void)
+ {
+ 	return errno_to_nsos_mid(errno);
+@@ -45,6 +54,23 @@ static int socket_family_from_nsos_mid(int family_mid, int *family)
+ 	return 0;
+ }
+ 
++static int socket_family_to_nsos_mid(int family, int *family_mid)
++{
++	switch (family) {
++	case AF_UNSPEC:
++		*family_mid = NSOS_MID_AF_UNSPEC;
++		break;
++	case AF_INET:
++		*family_mid = NSOS_MID_AF_INET;
++		break;
++	default:
++		nsi_print_warning("%s: socket family %d not supported\n", __func__, family);
++		return -NSOS_MID_EAFNOSUPPORT;
++	}
++
++	return 0;
++}
++
+ static int socket_proto_from_nsos_mid(int proto_mid, int *proto)
+ {
+ 	switch (proto_mid) {
+@@ -80,6 +106,41 @@ static int socket_proto_from_nsos_mid(int proto_mid, int *proto)
+ 	return 0;
+ }
+ 
++static int socket_proto_to_nsos_mid(int proto, int *proto_mid)
++{
++	switch (proto) {
++	case IPPROTO_IP:
++		*proto_mid = NSOS_MID_IPPROTO_IP;
++		break;
++	case IPPROTO_ICMP:
++		*proto_mid = NSOS_MID_IPPROTO_ICMP;
++		break;
++	case IPPROTO_IGMP:
++		*proto_mid = NSOS_MID_IPPROTO_IGMP;
++		break;
++	case IPPROTO_IPIP:
++		*proto_mid = NSOS_MID_IPPROTO_IPIP;
++		break;
++	case IPPROTO_TCP:
++		*proto_mid = NSOS_MID_IPPROTO_TCP;
++		break;
++	case IPPROTO_UDP:
++		*proto_mid = NSOS_MID_IPPROTO_UDP;
++		break;
++	case IPPROTO_IPV6:
++		*proto_mid = NSOS_MID_IPPROTO_IPV6;
++		break;
++	case IPPROTO_RAW:
++		*proto_mid = NSOS_MID_IPPROTO_RAW;
++		break;
++	default:
++		nsi_print_warning("%s: socket protocol %d not supported\n", __func__, proto);
++		return -NSOS_MID_EPROTONOSUPPORT;
++	}
++
++	return 0;
++}
++
+ static int socket_type_from_nsos_mid(int type_mid, int *type)
+ {
+ 	switch (type_mid) {
+@@ -100,6 +161,26 @@ static int socket_type_from_nsos_mid(int type_mid, int *type)
+ 	return 0;
+ }
+ 
++static int socket_type_to_nsos_mid(int type, int *type_mid)
++{
++	switch (type) {
++	case SOCK_STREAM:
++		*type_mid = NSOS_MID_SOCK_STREAM;
++		break;
++	case SOCK_DGRAM:
++		*type_mid = NSOS_MID_SOCK_DGRAM;
++		break;
++	case SOCK_RAW:
++		*type_mid = NSOS_MID_SOCK_RAW;
++		break;
++	default:
++		nsi_print_warning("%s: socket type %d not supported\n", __func__, type);
++		return -NSOS_MID_ESOCKTNOSUPPORT;
++	}
++
++	return 0;
++}
++
+ static int socket_flags_from_nsos_mid(int flags_mid)
+ {
+ 	int flags = 0;
+@@ -321,3 +402,132 @@ int nsos_adapt_recvfrom(int fd, void *buf, size_t len, int flags,
+ 
+ 	return ret;
+ }
++
++struct nsos_addrinfo_wrap {
++	struct nsos_mid_addrinfo addrinfo_mid;
++	struct nsos_mid_sockaddr_storage addr_storage;
++	struct addrinfo *addrinfo;
++};
++
++static int addrinfo_to_nsos_mid(struct addrinfo *res,
++				struct nsos_mid_addrinfo **mid_res)
++{
++	struct nsos_addrinfo_wrap *nsos_res_wraps;
++	size_t idx_res = 0;
++	size_t n_res = 0;
++	int ret;
++
++	for (struct addrinfo *res_p = res; res_p; res_p = res_p->ai_next) {
++		n_res++;
++	}
++
++	if (n_res == 0) {
++		return 0;
++	}
++
++	nsos_res_wraps = calloc(n_res, sizeof(*nsos_res_wraps));
++	if (!nsos_res_wraps) {
++		return -NSOS_MID_ENOMEM;
++	}
++
++	for (struct addrinfo *res_p = res; res_p; res_p = res_p->ai_next, idx_res++) {
++		struct nsos_addrinfo_wrap *wrap = &nsos_res_wraps[idx_res];
++
++		wrap->addrinfo = res_p;
++
++		wrap->addrinfo_mid.ai_flags = res_p->ai_flags;
++
++		ret = socket_family_to_nsos_mid(res_p->ai_family, &wrap->addrinfo_mid.ai_family);
++		if (ret < 0) {
++			goto free_wraps;
++		}
++
++		ret = socket_type_to_nsos_mid(res_p->ai_socktype, &wrap->addrinfo_mid.ai_socktype);
++		if (ret < 0) {
++			goto free_wraps;
++		}
++
++		ret = socket_proto_to_nsos_mid(res_p->ai_protocol, &wrap->addrinfo_mid.ai_protocol);
++		if (ret < 0) {
++			goto free_wraps;
++		}
++
++		wrap->addrinfo_mid.ai_addr =
++			(struct nsos_mid_sockaddr *)&wrap->addr_storage;
++		wrap->addrinfo_mid.ai_addrlen = sizeof(wrap->addr_storage);
++
++		sockaddr_to_nsos_mid(res_p->ai_addr, res_p->ai_addrlen,
++				     wrap->addrinfo_mid.ai_addr, &wrap->addrinfo_mid.ai_addrlen);
++
++		wrap->addrinfo_mid.ai_canonname =
++			res_p->ai_canonname ? strdup(res_p->ai_canonname) : NULL;
++		wrap->addrinfo_mid.ai_next = &wrap[1].addrinfo_mid;
++	}
++
++	nsos_res_wraps[n_res - 1].addrinfo_mid.ai_next = NULL;
++
++	*mid_res = &nsos_res_wraps->addrinfo_mid;
++
++	return 0;
++
++free_wraps:
++	free(nsos_res_wraps);
++
++	return ret;
++}
++
++int nsos_adapt_getaddrinfo(const char *node, const char *service,
++			   const struct nsos_mid_addrinfo *hints_mid,
++			   struct nsos_mid_addrinfo **res_mid,
++			   int *system_errno)
++{
++	struct addrinfo hints;
++	struct addrinfo *res = NULL;
++	int ret;
++
++	if (hints_mid) {
++		hints.ai_flags = hints_mid->ai_flags;
++
++		ret = socket_family_from_nsos_mid(hints_mid->ai_family, &hints.ai_family);
++		if (ret < 0) {
++			*system_errno = -ret;
++			return NSOS_MID_EAI_SYSTEM;
++		}
++
++		ret = socket_type_from_nsos_mid(hints_mid->ai_socktype, &hints.ai_socktype);
++		if (ret < 0) {
++			*system_errno = -ret;
++			return NSOS_MID_EAI_SYSTEM;
++		}
++
++		ret = socket_proto_from_nsos_mid(hints_mid->ai_protocol, &hints.ai_protocol);
++		if (ret < 0) {
++			*system_errno = -ret;
++			return NSOS_MID_EAI_SYSTEM;
++		}
++	}
++
++	ret = getaddrinfo(node, service,
++			  hints_mid ? &hints : NULL,
++			  &res);
++	if (ret < 0) {
++		return ret;
++	}
++
++	ret = addrinfo_to_nsos_mid(res, res_mid);
++	if (ret < 0) {
++		*system_errno = -ret;
++		return NSOS_MID_EAI_SYSTEM;
++	}
++
++	return ret;
++}
++
++void nsos_adapt_freeaddrinfo(struct nsos_mid_addrinfo *res_mid)
++{
++	struct nsos_addrinfo_wrap *wrap =
++		CONTAINER_OF(res_mid, struct nsos_addrinfo_wrap, addrinfo_mid);
++
++	freeaddrinfo(wrap->addrinfo);
++	free(wrap);
++}
+diff --git a/drivers/net/nsos_dns.c b/drivers/net/nsos_dns.c
+new file mode 100644
+index 00000000000..a2b10921eaa
+--- /dev/null
++++ b/drivers/net/nsos_dns.c
+@@ -0,0 +1,65 @@
++/**
++ * Copyright (c) 2023-2024 Marcin Niestroj
++ *
++ * SPDX-License-Identifier: Apache-2.0
++ */
++
++#include "nsos_dns.h"
++
++#ifdef __ZEPHYR__
++
++#include <zephyr/net/socket.h>
++#define ERR(_name)				\
++	{ DNS_ ## _name, NSOS_MID_ ## _name }
++
++#else
++
++#include <netdb.h>
++#define ERR(_name)				\
++	{ _name, NSOS_MID_ ## _name }
++
++#endif
++
++#ifndef ARRAY_SIZE
++#define ARRAY_SIZE(array) (sizeof(array) / sizeof((array)[0]))
++#endif
++
++struct nsos_eai_map {
++	int err;
++	int mid_err;
++};
++
++static const struct nsos_eai_map map[] = {
++	ERR(EAI_BADFLAGS),
++	ERR(EAI_NONAME),
++	ERR(EAI_AGAIN),
++	ERR(EAI_FAIL),
++	ERR(EAI_FAMILY),
++	ERR(EAI_SOCKTYPE),
++	ERR(EAI_SERVICE),
++	ERR(EAI_MEMORY),
++	ERR(EAI_SYSTEM),
++	ERR(EAI_OVERFLOW),
++};
++
++int eai_to_nsos_mid(int err)
++{
++	for (int i = 0; i < ARRAY_SIZE(map); i++) {
++		if (map[i].err == err) {
++			return map[i].mid_err;
++		}
++	}
++
++	return err;
++}
++
++int eai_from_nsos_mid(int err)
++{
++	for (int i = 0; i < ARRAY_SIZE(map); i++) {
++		if (map[i].mid_err == err) {
++			return map[i].err;
++		}
++	}
++
++	return err;
++}
+diff --git a/drivers/net/nsos_dns.h b/drivers/net/nsos_dns.h
+new file mode 100644
+index 00000000000..66d8d183ab8
+--- /dev/null
++++ b/drivers/net/nsos_dns.h
+@@ -0,0 +1,36 @@
++/**
++ * Copyright (c) 2023-2024 Marcin Niestroj
++ *
++ * SPDX-License-Identifier: Apache-2.0
++ */
++
++#ifndef __DRIVERS_NET_NSOS_DNS_H__
++#define __DRIVERS_NET_NSOS_DNS_H__
++
++enum nsos_resolve_status {
++	/** Invalid value for `ai_flags' field */
++	NSOS_MID_EAI_BADFLAGS    = -1,
++	/** NAME or SERVICE is unknown */
++	NSOS_MID_EAI_NONAME      = -2,
++	/** Temporary failure in name resolution */
++	NSOS_MID_EAI_AGAIN       = -3,
++	/** Non-recoverable failure in name res */
++	NSOS_MID_EAI_FAIL        = -4,
++	/** `ai_family' not supported */
++	NSOS_MID_EAI_FAMILY      = -6,
++	/** `ai_socktype' not supported */
++	NSOS_MID_EAI_SOCKTYPE    = -7,
++	/** SRV not supported for `ai_socktype' */
++	NSOS_MID_EAI_SERVICE     = -8,
++	/** Memory allocation failure */
++	NSOS_MID_EAI_MEMORY      = -10,
++	/** System error returned in `errno' */
++	NSOS_MID_EAI_SYSTEM      = -11,
++	/** Argument buffer overflow */
++	NSOS_MID_EAI_OVERFLOW    = -12,
++};
++
++int eai_to_nsos_mid(int err);
++int eai_from_nsos_mid(int err);
++
++#endif /* __DRIVERS_NET_NSOS_DNS_H__ */
+diff --git a/drivers/net/nsos_sockets.c b/drivers/net/nsos_sockets.c
+index 710d7232a4e..1ee607be6ee 100644
+--- a/drivers/net/nsos_sockets.c
++++ b/drivers/net/nsos_sockets.c
+@@ -10,6 +10,9 @@
+  * Zephyr (top) side of NSOS (Native Simulator Offloaded Sockets).
+  */
+ 
++#define _POSIX_C_SOURCE 200809
++
++#include <string.h>
+ #include <zephyr/net/ethernet.h>
+ #include <zephyr/net/net_ip.h>
+ #include <zephyr/net/offloaded_netdev.h>
+@@ -18,6 +21,7 @@
+ 
+ #include "sockets_internal.h"
+ #include "nsos.h"
++#include "nsos_dns.h"
+ #include "nsos_errno.h"
+ 
+ #include "nsi_host_trampolines.h"
+@@ -494,6 +498,132 @@ static bool nsos_is_supported(int family, int type, int proto)
+ NET_SOCKET_OFFLOAD_REGISTER(nsos, CONFIG_NET_SOCKETS_OFFLOAD_PRIORITY, AF_UNSPEC,
+ 			    nsos_is_supported, nsos_socket_create);
+ 
++struct zsock_addrinfo_wrap {
++	struct zsock_addrinfo addrinfo;
++	struct sockaddr_storage addr_storage;
++	struct nsos_mid_addrinfo *addrinfo_mid;
++};
++
++/*
++ * (Zephyr)
++ * zsock_addrinfo_wrap
++ * -----------------------
++ * | zsock_addrinfo      |
++ * -----------------------    (trampoline)
++ * | sockaddr_storage    |    nsos_addrinfo_wrap
++ * -----------------------    -----------------------------
++ * | nsos_mid_addrinfo * | -> | nsos_mid_addrinfo         |
++ * -----------------------    -----------------------------
++ *                            | nsos_mid_sockaddr_storage |
++ *                            -----------------------------    (Linux host)
++ *                            | addrinfo *                | -> addrinfo
++ *                            -----------------------------
++ */
++
++static int addrinfo_from_nsos_mid(struct nsos_mid_addrinfo *nsos_res,
++				  struct zsock_addrinfo **res)
++{
++	struct zsock_addrinfo_wrap *res_wraps;
++	size_t idx_res = 0;
++	size_t n_res = 0;
++
++	for (struct nsos_mid_addrinfo *res_p = nsos_res; res_p; res_p = res_p->ai_next) {
++		n_res++;
++	}
++
++	if (n_res == 0) {
++		return 0;
++	}
++
++	res_wraps = calloc(n_res, sizeof(*res_wraps));
++	if (!res_wraps) {
++		return -ENOMEM;
++	}
++
++	for (struct nsos_mid_addrinfo *res_p = nsos_res; res_p; res_p = res_p->ai_next, idx_res++) {
++		struct zsock_addrinfo_wrap *wrap = &res_wraps[idx_res];
++
++		wrap->addrinfo_mid = res_p;
++
++		wrap->addrinfo.ai_flags = res_p->ai_flags;
++		wrap->addrinfo.ai_family = res_p->ai_family;
++		wrap->addrinfo.ai_socktype = res_p->ai_socktype;
++		wrap->addrinfo.ai_protocol = res_p->ai_protocol;
++
++		wrap->addrinfo.ai_addr =
++			(struct sockaddr *)&wrap->addr_storage;
++		wrap->addrinfo.ai_addrlen = sizeof(wrap->addr_storage);
++
++		sockaddr_from_nsos_mid(wrap->addrinfo.ai_addr, &wrap->addrinfo.ai_addrlen,
++				       res_p->ai_addr, res_p->ai_addrlen);
++
++		wrap->addrinfo.ai_canonname =
++			res_p->ai_canonname ? strdup(res_p->ai_canonname) : NULL;
++		wrap->addrinfo.ai_next = &wrap[1].addrinfo;
++	}
++
++	res_wraps[n_res - 1].addrinfo.ai_next = NULL;
++
++	*res = &res_wraps->addrinfo;
++
++	return 0;
++}
++
++static int nsos_getaddrinfo(const char *node, const char *service,
++			    const struct zsock_addrinfo *hints,
++			    struct zsock_addrinfo **res)
++{
++	struct nsos_mid_addrinfo hints_mid;
++	struct nsos_mid_addrinfo *res_mid;
++	int system_errno;
++	int ret;
++
++	if (!res) {
++		return -EINVAL;
++	}
++
++	if (hints) {
++		hints_mid.ai_flags    = hints->ai_flags;
++		hints_mid.ai_family   = hints->ai_family;
++		hints_mid.ai_socktype = hints->ai_socktype;
++		hints_mid.ai_protocol = hints->ai_protocol;
++	}
++
++	ret = nsos_adapt_getaddrinfo(node, service,
++				     hints ? &hints_mid : NULL,
++				     &res_mid,
++				     &system_errno);
++	if (ret < 0) {
++		if (ret == NSOS_MID_EAI_SYSTEM) {
++			errno = errno_from_nsos_mid(system_errno);
++		}
++
++		return eai_from_nsos_mid(ret);
++	}
++
++	ret = addrinfo_from_nsos_mid(res_mid, res);
++	if (ret < 0) {
++		errno = -ret;
++		return EAI_SYSTEM;
++	}
++
++	return ret;
++}
++
++static void nsos_freeaddrinfo(struct zsock_addrinfo *res)
++{
++	struct zsock_addrinfo_wrap *wrap =
++		CONTAINER_OF(res, struct zsock_addrinfo_wrap, addrinfo);
++
++	nsos_adapt_freeaddrinfo(wrap->addrinfo_mid);
++	free(wrap);
++}
++
++static const struct socket_dns_offload nsos_dns_ops = {
++	.getaddrinfo = nsos_getaddrinfo,
++	.freeaddrinfo = nsos_freeaddrinfo,
++};
++
+ static int nsos_socket_offload_init(const struct device *arg)
+ {
+ 	ARG_UNUSED(arg);
+@@ -504,6 +634,8 @@ static int nsos_socket_offload_init(const struct device *arg)
+ static void nsos_iface_api_init(struct net_if *iface)
+ {
+ 	iface->if_dev->socket_offload = nsos_socket_create;
++
++	socket_offload_dns_register(&nsos_dns_ops);
+ }
+ 
+ static int nsos_iface_enable(const struct net_if *iface, bool enabled)
+-- 
+2.43.2
+

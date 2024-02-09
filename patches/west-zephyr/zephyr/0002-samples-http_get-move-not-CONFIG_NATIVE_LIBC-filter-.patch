@@ -1,0 +1,31 @@
+From afbdf15b2fd48a232e8267934be2572cf8384327 Mon Sep 17 00:00:00 2001
+From: Marcin Niestroj <m.niestroj@emb.dev>
+Date: Sat, 11 Nov 2023 16:01:37 +0100
+Subject: [PATCH] samples: http_get: move 'not CONFIG_NATIVE_LIBC' filter to
+ POSIX build
+
+'not CONFIG_NATIVE_LIBC' filter is just to prevent building for
+'native_posix' platform with additional options selected by
+'sample.net.sockets.http_get.posix' testcase.
+
+Signed-off-by: Marcin Niestroj <m.niestroj@emb.dev>
+---
+ samples/net/sockets/http_get/sample.yaml | 2 +-
+ 1 file changed, 1 insertion(+), 1 deletion(-)
+
+diff --git a/samples/net/sockets/http_get/sample.yaml b/samples/net/sockets/http_get/sample.yaml
+index f8fb27104c3..a1890dfb954 100644
+--- a/samples/net/sockets/http_get/sample.yaml
++++ b/samples/net/sockets/http_get/sample.yaml
+@@ -16,7 +16,7 @@ tests:
+       # Forcibly defines CONFIG_POSIX_API, which is incompatible with
+       # CONFIG_NET_SOCKETS_POSIX_NAMES.
+   sample.net.sockets.http_get.posix:
+-    filter: not CONFIG_NET_SOCKETS_OFFLOAD
++    filter: not CONFIG_NET_SOCKETS_OFFLOAD and not CONFIG_NATIVE_LIBC
+     platform_exclude:
+       - cc3220sf_launchxl
+       - cc3235sf_launchxl
+-- 
+2.43.2
+
