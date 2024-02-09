@@ -11,8 +11,6 @@ menuconfig GOLIOTH_SAMPLE_COMMON
 
 if GOLIOTH_SAMPLE_COMMON
 
-rsource "Kconfig.defconfig"
-
 choice GOLIOTH_SAMPLE_AUTH_TYPE
 	prompt "Authentication type"
 
