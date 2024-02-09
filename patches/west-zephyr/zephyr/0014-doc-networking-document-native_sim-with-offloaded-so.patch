@@ -1,0 +1,150 @@
+From 9e9f8d288e4381ea1afef514da7ba116a1399b39 Mon Sep 17 00:00:00 2001
+From: Marcin Niestroj <m.niestroj@emb.dev>
+Date: Fri, 23 Feb 2024 14:58:54 +0100
+Subject: [PATCH] doc: networking: document native_sim with offloaded sockets
+
+Document how offloaded sockets can be used with 'native_sim' for networking
+capability.
+
+Signed-off-by: Marcin Niestroj <m.niestroj@emb.dev>
+---
+ .../networking/native_posix_setup.rst         | 68 +++++++++++++++++--
+ .../networking/networking_with_host.rst       |  3 +-
+ 2 files changed, 63 insertions(+), 8 deletions(-)
+
+diff --git a/doc/connectivity/networking/native_posix_setup.rst b/doc/connectivity/networking/native_posix_setup.rst
+index cc94c9f790b..61613eeec41 100644
+--- a/doc/connectivity/networking/native_posix_setup.rst
++++ b/doc/connectivity/networking/native_posix_setup.rst
+@@ -7,7 +7,10 @@ Networking with native_posix board
+     :local:
+     :depth: 2
+ 
+-This page describes how to set up a virtual network between a (Linux) host
++Using virtual Ethernet driver
++*****************************
++
++This paragraph describes how to set up a virtual network between a (Linux) host
+ and a Zephyr application running in a native_posix board.
+ 
+ In this example, the :zephyr:code-sample:`sockets-echo-server` sample application from
+@@ -16,7 +19,7 @@ native_posix board instance is connected to a Linux host using a tuntap device
+ which is modeled in Linux as an Ethernet network interface.
+ 
+ Prerequisites
+-*************
++=============
+ 
+ On the Linux Host, fetch the Zephyr ``net-tools`` project, which is located
+ in a separate Git repository:
+@@ -27,7 +30,7 @@ in a separate Git repository:
+ 
+ 
+ Basic Setup
+-***********
++===========
+ 
+ For the steps below, you will need three terminal windows:
+ 
+@@ -39,7 +42,7 @@ For the steps below, you will need three terminal windows:
+   instance (optional).
+ 
+ Step 1 - Create Ethernet interface
+-==================================
++----------------------------------
+ 
+ Before starting native_posix with network emulation, a network interface
+ should be created.
+@@ -57,9 +60,8 @@ by running ``net-setup.sh`` like this:
+ 
+    ./net-setup.sh --help
+ 
+-
+ Step 2 - Start app in native_posix board
+-========================================
++--------------------------------------
+ 
+ Build and start the ``echo_server`` sample application.
+ 
+@@ -74,7 +76,7 @@ In terminal #2, type:
+ 
+ 
+ Step 3 - Connect to console (optional)
+-======================================
++--------------------------------------
+ 
+ The console window should be launched automatically when the Zephyr instance is
+ started but if it does not show up, you can manually connect to the console.
+@@ -89,3 +91,55 @@ You can manually connect to it like this:
+ .. code-block:: console
+ 
+    screen /dev/pts/5
++
++Using offloaded sockets
++***********************
++
++Main advantage over `Using virtual Ethernet driver`_ is no need to setup
++networking on the host machine. This means that no leveraged (root) privileges
++are needed.
++
++Step 1 - Start app in native_sim board
++======================================
++
++Build and start the ``echo_server`` sample application.
++
++In terminal, type:
++
++.. zephyr-app-commands::
++   :zephyr-app: samples/net/sockets/echo_server
++   :host-os: unix
++   :board: native_sim
++   :gen-args: -DEXTRA_CONF_FILE=overlay-nsos.conf
++   :goals: run
++   :compact:
++
++Step 2 - run echo-client from net-tools
++=======================================
++
++On the Linux Host, fetch the Zephyr ``net-tools`` project, which is located
++in a separate Git repository:
++
++.. code-block:: console
++
++   git clone https://github.com/zephyrproject-rtos/net-tools
++
++.. note::
++
++   Native Simulator with offloaded sockets is using the same network
++   interface/namespace as any other (Linux) application that uses BSD sockets
++   API. This means that :zephyr:code-sample:`sockets-echo-server` and
++   ``echo-client`` applications will communicate over localhost/loopback
++   interface (address ``127.0.0.1``).
++
++To run UDP test, type:
++
++.. code-block:: console
++
++   ./echo-client 127.0.0.1
++
++For TCP test, type:
++
++.. code-block:: console
++
++   ./echo-client -t 127.0.0.1
+diff --git a/doc/connectivity/networking/networking_with_host.rst b/doc/connectivity/networking/networking_with_host.rst
+index 063e065730a..7fc07db6325 100644
+--- a/doc/connectivity/networking/networking_with_host.rst
++++ b/doc/connectivity/networking/networking_with_host.rst
+@@ -59,7 +59,8 @@ possible:
+     system. This is the most convenient way to debug the Zephyr system as one
+     can attach host debugger directly to the running Zephyr instance. This
+     requires that there is an adaptation driver in Zephyr for interfacing
+-    with the host system. An Ethernet driver exists in Zephyr for this purpose.
++    with the host system. An Ethernet and offloaded sockets drivers exist in
++    Zephyr for this purpose.
+     See :ref:`networking_with_native_posix` for details.
+ 
+ * USB device networking.
+-- 
+2.43.2
+

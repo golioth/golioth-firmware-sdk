@@ -1,0 +1,44 @@
+From 65b085a4da135dd8165a09060308fe14ac6b3fc1 Mon Sep 17 00:00:00 2001
+From: Marcin Niestroj <m.niestroj@emb.dev>
+Date: Tue, 20 Feb 2024 20:02:16 +0100
+Subject: [PATCH] native_simulator: constify 'buffer' argument in
+ nsi_host_write()
+
+'buffer' argument is read only, so it can be 'const'. This makes it
+compatible with POSIX specification of write(3) syscall.
+
+Signed-off-by: Marcin Niestroj <m.niestroj@emb.dev>
+---
+ .../native_simulator/common/src/include/nsi_host_trampolines.h  | 2 +-
+ scripts/native_simulator/common/src/nsi_host_trampolines.c      | 2 +-
+ 2 files changed, 2 insertions(+), 2 deletions(-)
+
+diff --git a/scripts/native_simulator/common/src/include/nsi_host_trampolines.h b/scripts/native_simulator/common/src/include/nsi_host_trampolines.h
+index f7f7dce877d..a51efa41509 100644
+--- a/scripts/native_simulator/common/src/include/nsi_host_trampolines.h
++++ b/scripts/native_simulator/common/src/include/nsi_host_trampolines.h
+@@ -35,7 +35,7 @@ long nsi_host_random(void);
+ long nsi_host_read(int fd, void *buffer, unsigned long size);
+ void nsi_host_srandom(unsigned int seed);
+ char *nsi_host_strdup(const char *s);
+-long nsi_host_write(int fd, void *buffer, unsigned long size);
++long nsi_host_write(int fd, const void *buffer, unsigned long size);
+ 
+ #ifdef __cplusplus
+ }
+diff --git a/scripts/native_simulator/common/src/nsi_host_trampolines.c b/scripts/native_simulator/common/src/nsi_host_trampolines.c
+index 3feb8482c91..7498792491d 100644
+--- a/scripts/native_simulator/common/src/nsi_host_trampolines.c
++++ b/scripts/native_simulator/common/src/nsi_host_trampolines.c
+@@ -66,7 +66,7 @@ char *nsi_host_strdup(const char *s)
+ 	return strdup(s);
+ }
+ 
+-long nsi_host_write(int fd, void *buffer, unsigned long size)
++long nsi_host_write(int fd, const void *buffer, unsigned long size)
+ {
+ 	return write(fd, buffer, size);
+ }
+-- 
+2.43.2
+

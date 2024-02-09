@@ -1,0 +1,46 @@
+From 009ec32c0a79b9d77ff0c2d25b4ef7d5ff8e1d09 Mon Sep 17 00:00:00 2001
+From: Marcin Niestroj <m.niestroj@emb.dev>
+Date: Fri, 23 Feb 2024 14:25:10 +0100
+Subject: [PATCH] samples: net: echo_server: add config for native_sim
+ offloaded sockets
+
+Add configuration for Native Simulator offloaded sockets.
+
+Signed-off-by: Marcin Niestroj <m.niestroj@emb.dev>
+---
+ samples/net/sockets/echo_server/overlay-nsos.conf | 9 +++++++++
+ samples/net/sockets/echo_server/sample.yaml       | 5 +++++
+ 2 files changed, 14 insertions(+)
+ create mode 100644 samples/net/sockets/echo_server/overlay-nsos.conf
+
+diff --git a/samples/net/sockets/echo_server/overlay-nsos.conf b/samples/net/sockets/echo_server/overlay-nsos.conf
+new file mode 100644
+index 00000000000..eaee3e55615
+--- /dev/null
++++ b/samples/net/sockets/echo_server/overlay-nsos.conf
+@@ -0,0 +1,9 @@
++CONFIG_ETH_NATIVE_POSIX=n
++CONFIG_NET_DRIVERS=y
++CONFIG_NET_SOCKETS=y
++CONFIG_NET_SOCKETS_OFFLOAD=y
++CONFIG_NET_NATIVE_OFFLOADED_SOCKETS=y
++CONFIG_HEAP_MEM_POOL_SIZE=1024
++
++# IPv6 DAD requires lower level network interface access, below exposed socket-level access
++CONFIG_NET_IPV6_DAD=n
+diff --git a/samples/net/sockets/echo_server/sample.yaml b/samples/net/sockets/echo_server/sample.yaml
+index edb26a87e86..92f9ea0efbf 100644
+--- a/samples/net/sockets/echo_server/sample.yaml
++++ b/samples/net/sockets/echo_server/sample.yaml
+@@ -133,3 +133,8 @@ tests:
+       - qemu_x86_64
+     integration_platforms:
+       - qemu_x86
++  sample.net.sockets.echo_server.nsos:
++    platform_allow:
++      - native_sim
++    extra_args:
++      - OVERLAY_CONFIG="overlay-nsos.conf"
+-- 
+2.43.2
+

@@ -9,3 +9,6 @@ manifest:
   self:
     path: modules/lib/golioth-firmware-sdk
     west-commands: scripts/west-commands.yml
+    userdata:
+      patches_dirs:
+        - patches/west-zephyr

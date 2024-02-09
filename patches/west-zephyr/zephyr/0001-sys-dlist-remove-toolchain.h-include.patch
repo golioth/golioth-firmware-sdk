@@ -1,0 +1,27 @@
+From 300d9b55451c2f8d378e76ffaa2e0ba0caf20751 Mon Sep 17 00:00:00 2001
+From: Marcin Niestroj <m.niestroj@emb.dev>
+Date: Fri, 9 Feb 2024 13:35:33 +0100
+Subject: [PATCH] sys: dlist: remove toolchain.h include
+
+This header file is not used anywhere in the implementation, so drop it.
+
+Signed-off-by: Marcin Niestroj <m.niestroj@emb.dev>
+---
+ include/zephyr/sys/dlist.h | 1 -
+ 1 file changed, 1 deletion(-)
+
+diff --git a/include/zephyr/sys/dlist.h b/include/zephyr/sys/dlist.h
+index 4c330c8f04e..ff62b982bc1 100644
+--- a/include/zephyr/sys/dlist.h
++++ b/include/zephyr/sys/dlist.h
+@@ -27,7 +27,6 @@
+ 
+ #include <stddef.h>
+ #include <stdbool.h>
+-#include <zephyr/toolchain.h>
+ 
+ #ifdef __cplusplus
+ extern "C" {
+-- 
+2.43.2
+
