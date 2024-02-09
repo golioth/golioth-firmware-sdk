@@ -1,6 +1,8 @@
 # Copyright (c) 2023 Golioth, Inc.
 # SPDX-License-Identifier: Apache-2.0
 
+rsource '${ZEPHYR_GOLIOTH_FIRMWARE_SDK_MODULE_DIR}/examples/zephyr/common/Kconfig.defconfig'
+
 config LIBCOAP_TLS_HOSTNAME_LEN_MAX
 	int "Maximum length for hostname of a TLS peer"
 	default 64
