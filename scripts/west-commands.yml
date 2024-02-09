@@ -1,0 +1,7 @@
+# Keep the help strings in sync with the values in the .py files!
+west-commands:
+  - file: scripts/west_commands/patch.py
+    commands:
+      - name: patch
+        class: Patch
+        help: patch west subprojects
