@@ -102,6 +102,9 @@ config POSIX_MAX_FDS
 config REBOOT
 	default y
 
+config GOLIOTH_COAP_HOST_URI
+	default "$(GOLIOTH_COAP_HOST_URI)" if "$(GOLIOTH_COAP_HOST_URI)" != ""
+
 if GOLIOTH_AUTH_METHOD_PSK
 
 config GOLIOTH_SAMPLE_PSK_ID
