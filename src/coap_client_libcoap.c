@@ -704,22 +704,6 @@ static enum golioth_status create_session(struct golioth_client *client,
     return GOLIOTH_OK;
 }
 
-static void purge_request_mbox(golioth_mbox_t request_mbox)
-{
-    golioth_coap_request_msg_t request_msg = {};
-    size_t num_messages = golioth_mbox_num_messages(request_mbox);
-
-    for (size_t i = 0; i < num_messages; i++)
-    {
-        assert(golioth_mbox_recv(request_mbox, &request_msg, 0));
-        if (request_msg.type == GOLIOTH_COAP_REQUEST_POST)
-        {
-            // free dynamically allocated user payload copy
-            golioth_sys_free(request_msg.post.payload);
-        }
-    }
-}
-
 static enum golioth_status coap_io_loop_once(struct golioth_client *client,
                                              coap_context_t *context,
                                              coap_session_t *session)
