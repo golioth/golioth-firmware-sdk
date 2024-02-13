@@ -8,7 +8,7 @@ Internet stack. Golioth maintains ports for the following platforms:
 
 * Espressif ESP-IDF
 * Infineon ModusToolbox
-* Zephyr & NCS (Beta)
+* Zephyr & NCS
 * Linux (Experimental)
 
 More information on these ports can be found in their respective READMEs at

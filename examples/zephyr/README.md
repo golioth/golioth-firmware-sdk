@@ -1,17 +1,7 @@
-# Golioth Firmware SDK: Zephyr Support (beta)
+# Golioth Firmware SDK: Zephyr Support
 
-Zephyr support in the Golioth Firmware SDK is in active development and
-currently designated as "beta". This SDK supports all the features of
-the Golioth platform, but is not yet as optimized as the Golioth Zephyr
-SDK. We will update this page when this port is ready for general
-availability. For devices going to production in 2023, please use the
-[Golioth Zephyr SDK](https://github.com/golioth/golioth-zephyr-sdk).
-
-We expect to reach general availability of Zephyr support in this SDK in
-early 2024. If you are building a Zephyr based device with plans to go
-to production in 2024 or later, you may want to consider beginning
-development in this SDK to reduce the burden of transitioning later. The
-SDK contains a set of examples designed to run using Zephyr RTOS.
+The Golioth Firmware SDK has built-in support for Zephyr as well as
+the Zephyr-based nRF Connect SDK from Nordic Semiconductor.
 
 API documentation: <https://firmware-sdk-docs.golioth.io/>
 
