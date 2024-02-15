@@ -418,7 +418,7 @@ static void golioth_coap_empty(golioth_coap_request_msg_t *req, coap_session_t *
     //     DTLS: session disconnected (reason 1)
     //
     // Instead, we will send an empty DELETE request
-    coap_pdu_t *req_pdu = coap_new_pdu(COAP_MESSAGE_CON, COAP_REQUEST_DELETE, session);
+    coap_pdu_t *req_pdu = coap_new_pdu(COAP_MESSAGE_CON, COAP_REQUEST_CODE_DELETE, session);
     if (!req_pdu)
     {
         GLTH_LOGE(TAG, "coap_new_pdu() delete failed");
@@ -431,7 +431,7 @@ static void golioth_coap_empty(golioth_coap_request_msg_t *req, coap_session_t *
 
 static void golioth_coap_get(golioth_coap_request_msg_t *req, coap_session_t *session)
 {
-    coap_pdu_t *req_pdu = coap_new_pdu(COAP_MESSAGE_CON, COAP_REQUEST_GET, session);
+    coap_pdu_t *req_pdu = coap_new_pdu(COAP_MESSAGE_CON, COAP_REQUEST_CODE_GET, session);
     if (!req_pdu)
     {
         GLTH_LOGE(TAG, "coap_new_pdu() get failed");
@@ -448,7 +448,7 @@ static void golioth_coap_get_block(golioth_coap_request_msg_t *req,
                                    struct golioth_client *client,
                                    coap_session_t *session)
 {
-    coap_pdu_t *req_pdu = coap_new_pdu(COAP_MESSAGE_CON, COAP_REQUEST_GET, session);
+    coap_pdu_t *req_pdu = coap_new_pdu(COAP_MESSAGE_CON, COAP_REQUEST_CODE_GET, session);
     if (!req_pdu)
     {
         GLTH_LOGE(TAG, "coap_new_pdu() get failed");
@@ -479,7 +479,7 @@ static void golioth_coap_get_block(golioth_coap_request_msg_t *req,
 
 static void golioth_coap_post(golioth_coap_request_msg_t *req, coap_session_t *session)
 {
-    coap_pdu_t *req_pdu = coap_new_pdu(COAP_MESSAGE_CON, COAP_REQUEST_POST, session);
+    coap_pdu_t *req_pdu = coap_new_pdu(COAP_MESSAGE_CON, COAP_REQUEST_CODE_POST, session);
     if (!req_pdu)
     {
         GLTH_LOGE(TAG, "coap_new_pdu() post failed");
@@ -495,7 +495,7 @@ static void golioth_coap_post(golioth_coap_request_msg_t *req, coap_session_t *s
 
 static void golioth_coap_delete(golioth_coap_request_msg_t *req, coap_session_t *session)
 {
-    coap_pdu_t *req_pdu = coap_new_pdu(COAP_MESSAGE_CON, COAP_REQUEST_DELETE, session);
+    coap_pdu_t *req_pdu = coap_new_pdu(COAP_MESSAGE_CON, COAP_REQUEST_CODE_DELETE, session);
     if (!req_pdu)
     {
         GLTH_LOGE(TAG, "coap_new_pdu() delete failed");
@@ -537,7 +537,7 @@ static void golioth_coap_observe(golioth_coap_request_msg_t *req,
                                  coap_session_t *session)
 {
     // GET with an OBSERVE option
-    coap_pdu_t *req_pdu = coap_new_pdu(COAP_MESSAGE_CON, COAP_REQUEST_GET, session);
+    coap_pdu_t *req_pdu = coap_new_pdu(COAP_MESSAGE_CON, COAP_REQUEST_CODE_GET, session);
     if (!req_pdu)
     {
         GLTH_LOGE(TAG, "coap_new_pdu() get failed");
