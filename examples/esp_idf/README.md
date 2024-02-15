@@ -51,3 +51,31 @@ If you're using an Adafruit Feather board with a USB-C connector,
 you will need to set `CONFIG_ESP_CONSOLE_USB_SERIAL_JTAG` to `y` via
 `sdkconfig` or `idf.py menuconfig`. This is required in order to use
 the command-line shell that is integrated with the ESP-IDF examples.
+
+
+### Testing the samples using pytest
+
+The pytests require:
+- An attached ESP board
+- The project's api key
+- The name of the serial port to which the board is attached
+
+- Board fixture installed with the following command:
+```sh
+pip install tests/hil/scripts/pytest-hil
+```
+
+- Latest version of python-golioth-tools installed with the following command:
+```sh
+pip install git+https://github.com/golioth/python-golioth-tools@v0.5.1
+```
+
+Installing python-golioth-tools enables pytest to use 'device' fixture which
+automatically creates a device in the Golioth console for the duration of the test,
+and deletes it after the test ends. 
+
+The test can be invoked by the following command from the <sample>/pytest location:
+
+```sh
+pytest -s --rootdir . --port /path/to/serial/port --board esp-idf --wifi-ssid your-wifi-ssid --wifi-psk your-wifi-psk --api-key your-api-key --fw-image /path/to/merged-binary
+```
