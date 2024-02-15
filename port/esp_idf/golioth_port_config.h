@@ -8,7 +8,31 @@
 #include <sdkconfig.h>
 #include <esp_log.h>
 
-#define GLTH_LOG_BUFFER_HEXDUMP ESP_LOG_BUFFER_HEXDUMP
+#define GLTH_LOG_BUFFER_HEXDUMP(TAG, payload, size, level)                   \
+    do                                                                       \
+    {                                                                        \
+        switch (level)                                                       \
+        {                                                                    \
+            case GOLIOTH_DEBUG_LOG_LEVEL_ERROR:                              \
+                ESP_LOG_BUFFER_HEXDUMP(TAG, payload, size, ESP_LOG_ERROR);   \
+                break;                                                       \
+            case GOLIOTH_DEBUG_LOG_LEVEL_WARN:                               \
+                ESP_LOG_BUFFER_HEXDUMP(TAG, payload, size, ESP_LOG_WARN);    \
+                break;                                                       \
+            case GOLIOTH_DEBUG_LOG_LEVEL_INFO:                               \
+                ESP_LOG_BUFFER_HEXDUMP(TAG, payload, size, ESP_LOG_INFO);    \
+                break;                                                       \
+            case GOLIOTH_DEBUG_LOG_LEVEL_DEBUG:                              \
+                ESP_LOG_BUFFER_HEXDUMP(TAG, payload, size, ESP_LOG_DEBUG);   \
+                break;                                                       \
+            case GOLIOTH_DEBUG_LOG_LEVEL_VERBOSE:                            \
+                ESP_LOG_BUFFER_HEXDUMP(TAG, payload, size, ESP_LOG_VERBOSE); \
+                break;                                                       \
+            case GOLIOTH_DEBUG_LOG_LEVEL_NONE:                               \
+            default:                                                         \
+                break;                                                       \
+        }                                                                    \
+    } while (0)
 
 // TODO - should we hook into the ESP logging backend via esp_log_set_vprintf?
 // This would enable all logs to be sent to Golioth (not just the GLTH_LOGX logs).
