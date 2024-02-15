@@ -50,6 +50,18 @@ idf_component_register(
         "${sdk_src}/isrgrootx1.der"
 )
 
+# Enable errors and warnings that ESP-IDF disables by default
+list(APPEND EXTRA_C_FLAGS_LIST
+    -Werror=unused-function
+    -Werror=unused-variable
+    -Werror=unused-but-set-variable
+    -Werror=deprecated-declarations
+)
+
+if(${IDF_VERSION_MAJOR} GREATER_EQUAL "5")
+    list(APPEND EXTRA_C_FLAGS_LIST -Wenum-conversion -Werror=enum-conversion)
+endif()
+
 component_compile_options(${EXTRA_C_FLAGS_LIST})
 
 target_compile_definitions(${COMPONENT_LIB} PUBLIC WITH_POSIX)
