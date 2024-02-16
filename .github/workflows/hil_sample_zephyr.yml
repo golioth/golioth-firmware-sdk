@@ -27,20 +27,10 @@ jobs:
       ZEPHYR_SDK_INSTALL_DIR: /opt/toolchains/zephyr-sdk-0.16.3
     runs-on: ubuntu-latest
     steps:
-    - name: Checkout repository and submodules
-      uses: actions/checkout@v4
-      with:
-        path: modules/lib/golioth-firmware-sdk
-        submodules: 'recursive'
     - name: Init and update west
       run: |
-        mkdir -p .west
-        cat <<EOF > .west/config
-        [manifest]
-        path = modules/lib/golioth-firmware-sdk
-        file = ${{ inputs.manifest }}
-        EOF
-
+        west init -m https://github.com/golioth/golioth-firmware-sdk --mr ${GITHUB_HEAD_REF:-${GITHUB_REF_NAME}} --mf ${{ inputs.manifest }}
+        git -C modules/lib/golioth-firmware-sdk submodule update --init --recursive
         west update -o=--depth=1 -n
 
         pip3 install -r zephyr/scripts/requirements-base.txt
@@ -83,12 +73,14 @@ jobs:
       options: --privileged
 
     steps:
-      - name: Checkout repository and submodules
-        uses: actions/checkout@v4
-        with:
-          path: modules/lib/golioth-firmware-sdk
       - name: Install go and mcumgr
         run: |
+          rm -rf .west
+          pwd
+          ls -a
+          cat .git/HEAD || true
+          ls -a zephyr
+          rm -rf zephyr
           wget https://go.dev/dl/go1.21.6.linux-arm64.tar.gz
           rm -rf /usr/local/go && tar -C /usr/local -xzf go1.21.6.linux-arm64.tar.gz
           export PATH=$PATH:/usr/local/go/bin
@@ -96,16 +88,20 @@ jobs:
           go install github.com/apache/mynewt-mcumgr-cli/mcumgr@latest
           export PATH=$PATH:$(go env GOPATH)/bin
           chmod +x $(go env GOPATH)/bin/mcumgr
+      - name: Checkout repository and submodules
+        uses: actions/checkout@v4
+        with:
+          path: modules/lib/golioth-firmware-sdk
       - name: Init and update west
         run: |
+          pip3 install west
+
           mkdir -p .west
           cat <<EOF > .west/config
           [manifest]
           path = modules/lib/golioth-firmware-sdk
           file = .ci-west-zephyr-twister.yml
           EOF
-
-          pip3 install west
 
           west update -o=--depth=1 -n
 
