@@ -15,7 +15,7 @@ class Board(ABC):
             # Wait for reboot
             sleep(3)
 
-        self.serial_device = serial.Serial(port, baud, timeout=1)
+        self.serial_device = serial.Serial(port, baud, timeout=1, write_timeout=1)
 
         # Set WiFi credentials
         if self.USES_WIFI:
