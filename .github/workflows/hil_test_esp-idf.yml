@@ -52,7 +52,7 @@ jobs:
         uses: actions/checkout@v4
       - name: Setup Python dependencies
         run: |
-          pip install pytest
+          pip install pytest pytest-timeout
           pip install tests/hil/scripts/pytest-hil
           pip install git+https://github.com/golioth/python-golioth-tools@v0.5.1
       - name: Power Cycle USB Hub
@@ -75,4 +75,5 @@ jobs:
             --fw-image merged.bin                                             \
             --api-key ${{ secrets.PROD_CI_PROJECT_API_KEY }}                  \
             --wifi-ssid ${{ secrets[format('{0}_WIFI_SSID', runner.name)] }}  \
-            --wifi-psk ${{ secrets[format('{0}_WIFI_PSK', runner.name)] }}
+            --wifi-psk ${{ secrets[format('{0}_WIFI_PSK', runner.name)] }}    \
+            --timeout=600
