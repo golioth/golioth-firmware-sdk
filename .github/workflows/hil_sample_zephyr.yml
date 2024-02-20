@@ -98,6 +98,8 @@ jobs:
           chmod +x $(go env GOPATH)/bin/mcumgr
       - name: Init and update west
         run: |
+          rm -rf zephyr
+
           mkdir -p .west
           cat <<EOF > .west/config
           [manifest]
