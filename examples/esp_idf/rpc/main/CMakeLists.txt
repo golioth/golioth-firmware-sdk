@@ -33,3 +33,10 @@ list(APPEND EXTRA_C_FLAGS_LIST
     -Werror
 )
 component_compile_options(${EXTRA_C_FLAGS_LIST})
+
+add_custom_command(OUTPUT ${CMAKE_BINARY_DIR}/merged.bin
+                   COMMAND esptool.py --chip ${IDF_TARGET} merge_bin -o ${CMAKE_BINARY_DIR}/merged.bin @flash_args
+                   WORKING_DIRECTORY ${CMAKE_BINARY_DIR}
+                   DEPENDS app)
+
+add_custom_target(mergebin ALL DEPENDS ${CMAKE_BINARY_DIR}/merged.bin)
