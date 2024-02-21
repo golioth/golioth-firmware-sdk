@@ -23,7 +23,8 @@ def subprocess_logger(result, log_msg):
 async def test_credentials(shell, project, device_name, device_port, certificate_cred):
 
     # Ensure there are no credentials currently stored on device
-
+    shell._device.clear_buffer()
+    shell._device.write('kernel reboot cold\n\n'.encode())
     shell._device.readlines_until(regex=".*Start certificate provisioning sample", timeout=90.0)
     sleep(5) # Time for fs bringup and in case nRF9160 reset loop reboot happens
     shell.exec_command(f'fs rm {FS_CRT_PATH}')
