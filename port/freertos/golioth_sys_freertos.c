@@ -4,12 +4,14 @@
  * SPDX-License-Identifier: Apache-2.0
  */
 #include <golioth/golioth_sys.h>
+#include "golioth_log_esp_idf.h"
 #include <FreeRTOS.h>
 #include <task.h>
 #include <semphr.h>
 #include <timers.h>
 #include <string.h>  // memset
 
+static vprintf_like_t original_log_func;
 /*--------------------------------------------------
  * Time
  *------------------------------------------------*/
@@ -149,6 +151,14 @@ void golioth_sys_thread_destroy(golioth_sys_thread_t thread) {
  * Misc
  *------------------------------------------------*/
 
-void golioth_sys_client_connected(void* client) {}
+void golioth_sys_client_connected(void* client) {
+    if (CONFIG_GOLIOTH_AUTO_LOG_TO_CLOUD == 1) {
+        original_log_func = golioth_log_set_esp_vprintf(client);
+    }
+}
 
-void golioth_sys_client_disconnected(void* client) {}
+void golioth_sys_client_disconnected(void* client) {
+    if (CONFIG_GOLIOTH_AUTO_LOG_TO_CLOUD == 1) {
+        golioth_log_reset_esp_vprintf(original_log_func);
+    }
+}
