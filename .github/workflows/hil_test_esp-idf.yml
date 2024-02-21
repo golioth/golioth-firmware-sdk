@@ -54,7 +54,7 @@ jobs:
         run: |
           pip install pytest
           pip install tests/hil/scripts/pytest-hil
-          pip install git+https://github.com/golioth/python-golioth-tools@v0.5.1
+          pip install git+https://github.com/golioth/python-golioth-tools@af35447eba95e0d9970248a9f54990b75383f72c
       - name: Power Cycle USB Hub
         run: /opt/golioth-scripts/power-cycle-usb-hub.sh
       - name: Download build
@@ -73,6 +73,7 @@ jobs:
             --board esp-idf                                                   \
             --port ${!PORT_VAR}                                               \
             --fw-image merged.bin                                             \
-            --api-key ${{ secrets.PROD_CI_PROJECT_API_KEY }}                  \
+            --api-key ${{ secrets.DEV_CI_PROJECT_API_KEY }}                   \
             --wifi-ssid ${{ secrets[format('{0}_WIFI_SSID', runner.name)] }}  \
-            --wifi-psk ${{ secrets[format('{0}_WIFI_PSK', runner.name)] }}
+            --wifi-psk ${{ secrets[format('{0}_WIFI_PSK', runner.name)] }}    \
+            --api-url https://api.golioth.dev
