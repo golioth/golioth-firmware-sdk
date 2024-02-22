@@ -288,6 +288,13 @@ static int settings_decode(zcbor_state_t *zsd, void *value)
                     break;
                 }
 
+                if ((value < registered_setting->int_min_val)
+                    || (value > registered_setting->int_max_val))
+                {
+                    setting_status = GOLIOTH_SETTINGS_VALUE_OUTSIDE_RANGE;
+                    break;
+                }
+
                 setting_status =
                     registered_setting->int_cb((int32_t) value, registered_setting->cb_arg);
                 break;
