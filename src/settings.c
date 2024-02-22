@@ -234,12 +234,12 @@ static int settings_decode(zcbor_state_t *zsd, void *value)
         const struct golioth_setting *registered_setting = find_registered_setting(gsettings, key);
         if (!registered_setting)
         {
-            add_error_to_response(settings_response, key, GOLIOTH_SETTINGS_VALUE_FORMAT_NOT_VALID);
+            add_error_to_response(settings_response, key, GOLIOTH_SETTINGS_KEY_NOT_RECOGNIZED);
 
             ok = zcbor_any_skip(zsd, NULL);
             if (!ok)
             {
-                GLTH_LOGE(TAG, "Failed to skip unsupported type");
+                GLTH_LOGE(TAG, "Failed to skip unrecognized key");
                 return -EBADMSG;
             }
 
