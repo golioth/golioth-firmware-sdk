@@ -66,14 +66,18 @@ jobs:
     - name: Compile
       shell: bash
       run: |
-        export EXTRA_BUILD_ARGS=-DCONFIG_GOLIOTH_COAP_HOST_URI=\"${{ inputs.coap_gateway_url }}\"
-        west build -p -b ${{ inputs.west_board }} modules/lib/golioth-firmware-sdk/tests/hil/platform/zephyr -- $EXTRA_BUILD_ARGS -DGOLIOTH_HIL_TEST=connection
-
+        rm -rf test_binaries
+        mkdir -p test_binaries
+        for test in `ls modules/lib/golioth-firmware-sdk/tests/hil/tests`
+        do
+          west build -p -b ${{ inputs.west_board }} modules/lib/golioth-firmware-sdk/tests/hil/platform/zephyr -- $EXTRA_BUILD_ARGS -DGOLIOTH_HIL_TEST=$test
+          mv build/zephyr/${{ inputs.binary_name }} test_binaries/${test}-${{ inputs.binary_name }}
+        done
     - name: Save artifacts
       uses: actions/upload-artifact@v4
       with:
-        name: ${{ inputs.hil_board }}-connection-zephyr
-        path: build/zephyr/${{ inputs.binary_name }}
+        name: ${{ inputs.hil_board }}-hil-zephyr
+        path: test_binaries/*
 
   test:
     name: zephyr-${{ inputs.hil_board }}-test
@@ -100,7 +104,7 @@ jobs:
       - name: Download build
         uses: actions/download-artifact@v4
         with:
-          name: ${{ inputs.hil_board }}-connection-zephyr
+          name: ${{ inputs.hil_board }}-hil-zephyr
           path: .
       - name: Run test
         shell: bash
@@ -110,13 +114,16 @@ jobs:
           source /opt/credentials/runner_env.sh
           PORT_VAR=CI_${hil_board^^}_PORT
           SNR_VAR=CI_${hil_board^^}_SNR
-          pytest --rootdir . tests/hil/tests/connection                       \
-            --board ${hil_board}                                              \
-            --port ${!PORT_VAR}                                               \
-            --fw-image ${{ inputs.binary_name }}                              \
-            --serial-number ${!SNR_VAR}                                       \
-            --api-url ${{ inputs.api-url }}                                   \
-            --api-key ${{ secrets[inputs.api-key-id] }}                       \
-            --wifi-ssid ${{ secrets[format('{0}_WIFI_SSID', runner.name)] }}  \
-            --wifi-psk ${{ secrets[format('{0}_WIFI_PSK', runner.name)] }}    \
-            --timeout=600
+          for test in `ls tests/hil/tests`
+          do
+            pytest --rootdir . tests/hil/tests/$test                            \
+              --board ${hil_board}                                              \
+              --port ${!PORT_VAR}                                               \
+              --fw-image ${test}-${{ inputs.binary_name }}                      \
+              --serial-number ${!SNR_VAR}                                       \
+              --api-url ${{ inputs.api-url }}                                   \
+              --api-key ${{ secrets[inputs.api-key-id] }}                       \
+              --wifi-ssid ${{ secrets[format('{0}_WIFI_SSID', runner.name)] }}  \
+              --wifi-psk ${{ secrets[format('{0}_WIFI_PSK', runner.name)] }}    \
+              --timeout=600
+          done
