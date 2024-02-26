@@ -37,18 +37,22 @@ jobs:
       id: build_prep
       run: |
         echo CONFIG_GOLIOTH_COAP_HOST_URI=\"${{ inputs.coap_gateway_url }}\" >> tests/hil/platform/esp-idf/sdkconfig.defaults
+
+        rm -rf test_binaries
+        mkdir test_binaries
+        echo test_list=`ls tests/hil/tests` >> "$GITHUB_OUTPUT"
     - name: Build Test Firmware
       uses: espressif/esp-idf-ci-action@v1
       with:
         esp_idf_version: v5.2
         target: ${{ inputs.idf_target }}
         path: 'tests/hil/platform/esp-idf'
-        command: 'idf.py -DGOLIOTH_HIL_TEST=connection build'
+        command: 'for test in ${{ steps.build_prep.outputs.test_list }}; do idf.py -DGOLIOTH_HIL_TEST=$test build && mv build/merged.bin ../../../../test_binaries/${test}.bin; done'
     - name: Save Artifacts
       uses: actions/upload-artifact@v4
       with:
-        name: ${{ inputs.hil_board }}-connection-esp-idf
-        path: tests/hil/platform/esp-idf/build/merged.bin
+        name: ${{ inputs.hil_board }}-esp-idf
+        path: test_binaries/*
 
   test:
     name: esp-idf-${{ inputs.hil_board }}-test
@@ -75,7 +79,7 @@ jobs:
       - name: Download build
         uses: actions/download-artifact@v4
         with:
-          name: ${{ inputs.hil_board }}-connection-esp-idf
+          name: ${{ inputs.hil_board }}-esp-idf
           path: .
       - name: Run test
         shell: bash
@@ -84,12 +88,15 @@ jobs:
         run: |
           source /opt/credentials/runner_env.sh
           PORT_VAR=CI_${hil_board^^}_PORT
-          pytest --rootdir . tests/hil/tests/connection                       \
-            --board esp-idf                                                   \
-            --port ${!PORT_VAR}                                               \
-            --fw-image merged.bin                                             \
-            --api-url ${{ inputs.api-url }}                                   \
-            --api-key ${{ secrets[inputs.api-key-id] }}                       \
-            --wifi-ssid ${{ secrets[format('{0}_WIFI_SSID', runner.name)] }}  \
-            --wifi-psk ${{ secrets[format('{0}_WIFI_PSK', runner.name)] }}    \
-            --timeout=600
+          for test in `ls tests/hil/tests`
+          do
+            pytest --rootdir . tests/hil/tests/$test                            \
+              --board esp-idf                                                   \
+              --port ${!PORT_VAR}                                               \
+              --fw-image ${test}.bin                                            \
+              --api-url ${{ inputs.api-url }}                                   \
+              --api-key ${{ secrets[inputs.api-key-id] }}                       \
+              --wifi-ssid ${{ secrets[format('{0}_WIFI_SSID', runner.name)] }}  \
+              --wifi-psk ${{ secrets[format('{0}_WIFI_PSK', runner.name)] }}    \
+              --timeout=600
+          done
