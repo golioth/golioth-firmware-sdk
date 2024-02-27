@@ -1,0 +1,14 @@
+name: Hardware-in-the-Loop Tests Trigger (push and schedule)
+
+on:
+  push:
+    branches: [ main ]
+  pull_request:
+  schedule:
+    # Run workflow at the start of every day (12 AM UTC)
+    - cron: "0 0 * * *"
+
+jobs:
+  hil_tests:
+    uses: ./.github/workflows/hil_tests.yml
+    secrets: inherit

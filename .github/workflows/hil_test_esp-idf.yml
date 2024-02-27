@@ -9,9 +9,19 @@ on:
       idf_target:
         required: true
         type: string
+      api-url:
+        required: true
+        type: string
+      api-key-id:
+        required: true
+        type: string
+      coap_gateway_url:
+        required: true
+        type: string
 
 jobs:
   build:
+    name: esp-idf-${{ inputs.hil_board }}-build
     runs-on: ubuntu-latest
     steps:
     - name: Checkout Repository and Submodules
@@ -23,13 +33,17 @@ jobs:
       with:
         python-version: 3.x
         architecture: 'x64'
+    - name: Prep for build
+      id: build_prep
+      run: |
+        echo CONFIG_GOLIOTH_COAP_HOST_URI=\"${{ inputs.coap_gateway_url }}\" >> tests/hil/platform/esp-idf/sdkconfig.defaults
     - name: Build Test Firmware
       uses: espressif/esp-idf-ci-action@v1
       with:
         esp_idf_version: v5.1.1
         target: ${{ inputs.idf_target }}
         path: 'tests/hil/platform/esp-idf'
-        command: 'idf.py -D GOLIOTH_HIL_TEST=connection build'
+        command: 'idf.py -DGOLIOTH_HIL_TEST=connection build'
     - name: Save Artifacts
       uses: actions/upload-artifact@v4
       with:
@@ -37,6 +51,7 @@ jobs:
         path: tests/hil/platform/esp-idf/build/merged.bin
 
   test:
+    name: esp-idf-${{ inputs.hil_board }}-test
     needs: build
     runs-on: [ is_active, "has_${{ inputs.hil_board }}" ]
 
@@ -54,7 +69,7 @@ jobs:
         run: |
           pip install pytest pytest-timeout
           pip install tests/hil/scripts/pytest-hil
-          pip install git+https://github.com/golioth/python-golioth-tools@v0.5.1
+          pip install git+https://github.com/golioth/python-golioth-tools@v0.6.0
       - name: Power Cycle USB Hub
         run: /opt/golioth-scripts/power-cycle-usb-hub.sh
       - name: Download build
@@ -73,7 +88,8 @@ jobs:
             --board esp-idf                                                   \
             --port ${!PORT_VAR}                                               \
             --fw-image merged.bin                                             \
-            --api-key ${{ secrets.PROD_CI_PROJECT_API_KEY }}                  \
+            --api-url ${{ inputs.api-url }}                                   \
+            --api-key ${{ secrets[inputs.api-key-id] }}                       \
             --wifi-ssid ${{ secrets[format('{0}_WIFI_SSID', runner.name)] }}  \
             --wifi-psk ${{ secrets[format('{0}_WIFI_PSK', runner.name)] }}    \
             --timeout=600

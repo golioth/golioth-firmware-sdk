@@ -18,9 +18,19 @@ on:
       binary_blob:
         required: false
         type: string
+      api-url:
+        required: true
+        type: string
+      api-key-id:
+        required: true
+        type: string
+      coap_gateway_url:
+        required: true
+        type: string
 
 jobs:
   build:
+    name: zephyr-${{ inputs.hil_board }}-build
     container: golioth/golioth-zephyr-base:0.16.3-SDK-v0
     env:
       ZEPHYR_SDK_INSTALL_DIR: /opt/toolchains/zephyr-sdk-0.16.3
@@ -54,8 +64,10 @@ jobs:
         west blobs fetch ${{ inputs.binary_blob }}
 
     - name: Compile
+      shell: bash
       run: |
-        west build -p -b ${{ inputs.west_board }} modules/lib/golioth-firmware-sdk/tests/hil/platform/zephyr -- -DGOLIOTH_HIL_TEST=connection
+        export EXTRA_BUILD_ARGS=-DCONFIG_GOLIOTH_COAP_HOST_URI=\"${{ inputs.coap_gateway_url }}\"
+        west build -p -b ${{ inputs.west_board }} modules/lib/golioth-firmware-sdk/tests/hil/platform/zephyr -- $EXTRA_BUILD_ARGS -DGOLIOTH_HIL_TEST=connection
 
     - name: Save artifacts
       uses: actions/upload-artifact@v4
@@ -64,6 +76,7 @@ jobs:
         path: build/zephyr/${{ inputs.binary_name }}
 
   test:
+    name: zephyr-${{ inputs.hil_board }}-test
     needs: build
     runs-on: [ is_active, "has_${{ inputs.hil_board }}" ]
 
@@ -81,7 +94,7 @@ jobs:
         run: |
           pip install pytest pytest-timeout
           pip install tests/hil/scripts/pytest-hil
-          pip install git+https://github.com/golioth/python-golioth-tools@v0.5.1
+          pip install git+https://github.com/golioth/python-golioth-tools@v0.6.0
       - name: Power Cycle USB Hub
         run: /opt/golioth-scripts/power-cycle-usb-hub.sh
       - name: Download build
@@ -102,7 +115,8 @@ jobs:
             --port ${!PORT_VAR}                                               \
             --fw-image ${{ inputs.binary_name }}                              \
             --serial-number ${!SNR_VAR}                                       \
-            --api-key ${{ secrets.PROD_CI_PROJECT_API_KEY }}                  \
+            --api-url ${{ inputs.api-url }}                                   \
+            --api-key ${{ secrets[inputs.api-key-id] }}                       \
             --wifi-ssid ${{ secrets[format('{0}_WIFI_SSID', runner.name)] }}  \
             --wifi-psk ${{ secrets[format('{0}_WIFI_PSK', runner.name)] }}    \
             --timeout=600
