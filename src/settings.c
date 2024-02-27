@@ -13,7 +13,6 @@
 #include <math.h>  // modf
 #include <zcbor_decode.h>
 #include <zcbor_encode.h>
-#include "zcbor_any_skip_fixed.h"
 
 // Example settings request from cloud:
 //

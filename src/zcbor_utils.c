@@ -11,7 +11,6 @@ LOG_TAG_DEFINE(zcbor_utils);
 #include <errno.h>
 
 #include <golioth/zcbor_utils.h>
-#include "zcbor_any_skip_fixed.h"
 
 static struct zcbor_map_entry *map_entry_get(struct zcbor_map_entry *entries,
                                              size_t num_entries,
