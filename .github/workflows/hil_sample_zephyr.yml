@@ -19,9 +19,19 @@ on:
         required: false
         type: boolean
         default: true
+      api-url:
+        required: true
+        type: string
+      api-key-id:
+        required: true
+        type: string
+      coap_gateway_url:
+        required: true
+        type: string
 
 jobs:
   build:
+    name: zephyr-${{ inputs.hil_board }}-twister-build
     container: golioth/golioth-zephyr-base:0.16.3-SDK-v0
     env:
       ZEPHYR_SDK_INSTALL_DIR: /opt/toolchains/zephyr-sdk-0.16.3
@@ -56,11 +66,14 @@ jobs:
 
     - name: Compile Tests
       run: |
+        export EXTRA_BUILD_ARGS=-x=CONFIG_GOLIOTH_COAP_HOST_URI=\"${{ inputs.coap_gateway_url }}\"
+
         zephyr/scripts/twister                                                \
               --platform ${{ inputs.west_board }}                             \
               -T modules/lib/golioth-firmware-sdk/examples/zephyr             \
               --build-only                                                    \
-              --package-artifacts test_artifacts_${{ inputs.west_board }}.tar
+              --package-artifacts test_artifacts_${{ inputs.west_board }}.tar \
+              $EXTRA_BUILD_ARGS
 
     - name: Save artifacts
       uses: actions/upload-artifact@v4
@@ -69,6 +82,7 @@ jobs:
         path: test_artifacts_${{ inputs.west_board }}.tar
 
   test:
+    name: zephyr-${{ inputs.hil_board }}-twister-run
     if: ${{ inputs.run_tests }}
     needs: build
     runs-on: [ is_active, "has_${{ inputs.hil_board }}" ]
@@ -115,7 +129,7 @@ jobs:
           pip3 install -r zephyr/scripts/requirements-build-test.txt
           pip3 install -r zephyr/scripts/requirements-run-test.txt
 
-          pip3 install git+https://github.com/golioth/python-golioth-tools@v0.5.1
+          pip3 install git+https://github.com/golioth/python-golioth-tools@v0.6.0
       - name: Power Cycle USB Hub
         run: /opt/golioth-scripts/power-cycle-usb-hub.sh
       - name: Download build
@@ -130,7 +144,8 @@ jobs:
         env:
           hil_board: ${{ inputs.hil_board }}
           west_board: ${{ inputs.west_board }}
-          GOLIOTH_API_KEY: ${{ secrets.PROD_CI_PROJECT_API_KEY }}
+          GOLIOTH_API_KEY: ${{ secrets[inputs.api-key-id] }}
+          GOLIOTH_API_URL: ${{ inputs.api-url }}
           WIFI_SSID: ${{ secrets[format('{0}_WIFI_SSID', runner.name)] }}
           WIFI_PSK: ${{ secrets[format('{0}_WIFI_PSK', runner.name)] }}
         run: |

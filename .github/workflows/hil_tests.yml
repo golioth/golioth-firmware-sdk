@@ -1,13 +1,37 @@
 name: Hardware-in-the-Loop Tests
 
 on:
-  push:
-    branches: [ main ]
-  pull_request:
-  schedule:
-    # Run workflow at the start of every day (12 AM UTC)
-    - cron: "0 0 * * *"
   workflow_dispatch:
+    inputs:
+      api-url:
+        description: "API gateway URL for Golioth backend services"
+        required: false
+        default: "https://api.golioth.io"
+      api-key-id:
+        description: "Name of GitHub secret containing an API key that will be used to authenticate with the Golioth backend"
+        required: false
+        default: "PROD_CI_PROJECT_API_KEY"
+      coap_gateway_url:
+        description: "The CoAP gateway URL to be hardcoded into test firmware"
+        required: false
+        default: "coaps://coap.golioth.io"
+  workflow_call:
+    inputs:
+      api-url:
+        description: "API gateway URL for Golioth backend services"
+        required: false
+        type: string
+        default: "https://api.golioth.io"
+      api-key-id:
+        description: "Name of GitHub secret containing an API key that will be used to authenticate with the Golioth backend"
+        required: false
+        type: string
+        default: "PROD_CI_PROJECT_API_KEY"
+      coap_gateway_url:
+        description: "The CoAP gateway URL to be hardcoded into test firmware"
+        required: false
+        type: string
+        default: "coaps://coap.golioth.io"
 
 jobs:
   hil_test_zephyr:
@@ -39,6 +63,9 @@ jobs:
       manifest: ${{ matrix.manifest }}
       binary_name: ${{ matrix.binary_name}}
       binary_blob: ${{ matrix.binary_blob }}
+      api-url: ${{ inputs.api-url }}
+      api-key-id: ${{ inputs.api-key-id }}
+      coap_gateway_url: ${{ inputs.coap_gateway_url }}
     secrets: inherit
 
   hil_test_esp-idf:
@@ -56,6 +83,9 @@ jobs:
     with:
       hil_board: ${{ matrix.hil_board }}
       idf_target: ${{ matrix.idf_target }}
+      api-url: ${{ inputs.api-url }}
+      api-key-id: ${{ inputs.api-key-id }}
+      coap_gateway_url: ${{ inputs.coap_gateway_url }}
     secrets: inherit
 
   hil_sample_zephyr:
@@ -95,4 +125,7 @@ jobs:
       manifest: ${{ matrix.manifest }}
       binary_blob: ${{ matrix.binary_blob }}
       run_tests: ${{ matrix.run_tests }}
+      api-url: ${{ inputs.api-url }}
+      api-key-id: ${{ inputs.api-key-id }}
+      coap_gateway_url: ${{ inputs.coap_gateway_url }}
     secrets: inherit
