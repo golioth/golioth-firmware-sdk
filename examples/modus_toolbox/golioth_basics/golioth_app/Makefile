@@ -182,8 +182,7 @@ SOURCES+=\
 endif
 
 SOURCES+=\
-    $(filter-out $(GOLIOTHSDK_PATH)/src/zcbor_any_skip_fixed.c \
-                 $(wildcard $(GOLIOTHSDK_PATH)/src/*zephyr*.c), \
+    $(filter-out $(wildcard $(GOLIOTHSDK_PATH)/src/*zephyr*.c), \
       $(wildcard $(GOLIOTHSDK_PATH)/src/*.c))\
     $(wildcard $(GOLIOTHSDK_PATH)/port/freertos/*.c)\
     $(wildcard $(GOLIOTHSDK_PATH)/port/modus_toolbox/*.c)\

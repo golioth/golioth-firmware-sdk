@@ -106,11 +106,6 @@ if(CONFIG_ZCBOR)
   zephyr_library_compile_definitions(ZCBOR_VERSION_MAJOR=${zcbor_version_major})
   zephyr_library_compile_definitions(ZCBOR_VERSION_MINOR=${zcbor_version_minor})
   zephyr_library_compile_definitions(ZCBOR_VARIANCE)
-
-  # Workaround for broken zcbor_any_skip()
-  if(${zcbor_version} VERSION_LESS "0.7")
-    zephyr_library_sources(../../src/zcbor_any_skip_fixed.c)
-  endif()
 endif()
 
 # Zephyr renamed rand32.h to random.h, but NCS hasn't picked up this change yet.
