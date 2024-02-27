@@ -8,15 +8,15 @@ capability.
 
 Signed-off-by: Marcin Niestroj <m.niestroj@emb.dev>
 ---
- .../networking/native_posix_setup.rst         | 68 +++++++++++++++++--
+ .../networking/native_sim_setup.rst           | 67 +++++++++++++++++--
  .../networking/networking_with_host.rst       |  3 +-
- 2 files changed, 63 insertions(+), 8 deletions(-)
+ 2 files changed, 63 insertions(+), 7 deletions(-)
 
-diff --git a/doc/connectivity/networking/native_posix_setup.rst b/doc/connectivity/networking/native_posix_setup.rst
-index cc94c9f790b..61613eeec41 100644
---- a/doc/connectivity/networking/native_posix_setup.rst
-+++ b/doc/connectivity/networking/native_posix_setup.rst
-@@ -7,7 +7,10 @@ Networking with native_posix board
+diff --git a/doc/connectivity/networking/native_sim_setup.rst b/doc/connectivity/networking/native_sim_setup.rst
+index 166ff707c89..7a30c0f9d58 100644
+--- a/doc/connectivity/networking/native_sim_setup.rst
++++ b/doc/connectivity/networking/native_sim_setup.rst
+@@ -7,7 +7,10 @@ Networking with native_sim board
      :local:
      :depth: 2
  
@@ -25,10 +25,10 @@ index cc94c9f790b..61613eeec41 100644
 +*****************************
 +
 +This paragraph describes how to set up a virtual network between a (Linux) host
- and a Zephyr application running in a native_posix board.
+ and a Zephyr application running in a :ref:`native_sim <native_sim>` board.
  
  In this example, the :zephyr:code-sample:`sockets-echo-server` sample application from
-@@ -16,7 +19,7 @@ native_posix board instance is connected to a Linux host using a tuntap device
+@@ -16,7 +19,7 @@ native_sim board instance is connected to a Linux host using a tuntap device
  which is modeled in Linux as an Ethernet network interface.
  
  Prerequisites
@@ -53,20 +53,18 @@ index cc94c9f790b..61613eeec41 100644
 -==================================
 +----------------------------------
  
- Before starting native_posix with network emulation, a network interface
+ Before starting native_sim with network emulation, a network interface
  should be created.
-@@ -57,9 +60,8 @@ by running ``net-setup.sh`` like this:
+@@ -59,7 +62,7 @@ by running ``net-setup.sh`` like this:
  
-    ./net-setup.sh --help
  
--
- Step 2 - Start app in native_posix board
--========================================
+ Step 2 - Start app in native_sim board
+-======================================
 +--------------------------------------
  
  Build and start the ``echo_server`` sample application.
  
-@@ -74,7 +76,7 @@ In terminal #2, type:
+@@ -74,7 +77,7 @@ In terminal #2, type:
  
  
  Step 3 - Connect to console (optional)
@@ -75,7 +73,7 @@ index cc94c9f790b..61613eeec41 100644
  
  The console window should be launched automatically when the Zephyr instance is
  started but if it does not show up, you can manually connect to the console.
-@@ -89,3 +91,55 @@ You can manually connect to it like this:
+@@ -89,3 +92,55 @@ You can manually connect to it like this:
  .. code-block:: console
  
     screen /dev/pts/5
@@ -132,7 +130,7 @@ index cc94c9f790b..61613eeec41 100644
 +
 +   ./echo-client -t 127.0.0.1
 diff --git a/doc/connectivity/networking/networking_with_host.rst b/doc/connectivity/networking/networking_with_host.rst
-index 063e065730a..7fc07db6325 100644
+index 995e7dc0f80..1823c6ed0c1 100644
 --- a/doc/connectivity/networking/networking_with_host.rst
 +++ b/doc/connectivity/networking/networking_with_host.rst
 @@ -59,7 +59,8 @@ possible:
@@ -142,7 +140,7 @@ index 063e065730a..7fc07db6325 100644
 -    with the host system. An Ethernet driver exists in Zephyr for this purpose.
 +    with the host system. An Ethernet and offloaded sockets drivers exist in
 +    Zephyr for this purpose.
-     See :ref:`networking_with_native_posix` for details.
+     See :ref:`networking_with_native_sim` for details.
  
  * USB device networking.
 -- 

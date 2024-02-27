@@ -56,10 +56,10 @@ index 0b431455a2a..d839b9690c3 100644
 +  target_sources(native_simulator INTERFACE nsos_errno.c)
 +endif()
 diff --git a/drivers/net/Kconfig b/drivers/net/Kconfig
-index f6e0faa334a..2fe7553ad88 100644
+index c83f0f42a08..24fe7b44b59 100644
 --- a/drivers/net/Kconfig
 +++ b/drivers/net/Kconfig
-@@ -228,4 +228,20 @@ config NET_CANBUS_INIT_PRIORITY
+@@ -225,4 +225,20 @@ config NET_CANBUS_INIT_PRIORITY
  
  endif # NET_CAN
  

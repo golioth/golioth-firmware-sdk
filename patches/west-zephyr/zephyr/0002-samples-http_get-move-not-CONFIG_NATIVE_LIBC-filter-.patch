@@ -10,13 +10,22 @@ Subject: [PATCH] samples: http_get: move 'not CONFIG_NATIVE_LIBC' filter to
 
 Signed-off-by: Marcin Niestroj <m.niestroj@emb.dev>
 ---
- samples/net/sockets/http_get/sample.yaml | 2 +-
- 1 file changed, 1 insertion(+), 1 deletion(-)
+ samples/net/sockets/http_get/sample.yaml | 4 ++--
+ 1 file changed, 2 insertions(+), 2 deletions(-)
 
 diff --git a/samples/net/sockets/http_get/sample.yaml b/samples/net/sockets/http_get/sample.yaml
-index f8fb27104c3..a1890dfb954 100644
+index 999c7ba97d6..2de78ce0bee 100644
 --- a/samples/net/sockets/http_get/sample.yaml
 +++ b/samples/net/sockets/http_get/sample.yaml
+@@ -2,7 +2,7 @@ sample:
+   description: BSD Sockets API HTTP GET example
+   name: socket_http_get
+ common:
+-  filter: CONFIG_FULL_LIBC_SUPPORTED and not CONFIG_NATIVE_LIBC
++  filter: CONFIG_FULL_LIBC_SUPPORTED
+   harness: net
+   min_ram: 32
+   min_flash: 80
 @@ -16,7 +16,7 @@ tests:
        # Forcibly defines CONFIG_POSIX_API, which is incompatible with
        # CONFIG_NET_SOCKETS_POSIX_NAMES.

@@ -124,7 +124,7 @@ enum golioth_status golioth_ota_report_state_sync(struct golioth_client *client,
         return GOLIOTH_ERR_MEM_ALLOC;
     }
 
-    ok = zcbor_tstr_put_lit(zse, "pkg") && zcbor_tstr_put_term(zse, package);
+    ok = zcbor_tstr_put_lit(zse, "pkg") && zcbor_tstr_put_term_compat(zse, package, SIZE_MAX);
     if (!ok)
     {
         return GOLIOTH_ERR_MEM_ALLOC;
@@ -132,7 +132,8 @@ enum golioth_status golioth_ota_report_state_sync(struct golioth_client *client,
 
     if (current_version && current_version[0] != '\0')
     {
-        ok = zcbor_tstr_put_lit(zse, "v") && zcbor_tstr_put_term(zse, current_version);
+        ok = zcbor_tstr_put_lit(zse, "v")
+            && zcbor_tstr_put_term_compat(zse, current_version, SIZE_MAX);
         if (!ok)
         {
             return GOLIOTH_ERR_MEM_ALLOC;
@@ -141,7 +142,8 @@ enum golioth_status golioth_ota_report_state_sync(struct golioth_client *client,
 
     if (target_version && target_version[0] != '\0')
     {
-        ok = zcbor_tstr_put_lit(zse, "t") && zcbor_tstr_put_term(zse, target_version);
+        ok = zcbor_tstr_put_lit(zse, "t")
+            && zcbor_tstr_put_term_compat(zse, target_version, SIZE_MAX);
         if (!ok)
         {
             return GOLIOTH_ERR_MEM_ALLOC;
@@ -268,7 +270,7 @@ enum golioth_status golioth_ota_payload_as_manifest(const uint8_t *payload,
                                                     size_t payload_size,
                                                     struct golioth_ota_manifest *manifest)
 {
-    ZCBOR_STATE_D(zsd, 3, payload, payload_size, 1);
+    ZCBOR_STATE_D_COMPAT(zsd, 3, payload, payload_size, 1, 0);
     int64_t manifest_sequence_number;
     struct zcbor_map_entry map_entries[] = {
         ZCBOR_U32_MAP_ENTRY(MANIFEST_KEY_SEQUENCE_NUMBER,

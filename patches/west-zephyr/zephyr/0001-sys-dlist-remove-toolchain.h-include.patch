@@ -11,7 +11,7 @@ Signed-off-by: Marcin Niestroj <m.niestroj@emb.dev>
  1 file changed, 1 deletion(-)
 
 diff --git a/include/zephyr/sys/dlist.h b/include/zephyr/sys/dlist.h
-index 4c330c8f04e..ff62b982bc1 100644
+index 03f2a5e94c8..1dcd834cbcb 100644
 --- a/include/zephyr/sys/dlist.h
 +++ b/include/zephyr/sys/dlist.h
 @@ -27,7 +27,6 @@
