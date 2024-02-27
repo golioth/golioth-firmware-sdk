@@ -108,7 +108,7 @@ static void add_error_to_response(struct settings_response *response,
     zcbor_map_start_encode(response->zse, 2);
 
     zcbor_tstr_put_lit(response->zse, "setting_key");
-    zcbor_tstr_put_term(response->zse, key);
+    zcbor_tstr_put_term_compat(response->zse, key, SIZE_MAX);
 
     zcbor_tstr_put_lit(response->zse, "error_code");
     zcbor_int64_put(response->zse, code);
@@ -373,7 +373,7 @@ static void on_settings(struct golioth_client *client,
                         size_t payload_size,
                         void *arg)
 {
-    ZCBOR_STATE_D(zsd, 2, payload, payload_size, 1);
+    ZCBOR_STATE_D_COMPAT(zsd, 2, payload, payload_size, 1, 0);
     int64_t version;
     struct golioth_settings *settings = arg;
     struct settings_response settings_response;

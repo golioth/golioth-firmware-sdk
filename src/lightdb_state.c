@@ -84,7 +84,7 @@ enum golioth_status golioth_lightdb_set_float_async(struct golioth_client *clien
                                                     void *callback_arg)
 {
     char buf[32] = {};
-    snprintf(buf, sizeof(buf), "%f", value);
+    snprintf(buf, sizeof(buf), "%f", (double) value);
     return golioth_coap_client_set(client,
                                    GOLIOTH_LIGHTDB_STATE_PATH_PREFIX,
                                    path,
@@ -236,7 +236,7 @@ enum golioth_status golioth_lightdb_set_float_sync(struct golioth_client *client
                                                    int32_t timeout_s)
 {
     char buf[32] = {};
-    snprintf(buf, sizeof(buf), "%f", value);
+    snprintf(buf, sizeof(buf), "%f", (double) value);
     return golioth_coap_client_set(client,
                                    GOLIOTH_LIGHTDB_STATE_PATH_PREFIX,
                                    path,

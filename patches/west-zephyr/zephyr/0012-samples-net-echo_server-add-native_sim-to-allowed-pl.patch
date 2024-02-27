@@ -14,7 +14,7 @@ Signed-off-by: Marcin Niestroj <m.niestroj@emb.dev>
  1 file changed, 1 insertion(+)
 
 diff --git a/samples/net/sockets/echo_server/sample.yaml b/samples/net/sockets/echo_server/sample.yaml
-index 10255905402..edb26a87e86 100644
+index 1174797d04a..c2ff08fa204 100644
 --- a/samples/net/sockets/echo_server/sample.yaml
 +++ b/samples/net/sockets/echo_server/sample.yaml
 @@ -18,6 +18,7 @@ tests:

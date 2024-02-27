@@ -93,7 +93,7 @@ static void on_rpc(struct golioth_client *client,
                    size_t payload_size,
                    void *arg)
 {
-    ZCBOR_STATE_D(zsd, 2, payload, payload_size, 1);
+    ZCBOR_STATE_D_COMPAT(zsd, 2, payload, payload_size, 1, 0);
     zcbor_state_t params_zsd;
     struct zcbor_string id, method;
     struct zcbor_map_entry map_entries[] = {

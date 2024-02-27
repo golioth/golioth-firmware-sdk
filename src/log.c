@@ -1,5 +1,5 @@
 /*
- * Copyright (c) 2022 Golioth, Inc.
+ * Copyright (c) 2022-2024 Golioth, Inc.
  *
  * SPDX-License-Identifier: Apache-2.0
  */
@@ -8,6 +8,7 @@
 #include "coap_client.h"
 #include <golioth/log.h>
 #include <golioth/golioth_debug.h>
+#include <golioth/zcbor_utils.h>
 
 LOG_TAG_DEFINE(golioth_log);
 
@@ -62,9 +63,10 @@ static enum golioth_status golioth_log_internal(struct golioth_client *client,
         goto cleanup;
     }
 
-    ok = zcbor_tstr_put_lit(zse, "level") && zcbor_tstr_put_term(zse, _level_to_str[level])
-        && zcbor_tstr_put_lit(zse, "module") && zcbor_tstr_put_term(zse, tag)
-        && zcbor_tstr_put_lit(zse, "msg") && zcbor_tstr_put_term(zse, log_message);
+    ok = zcbor_tstr_put_lit(zse, "level")
+        && zcbor_tstr_put_term_compat(zse, _level_to_str[level], 5)
+        && zcbor_tstr_put_lit(zse, "module") && zcbor_tstr_put_term_compat(zse, tag, SIZE_MAX)
+        && zcbor_tstr_put_lit(zse, "msg") && zcbor_tstr_put_term_compat(zse, log_message, SIZE_MAX);
     if (!ok)
     {
         goto cleanup;

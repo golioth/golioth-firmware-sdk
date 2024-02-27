@@ -103,9 +103,9 @@ if(CONFIG_ZCBOR)
   set(zcbor_version_regex "^([0-9]+)\.([0-9]+)\.([0-9]+)$")
   string(REGEX REPLACE ${zcbor_version_regex} "\\1" zcbor_version_major "${zcbor_version}")
   string(REGEX REPLACE ${zcbor_version_regex} "\\2" zcbor_version_minor "${zcbor_version}")
-  zephyr_library_compile_definitions(ZCBOR_VERSION_MAJOR=${zcbor_version_major})
-  zephyr_library_compile_definitions(ZCBOR_VERSION_MINOR=${zcbor_version_minor})
-  zephyr_library_compile_definitions(ZCBOR_VARIANCE)
+  zephyr_compile_definitions(ZCBOR_VERSION_MAJOR=${zcbor_version_major})
+  zephyr_compile_definitions(ZCBOR_VERSION_MINOR=${zcbor_version_minor})
+  zephyr_compile_definitions(ZCBOR_VARIANCE)
 endif()
 
 # Zephyr renamed rand32.h to random.h, but NCS hasn't picked up this change yet.

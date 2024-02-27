@@ -330,7 +330,7 @@ void fw_block_processor_log_results(const fw_block_processor_ctx_t *ctx)
 {
     GLTH_LOGI(TAG, "Block Latency Stats:");
     GLTH_LOGI(TAG, "   Min: %" PRIu32 " ms", ctx->download.block_stats.block_min_ms);
-    GLTH_LOGI(TAG, "   Ave: %.3f ms", ctx->download.block_stats.block_ema_ms);
+    GLTH_LOGI(TAG, "   Ave: %.3f ms", (double) ctx->download.block_stats.block_ema_ms);
     GLTH_LOGI(TAG, "   Max: %" PRIu32 " ms", ctx->download.block_stats.block_max_ms);
     GLTH_LOGI(TAG, "Total bytes written: %" PRIu32, (uint32_t) ctx->handle_block.bytes_handled);
 
