@@ -129,3 +129,23 @@ jobs:
       api-key-id: ${{ inputs.api-key-id }}
       coap_gateway_url: ${{ inputs.coap_gateway_url }}
     secrets: inherit
+
+  hil_sample_esp-idf:
+    strategy:
+      fail-fast: false
+      matrix:
+        include:
+          - hil_board: esp32s3_devkitc
+            idf_target: esp32s3
+          - hil_board: esp32_devkitc_wrover
+            idf_target: esp32
+          - hil_board: esp32c3_devkitm
+            idf_target: esp32c3
+    uses: ./.github/workflows/hil_sample_esp-idf.yml
+    with:
+      hil_board: ${{ matrix.hil_board }}
+      idf_target: ${{ matrix.idf_target }}
+      api-url: ${{ inputs.api-url }}
+      api-key-id: ${{ inputs.api-key-id }}
+      coap_gateway_url: ${{ inputs.coap_gateway_url }}
+    secrets: inherit
