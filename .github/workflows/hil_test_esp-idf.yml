@@ -28,11 +28,6 @@ jobs:
       uses: actions/checkout@v4
       with:
         submodules: 'recursive'
-    - name: Setup Python
-      uses: actions/setup-python@v5
-      with:
-        python-version: 3.x
-        architecture: 'x64'
     - name: Prep for build
       id: build_prep
       run: |
