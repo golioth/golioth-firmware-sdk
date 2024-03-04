@@ -102,10 +102,10 @@ struct golioth_settings *golioth_settings_init(struct golioth_client *client);
 /// @param callback_arg General-purpose user argument, forwarded as-is to
 ///     callback, can be NULL.
 ///
-/// @return GOLIOTH_OK - Setting registered successfully
-/// @return GOLIOTH_ERR_MEM_ALLOC - Max number of registered settings exceeded
-/// @return GOLIOTH_ERR_NOT_IMPLEMENTED - If Golioth settings are disabled in config
-/// @return GOLIOTH_ERR_NULL - callback is NULL
+/// @retval GOLIOTH_OK Setting registered successfully
+/// @retval GOLIOTH_ERR_MEM_ALLOC Max number of registered settings exceeded
+/// @retval GOLIOTH_ERR_NOT_IMPLEMENTED If Golioth settings are disabled in config
+/// @retval GOLIOTH_ERR_NULL callback is NULL
 enum golioth_status golioth_settings_register_int(struct golioth_settings *settings,
                                                   const char *setting_name,
                                                   golioth_int_setting_cb callback,

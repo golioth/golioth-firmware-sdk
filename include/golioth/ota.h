@@ -100,8 +100,8 @@ struct golioth_ota_manifest
 /// @param payload_size Size of payload, in bytes
 /// @param manifest Output param, memory allocated by caller, populated with manifest
 ///
-/// @return GOLIOTH_OK - payload converted to struct golioth_ota_manifest
-/// @return GOLIOTH_ERR_INVALID_FORMAT - failed to parse manifest
+/// @retval GOLIOTH_OK payload converted to struct golioth_ota_manifest
+/// @retval GOLIOTH_ERR_INVALID_FORMAT failed to parse manifest
 enum golioth_status golioth_ota_payload_as_manifest(const uint8_t *payload,
                                                     size_t payload_size,
                                                     struct golioth_ota_manifest *manifest);
@@ -152,11 +152,11 @@ enum golioth_status golioth_ota_observe_manifest_async(struct golioth_client *cl
 /// @param is_last Set to true, if this is the last block
 /// @param timeout_s The timeout, in seconds, for receiving a server response
 ///
-/// @return GOLIOTH_OK - response received from server, get was successful
-/// @return GOLIOTH_ERR_NULL - invalid client handle
-/// @return GOLIOTH_ERR_INVALID_STATE - client is not running, currently stopped
-/// @return GOLIOTH_ERR_QUEUE_FULL - request queue is full, this request is dropped
-/// @return GOLIOTH_ERR_TIMEOUT - response not received from server, timeout occurred
+/// @retval GOLIOTH_OK response received from server, get was successful
+/// @retval GOLIOTH_ERR_NULL invalid client handle
+/// @retval GOLIOTH_ERR_INVALID_STATE client is not running, currently stopped
+/// @retval GOLIOTH_ERR_QUEUE_FULL request queue is full, this request is dropped
+/// @retval GOLIOTH_ERR_TIMEOUT response not received from server, timeout occurred
 enum golioth_status golioth_ota_get_block_sync(struct golioth_client *client,
                                                const char *package,
                                                const char *version,
@@ -176,11 +176,11 @@ enum golioth_status golioth_ota_get_block_sync(struct golioth_client *client,
 /// @param target_version The artifact new/target version from manifest. Can be NULL.
 /// @param timeout_s The timeout, in seconds, for receiving a server response
 ///
-/// @return GOLIOTH_OK - response received from server, get was successful
-/// @return GOLIOTH_ERR_NULL - invalid client handle
-/// @return GOLIOTH_ERR_INVALID_STATE - client is not running, currently stopped
-/// @return GOLIOTH_ERR_QUEUE_FULL - request queue is full, this request is dropped
-/// @return GOLIOTH_ERR_TIMEOUT - response not received from server, timeout occurred
+/// @retval GOLIOTH_OK response received from server, get was successful
+/// @retval GOLIOTH_ERR_NULL invalid client handle
+/// @retval GOLIOTH_ERR_INVALID_STATE client is not running, currently stopped
+/// @retval GOLIOTH_ERR_QUEUE_FULL request queue is full, this request is dropped
+/// @retval GOLIOTH_ERR_TIMEOUT response not received from server, timeout occurred
 enum golioth_status golioth_ota_report_state_sync(struct golioth_client *client,
                                                   enum golioth_ota_state state,
                                                   enum golioth_ota_reason reason,
