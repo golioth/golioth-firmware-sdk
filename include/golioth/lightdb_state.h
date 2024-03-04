@@ -32,11 +32,11 @@
 /// @param callback Callback to call on response received or timeout. Can be NULL.
 /// @param callback_arg Callback argument, passed directly when callback invoked. Can be NULL.
 ///
-/// @return GOLIOTH_OK - request enqueued
-/// @return GOLIOTH_ERR_NULL - invalid client handle
-/// @return GOLIOTH_ERR_INVALID_STATE - client is not running, currently stopped
-/// @return GOLIOTH_ERR_MEM_ALLOC - memory allocation error
-/// @return GOLIOTH_ERR_QUEUE_FULL - request queue is full, this request is dropped
+/// @retval GOLIOTH_OK request enqueued
+/// @retval GOLIOTH_ERR_NULL invalid client handle
+/// @retval GOLIOTH_ERR_INVALID_STATE client is not running, currently stopped
+/// @retval GOLIOTH_ERR_MEM_ALLOC memory allocation error
+/// @retval GOLIOTH_ERR_QUEUE_FULL request queue is full, this request is dropped
 enum golioth_status golioth_lightdb_set_int_async(struct golioth_client *client,
                                                   const char *path,
                                                   int32_t value,
@@ -56,12 +56,12 @@ enum golioth_status golioth_lightdb_set_int_async(struct golioth_client *client,
 /// @param value The value to set at path
 /// @param timeout_s The timeout, in seconds, for receiving a server response
 ///
-/// @return GOLIOTH_OK - response received from server, set was successful
-/// @return GOLIOTH_ERR_NULL - invalid client handle
-/// @return GOLIOTH_ERR_INVALID_STATE - client is not running, currently stopped
-/// @return GOLIOTH_ERR_MEM_ALLOC - memory allocation error
-/// @return GOLIOTH_ERR_QUEUE_FULL - request queue is full, this request is dropped
-/// @return GOLIOTH_ERR_TIMEOUT - response not received from server, timeout occurred
+/// @retval GOLIOTH_OK response received from server, set was successful
+/// @retval GOLIOTH_ERR_NULL invalid client handle
+/// @retval GOLIOTH_ERR_INVALID_STATE client is not running, currently stopped
+/// @retval GOLIOTH_ERR_MEM_ALLOC memory allocation error
+/// @retval GOLIOTH_ERR_QUEUE_FULL request queue is full, this request is dropped
+/// @retval GOLIOTH_ERR_TIMEOUT response not received from server, timeout occurred
 enum golioth_status golioth_lightdb_set_int_sync(struct golioth_client *client,
                                                  const char *path,
                                                  int32_t value,
@@ -129,11 +129,11 @@ enum golioth_status golioth_lightdb_set_string_sync(struct golioth_client *clien
 /// @param callback Callback to call on response received or timeout. Can be NULL.
 /// @param callback_arg Callback argument, passed directly when callback invoked. Can be NULL.
 ///
-/// @return GOLIOTH_OK - request enqueued
-/// @return GOLIOTH_ERR_NULL - invalid client handle
-/// @return GOLIOTH_ERR_INVALID_STATE - client is not running, currently stopped
-/// @return GOLIOTH_ERR_MEM_ALLOC - memory allocation error
-/// @return GOLIOTH_ERR_QUEUE_FULL - request queue is full, this request is dropped
+/// @retval GOLIOTH_OK request enqueued
+/// @retval GOLIOTH_ERR_NULL invalid client handle
+/// @retval GOLIOTH_ERR_INVALID_STATE client is not running, currently stopped
+/// @retval GOLIOTH_ERR_MEM_ALLOC memory allocation error
+/// @retval GOLIOTH_ERR_QUEUE_FULL request queue is full, this request is dropped
 enum golioth_status golioth_lightdb_set_async(struct golioth_client *client,
                                               const char *path,
                                               enum golioth_content_type content_type,
@@ -197,11 +197,11 @@ enum golioth_status golioth_lightdb_get_async(struct golioth_client *client,
 /// @param value Output parameter, memory allocated by caller, populated with value of integer
 /// @param timeout_s The timeout, in seconds, for receiving a server response
 ///
-/// @return GOLIOTH_OK - response received from server, set was successful
-/// @return GOLIOTH_ERR_NULL - invalid client handle
-/// @return GOLIOTH_ERR_INVALID_STATE - client is not running, currently stopped
-/// @return GOLIOTH_ERR_QUEUE_FULL - request queue is full, this request is dropped
-/// @return GOLIOTH_ERR_TIMEOUT - response not received from server, timeout occurred
+/// @retval GOLIOTH_OK response received from server, set was successful
+/// @retval GOLIOTH_ERR_NULL invalid client handle
+/// @retval GOLIOTH_ERR_INVALID_STATE client is not running, currently stopped
+/// @retval GOLIOTH_ERR_QUEUE_FULL request queue is full, this request is dropped
+/// @retval GOLIOTH_ERR_TIMEOUT response not received from server, timeout occurred
 enum golioth_status golioth_lightdb_get_int_sync(struct golioth_client *client,
                                                  const char *path,
                                                  int32_t *value,
@@ -247,11 +247,11 @@ enum golioth_status golioth_lightdb_get_sync(struct golioth_client *client,
 /// @param callback Callback to call on response received or timeout. Can be NULL.
 /// @param callback_arg Callback argument, passed directly when callback invoked. Can be NULL.
 ///
-/// @return GOLIOTH_OK - request enqueued
-/// @return GOLIOTH_ERR_NULL - invalid client handle
-/// @return GOLIOTH_ERR_INVALID_STATE - client is not running, currently stopped
-/// @return GOLIOTH_ERR_MEM_ALLOC - memory allocation error
-/// @return GOLIOTH_ERR_QUEUE_FULL - request queue is full, this request is dropped
+/// @retval GOLIOTH_OK request enqueued
+/// @retval GOLIOTH_ERR_NULL invalid client handle
+/// @retval GOLIOTH_ERR_INVALID_STATE client is not running, currently stopped
+/// @retval GOLIOTH_ERR_MEM_ALLOC memory allocation error
+/// @retval GOLIOTH_ERR_QUEUE_FULL request queue is full, this request is dropped
 enum golioth_status golioth_lightdb_delete_async(struct golioth_client *client,
                                                  const char *path,
                                                  golioth_set_cb_fn callback,
@@ -269,11 +269,11 @@ enum golioth_status golioth_lightdb_delete_async(struct golioth_client *client,
 /// @param path The path in LightDB state to delete (e.g. "my_integer")
 /// @param timeout_s The timeout, in seconds, for receiving a server response
 ///
-/// @return GOLIOTH_OK - response received from server, set was successful
-/// @return GOLIOTH_ERR_NULL - invalid client handle
-/// @return GOLIOTH_ERR_INVALID_STATE - client is not running, currently stopped
-/// @return GOLIOTH_ERR_QUEUE_FULL - request queue is full, this request is dropped
-/// @return GOLIOTH_ERR_TIMEOUT - response not received from server, timeout occurred
+/// @retval GOLIOTH_OK response received from server, set was successful
+/// @retval GOLIOTH_ERR_NULL invalid client handle
+/// @retval GOLIOTH_ERR_INVALID_STATE client is not running, currently stopped
+/// @retval GOLIOTH_ERR_QUEUE_FULL request queue is full, this request is dropped
+/// @retval GOLIOTH_ERR_TIMEOUT response not received from server, timeout occurred
 enum golioth_status golioth_lightdb_delete_sync(struct golioth_client *client,
                                                 const char *path,
                                                 int32_t timeout_s);
@@ -297,11 +297,11 @@ enum golioth_status golioth_lightdb_delete_sync(struct golioth_client *client,
 /// @param callback Callback to call on response received or timeout. Can be NULL.
 /// @param callback_arg Callback argument, passed directly when callback invoked. Can be NULL.
 ///
-/// @return GOLIOTH_OK - request enqueued
-/// @return GOLIOTH_ERR_NULL - invalid client handle
-/// @return GOLIOTH_ERR_INVALID_STATE - client is not running, currently stopped
-/// @return GOLIOTH_ERR_MEM_ALLOC - memory allocation error
-/// @return GOLIOTH_ERR_QUEUE_FULL - request queue is full, this request is dropped
+/// @retval GOLIOTH_OK request enqueued
+/// @retval GOLIOTH_ERR_NULL invalid client handle
+/// @retval GOLIOTH_ERR_INVALID_STATE client is not running, currently stopped
+/// @retval GOLIOTH_ERR_MEM_ALLOC memory allocation error
+/// @retval GOLIOTH_ERR_QUEUE_FULL request queue is full, this request is dropped
 enum golioth_status golioth_lightdb_observe_async(struct golioth_client *client,
                                                   const char *path,
                                                   golioth_get_cb_fn callback,

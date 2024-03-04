@@ -76,8 +76,8 @@ enum golioth_rpc_status
 /// @param response_detail_map zcbor encode state, inside of the RPC response detail map
 /// @param callback_arg callback_arg, unchanged from callback_arg of @ref golioth_rpc_register
 ///
-/// @return GOLIOTH_RPC_OK - if method was called successfully
-/// @return GOLIOTH_RPC_INVALID_ARGUMENT - if params were invalid
+/// @retval GOLIOTH_RPC_OK method was called successfully
+/// @retval GOLIOTH_RPC_INVALID_ARGUMENT params were invalid
 /// @return otherwise - method failure
 typedef enum golioth_rpc_status (*golioth_rpc_cb_fn)(zcbor_state_t *request_params_array,
                                                      zcbor_state_t *response_detail_map,

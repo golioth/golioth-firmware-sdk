@@ -158,7 +158,7 @@ place to add a code comment.
 * Use `@param [direction] <name> <description>` for function parameters
     - `direction` is one of `in`, `out`, or `inout`
     - Note: a lot of existing code does not specify param direction (these need to be fixed).
-* Use separate `@return <value> - <description>` lines for each possible return type.
+* Use separate `@retval <value> <description>` lines for each possible return type.
 * For `const char*` string parameters, indicate whether the string is expected
   to be NULL-terminated or not.
 * If there are parameters that must not be NULL, indicate this in the description.

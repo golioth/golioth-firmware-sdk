@@ -35,8 +35,8 @@ float golioth_payload_as_float(const uint8_t *payload, size_t payload_size);
 /// @param payload Pointer to payload data
 /// @param payload_size Size of payload, in bytes
 ///
-/// @return true - payload is exactly the string "true"
-/// @return false - otherwise
+/// @retval true payload is exactly the string "true"
+/// @retval false otherwise
 bool golioth_payload_as_bool(const uint8_t *payload, size_t payload_size);
 
 /// Returns true if payload has no contents
@@ -44,10 +44,8 @@ bool golioth_payload_as_bool(const uint8_t *payload, size_t payload_size);
 /// @param payload Pointer to payload data
 /// @param payload_size Size of payload, in bytes
 ///
-/// @return true - payload is NULL
-/// @return true - payload_size is 0
-/// @return true - payload is exactly the string "null"
-/// @return false - otherwise
+/// @retval true payload is NULL, payload_size is 0 or payload is exactly the string "null"
+/// @retval false otherwise
 bool golioth_payload_is_null(const uint8_t *payload, size_t payload_size);
 
 /// @}

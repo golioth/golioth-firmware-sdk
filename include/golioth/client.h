@@ -204,8 +204,8 @@ bool golioth_client_wait_for_connect(struct golioth_client *client, int timeout_
 ///
 /// @param client The client handle
 ///
-/// @return GOLIOTH_OK Client started
-/// @return GOLIOTH_ERR_NULL Client handle invalid
+/// @retval GOLIOTH_OK Client started
+/// @retval GOLIOTH_ERR_NULL Client handle invalid
 enum golioth_status golioth_client_start(struct golioth_client *client);
 
 /// Stop the Golioth client
@@ -220,8 +220,8 @@ enum golioth_status golioth_client_start(struct golioth_client *client);
 ///
 /// @param client The client handle
 ///
-/// @return GOLIOTH_OK Client stopped
-/// @return GOLIOTH_ERR_NULL Client handle invalid
+/// @retval GOLIOTH_OK Client stopped
+/// @retval GOLIOTH_ERR_NULL Client handle invalid
 enum golioth_status golioth_client_stop(struct golioth_client *client);
 
 /// Destroy a Golioth client
@@ -235,8 +235,8 @@ void golioth_client_destroy(struct golioth_client *client);
 ///
 /// @param client The client handle
 ///
-/// @return true The client is running
-/// @return false The client is not running, or the client handle is not valid
+/// @retval true The client is running
+/// @retval false The client is not running, or the client handle is not valid
 bool golioth_client_is_running(struct golioth_client *client);
 
 /// Returns whether the client is currently connected to Golioth servers.
@@ -246,8 +246,8 @@ bool golioth_client_is_running(struct golioth_client *client);
 ///
 /// @param client The client handle
 ///
-/// @return true The client is connected to Golioth
-/// @return false The client is not connected, or the client handle is not valid
+/// @retval true The client is connected to Golioth
+/// @retval false The client is not connected, or the client handle is not valid
 bool golioth_client_is_connected(struct golioth_client *client);
 
 /// Register a callback that will be called on client events (e.g. connected, disconnected)
