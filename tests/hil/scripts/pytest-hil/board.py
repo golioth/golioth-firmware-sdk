@@ -37,7 +37,7 @@ class Board(ABC):
     def send_cmd(self, cmd, wait_str=None):
         if wait_str == None:
             wait_str = self.PROMPT
-        self.serial_device.write('\r\n'.encode())
+        self.serial_device.write('\r\n\r\n'.encode())
         self.wait_for_regex_in_line(self.PROMPT)
         self.serial_device.write('{}\r\n'.format(cmd).encode())
         self.wait_for_regex_in_line(wait_str)
