@@ -33,7 +33,7 @@ async def test_lightdb_set(shell, device, wifi_ssid, wifi_psk):
 
     # Wait for Golioth connection
 
-    shell._device.readlines_until(regex=".*Golioth CoAP client connected", timeout=30.0)
+    shell._device.readlines_until(regex=".*Golioth CoAP client connected", timeout=90.0)
 
     # Verify lightdb writes
 

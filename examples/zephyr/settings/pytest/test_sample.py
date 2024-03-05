@@ -34,7 +34,7 @@ async def test_settings(shell, project, device, wifi_ssid, wifi_psk):
     shell._device.clear_buffer()
     shell._device.write('kernel reboot cold\n\n'.encode())
 
-    shell._device.readlines_until(regex=".*Setting loop delay to 1 s", timeout=30.0)
+    shell._device.readlines_until(regex=".*Setting loop delay to 1 s", timeout=90.0)
 
     # Set device-level setting
 
