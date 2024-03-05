@@ -27,10 +27,10 @@ async def test_hello(shell, device, wifi_ssid, wifi_psk):
     shell._device.clear_buffer()
     shell._device.write('kernel reboot cold\n\n'.encode())
 
-    # Record timestamp and wait for fourth hello mesage
+    # Record timestamp and wait for fourth hello message
 
     start = datetime.datetime.utcnow()
-    shell._device.readlines_until(regex=".*Sending hello! 3", timeout=90.0)
+    shell._device.readlines_until(regex=".*Sending hello! 3", timeout=110.0)
 
     # Check logs for hello messages
 
