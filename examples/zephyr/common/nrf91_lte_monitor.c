@@ -5,7 +5,7 @@
  */
 
 #include <zephyr/logging/log.h>
-LOG_MODULE_REGISTER(lte_monitor);
+LOG_MODULE_REGISTER(lte_monitor, CONFIG_GOLIOTH_SAMPLE_NRF91_LTE_MONITOR_LOG_LEVEL);
 
 #include <modem/lte_lc.h>
 #include <zephyr/init.h>
@@ -45,10 +45,10 @@ static void lte_handler(const struct lte_lc_evt *const evt)
             switch (evt->rrc_mode)
             {
                 case LTE_LC_RRC_MODE_CONNECTED:
-                    LOG_INF("RRC: Connected");
+                    LOG_DBG("RRC: Connected");
                     break;
                 case LTE_LC_RRC_MODE_IDLE:
-                    LOG_INF("RRC: Idle");
+                    LOG_DBG("RRC: Idle");
                     break;
             }
             break;
