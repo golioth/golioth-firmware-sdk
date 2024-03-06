@@ -39,7 +39,7 @@ jobs:
     - name: Build Test Firmware
       uses: espressif/esp-idf-ci-action@v1
       with:
-        esp_idf_version: v5.2
+        esp_idf_version: v5.2.1
         target: ${{ inputs.idf_target }}
         path: 'tests/hil/platform/esp-idf'
         command: 'for test in ${{ steps.build_prep.outputs.test_list }}; do idf.py -DGOLIOTH_HIL_TEST=$test build && mv build/merged.bin ../../../../test_binaries/${test}.bin; done'
