@@ -30,6 +30,9 @@ async def setup(project, board, device):
     await project.settings.set('TEST_NOT_REGISTERED', 27)
     await project.settings.set('TEST_WRONG_TYPE', "wrong")
 
+    # Delay to give NVS time to initialize
+    time.sleep(4)
+
     # Set Golioth credentials
     golioth_cred = (await device.credentials.list())[0]
     board.set_golioth_psk_credentials(golioth_cred.identity, golioth_cred.key)
