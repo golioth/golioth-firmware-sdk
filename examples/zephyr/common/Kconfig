@@ -86,6 +86,22 @@ config GOLIOTH_SAMPLE_NRF91_LTE_MONITOR
 	help
 	  LTE Link Control events monitor for nRF91.
 
+if GOLIOTH_SAMPLE_NRF91_LTE_MONITOR
+
+config GOLIOTH_SAMPLE_NRF91_LTE_MONITOR_LOG_LEVEL
+	int "Default log level for LTE Monitor"
+	default 3
+	help
+	  The default log level for the LTE Monitor in the Golioth common library.
+
+	  0: NONE
+	  1: ERR
+	  2: WRN
+	  3: INF
+	  4: DBG
+
+endif # GOLIOTH_SAMPLE_NRF91_LTE_MONITOR
+
 config GOLIOTH_SAMPLE_NRF91_RESET_LOOP_OVERRIDE
 	bool "Automatically override modem reset loop restriction"
 	depends on GOLIOTH_SAMPLE_NRF91_LTE_MONITOR
