@@ -222,7 +222,7 @@ void test_rpc_call_not_registered(void)
         0x31, 0x32, 0x33,                                           /* "123" */
         0x6A,                                                       /* text(10) */
         0x73, 0x74, 0x61, 0x74, 0x75, 0x73, 0x43, 0x6F, 0x64, 0x65, /* "statusCode" */
-        0x02,                                                       /* unsigned(2) */
+        0x05,                                                       /* unsigned(5) */
         0xFF,                                                       /* primitive(*) */
     };
     TEST_ASSERT_EQUAL(sizeof(expected), last_coap_payload_size);

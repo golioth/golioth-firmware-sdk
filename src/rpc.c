@@ -189,6 +189,7 @@ static void on_rpc(struct golioth_client *client,
     }
     else
     {
+        status = GOLIOTH_RPC_NOT_FOUND;
         GLTH_LOGW(TAG, "Method %.*s not registered", method.len, method.value);
     }
 
