@@ -151,7 +151,7 @@ jobs:
     - name: Download and install ModusToolbox 2.4
       shell: bash
       run: |
-        pip install click gdown==4.6.0 cryptography==41.0.7 intelhex cbor
+        pip install click gdown==5.1.0 cryptography==41.0.7 intelhex cbor
         gdown $MTB_DOWNLOAD_ID -O /tmp/ModusToolbox_$MTB_VERSION-linux-install.tar.gz
         tar -C $HOME -zxf /tmp/ModusToolbox_$MTB_VERSION-linux-install.tar.gz
         rm /tmp/ModusToolbox_$MTB_VERSION-linux-install.tar.gz
