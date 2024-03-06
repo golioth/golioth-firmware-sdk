@@ -68,6 +68,9 @@ jobs:
       run: |
         rm -rf test_binaries
         mkdir -p test_binaries
+
+        export EXTRA_BUILD_ARGS=-DCONFIG_GOLIOTH_COAP_HOST_URI=\"${{ inputs.coap_gateway_url }}\"
+
         for test in `ls modules/lib/golioth-firmware-sdk/tests/hil/tests`
         do
           west build -p -b ${{ inputs.west_board }} modules/lib/golioth-firmware-sdk/tests/hil/platform/zephyr -- $EXTRA_BUILD_ARGS -DGOLIOTH_HIL_TEST=$test
