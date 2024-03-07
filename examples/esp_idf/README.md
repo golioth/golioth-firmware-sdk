@@ -72,7 +72,7 @@ pip install git+https://github.com/golioth/python-golioth-tools@v0.5.1
 
 Installing python-golioth-tools enables pytest to use 'device' fixture which
 automatically creates a device in the Golioth console for the duration of the test,
-and deletes it after the test ends. 
+and deletes it after the test ends.
 
 The test can be invoked by the following command from the <sample>/pytest location:
 
