@@ -9,6 +9,7 @@
 #include "freertos/event_groups.h"
 #include "esp_system.h"
 #include "esp_wifi.h"
+#include "esp_eap_client.h"
 #include "esp_event.h"
 #include "esp_log.h"
 #include "lwip/err.h"
@@ -62,11 +63,8 @@ static void event_handler(void *arg,
     }
 }
 
-void wifi_init(const char *ssid, const char *password)
+static void wifi_init_common(void)
 {
-    _ssid = ssid;
-    _password = password;
-
     // wifi is pretty chatty during initialization, so reduce the log level to warn
     esp_log_level_set("wifi", ESP_LOG_WARN);
 
@@ -81,6 +79,32 @@ void wifi_init(const char *ssid, const char *password)
         esp_event_handler_register(IP_EVENT, IP_EVENT_STA_GOT_IP, &event_handler, NULL));
     ESP_ERROR_CHECK(esp_wifi_set_storage(WIFI_STORAGE_RAM));
     ESP_ERROR_CHECK(esp_wifi_set_mode(WIFI_MODE_STA));
+}
+
+void wifi_init_peap(const char *ssid, const char *username, const char *password)
+{
+    _ssid = ssid;
+    _password = password;
+    wifi_init_common();
+
+    wifi_config_t wifi_config = {};
+    strncpy((char *) wifi_config.sta.ssid, ssid, sizeof(wifi_config.sta.ssid));
+    ESP_ERROR_CHECK(esp_wifi_set_config(WIFI_IF_STA, &wifi_config) );
+
+    ESP_ERROR_CHECK(esp_eap_client_set_identity((uint8_t *)username, strlen(username)) );
+    ESP_ERROR_CHECK(esp_eap_client_set_username((uint8_t *)username, strlen(username)) );
+    ESP_ERROR_CHECK(esp_eap_client_set_password((uint8_t *)password, strlen(password)) );
+
+    ESP_ERROR_CHECK(esp_wifi_sta_enterprise_enable());
+    ESP_ERROR_CHECK(esp_wifi_start());
+}
+
+void wifi_init(const char *ssid, const char *password)
+{
+    _ssid = ssid;
+    _password = password;
+
+    wifi_init_common();
 
     wifi_config_t wifi_config = {};
     wifi_config.sta.threshold.authmode = WIFI_AUTH_WPA2_PSK;

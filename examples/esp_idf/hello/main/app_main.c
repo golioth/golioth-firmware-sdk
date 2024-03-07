@@ -53,7 +53,7 @@ void app_main(void)
     }
 
     // Initialize WiFi and wait for it to connect
-    wifi_init(nvs_read_wifi_ssid(), nvs_read_wifi_password());
+    wifi_init_peap(nvs_read_wifi_ssid(), nvs_read_wifi_user(), nvs_read_wifi_password());
     wifi_wait_for_connected();
 
     // Now we are ready to connect to the Golioth cloud.

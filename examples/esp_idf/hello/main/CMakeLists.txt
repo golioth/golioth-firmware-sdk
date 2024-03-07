@@ -22,6 +22,7 @@ set(deps
     "driver"
     "esp_hw_support"
     "esp_wifi"
+    "wpa_supplicant"
 )
 
 idf_component_register(

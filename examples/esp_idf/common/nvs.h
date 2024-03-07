@@ -18,6 +18,7 @@ extern "C"
 
 // NVS keys for wifi credentials
 #define NVS_WIFI_SSID_KEY "w_ssid"
+#define NVS_WIFI_USER_KEY "w_user"
 #define NVS_WIFI_PASS_KEY "w_pass"
 #define NVS_GOLIOTH_PSK_ID_KEY "g_psk_id"
 #define NVS_GOLIOTH_PSK_KEY "g_psk"
@@ -28,6 +29,7 @@ extern "C"
     void nvs_init(void);
 
     const char *nvs_read_wifi_ssid(void);
+    const char *nvs_read_wifi_user(void);
     const char *nvs_read_wifi_password(void);
     const char *nvs_read_golioth_psk_id(void);
     const char *nvs_read_golioth_psk(void);

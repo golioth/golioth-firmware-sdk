@@ -55,8 +55,9 @@ typedef struct
 // Map from CLI key to internal NVS keys.
 // Can't use CLI keys directly in NVS due to character length
 // limitation in NVS.
-static const shell_to_nvs_key_map_t _key_map[4] = {
+static const shell_to_nvs_key_map_t _key_map[5] = {
     {"wifi/ssid", NVS_WIFI_SSID_KEY},
+    {"wifi/user", NVS_WIFI_USER_KEY},
     {"wifi/psk", NVS_WIFI_PASS_KEY},
     {"golioth/psk-id", NVS_GOLIOTH_PSK_ID_KEY},
     {"golioth/psk", NVS_GOLIOTH_PSK_KEY},

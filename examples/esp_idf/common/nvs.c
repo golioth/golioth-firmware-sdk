@@ -46,6 +46,12 @@ const char *nvs_read_wifi_ssid(void)
     return read_nvs_key_or_default(NVS_WIFI_SSID_KEY, buf, sizeof(buf), NVS_DEFAULT_STR);
 }
 
+const char *nvs_read_wifi_user(void)
+{
+    static char buf[WIFI_MAX_NUM_CHARS + 1];
+    return read_nvs_key_or_default(NVS_WIFI_USER_KEY, buf, sizeof(buf), NVS_DEFAULT_STR);
+}
+
 const char *nvs_read_wifi_password(void)
 {
     static char buf[WIFI_MAX_NUM_CHARS + 1];
