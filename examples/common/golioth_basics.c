@@ -229,8 +229,15 @@ void golioth_basics(struct golioth_client *client)
     // Once set, the on_my_config callback function should be called here.
     golioth_lightdb_observe_async(client, "desired/my_config", on_my_config, NULL);
 
-    // LightDB Stream functions are nearly identical to LightDB state.
-    golioth_stream_set_int_async(client, "my_stream_int", 15, NULL, NULL);
+    // LightDB Stream functions are similar to LightDB state.
+    const char *sbuf = "{\"my_stream_int\":15}";
+    golioth_stream_set_async(client,
+                             "/",
+                             GOLIOTH_CONTENT_TYPE_JSON,
+                             (uint8_t *) sbuf,
+                             strlen(sbuf),
+                             NULL,
+                             NULL);
 
     // We can register Remote Procedure Call (RPC) methods. RPCs allow
     // remote users to "call a function" on the device.
