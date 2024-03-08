@@ -146,23 +146,6 @@ static void temperature_push_sync(const struct sensor_value *temp)
     LOG_DBG("Temperature successfully pushed");
 }
 
-static void temperature_push_float_async(const struct sensor_value *temp)
-{
-    int err;
-
-    err = golioth_stream_set_float_async(client,
-                                         "sensor/temp",
-                                         sensor_value_to_double(temp),
-                                         temperature_push_handler,
-                                         NULL);
-
-    if (err)
-    {
-        LOG_WRN("Failed to push temperature: %d", err);
-        return;
-    }
-}
-
 int main(void)
 {
     struct sensor_value temp;
@@ -210,19 +193,6 @@ int main(void)
         LOG_DBG("Sending temperature %d.%06d", temp.val1, abs(temp.val2));
 
         temperature_push_async(&temp);
-        k_sleep(K_SECONDS(5));
-
-        /* Callback-based using float */
-        err = get_temperature(&temp);
-        if (err)
-        {
-            k_sleep(K_SECONDS(1));
-            continue;
-        }
-
-        LOG_DBG("Sending temperature %d.%06d", temp.val1, abs(temp.val2));
-
-        temperature_push_float_async(&temp);
         k_sleep(K_SECONDS(5));
     }
 
