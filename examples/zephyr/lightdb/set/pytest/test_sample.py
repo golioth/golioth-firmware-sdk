@@ -27,10 +27,6 @@ async def test_lightdb_set(shell, device, wifi_ssid, wifi_psk):
     shell.exec_command(f"settings set wifi/ssid \"{wifi_ssid}\"")
     shell.exec_command(f"settings set wifi/psk \"{wifi_psk}\"")
 
-    shell._device.clear_buffer()
-    shell._device.write('kernel reboot cold\n\n'.encode())
-    shell._device.readlines_until(regex=".*Booting", timeout=10.0)
-
     # Wait for Golioth connection
 
     shell._device.readlines_until(regex=".*Golioth CoAP client connected", timeout=90.0)

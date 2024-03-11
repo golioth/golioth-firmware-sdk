@@ -23,9 +23,6 @@ async def test_lightdb_stream(shell, device, wifi_ssid, wifi_psk):
     shell.exec_command(f"settings set wifi/ssid \"{wifi_ssid}\"")
     shell.exec_command(f"settings set wifi/psk \"{wifi_psk}\"")
 
-    shell._device.clear_buffer()
-    shell._device.write('kernel reboot cold\n\n'.encode())
-
     # Verify temp messages
 
     temp = 20.0
