@@ -8,6 +8,7 @@
 #include "nvs.h"
 #include "shell.h"
 #include "wifi.h"
+#include "freertos/FreeRTOS.h"
 #include <golioth/client.h>
 #include <golioth/golioth_sys.h>
 
