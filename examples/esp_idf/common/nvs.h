@@ -36,6 +36,7 @@ extern "C"
     bool nvs_write_str(const char *key, const char *str);
     bool nvs_erase_str(const char *key);
 
+    bool nvs_wifi_credentials_are_set(void);
     bool nvs_credentials_are_set(void);
 
 #ifdef __cplusplus

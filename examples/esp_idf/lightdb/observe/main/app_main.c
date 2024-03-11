@@ -62,12 +62,13 @@ void app_main(void)
     // to input them via the shell.
     if (!nvs_credentials_are_set())
     {
-        while (1)
+        ESP_LOGW(TAG,
+                 "WiFi and Golioth credentials are not set. "
+                 "Use the shell settings commands to set them.");
+
+        while (!nvs_credentials_are_set())
         {
             vTaskDelay(1000 / portTICK_PERIOD_MS);
-            GLTH_LOGW(TAG, "WiFi and golioth credentials are not set");
-            GLTH_LOGW(TAG, "Use the shell settings commands to set them, then restart");
-            vTaskDelay(UINT32_MAX);
         }
     }
 

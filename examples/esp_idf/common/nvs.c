@@ -110,13 +110,22 @@ bool nvs_erase_str(const char *key)
     return true;
 }
 
-bool nvs_credentials_are_set(void)
+bool nvs_wifi_credentials_are_set(void)
 {
     if (0 == strcmp(nvs_read_wifi_ssid(), NVS_DEFAULT_STR))
     {
         return false;
     }
     if (0 == strcmp(nvs_read_wifi_password(), NVS_DEFAULT_STR))
+    {
+        return false;
+    }
+    return true;
+}
+
+bool nvs_credentials_are_set(void)
+{
+    if (!nvs_wifi_credentials_are_set())
     {
         return false;
     }
