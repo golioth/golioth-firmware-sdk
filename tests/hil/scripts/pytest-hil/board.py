@@ -13,7 +13,7 @@ class Board(ABC):
             self.program(fw_image)
 
             # Wait for reboot
-            sleep(3)
+            sleep(6)
 
         self.serial_device = serial.Serial(port, baud, timeout=1, write_timeout=1)
 
