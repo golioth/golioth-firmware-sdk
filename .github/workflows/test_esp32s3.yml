@@ -153,3 +153,9 @@ jobs:
         cd examples/esp_idf/test
         source /opt/credentials/runner_env.sh
         python3 flash.py $CI_ESP32S3_DEVKITC_PORT && python3 verify.py $CI_ESP32S3_DEVKITC_PORT
+    - name: Erase flash
+      if: always()
+      shell: bash
+      run: |
+        source /opt/credentials/runner_env.sh
+        esptool.py --port $CI_ESP32S3_DEVKITC_PORT erase_flash
