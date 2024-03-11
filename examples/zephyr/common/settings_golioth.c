@@ -17,8 +17,8 @@ LOG_MODULE_REGISTER(golioth_sample_settings, CONFIG_GOLIOTH_DEBUG_DEFAULT_LOG_LE
  * credentials are stored. This means that we need to allocate memory for
  * credentials ourselves.
  */
-static uint8_t golioth_dtls_psk[CONFIG_GOLIOTH_SAMPLE_PSK_MAX_LEN + 1];
-static uint8_t golioth_dtls_psk_id[CONFIG_GOLIOTH_SAMPLE_PSK_ID_MAX_LEN + 1];
+static uint8_t golioth_dtls_psk[CONFIG_GOLIOTH_SAMPLE_PSK_MAX_LEN];
+static uint8_t golioth_dtls_psk_id[CONFIG_GOLIOTH_SAMPLE_PSK_ID_MAX_LEN];
 
 static struct golioth_client_config client_config = {
     .credentials =
@@ -78,12 +78,26 @@ static int golioth_settings_set(const char *name,
 
     if (!strcmp(name, "psk"))
     {
+        if (len_rd > CONFIG_GOLIOTH_SAMPLE_PSK_MAX_LEN)
+        {
+            LOG_ERR("PSK length is %d but CONFIG_GOLIOTH_SAMPLE_PSK_MAX_LEN is %d.",
+                    len_rd,
+                    CONFIG_GOLIOTH_SAMPLE_PSK_MAX_LEN);
+            return -E2BIG;
+        }
         buffer = golioth_dtls_psk;
         buffer_len = sizeof(golioth_dtls_psk);
         ret_len = &client_config.credentials.psk.psk_len;
     }
     else if (!strcmp(name, "psk-id"))
     {
+        if (len_rd > CONFIG_GOLIOTH_SAMPLE_PSK_ID_MAX_LEN)
+        {
+            LOG_ERR("PSK-ID length is %d but CONFIG_GOLIOTH_SAMPLE_PSK_ID_MAX_LEN is %d.",
+                    len_rd,
+                    CONFIG_GOLIOTH_SAMPLE_PSK_ID_MAX_LEN);
+            return -E2BIG;
+        }
         buffer = golioth_dtls_psk_id;
         buffer_len = sizeof(golioth_dtls_psk_id);
         ret_len = &client_config.credentials.psk.psk_id_len;
