@@ -95,3 +95,12 @@ jobs:
               --wifi-psk ${{ secrets[format('{0}_WIFI_PSK', runner.name)] }}    \
               --timeout=600
           done
+      - name: Erase flash
+        if: always()
+        shell: bash
+        env:
+          hil_board: ${{ inputs.hil_board }}
+        run: |
+          source /opt/credentials/runner_env.sh
+          PORT_VAR=CI_${hil_board^^}_PORT
+          esptool.py --port ${!PORT_VAR} erase_flash
