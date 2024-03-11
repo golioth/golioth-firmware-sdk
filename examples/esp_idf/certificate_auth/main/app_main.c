@@ -39,6 +39,20 @@ void app_main(void)
     // Create a background shell/CLI task (type "help" to see a list of supported commands)
     shell_start();
 
+    // If the credentials haven't been set in NVS, we will wait here for the user
+    // to input them via the shell.
+    if (!nvs_wifi_credentials_are_set())
+    {
+        ESP_LOGW(TAG,
+                 "WiFi credentials are not set. "
+                 "Use the shell settings commands to set them.");
+
+        while (!nvs_wifi_credentials_are_set())
+        {
+            vTaskDelay(1000 / portTICK_PERIOD_MS);
+        }
+    }
+
     // Initialize WiFi and wait for it to connect
     wifi_init(nvs_read_wifi_ssid(), nvs_read_wifi_password());
     wifi_wait_for_connected();
