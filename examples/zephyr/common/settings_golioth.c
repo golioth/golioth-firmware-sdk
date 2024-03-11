@@ -10,6 +10,7 @@ LOG_MODULE_REGISTER(golioth_sample_settings, CONFIG_GOLIOTH_DEBUG_DEFAULT_LOG_LE
 #include <errno.h>
 #include <golioth/client.h>
 #include <zephyr/init.h>
+#include <zephyr/net/tls_credentials.h>
 #include <zephyr/settings/settings.h>
 
 /*
@@ -33,6 +34,27 @@ static struct golioth_client_config client_config = {
                 },
         },
 };
+
+static void set_runtime_tls_credential(sec_tag_t tag,
+                                       enum tls_credential_type type,
+                                       const void *cred,
+                                       size_t credlen)
+{
+    int err;
+
+    err = tls_credential_delete(tag, type);
+    if ((err) && (err != -ENOENT))
+    {
+        LOG_ERR("Failed to delete TLS credential; Tag: %d, Error: %d", tag, err);
+    }
+
+    err = tls_credential_add(tag, type, cred, credlen);
+    if (err)
+    {
+        LOG_ERR("Failed to add TLS credential; Tag: %d, Error: %d", tag, err);
+        return;
+    }
+}
 
 static int golioth_settings_get(const char *name, char *dst, int val_len_max)
 {
@@ -88,6 +110,11 @@ static int golioth_settings_set(const char *name,
         buffer = golioth_dtls_psk;
         buffer_len = sizeof(golioth_dtls_psk);
         ret_len = &client_config.credentials.psk.psk_len;
+
+        set_runtime_tls_credential(CONFIG_GOLIOTH_COAP_CLIENT_CREDENTIALS_TAG,
+                                   TLS_CREDENTIAL_PSK,
+                                   buffer,
+                                   len_rd);
     }
     else if (!strcmp(name, "psk-id"))
     {
@@ -101,6 +128,11 @@ static int golioth_settings_set(const char *name,
         buffer = golioth_dtls_psk_id;
         buffer_len = sizeof(golioth_dtls_psk_id);
         ret_len = &client_config.credentials.psk.psk_id_len;
+
+        set_runtime_tls_credential(CONFIG_GOLIOTH_COAP_CLIENT_CREDENTIALS_TAG,
+                                   TLS_CREDENTIAL_PSK_ID,
+                                   buffer,
+                                   len_rd);
     }
     else
     {
