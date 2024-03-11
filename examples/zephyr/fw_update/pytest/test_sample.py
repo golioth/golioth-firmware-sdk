@@ -27,9 +27,6 @@ async def test_fw_update(shell, project, device, wifi_ssid, wifi_psk, fw_info, r
     shell.exec_command(f"settings set wifi/ssid \"{wifi_ssid}\"")
     shell.exec_command(f"settings set wifi/psk \"{wifi_psk}\"")
 
-    shell._device.clear_buffer()
-    shell._device.write('kernel reboot cold\n\n'.encode())
-
     # Wait for first manifest to arrive (no update expected)
 
     shell._device.readlines_until(regex=".*Nothing to do.", timeout=90.0)

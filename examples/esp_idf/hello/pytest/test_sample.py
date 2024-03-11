@@ -16,10 +16,7 @@ async def test_hello(board, device):
     golioth_cred = (await device.credentials.list())[0]
     board.set_golioth_psk_credentials(golioth_cred.identity, golioth_cred.key)
 
-    # Reset board
-    board.reset()
-
-    # Record timestamp and wait for fourth hello mesage
+    # Record timestamp and wait for fourth hello message
     start = datetime.datetime.utcnow()
     board.wait_for_regex_in_line('.*Sending hello! 3', timeout_s=90.0)
 
