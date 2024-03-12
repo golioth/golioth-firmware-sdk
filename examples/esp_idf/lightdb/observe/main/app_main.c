@@ -96,7 +96,6 @@ void app_main(void)
     assert(client);
 
     _connected_sem = xSemaphoreCreateBinary();
-    xSemaphoreGive(_connected_sem);
 
     golioth_client_register_event_callback(client, on_client_event, NULL);
 

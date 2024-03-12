@@ -113,7 +113,6 @@ void app_main(void)
     assert(client);
 
     connected = xSemaphoreCreateBinary();
-    xSemaphoreGive(connected);
 
     struct golioth_rpc *rpc = golioth_rpc_init(client);
 
