@@ -22,13 +22,15 @@
 
 static const struct log_backend log_backend_golioth;
 
-struct cbpprintf_ctx {
+struct cbpprintf_ctx
+{
     size_t ctr;
     char msg[CONFIG_LOG_BACKEND_GOLIOTH_MAX_LOG_STRING_SIZE];
 };
 
-struct golioth_log_ctx {
-    struct golioth_client* client;
+struct golioth_log_ctx
+{
+    struct golioth_client *client;
     bool panic_mode;
     bool enabled;
     struct cbpprintf_ctx print_ctx;
@@ -48,26 +50,30 @@ static enum golioth_status golioth_log_drop(struct golioth_client *client,
     return GOLIOTH_OK;
 }
 
-static const glth_log_fn log_to_log_func(struct log_msg* log) {
+static const glth_log_fn log_to_log_func(struct log_msg *log)
+{
     int level = log_msg_get_level(log);
 
-    switch (level) {
-    case LOG_LEVEL_ERR:
-        return golioth_log_error_async;
-    case LOG_LEVEL_WRN:
-        return golioth_log_warn_async;
-    case LOG_LEVEL_INF:
-        return golioth_log_info_async;
-    case LOG_LEVEL_DBG:
-        return golioth_log_debug_async;
-    default:
-        return golioth_log_drop;
+    switch (level)
+    {
+        case LOG_LEVEL_ERR:
+            return golioth_log_error_async;
+        case LOG_LEVEL_WRN:
+            return golioth_log_warn_async;
+        case LOG_LEVEL_INF:
+            return golioth_log_info_async;
+        case LOG_LEVEL_DBG:
+            return golioth_log_debug_async;
+        default:
+            return golioth_log_drop;
     }
 }
 
-static int cbpprintf_out_func(int c, void* out_ctx) {
-    struct cbpprintf_ctx* ctx = out_ctx;
-    if (ctx->ctr >= CONFIG_LOG_BACKEND_GOLIOTH_MAX_LOG_STRING_SIZE) {
+static int cbpprintf_out_func(int c, void *out_ctx)
+{
+    struct cbpprintf_ctx *ctx = out_ctx;
+    if (ctx->ctr >= CONFIG_LOG_BACKEND_GOLIOTH_MAX_LOG_STRING_SIZE)
+    {
         return -ENOMEM;
     }
     ctx->msg[ctx->ctr++] = c;
@@ -75,44 +81,48 @@ static int cbpprintf_out_func(int c, void* out_ctx) {
     return 0;
 }
 
-static void process(const struct log_backend* const backend, union log_msg_generic* msg) {
-    const char* module = NULL;
-    struct log_msg* log = &msg->log;
-    struct golioth_log_ctx* ctx = backend->cb->ctx;
+static void process(const struct log_backend *const backend, union log_msg_generic *msg)
+{
+    const char *module = NULL;
+    struct log_msg *log = &msg->log;
+    struct golioth_log_ctx *ctx = backend->cb->ctx;
 
     if ((ctx == NULL) || (!ctx->enabled) || (ctx->panic_mode))
     {
         return;
     }
 
-    const void* source = log_msg_get_source(log);
-    if (source) {
+    const void *source = log_msg_get_source(log);
+    if (source)
+    {
         uint8_t domain_id = log_msg_get_domain(log);
         int16_t source_id =
-            (IS_ENABLED(CONFIG_LOG_RUNTIME_FILTERING) ? log_dynamic_source_id((void*)source)
+            (IS_ENABLED(CONFIG_LOG_RUNTIME_FILTERING) ? log_dynamic_source_id((void *) source)
                                                       : log_const_source_id(source));
         module = log_source_name_get(domain_id, source_id);
     }
 
     size_t len;
-    void* data = log_msg_get_package(log, &len);
+    void *data = log_msg_get_package(log, &len);
     ctx->print_ctx.ctr = 0;
     cbpprintf(cbpprintf_out_func, &ctx->print_ctx, data);
     ctx->print_ctx.msg[ctx->print_ctx.ctr] = '\0';
     log_to_log_func(log)(ctx->client, module, ctx->print_ctx.msg, NULL, NULL);
 }
 
-static void init(const struct log_backend* const backend) {
+static void init(const struct log_backend *const backend)
+{
     log_ctx.enabled = false;
     log_backend_enable(&log_backend_golioth, &log_ctx, CONFIG_LOG_MAX_LEVEL);
 }
 
-static void panic(struct log_backend const* const backend) {
+static void panic(struct log_backend const *const backend)
+{
     struct golioth_log_ctx *ctx = backend->cb->ctx;
     ctx->panic_mode = true;
 }
 
-static void dropped(const struct log_backend* const backend, uint32_t cnt) {}
+static void dropped(const struct log_backend *const backend, uint32_t cnt) {}
 
 static const struct log_backend_api log_backend_golioth_api = {
     .panic = panic,
@@ -123,13 +133,16 @@ static const struct log_backend_api log_backend_golioth_api = {
 
 LOG_BACKEND_DEFINE(log_backend_golioth, log_backend_golioth_api, true);
 
-int log_backend_golioth_disable(void* client) {
+int log_backend_golioth_disable(void *client)
+{
     log_ctx.enabled = false;
     return 0;
 }
 
-int log_backend_golioth_enable(void* client) {
-    if (log_ctx.client == NULL) {
+int log_backend_golioth_enable(void *client)
+{
+    if (log_ctx.client == NULL)
+    {
         log_ctx.client = client;
     }
 
