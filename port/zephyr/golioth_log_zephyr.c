@@ -79,7 +79,7 @@ static void process(const struct log_backend* const backend, union log_msg_gener
     struct log_msg* log = &msg->log;
     struct golioth_log_ctx* ctx = backend->cb->ctx;
 
-    if (ctx->panic_mode) {
+    if ((ctx == NULL) || (ctx->panic_mode)) {
         return;
     }
 
