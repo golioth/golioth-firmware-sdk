@@ -1079,6 +1079,7 @@ static void golioth_coap_client_thread(void *arg)
 
         LOG_INF("Ending session");
 
+        golioth_sys_client_disconnected(client);
         if (client->event_callback && client->session_connected)
         {
             client->event_callback(client,
