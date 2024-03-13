@@ -31,6 +31,7 @@ struct cbpprintf_ctx
 struct golioth_log_ctx
 {
     struct golioth_client *client;
+    bool enabled;
     bool panic_mode;
     struct cbpprintf_ctx print_ctx;
 };
@@ -86,7 +87,7 @@ static void process(const struct log_backend *const backend, union log_msg_gener
     struct log_msg *log = &msg->log;
     struct golioth_log_ctx *ctx = backend->cb->ctx;
 
-    if ((ctx == NULL) || (ctx->panic_mode))
+    if ((ctx == NULL) || (!ctx->enabled) || (ctx->panic_mode))
     {
         return;
     }
@@ -111,7 +112,7 @@ static void process(const struct log_backend *const backend, union log_msg_gener
 
 static void init(const struct log_backend *const backend)
 {
-    log_backend_deactivate(backend);
+    ARG_UNUSED(backend);
 }
 
 static void panic(struct log_backend const *const backend)
@@ -136,7 +137,7 @@ LOG_BACKEND_DEFINE(log_backend_golioth, log_backend_golioth_api, false);
 
 int log_backend_golioth_disable(void *client)
 {
-    log_backend_disable(&log_backend_golioth);
+    log_ctx.enabled = false;
 
     return 0;
 }
@@ -146,8 +147,9 @@ int log_backend_golioth_enable(void *client)
     if (log_ctx.client == NULL)
     {
         log_ctx.client = client;
+        log_backend_enable(&log_backend_golioth, &log_ctx, CONFIG_LOG_MAX_LEVEL);
     }
-    log_backend_enable(&log_backend_golioth, &log_ctx, CONFIG_LOG_MAX_LEVEL);
+    log_ctx.enabled = true;
 
     return 0;
 }
