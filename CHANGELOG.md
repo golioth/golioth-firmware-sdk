@@ -4,6 +4,55 @@ All notable changes to this project will be documented in this file.
 The format is based on [Keep a Changelog](https://keepachangelog.com/en/1.0.0/),
 and this project adheres to [Semantic Versioning](https://semver.org/spec/v2.0.0.html).
 
+## [0.11.0] - 2024-03-13
+
+### Highlights
+
+- Zephyr port updated to Zephyr v3.6
+- NCS port updated to NCS v2.5.2
+- ESP-IDF port updated to ESP-IDF v5.2.1
+- New examples for ESP-IDF
+- Initial support for `native_sim` target in Zephyr
+
+### Breaking Changes
+
+### Added:
+
+- New examples for ESP-IDF: `hello`, `rpc`, `lightdb state`
+- Additional hardware-in-the-loop integration tests
+- `west patch` command for applying git patches
+- `native_sim` support (requires patches on top of Zephyr v3.6)
+- nRF91 LTE monitor log level is now configurable
+- Zephyr console now returns an error when attempting to store a PSK-ID
+  or PSK that is too long
+
+### Changed:
+
+- Improved NACK handling during initial connection
+- OTA module now decodes all items in a manifest
+- RPC returns `NOT_FOUND` instead of `UNKNOWN` when receiving an RPC
+  for an unregistered method
+- Improved and clarified documentation
+- Improved and stablized HIL test infrastructure
+- Documentation updated to reflect change from Device Name to Certificate
+  ID in device certificates
+
+### Removed:
+
+- Individual type functions for Stream service
+- Zephyr port no longer depends on `CONFIG_POSIX_API`
+
+### Fixed:
+
+- Fixed range checking for int type settings
+- Fixed incorrect error code for receiving an unknown setting
+- Fixed crash when disabling Zephyr log backend
+- Fixed buffer allocation failures on nRF52840DK
+- Fixed `free()` of unallocated buffer
+- Zephyr CoAP client was not notifying port layer of disconnections
+- Some kconfig settings had no effect in the ESP-IDF port
+- Some kconfig options could not be overriden in the Zephyr port
+
 ## [0.10.0] - 2024-01-31
 
 ### Highlights
