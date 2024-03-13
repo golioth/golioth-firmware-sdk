@@ -15,6 +15,7 @@ LOG_MODULE_REGISTER(lightdb_get, LOG_LEVEL_DBG);
 #include <string.h>
 #include <zcbor_decode.h>
 #include <zephyr/kernel.h>
+#include <zephyr/net/tls_credentials.h>
 
 #include <samples/common/net_connect.h>
 
@@ -142,11 +143,45 @@ static void counter_get_cbor_async(struct golioth_client *client)
     }
 }
 
+static int credentials_set_psk(void)
+{
+#ifdef CONFIG_GOLIOTH_SAMPLE_PSK_ID
+    int err;
+
+    err = tls_credential_add(CONFIG_GOLIOTH_COAP_CLIENT_CREDENTIALS_TAG,
+                             TLS_CREDENTIAL_PSK_ID,
+                             CONFIG_GOLIOTH_SAMPLE_PSK_ID,
+                             strlen(CONFIG_GOLIOTH_SAMPLE_PSK_ID));
+    if (err)
+    {
+        LOG_ERR("Failed to register PSK ID: %d", err);
+        return err;
+    }
+
+    err = tls_credential_add(CONFIG_GOLIOTH_COAP_CLIENT_CREDENTIALS_TAG,
+                             TLS_CREDENTIAL_PSK,
+                             CONFIG_GOLIOTH_SAMPLE_PSK,
+                             strlen(CONFIG_GOLIOTH_SAMPLE_PSK));
+    if (err)
+    {
+        LOG_ERR("Failed to register PSK: %d", err);
+        return err;
+    }
+#endif
+
+    return 0;
+}
+
 int main(void)
 {
     LOG_DBG("Start LightDB get sample");
 
     IF_ENABLED(CONFIG_GOLIOTH_SAMPLE_COMMON, (net_connect();))
+
+    if (IS_ENABLED(CONFIG_GOLIOTH_SAMPLE_AUTH_TYPE_TAG))
+    {
+        credentials_set_psk();
+    }
 
     /* Note: In production, you would provision unique credentials onto each
      * device. For simplicity, we provide a utility to hardcode credentials as
