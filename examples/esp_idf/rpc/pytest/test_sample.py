@@ -10,7 +10,7 @@ LOGGER = logging.getLogger(__name__)
 
 pytestmark = pytest.mark.anyio
 
-async def test_logging(board, device):
+async def test_rpc(board, device):
     # Set Golioth credential
     golioth_cred = (await device.credentials.list())[0]
     board.set_golioth_psk_credentials(golioth_cred.identity, golioth_cred.key)
