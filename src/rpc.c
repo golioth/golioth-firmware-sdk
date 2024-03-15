@@ -108,6 +108,7 @@ static void on_rpc(struct golioth_client *client,
 
     if (payload_size == 3 && payload[1] == 'O' && payload[2] == 'K')
     {
+        GLTH_LOGI(TAG, "RPC observation established");
         /* Ignore "OK" response received after observing */
         return;
     }

@@ -19,7 +19,7 @@ async def test_rpc(board, device):
     board.reset()
 
     # Wait for device to reboot and connect
-    board.wait_for_regex_in_line('.*rpc: Golioth client connected', timeout_s=90.0)
+    board.wait_for_regex_in_line('.*RPC observation established', timeout_s=90.0)
 
     # Test successful RPC
     result = await device.rpc.call("multiply", [ 7, 6 ])

@@ -123,7 +123,11 @@ void app_main(void)
 
     int err = golioth_rpc_register(rpc, "multiply", on_multiply, NULL);
 
-    if (err)
+    if (!err)
+    {
+        ESP_LOGI(TAG, "RPC successfully registered");
+    }
+    else
     {
         ESP_LOGE(TAG, "Failed to register RPC: %d", err);
     }
