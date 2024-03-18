@@ -13,6 +13,8 @@
 
 #if defined(CONFIG_GOLIOTH_LIGHTDB_STATE)
 
+LOG_TAG_DEFINE(lightdb_state);
+
 #define GOLIOTH_LIGHTDB_STATE_PATH_PREFIX ".d/"
 
 typedef enum
@@ -77,6 +79,8 @@ enum golioth_status golioth_lightdb_set_bool_async(struct golioth_client *client
                                    GOLIOTH_SYS_WAIT_FOREVER);
 }
 
+#if defined(CONFIG_GOLIOTH_LIGHTDB_STATE_FLOAT_HELPERS)
+
 enum golioth_status golioth_lightdb_set_float_async(struct golioth_client *client,
                                                     const char *path,
                                                     float value,
@@ -96,6 +100,8 @@ enum golioth_status golioth_lightdb_set_float_async(struct golioth_client *clien
                                    false,
                                    GOLIOTH_SYS_WAIT_FOREVER);
 }
+
+#endif  // CONFIG_GOLIOTH_LIGHTDB_STATE_FLOAT_HELPERS
 
 enum golioth_status golioth_lightdb_set_string_async(struct golioth_client *client,
                                                      const char *path,
@@ -230,6 +236,8 @@ enum golioth_status golioth_lightdb_set_bool_sync(struct golioth_client *client,
                                    timeout_s);
 }
 
+#if defined(CONFIG_GOLIOTH_LIGHTDB_STATE_FLOAT_HELPERS)
+
 enum golioth_status golioth_lightdb_set_float_sync(struct golioth_client *client,
                                                    const char *path,
                                                    float value,
@@ -248,6 +256,8 @@ enum golioth_status golioth_lightdb_set_float_sync(struct golioth_client *client
                                    true,
                                    timeout_s);
 }
+
+#endif  // CONFIG_GOLIOTH_LIGHTDB_STATE_FLOAT_HELPERS
 
 enum golioth_status golioth_lightdb_set_string_sync(struct golioth_client *client,
                                                     const char *path,
@@ -327,7 +337,11 @@ static void on_payload(struct golioth_client *client,
             *ldb_response->i = golioth_payload_as_int(payload, payload_size);
             break;
         case LIGHTDB_GET_TYPE_FLOAT:
+#if defined(CONFIG_GOLIOTH_LIGHTDB_STATE_FLOAT_HELPERS)
             *ldb_response->f = golioth_payload_as_float(payload, payload_size);
+#else
+            GLTH_LOGE(TAG, "Float support disabled");
+#endif  // CONFIG_GOLIOTH_LIGHTDB_STATE_FLOAT_HELPERS
             break;
         case LIGHTDB_GET_TYPE_BOOL:
             *ldb_response->b = golioth_payload_as_bool(payload, payload_size);
@@ -397,6 +411,8 @@ enum golioth_status golioth_lightdb_get_bool_sync(struct golioth_client *client,
     return status;
 }
 
+#if defined(CONFIG_GOLIOTH_LIGHTDB_STATE_FLOAT_HELPERS)
+
 enum golioth_status golioth_lightdb_get_float_sync(struct golioth_client *client,
                                                    const char *path,
                                                    float *value,
@@ -420,6 +436,8 @@ enum golioth_status golioth_lightdb_get_float_sync(struct golioth_client *client
     }
     return status;
 }
+
+#endif  // CONFIG_GOLIOTH_LIGHTDB_STATE_FLOAT_HELPERS
 
 enum golioth_status golioth_lightdb_get_string_sync(struct golioth_client *client,
                                                     const char *path,
