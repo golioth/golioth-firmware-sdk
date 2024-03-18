@@ -4,6 +4,7 @@ from esp32_devkitc_wrover import ESP32DevKitCWROVER
 from nrf52840dk import nRF52840DK
 from nrf9160dk  import nRF9160DK
 from mimxrt1024evk import MIMXRT1024EVK
+from linuxboard import LinuxBoard
 
 def pytest_addoption(parser):
     parser.addoption("--board", type=str,
@@ -60,5 +61,7 @@ def board(board_name, port, baud, wifi_ssid, wifi_psk, fw_image, serial_number):
         return nRF9160DK(port, baud, wifi_ssid, wifi_psk, fw_image, serial_number)
     elif board_name.lower() == "mimxrt1024_evk":
         return MIMXRT1024EVK(port, baud, wifi_ssid, wifi_psk, fw_image, serial_number)
+    elif board_name.lower() == "linux":
+        return LinuxBoard(fw_image)
     else:
         raise ValueError("Unknown board")
