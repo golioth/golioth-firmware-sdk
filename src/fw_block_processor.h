@@ -18,7 +18,6 @@ typedef enum golioth_status (*process_fn)(const uint8_t *in, size_t in_size, voi
 typedef struct
 {
     uint32_t block_min_ms;
-    float block_ema_ms;
     uint32_t block_max_ms;
 } block_latency_stats_t;
 
