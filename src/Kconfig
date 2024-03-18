@@ -138,6 +138,17 @@ config GOLIOTH_LIGHTDB_STATE
     help
         Enable the Golioth LightDB State service
 
+if GOLIOTH_LIGHTDB_STATE
+
+config GOLIOTH_LIGHTDB_STATE_FLOAT_HELPERS
+    bool "Helper functions for working with floats in LightDB State"
+    help
+        The SDk provides helper functions for getting and setting
+        individual values of various types in LightDB State. This enables
+        the helper functions for float types.
+
+endif # GOLIOTH_LIGHTDB_STATE
+
 config GOLIOTH_STREAM
     bool "Golioth LightDB Stream service"
     help
