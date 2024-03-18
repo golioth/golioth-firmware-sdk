@@ -16,15 +16,12 @@ LOG_TAG_DEFINE(fw_block_processor);
 static void block_stats_init(block_latency_stats_t *stats)
 {
     stats->block_min_ms = UINT32_MAX;
-    stats->block_ema_ms = 0.0f;
     stats->block_max_ms = 0;
 }
 
 static void block_stats_update(block_latency_stats_t *stats, uint32_t block_latency_ms)
 {
-    const float alpha = 0.01f;
     stats->block_min_ms = min(stats->block_min_ms, block_latency_ms);
-    stats->block_ema_ms = alpha * (float) block_latency_ms + (1.0f - alpha) * stats->block_ema_ms;
     stats->block_max_ms = max(stats->block_max_ms, block_latency_ms);
 }
 
@@ -330,7 +327,6 @@ void fw_block_processor_log_results(const fw_block_processor_ctx_t *ctx)
 {
     GLTH_LOGI(TAG, "Block Latency Stats:");
     GLTH_LOGI(TAG, "   Min: %" PRIu32 " ms", ctx->download.block_stats.block_min_ms);
-    GLTH_LOGI(TAG, "   Ave: %.3f ms", (double) ctx->download.block_stats.block_ema_ms);
     GLTH_LOGI(TAG, "   Max: %" PRIu32 " ms", ctx->download.block_stats.block_max_ms);
     GLTH_LOGI(TAG, "Total bytes written: %" PRIu32, (uint32_t) ctx->handle_block.bytes_handled);
 
