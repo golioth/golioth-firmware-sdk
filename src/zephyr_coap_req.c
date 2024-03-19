@@ -146,7 +146,9 @@ static int golioth_coap_req_reply_handler(struct golioth_coap_req *req,
     int block2;
     int err;
 
-    code = coap_header_get_code(response);
+    // TODO: Replace with coap_header_get_code(response) after
+    // NCS update includes fix for TOO_MANY_REQUESTS
+    code = response->data[1];
 
     LOG_DBG("CoAP response code: 0x%x (class %u detail %u)",
             (unsigned int) code,
