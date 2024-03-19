@@ -97,7 +97,7 @@ jobs:
     runs-on: [is_active, has_esp32s3_devkitc, mikes_orange_pi]
 
     container:
-      image: golioth/golioth-hil-base:ff78585
+      image: golioth/golioth-hil-base:e635559
       volumes:
         - /dev:/dev
         - /home/golioth/credentials:/opt/credentials
@@ -128,6 +128,8 @@ jobs:
         mkdir -p /tmp
         apt update -y --allow-insecure-repositories
         apt install goliothctl -y
+    - name: Power On USB Hub
+      run: python3 /opt/golioth-scripts/usb_hub_power.py on
     - name: Prepare goliothctl secret
       run: |
         mkdir -p ~/.golioth
@@ -159,3 +161,6 @@ jobs:
       run: |
         source /opt/credentials/runner_env.sh
         esptool.py --port $CI_ESP32S3_DEVKITC_PORT erase_flash
+    - name: Power Off USB Hub
+      if: always()
+      run: python3 /opt/golioth-scripts/usb_hub_power.py off

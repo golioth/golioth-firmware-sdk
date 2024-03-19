@@ -58,7 +58,7 @@ jobs:
     runs-on: [ is_active, "has_${{ inputs.hil_board }}" ]
 
     container:
-      image: golioth/golioth-hil-base:af8e4f5
+      image: golioth/golioth-hil-base:e635559
       volumes:
         - /dev:/dev
         - /home/golioth/credentials:/opt/credentials
@@ -72,8 +72,8 @@ jobs:
           pip install pytest pytest-timeout
           pip install tests/hil/scripts/pytest-hil
           pip install git+https://github.com/golioth/python-golioth-tools@v0.6.2
-      - name: Power Cycle USB Hub
-        run: /opt/golioth-scripts/power-cycle-usb-hub.sh
+      - name: Power On USB Hub
+        run: python3 /opt/golioth-scripts/usb_hub_power.py on
       - name: Download build
         uses: actions/download-artifact@v4
         with:
@@ -107,3 +107,6 @@ jobs:
           source /opt/credentials/runner_env.sh
           PORT_VAR=CI_${hil_board^^}_PORT
           esptool.py --port ${!PORT_VAR} erase_flash
+      - name: Power Off USB Hub
+        if: always()
+        run: python3 /opt/golioth-scripts/usb_hub_power.py off
