@@ -168,6 +168,14 @@ config GOLIOTH_RPC_MAX_NUM_METHODS
         Maximum number of Golioth Remote Procedure Call methods that can
         be registered.
 
+config GOLIOTH_RPC_MAX_RESPONSE_LEN
+    int "Maximum number of bytes to allocate for RPC response payload"
+    default 256
+    help
+        Maximum number of bytes to allocate for the Golioth remote procedure call response payload.
+        This value determines the memory available for the response_detail_map passed to the RPC
+        callback.
+
 endif # GOLIOTH_RPC
 
 config GOLIOTH_SETTINGS
