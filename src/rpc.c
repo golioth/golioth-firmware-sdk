@@ -122,7 +122,7 @@ static void on_rpc(struct golioth_client *client,
     }
 
     /* Start encoding response */
-    uint8_t response_buf[CONFIG_GOLIOTH_RPC_MAX_RESPONSE_LEN];
+    static uint8_t response_buf[CONFIG_GOLIOTH_RPC_MAX_RESPONSE_LEN];
     ZCBOR_STATE_E(zse, 1, response_buf, sizeof(response_buf), 1);
 
     ok = zcbor_map_start_encode(zse, 1);
