@@ -88,6 +88,14 @@ jobs:
       coap_gateway_url: ${{ inputs.coap_gateway_url }}
     secrets: inherit
 
+  hil_test_linux:
+    uses: ./.github/workflows/hil_test_linux.yml
+    with:
+      api-url: ${{ inputs.api-url }}
+      api-key-id: ${{ inputs.api-key-id }}
+      coap_gateway_url: ${{ inputs.coap_gateway_url }}
+    secrets: inherit
+
   hil_sample_zephyr:
     strategy:
       fail-fast: false
