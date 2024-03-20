@@ -1,3 +1,20 @@
+# Guard against using CONFIG_GOLIOTH_SAMPLE_COMMON=y from applications other than SDK examples.
+if(CONFIG_GOLIOTH_SAMPLE_COMMON)
+    file(RELATIVE_PATH relative_path
+        ${ZEPHYR_GOLIOTH_FIRMWARE_SDK_MODULE_DIR}/dupa
+        ${APPLICATION_SOURCE_DIR})
+
+    string(REGEX MATCH "^examples" matched ${relative_path})
+
+    if(NOT matched)
+        message(WARNING
+            "WARNING: Using CONFIG_GOLIOTH_SAMPLE_COMMON=y with external \
+             application code. This option is supposed to be used only \
+             from projects in ${ZEPHYR_GOLIOTH_FIRMWARE_SDK_MODULE_DIR}/examples/
+        ")
+    endif()
+endif()
+
 zephyr_library_sources_ifndef(CONFIG_NET_CONFIG_NEED_IPV4 net_connect.c)
 zephyr_library_sources_ifdef(CONFIG_GOLIOTH_SAMPLE_HARDCODED_CREDENTIALS hardcoded_credentials.c)
 zephyr_library_sources_ifdef(CONFIG_GOLIOTH_SAMPLE_NRF91_LTE_MONITOR nrf91_lte_monitor.c)
