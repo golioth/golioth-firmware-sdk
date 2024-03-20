@@ -21,17 +21,17 @@ on:
         description: "API gateway URL for Golioth backend services"
         required: false
         type: string
-        default: "https://api.golioth.io"
+        default: "https://api.golioth.dev"
       api-key-id:
         description: "Name of GitHub secret containing an API key that will be used to authenticate with the Golioth backend"
         required: false
         type: string
-        default: "PROD_CI_PROJECT_API_KEY"
+        default: "DEV_CI_PROJECT_API_KEY"
       coap_gateway_url:
         description: "The CoAP gateway URL to be hardcoded into test firmware"
         required: false
         type: string
-        default: "coaps://coap.golioth.io"
+        default: "coaps://coap.golioth.dev"
 
 jobs:
   hil_test_zephyr:
