@@ -30,7 +30,7 @@ API documentation: https://firmware-sdk-docs.golioth.io/
 This repo uses git submodules, so you will need to clone with the `--recursive` option:
 
 ```sh
-git clone --recursive https://github.com/golioth/golioth-firmware-sdk.git -b v0.11.0
+git clone --recursive https://github.com/golioth/golioth-firmware-sdk.git -b v0.11.1
 ```
 
 Or, if you've already cloned but forgot the `--recursive`, you can update and
@@ -86,11 +86,11 @@ The `verify.py` script will return 0 on success (all tests pass), and non-zero o
 
 | Board                | Platform                 | Last Tested Commit   |
 | ---                  | ---                      | ---                  |
-| ESP32-S3-DevKitC-1   | ESP-IDF (v5.2.1)         | v0.11.0 (Mar 13, 2024) |
-| ESP32-C3-DevKitM-1   | ESP-IDF (v5.2.1)         | v0.11.0 (Mar 13, 2024) |
-| ESP32-DevKitC-WROVER | ESP-IDF (v5.2.1)         | v0.11.0 (Mar 13, 2024) |
-| ESP32-DevKitC-WROVER | Zephyr (v3.6.0)          | v0.11.0 (Mar 13, 2024) |
-| nRF52840 DK + ESP32  | Zephyr (v3.6.0)          | v0.11.0 (Mar 13, 2024) |
-| MIMXRT1024-EVK       | Zephyr (v3.6.0)          | v0.11.0 (Mar 13, 2024) |
-| nRF9160 DK           | nRF Connect SDK (v2.5.2) | v0.11.0 (Mar 13, 2024) |
-| CY8CPROTO-062-4343W  | ModusToolbox (3.0.0)     | v0.11.0 (Mar 13, 2024) |
+| ESP32-S3-DevKitC-1   | ESP-IDF (v5.2.1)         | v0.11.1 (Mar 20, 2024) |
+| ESP32-C3-DevKitM-1   | ESP-IDF (v5.2.1)         | v0.11.1 (Mar 20, 2024) |
+| ESP32-DevKitC-WROVER | ESP-IDF (v5.2.1)         | v0.11.1 (Mar 20, 2024) |
+| ESP32-DevKitC-WROVER | Zephyr (v3.6.0)          | v0.11.1 (Mar 20, 2024) |
+| nRF52840 DK + ESP32  | Zephyr (v3.6.0)          | v0.11.1 (Mar 20, 2024) |
+| MIMXRT1024-EVK       | Zephyr (v3.6.0)          | v0.11.1 (Mar 20, 2024) |
+| nRF9160 DK           | nRF Connect SDK (v2.5.2) | v0.11.1 (Mar 20, 2024) |
+| CY8CPROTO-062-4343W  | ModusToolbox (3.0.0)     | v0.11.1 (Mar 20, 2024) |
