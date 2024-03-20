@@ -4,6 +4,31 @@ All notable changes to this project will be documented in this file.
 The format is based on [Keep a Changelog](https://keepachangelog.com/en/1.0.0/),
 and this project adheres to [Semantic Versioning](https://semver.org/spec/v2.0.0.html).
 
+## [0.11.1] - 2024-03-20
+
+### Known Issues:
+
+- Default Kconfig values may not propagate correctly if the Golioth SDK
+  is not listed first in the West manifest. To workaround this, ensure
+  that Golioth is listed first in your application's manifest.
+
+### Added:
+
+- CONFIG_GOLIOTH_RPC_MAX_RESPONSE_LEN to control the size of the buffer
+  used to hold the RPC response
+
+### Changed:
+
+- Improved how the Golioth Zephyr log backend handles network disconnects
+  to avoid interfering with the application's control of logging levels
+- Removed default dependency on floating point support
+
+### Fixed:
+
+- Enable log shell commands in Zephyr Certificate Provisioning example
+- Build error when compiling with NCS and without newlib
+- Correctly handle TOO_MANY_REQUESTS responses from the server in NCS
+
 ## [0.11.0] - 2024-03-13
 
 ### Highlights
@@ -13,8 +38,6 @@ and this project adheres to [Semantic Versioning](https://semver.org/spec/v2.0.0
 - ESP-IDF port updated to ESP-IDF v5.2.1
 - New examples for ESP-IDF
 - Initial support for `native_sim` target in Zephyr
-
-### Breaking Changes
 
 ### Added:
 
