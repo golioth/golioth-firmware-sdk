@@ -37,16 +37,12 @@ jobs:
     - name: Compile
       shell: bash
       run: |
-        rm -rf test_binaries
-        mkdir -p test_binaries
-
         export EXTRA_BUILD_ARGS=-DCONFIG_GOLIOTH_COAP_HOST_URI=${{ inputs.coap_gateway_url }}
 
         for test in `ls tests/hil/tests`
         do
-          cmake -B build -S tests/hil/platform/linux $EXTRA_BUILD_ARGS -DGOLIOTH_HIL_TEST=$test
-          make -j8 -C build
-          mv build/hil test_binaries/${test}-test
+          cmake -B build/$test -S tests/hil/platform/linux $EXTRA_BUILD_ARGS -DGOLIOTH_HIL_TEST=$test
+          make -j8 -C build/$test
         done
     - name: Setup Python dependencies
       run: |
@@ -54,15 +50,75 @@ jobs:
         pip install pytest pytest-timeout
         pip install tests/hil/scripts/pytest-hil
         pip install git+https://github.com/golioth/python-golioth-tools@v0.6.2
+    - name: Install Linux dependencies
+      run: |
+        sudo apt-get install lcov
     - name: Run test
+      id: run_test
       shell: bash
       run: |
+        # Get coverage baseline
+        lcov -i -o baseline.info -c   \
+             -d build/connection      \
+             --include "*/golioth-firmware-sdk/src/*"
+        LCOV_FILES="-a baseline.info"
+
         for test in `ls tests/hil/tests`
         do
           pytest --rootdir . tests/hil/tests/$test      \
             --board linux                               \
-            --fw-image test_binaries/${test}-test       \
+            --fw-image build/${test}/hil                \
             --api-url ${{ inputs.api-url }}             \
             --api-key ${{ secrets[inputs.api-key-id] }} \
             --timeout=600
+          lcov -c                                       \
+               --directory build/${test}                \
+               --include "*/golioth-firmware-sdk/src/*" \
+               -o ${test}.info
+          LCOV_FILES="$LCOV_FILES -a ${test}.info"
         done
+
+        lcov $LCOV_FILES -o all_tests.info
+
+        genhtml -o coverage_html          \
+                --rc genhtml_med_limit=50 \
+                --rc genhtml_hi_limit=80  \
+                all_tests.info
+
+        # Generate coverage summary and format into markdown table
+
+        coverage_summary=`lcov --summary all_tests.info`
+        coverage_summary=${coverage_summary#*$'\n'*$'\n'}
+        coverage_summary=${coverage_summary%%  branches*}
+        coverage_summary="$(echo "$coverage_summary" | sed 's/\.*:/ |/g' | sed 's/^  /|/g' | sed 's/)/)|/g')"
+
+        # Echo coverage summary into GitHub Output, with title
+
+        echo "coverage_summary<<EOF" >> $GITHUB_OUTPUT
+        echo "# Code Coverage" >> $GITHUB_OUTPUT
+        echo "| Type | Coverage |" >> $GITHUB_OUTPUT
+        echo "| --- | --- |" >> $GITHUB_OUTPUT
+        echo "$coverage_summary" >> $GITHUB_OUTPUT
+        echo "EOF" >> $GITHUB_OUTPUT
+    - name: Find Comment
+      uses: peter-evans/find-comment@v3
+      if: github.event_name == 'pull_request'
+      id: fc
+      with:
+        issue-number: ${{ github.event.pull_request.number }}
+        comment-author: 'github-actions[bot]'
+        body-includes: Code Coverage
+    - name: Code coverage comment
+      uses: peter-evans/create-or-update-comment@v4
+      if: github.event_name == 'pull_request'
+      with:
+        comment-id: ${{ steps.fc.outputs.comment-id }}
+        issue-number: ${{ github.event.pull_request.number }}
+        body: ${{ steps.run_test.outputs.coverage_summary }}
+        edit-mode: replace
+    - name: Upload artifacts
+      uses: actions/upload-artifact@v4
+      with:
+        name: linux-hil-test-coverage
+        path: |
+          coverage_html/*
