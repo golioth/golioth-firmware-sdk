@@ -31,7 +31,7 @@ if GOLIOTH_FIRMWARE_SDK
 
 menu "Golioth SDK Configuration"
 
-rsource '${ZEPHYR_GOLIOTH_FIRMWARE_SDK_MODULE_DIR}/src/Kconfig'
+source "${ZEPHYR_GOLIOTH_FIRMWARE_SDK_MODULE_DIR}/src/Kconfig"
 
 config GOLIOTH_USE_CONNECTION_ID
 	bool "Use DTLS 1.2 Connection IDs"
