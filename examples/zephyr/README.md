@@ -67,6 +67,9 @@ based project (e.g. Zephyr RTOS):
   submodules: true
 ```
 
+> :warning: **Warning:** To ensure that default Kconfig values are propagated
+correctly, place the golioth entry first in your west manifest.
+
 and clone all repositories including that one by running:
 
 ```console
