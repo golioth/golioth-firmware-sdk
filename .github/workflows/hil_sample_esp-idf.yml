@@ -31,8 +31,6 @@ jobs:
     - name: Prep for build
       id: build_prep
       run: |
-        echo CONFIG_GOLIOTH_COAP_HOST_URI=\"${{ inputs.coap_gateway_url }}\" >> tests/hil/platform/esp-idf/sdkconfig.defaults
-
         rm -rf test_binaries
         mkdir test_binaries
         echo sample_list=`find examples/esp_idf -type d -name pytest -exec dirname "{}" \;` >> "$GITHUB_OUTPUT"
@@ -41,7 +39,13 @@ jobs:
       with:
         esp_idf_version: v5.2.1
         target: ${{ inputs.idf_target }}
-        command: 'for sample in ${{ steps.build_prep.outputs.sample_list }}; do idf.py -C $sample build && mv ${sample}/build/merged.bin test_binaries/$(basename $sample).bin; done'
+        command: |
+          for sample in ${{ steps.build_prep.outputs.sample_list }};
+          do
+            echo CONFIG_GOLIOTH_COAP_HOST_URI=\"${{ inputs.coap_gateway_url }}\" >> ${sample}/sdkconfig.defaults && \
+            idf.py -C $sample build && \
+            mv ${sample}/build/merged.bin test_binaries/$(basename $sample).bin
+          done
     - name: Save Artifacts
       uses: actions/upload-artifact@v4
       with:
