@@ -5,6 +5,7 @@ build.tar.gz
 credentials.yml
 credentials.inc
 .cache
+.DS_Store
 .vscode
 firebase-debug.log
 mtb_shared
