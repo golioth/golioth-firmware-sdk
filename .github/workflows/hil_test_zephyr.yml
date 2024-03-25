@@ -1,6 +1,32 @@
 name: Zephyr Hardware-in-the-Loop Tests
 
 on:
+  workflow_dispatch:
+    inputs:
+      hil_board:
+        required: true
+        type: string
+      west_board:
+        required: true
+        type: string
+      manifest:
+        required: true
+        type: string
+      binary_name:
+        required: true
+        type: string
+      binary_blob:
+        required: false
+        type: string
+      api-url:
+        required: true
+        type: string
+      api-key-id:
+        required: true
+        type: string
+      coap_gateway_url:
+        required: true
+        type: string
   workflow_call:
     inputs:
       hil_board:
