@@ -88,7 +88,7 @@ jobs:
         run: |
           pip install pytest pytest-timeout
           pip install tests/hil/scripts/pytest-hil
-          pip install git+https://github.com/golioth/python-golioth-tools@v0.6.2
+          pip install git+https://github.com/golioth/python-golioth-tools@v0.6.3
       - name: Power On USB Hub
         run: python3 /opt/golioth-scripts/usb_hub_power.py on
       - name: Download build
@@ -113,6 +113,7 @@ jobs:
               --api-key ${{ secrets[inputs.api-key-id] }}                       \
               --wifi-ssid ${{ secrets[format('{0}_WIFI_SSID', runner.name)] }}  \
               --wifi-psk ${{ secrets[format('{0}_WIFI_PSK', runner.name)] }}    \
+              --mask-secrets                                                    \
               --timeout=600
           done
       - name: Erase flash

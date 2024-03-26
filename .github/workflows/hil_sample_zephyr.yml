@@ -147,7 +147,7 @@ jobs:
           pip3 install -r zephyr/scripts/requirements-build-test.txt
           pip3 install -r zephyr/scripts/requirements-run-test.txt
 
-          pip3 install git+https://github.com/golioth/python-golioth-tools@v0.6.2
+          pip3 install git+https://github.com/golioth/python-golioth-tools@v0.6.3
       - name: Power On USB Hub
         run: python3 /opt/golioth-scripts/usb_hub_power.py on
       - name: Download build
@@ -179,7 +179,8 @@ jobs:
                 --pytest-args="--api-url=${{ inputs.api-url }}"                                   \
                 --pytest-args="--api-key=${{ secrets[inputs.api-key-id] }}"                       \
                 --pytest-args="--wifi-ssid=${{ secrets[format('{0}_WIFI_SSID', runner.name)] }}"  \
-                --pytest-args="--wifi-psk=${{ secrets[format('{0}_WIFI_PSK', runner.name)] }}"
+                --pytest-args="--wifi-psk=${{ secrets[format('{0}_WIFI_PSK', runner.name)] }}"    \
+                --pytest-args="--mask-secrets"
       - name: Upload artifacts
         uses: actions/upload-artifact@v4
         if: ${{ always() }}
