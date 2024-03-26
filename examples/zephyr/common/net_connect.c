@@ -11,6 +11,12 @@ LOG_MODULE_REGISTER(golioth_samples, LOG_LEVEL_DBG);
 #include <zephyr/net/net_if.h>
 #include <zephyr/net/dhcpv4.h>
 
+#ifdef CONFIG_PM_DEVICE
+#include <zephyr/pm/device.h>
+#include <zephyr/pm/device_runtime.h>
+static const struct device *modem = DEVICE_DT_GET(DT_ALIAS(modem));
+#endif
+
 struct wait_data
 {
     struct k_sem sem;
@@ -47,6 +53,33 @@ static void wait_for_net_event(struct net_if *iface, uint32_t event)
 void net_connect(void)
 {
     struct net_if *iface = net_if_get_default();
+
+    if (IS_ENABLED(CONFIG_BOARD_RAK5010))
+    {
+        int ret;
+
+#ifdef CONFIG_PM_DEVICE
+            LOG_INF("Powering on modem");
+            pm_device_action_run(modem, PM_DEVICE_ACTION_RESUME);
+#endif
+
+        LOG_INF("Bring up network interface");
+        ret = net_if_up(iface);
+        if (ret < 0) {
+            LOG_ERR("Failed to bring up network interface: %d", ret);
+            return;
+        }
+
+        LOG_INF("Waiting for L4 connected");
+        ret = net_mgmt_event_wait_on_iface(iface, NET_EVENT_L4_CONNECTED, NULL, NULL, NULL,
+                        K_SECONDS(120));
+
+        if (ret != 0) {
+            LOG_ERR("L4 was not connected in time");
+            return;
+        }
+        return;
+    }
 
     if (IS_ENABLED(CONFIG_GOLIOTH_SAMPLE_DHCP_BIND))
     {
