@@ -1097,11 +1097,23 @@ static int credentials_set_psk(const struct golioth_psk_credential *psk)
 {
     int err;
 
+    err = tls_credential_delete(sec_tag_list[0], TLS_CREDENTIAL_PSK_ID);
+    if ((err) && (err != -ENOENT))
+    {
+        LOG_ERR("Failed to delete PSK ID: %d", err);
+    }
+
     err = tls_credential_add(sec_tag_list[0], TLS_CREDENTIAL_PSK_ID, psk->psk_id, psk->psk_id_len);
     if (err)
     {
         LOG_ERR("Failed to register PSK ID: %d", err);
         return err;
+    }
+
+    err = tls_credential_delete(sec_tag_list[0], TLS_CREDENTIAL_PSK);
+    if ((err) && (err != -ENOENT))
+    {
+        LOG_ERR("Failed to delete PSK: %d", err);
     }
 
     err = tls_credential_add(sec_tag_list[0], TLS_CREDENTIAL_PSK, psk->psk, psk->psk_len);
