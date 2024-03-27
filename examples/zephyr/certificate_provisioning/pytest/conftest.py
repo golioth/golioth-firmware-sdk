@@ -7,6 +7,8 @@ import subprocess
 def pytest_addoption(parser):
     parser.addoption("--device-port", type=str,
                      help="Device serial port path")
+    parser.addoption("--wifi-ssid", type=str, help="WiFi SSID")
+    parser.addoption("--wifi-psk",  type=str, help="WiFi PSK")
 
 @pytest.fixture(scope="session")
 def device_port(request):
@@ -42,3 +44,17 @@ async def device_name(project):
         await project.delete_device_by_name(name)
     except:
         pass
+
+@pytest.fixture(scope="session")
+def wifi_ssid(request):
+    if request.config.getoption("--wifi-ssid") is not None:
+        return request.config.getoption("--wifi-ssid")
+    else:
+        return os.environ['WIFI_SSID']
+
+@pytest.fixture(scope="session")
+def wifi_psk(request):
+    if request.config.getoption("--wifi-psk") is not None:
+        return request.config.getoption("--wifi-psk")
+    else:
+        return os.environ['WIFI_PSK']
