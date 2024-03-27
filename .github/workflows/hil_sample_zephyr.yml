@@ -190,6 +190,8 @@ jobs:
             reports/*
             twister-out/**/*.log
             twister-out/**/report.xml
+            twister-out/*.xml
+            twister-out/*.json
 
       - name: Erase flash
         if: always()
