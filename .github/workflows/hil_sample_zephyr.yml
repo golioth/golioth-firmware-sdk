@@ -162,10 +162,6 @@ jobs:
         env:
           hil_board: ${{ inputs.hil_board }}
           west_board: ${{ inputs.west_board }}
-          GOLIOTH_API_KEY: ${{ secrets[inputs.api-key-id] }}
-          GOLIOTH_API_URL: ${{ inputs.api-url }}
-          WIFI_SSID: ${{ secrets[format('{0}_WIFI_SSID', runner.name)] }}
-          WIFI_PSK: ${{ secrets[format('{0}_WIFI_PSK', runner.name)] }}
         run: |
           source /opt/credentials/runner_env.sh
           export PATH=$PATH:/opt/SEGGER/JLink
@@ -173,14 +169,17 @@ jobs:
           export PATH=$PATH:$(go env GOPATH)/bin
           PORT_VAR=CI_${hil_board^^}_PORT
           SNR_VAR=CI_${hil_board^^}_SNR
-          zephyr/scripts/twister                                    \
-                -p ${{ inputs.west_board }}                         \
-                -T modules/lib/golioth-firmware-sdk/examples/zephyr \
-                --device-testing                                    \
-                --device-serial ${!PORT_VAR}                        \
-                --test-only                                         \
-                --west-flash="--skip-rebuild,--dev-id=${!SNR_VAR}"
-
+          zephyr/scripts/twister                                                                  \
+                -p ${{ inputs.west_board }}                                                       \
+                -T modules/lib/golioth-firmware-sdk/examples/zephyr                               \
+                --device-testing                                                                  \
+                --device-serial ${!PORT_VAR}                                                      \
+                --test-only                                                                       \
+                --west-flash="--skip-rebuild,--dev-id=${!SNR_VAR}"                                \
+                --pytest-args="--api-url=${{ inputs.api-url }}"                                   \
+                --pytest-args="--api-key=${{ secrets[inputs.api-key-id] }}"                       \
+                --pytest-args="--wifi-ssid=${{ secrets[format('{0}_WIFI_SSID', runner.name)] }}"  \
+                --pytest-args="--wifi-psk=${{ secrets[format('{0}_WIFI_PSK', runner.name)] }}"
       - name: Upload artifacts
         uses: actions/upload-artifact@v4
         if: ${{ always() }}
