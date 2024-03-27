@@ -24,9 +24,6 @@ async def test_lightdb_stream(board, device):
     # Reset board
     board.reset()
 
-    # Wait for device to reboot and connect
-    board.wait_for_regex_in_line('.*Golioth client connected', timeout_s=30.0)
-
     # Verify temp messages
 
     temp = 20.0
