@@ -69,7 +69,7 @@ jobs:
   test:
     name: esp-idf-${{ inputs.hil_board }}-test
     needs: build
-    runs-on: [ is_active, "has_${{ inputs.hil_board }}" ]
+    runs-on: [ is_active, jons_orange_pi ]
 
     container:
       image: golioth/golioth-hil-base:e635559
