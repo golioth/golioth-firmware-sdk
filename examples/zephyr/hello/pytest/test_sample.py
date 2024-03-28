@@ -1,10 +1,7 @@
-import logging
-import pytest
-import pprint
-import time
-import yaml
 import datetime
 import logging
+import pytest
+import time
 
 LOGGER = logging.getLogger(__name__)
 
