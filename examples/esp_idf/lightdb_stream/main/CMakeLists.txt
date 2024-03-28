@@ -2,7 +2,7 @@ set(esp_idf_common "../../common")
 set(examples_common "../../../common")
 
 set(includes
-    "${esp_idf_common}/include"
+    "${esp_idf_common}"
     "${examples_common}"
 )
 
@@ -11,7 +11,6 @@ set(srcs
     "${esp_idf_common}/shell.c"
     "${esp_idf_common}/wifi.c"
     "${esp_idf_common}/nvs.c"
-    "${esp_idf_common}/sample_credentials.c"
 )
 
 set(deps
