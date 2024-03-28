@@ -8,5 +8,4 @@ menu "Golioth SDK Configuration"
 
 rsource '../../../../src/Kconfig'
 
-endmenu
-
+endmenu # Golioth SDK Configuration

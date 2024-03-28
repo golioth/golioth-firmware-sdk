@@ -11,6 +11,7 @@ set(srcs
     "${esp_idf_common}/shell.c"
     "${esp_idf_common}/wifi.c"
     "${esp_idf_common}/nvs.c"
+    "${esp_idf_common}/sample_credentials.c"
 )
 
 set(deps
