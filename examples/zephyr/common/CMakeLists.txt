@@ -1,7 +1,7 @@
 # Guard against using CONFIG_GOLIOTH_SAMPLE_COMMON=y from applications other than SDK examples.
 if(CONFIG_GOLIOTH_SAMPLE_COMMON)
     file(RELATIVE_PATH relative_path
-        ${ZEPHYR_GOLIOTH_FIRMWARE_SDK_MODULE_DIR}/dupa
+        ${ZEPHYR_GOLIOTH_FIRMWARE_SDK_MODULE_DIR}
         ${APPLICATION_SOURCE_DIR})
 
     string(REGEX MATCH "^examples" matched ${relative_path})
