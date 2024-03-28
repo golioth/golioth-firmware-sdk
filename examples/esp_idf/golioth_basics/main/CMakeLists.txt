@@ -12,6 +12,7 @@ set(srcs
     "${esp_idf_common}/wifi.c"
     "${esp_idf_common}/nvs.c"
     "${examples_common}/golioth_basics.c"
+    "${esp_idf_common}/sample_credentials.c"
 )
 
 set(deps

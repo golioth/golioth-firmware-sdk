@@ -1,0 +1,28 @@
+#
+# Copyright (C) 2024 Golioth, Inc.
+#
+# SPDX-License-Identifier: Apache-2.0
+#
+
+menu "Common helper configurations shared across multiple samples"
+
+config GOLIOTH_SAMPLE_HARDCODED_CREDENTIALS
+    bool "Hardcoded credentials"
+    help
+        Use hardcoded credentials in samples
+
+if GOLIOTH_SAMPLE_HARDCODED_CREDENTIALS
+
+config GOLIOTH_SAMPLE_PSK_ID
+    string "Golioth PSK-ID"
+    help
+        Defines PSK ID used during DTLS handshake with Golioth server.
+
+config GOLIOTH_SAMPLE_PSK
+    string "Golioth PSK"
+    help
+        Defines PSK used during DTLS handshake with Golioth server.
+
+endif # GOLIOTH_SAMPLE_HARDCODED_CREDENTIALS
+
+endmenu # Common helper configurations shared across multiple samples

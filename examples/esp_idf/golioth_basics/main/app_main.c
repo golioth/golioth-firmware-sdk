@@ -7,6 +7,7 @@
 #include "nvs.h"
 #include "shell.h"
 #include "wifi.h"
+#include "sample_credentials.h"
 #if CONFIG_GOLIOTH_BLE_SERVICE_ENABLED
 #include "ble.h"
 #endif
@@ -48,6 +49,7 @@ void app_main(void)
     wifi_init(nvs_read_wifi_ssid(), nvs_read_wifi_password());
     wifi_wait_for_connected();
 
+    const struct golioth_client_config *config = golioth_sample_credentials_get();
 
     // Now we are ready to connect to the Golioth cloud.
     //
@@ -59,23 +61,8 @@ void app_main(void)
     //
     // As soon as the task starts, it will try to connect to Golioth using the
     // CoAP protocol over DTLS, with the PSK ID and PSK for authentication.
-    const char *psk_id = nvs_read_golioth_psk_id();
-    const char *psk = nvs_read_golioth_psk();
 
-    struct golioth_client_config config = {
-        .credentials =
-            {
-                .auth_type = GOLIOTH_TLS_AUTH_TYPE_PSK,
-                .psk =
-                    {
-                        .psk_id = psk_id,
-                        .psk_id_len = strlen(psk_id),
-                        .psk = psk,
-                        .psk_len = strlen(psk),
-                    },
-            },
-    };
-    struct golioth_client *client = golioth_client_create(&config);
+    struct golioth_client *client = golioth_client_create(config);
     assert(client);
 
     // golioth_basics will interact with each Golioth service and enter an endless loop.

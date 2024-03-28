@@ -6,6 +6,7 @@
 #include "nvs.h"
 #include "shell.h"
 #include "wifi.h"
+#include "sample_credentials.h"
 #include "freertos/FreeRTOS.h"
 #include "freertos/semphr.h"
 #include <golioth/client.h>
@@ -100,24 +101,11 @@ void app_main(void)
     wifi_init(nvs_read_wifi_ssid(), nvs_read_wifi_password());
     wifi_wait_for_connected();
 
-    // Now we are ready to connect to the Golioth cloud.
-    const char *psk_id = nvs_read_golioth_psk_id();
-    const char *psk = nvs_read_golioth_psk();
+    const struct golioth_client_config *config = golioth_sample_credentials_get();
 
-    struct golioth_client_config config = {
-        .credentials =
-            {
-                .auth_type = GOLIOTH_TLS_AUTH_TYPE_PSK,
-                .psk =
-                    {
-                        .psk_id = psk_id,
-                        .psk_id_len = strlen(psk_id),
-                        .psk = psk,
-                        .psk_len = strlen(psk),
-                    },
-            },
-    };
-    client = golioth_client_create(&config);
+    // Now we are ready to connect to the Golioth cloud.
+
+    client = golioth_client_create(config);
     assert(client);
 
     _connected_sem = xSemaphoreCreateBinary();
