@@ -58,6 +58,18 @@ class LinuxBoard(Board):
         pass
 
     def reset(self):
+        pass
+
+    def program(self):
+        pass
+
+    def set_wifi_credentials(self, ssid, psk):
+        pass
+
+    def set_golioth_psk_credentials(self, psk_id, psk):
+        self.golioth_psk_id = psk_id
+        self.golioth_psk = psk
+
         env = {
             "GOLIOTH_PSK_ID" : self.golioth_psk_id,
             "GOLIOTH_PSK" : self.golioth_psk
@@ -71,13 +83,3 @@ class LinuxBoard(Board):
 
         # Register atexit() handler to kill test program
         atexit.register(self.process.terminate)
-
-    def program(self):
-        pass
-
-    def set_wifi_credentials(self, ssid, psk):
-        pass
-
-    def set_golioth_psk_credentials(self, psk_id, psk):
-        self.golioth_psk_id = psk_id
-        self.golioth_psk = psk
