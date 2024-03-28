@@ -13,3 +13,11 @@ CONFIG_COMPILER_OPTIMIZATION_SIZE=y
 # GLTH_LOGX statements will automatically upload to Golioth Logs service
 CONFIG_GOLIOTH_AUTO_LOG_TO_CLOUD=1
 CONFIG_GOLIOTH_COAP_REQUEST_QUEUE_MAX_ITEMS=20
+
+# To enable hardcode credentials, set to y
+CONFIG_GOLIOTH_SAMPLE_HARDCODED_CREDENTIALS=n
+# Uncomment the following with appropriate values to set hardcoded credentials
+#CONFIG_GOLIOTH_SAMPLE_PSK_ID="my-psk-id"
+#CONFIG_GOLIOTH_SAMPLE_PSK="my-psk"
+#CONFIG_GOLIOTH_SAMPLE_WIFI_SSID="my-ssid"
+#CONFIG_GOLIOTH_SAMPLE_WIFI_PSK="my-wifi-psk"
