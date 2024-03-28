@@ -29,7 +29,6 @@ endchoice
 
 config GOLIOTH_SAMPLE_HARDCODED_CREDENTIALS
 	bool "Hardcoded credentials"
-	default n
 	help
 	  Use hardcoded credentials in samples
 
