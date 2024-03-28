@@ -1,14 +1,14 @@
 import datetime
 import logging
 import pytest
-import time
+import trio
 
 LOGGER = logging.getLogger(__name__)
 
 pytestmark = pytest.mark.anyio
 
 async def test_hello(shell, device, wifi_ssid, wifi_psk):
-    time.sleep(2)
+    await trio.sleep(2)
 
     # Set Golioth credential
 
