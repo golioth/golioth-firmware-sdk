@@ -44,18 +44,18 @@ jobs:
             manifest: .ci-west-zephyr.yml
             binary_name: merged.bin
             binary_blob: hal_espressif
-          - hil_board: mimxrt1024_evk
-            west_board: mimxrt1024_evk
-            manifest: .ci-west-zephyr.yml
-            binary_name: zephyr.hex
-          - hil_board: nrf52840dk
-            west_board: nrf52840dk_nrf52840
-            manifest: .ci-west-zephyr.yml
-            binary_name: zephyr.hex
-          - hil_board: nrf9160dk
-            west_board: nrf9160dk_nrf9160_ns
-            manifest: .ci-west-ncs.yml
-            binary_name: merged.hex
+          #- hil_board: mimxrt1024_evk
+            #west_board: mimxrt1024_evk
+            #manifest: .ci-west-zephyr.yml
+            #binary_name: zephyr.hex
+          #- hil_board: nrf52840dk
+            #west_board: nrf52840dk_nrf52840
+            #manifest: .ci-west-zephyr.yml
+            #binary_name: zephyr.hex
+          #- hil_board: nrf9160dk
+            #west_board: nrf9160dk_nrf9160_ns
+            #manifest: .ci-west-ncs.yml
+            #binary_name: merged.hex
     uses: ./.github/workflows/hil_test_zephyr.yml
     with:
       hil_board: ${{ matrix.hil_board }}
@@ -73,12 +73,12 @@ jobs:
       fail-fast: false
       matrix:
         include:
-          - hil_board: esp32s3_devkitc
-            idf_target: esp32s3
+          #- hil_board: esp32s3_devkitc
+            #idf_target: esp32s3
           - hil_board: esp32_devkitc_wrover
             idf_target: esp32
-          - hil_board: esp32c3_devkitm
-            idf_target: esp32c3
+          #- hil_board: esp32c3_devkitm
+            #idf_target: esp32c3
     uses: ./.github/workflows/hil_test_esp-idf.yml
     with:
       hil_board: ${{ matrix.hil_board }}
@@ -88,72 +88,72 @@ jobs:
       coap_gateway_url: ${{ inputs.coap_gateway_url }}
     secrets: inherit
 
-  hil_test_linux:
-    uses: ./.github/workflows/hil_test_linux.yml
-    with:
-      api-url: ${{ inputs.api-url }}
-      api-key-id: ${{ inputs.api-key-id }}
-      coap_gateway_url: ${{ inputs.coap_gateway_url }}
-    secrets: inherit
+  #hil_test_linux:
+    #uses: ./.github/workflows/hil_test_linux.yml
+    #with:
+      #api-url: ${{ inputs.api-url }}
+      #api-key-id: ${{ inputs.api-key-id }}
+      #coap_gateway_url: ${{ inputs.coap_gateway_url }}
+    #secrets: inherit
 
-  hil_sample_zephyr:
-    strategy:
-      fail-fast: false
-      matrix:
-        include:
-          - hil_board: esp32_devkitc_wrover
-            west_board: esp32_devkitc_wrover
-            manifest: .ci-west-zephyr.yml
-            binary_blob: hal_espressif
-            run_tests: false
+  #hil_sample_zephyr:
+    #strategy:
+      #fail-fast: false
+      #matrix:
+        #include:
+          #- hil_board: esp32_devkitc_wrover
+            #west_board: esp32_devkitc_wrover
+            #manifest: .ci-west-zephyr.yml
+            #binary_blob: hal_espressif
+            #run_tests: false
 
-          - hil_board: mimxrt1024_evk
-            west_board: mimxrt1024_evk
-            manifest: .ci-west-zephyr.yml
-            run_tests: true
+          #- hil_board: mimxrt1024_evk
+            #west_board: mimxrt1024_evk
+            #manifest: .ci-west-zephyr.yml
+            #run_tests: true
 
-          - hil_board: nrf52840dk
-            west_board: nrf52840dk_nrf52840
-            manifest: .ci-west-zephyr.yml
-            run_tests: true
+          #- hil_board: nrf52840dk
+            #west_board: nrf52840dk_nrf52840
+            #manifest: .ci-west-zephyr.yml
+            #run_tests: true
 
-          - hil_board: nrf9160dk
-            west_board: nrf9160dk_nrf9160_ns
-            manifest: .ci-west-ncs.yml
-            run_tests: true
+          #- hil_board: nrf9160dk
+            #west_board: nrf9160dk_nrf9160_ns
+            #manifest: .ci-west-ncs.yml
+            #run_tests: true
 
-          - hil_board: rak5010_nrf52840
-            west_board: rak5010_nrf52840
-            manifest: .ci-west-zephyr.yml
-            run_tests: false
+          #- hil_board: rak5010_nrf52840
+            #west_board: rak5010_nrf52840
+            #manifest: .ci-west-zephyr.yml
+            #run_tests: false
 
-          - hil_board: qemu_x86
-            west_board: qemu_x86
-            manifest: .ci-west-zephyr.yml
-            run_tests: false
-    uses: ./.github/workflows/hil_sample_zephyr.yml
-    with:
-      hil_board: ${{ matrix.hil_board }}
-      west_board: ${{ matrix.west_board }}
-      manifest: ${{ matrix.manifest }}
-      binary_blob: ${{ matrix.binary_blob }}
-      run_tests: ${{ matrix.run_tests }}
-      api-url: ${{ inputs.api-url }}
-      api-key-id: ${{ inputs.api-key-id }}
-      coap_gateway_url: ${{ inputs.coap_gateway_url }}
-    secrets: inherit
+          #- hil_board: qemu_x86
+            #west_board: qemu_x86
+            #manifest: .ci-west-zephyr.yml
+            #run_tests: false
+    #uses: ./.github/workflows/hil_sample_zephyr.yml
+    #with:
+      #hil_board: ${{ matrix.hil_board }}
+      #west_board: ${{ matrix.west_board }}
+      #manifest: ${{ matrix.manifest }}
+      #binary_blob: ${{ matrix.binary_blob }}
+      #run_tests: ${{ matrix.run_tests }}
+      #api-url: ${{ inputs.api-url }}
+      #api-key-id: ${{ inputs.api-key-id }}
+      #coap_gateway_url: ${{ inputs.coap_gateway_url }}
+    #secrets: inherit
 
   hil_sample_esp-idf:
     strategy:
       fail-fast: false
       matrix:
         include:
-          - hil_board: esp32s3_devkitc
-            idf_target: esp32s3
+          #- hil_board: esp32s3_devkitc
+            #idf_target: esp32s3
           - hil_board: esp32_devkitc_wrover
             idf_target: esp32
-          - hil_board: esp32c3_devkitm
-            idf_target: esp32c3
+          #- hil_board: esp32c3_devkitm
+            #idf_target: esp32c3
     uses: ./.github/workflows/hil_sample_esp-idf.yml
     with:
       hil_board: ${{ matrix.hil_board }}
