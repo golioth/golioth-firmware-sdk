@@ -25,7 +25,7 @@ static void on_client_event(struct golioth_client *client,
     {
         xSemaphoreGive(_connected_sem);
     }
-    GLTH_LOGI(TAG, "Golioth client %s", is_connected ? "connected" : "disconnected");
+    ESP_LOGI(TAG, "Golioth client %s", is_connected ? "connected" : "disconnected");
 }
 
 void app_main(void)
@@ -46,8 +46,8 @@ void app_main(void)
         while (1)
         {
             vTaskDelay(1000 / portTICK_PERIOD_MS);
-            GLTH_LOGW(TAG, "WiFi and golioth credentials are not set");
-            GLTH_LOGW(TAG, "Use the shell settings commands to set them, then restart");
+            ESP_LOGW(TAG, "WiFi and golioth credentials are not set");
+            ESP_LOGW(TAG, "Use the shell settings commands to set them, then restart");
             vTaskDelay(UINT32_MAX);
         }
     }
@@ -89,12 +89,12 @@ void app_main(void)
 
     golioth_client_register_event_callback(client, on_client_event, NULL);
 
-    GLTH_LOGW(TAG, "Waiting for connection to Golioth...");
+    ESP_LOGW(TAG, "Waiting for connection to Golioth...");
     xSemaphoreTake(_connected_sem, portMAX_DELAY);
 
     while (true)
     {
-        GLTH_LOGI(TAG, "Sending hello! %d", counter);
+        ESP_LOGI(TAG, "Sending hello! %d", counter);
         ++counter;
         vTaskDelay(5000 / portTICK_PERIOD_MS);
     }

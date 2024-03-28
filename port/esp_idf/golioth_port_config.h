@@ -40,7 +40,6 @@
 #define GLTH_LOGX(COLOR, LEVEL, LEVEL_STR, TAG, ...) \
     do { \
         if ((LEVEL) <= golioth_debug_get_log_level()) { \
-            uint64_t now_ms = golioth_sys_now_ms(); \
             switch (LEVEL) { \
                 case GOLIOTH_DEBUG_LOG_LEVEL_ERROR: \
                     ESP_LOGE(TAG, __VA_ARGS__); \
@@ -61,6 +60,5 @@
                 default: \
                     break; \
             } \
-            golioth_debug_printf(now_ms, LEVEL, TAG, __VA_ARGS__); \
         } \
     } while (0)
