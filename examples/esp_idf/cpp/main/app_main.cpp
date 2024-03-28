@@ -7,9 +7,9 @@
 
 extern "C" {
 
+#include "freertos/FreeRTOS.h"
 #include <golioth/client.h>
 #include <golioth/lightdb_state.h>
-#include <golioth/golioth_sys.h>
 
 }
 
@@ -19,12 +19,15 @@ extern "C" void app_main(void) {
     nvs_init();
     shell_start();
 
-    if (!nvs_credentials_are_set()) {
-        while (1) {
-            golioth_sys_msleep(1000);
-            ESP_LOGW(TAG, "WiFi and golioth credentials are not set");
-            ESP_LOGW(TAG, "Use the shell settings commands to set them, then restart");
-            golioth_sys_msleep(UINT32_MAX);
+    if (!nvs_credentials_are_set())
+    {
+        ESP_LOGW(TAG,
+                 "WiFi and Golioth credentials are not set. "
+                 "Use the shell settings commands to set them.");
+
+        while (!nvs_credentials_are_set())
+        {
+            vTaskDelay(1000 / portTICK_PERIOD_MS);
         }
     }
 
@@ -45,9 +48,9 @@ extern "C" void app_main(void) {
 
     int counter = 0;
     while (1) {
-        GLTH_LOGI(TAG, "Hello, Golioth %d!", counter);
+        ESP_LOGI(TAG, "Hello, Golioth %d!", counter);
         golioth_lightdb_set_int_async(client, "counter", counter, NULL, NULL);
-        golioth_sys_msleep(5000);
+        vTaskDelay(5000 / portTICK_PERIOD_MS);
         counter++;
     }
 }
