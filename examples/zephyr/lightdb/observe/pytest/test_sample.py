@@ -24,8 +24,11 @@ async def test_lightdb_observe(shell, device, wifi_ssid, wifi_psk):
 
     # Set WiFi credential
 
-    shell.exec_command(f"settings set wifi/ssid \"{wifi_ssid}\"")
-    shell.exec_command(f"settings set wifi/psk \"{wifi_psk}\"")
+    if wifi_ssid is not None:
+        shell.exec_command(f"settings set wifi/ssid \"{wifi_ssid}\"")
+
+    if wifi_psk is not None:
+        shell.exec_command(f"settings set wifi/psk \"{wifi_psk}\"")
 
     # Wait for Golioth connection
 
