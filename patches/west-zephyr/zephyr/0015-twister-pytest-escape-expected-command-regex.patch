@@ -1,0 +1,34 @@
+From c70802a2aa719a449d583503a238eb5e321a2e00 Mon Sep 17 00:00:00 2001
+From: Marcin Niestroj <m.niestroj@emb.dev>
+Date: Tue, 2 Apr 2024 12:50:38 +0200
+Subject: [PATCH] twister: pytest: escape expected command regex
+
+When sending commands containing something like "AT+CFUN" the expected
+regex was not escaped and as a result such regex never matched what has
+been echoed over serial.
+
+Escape all commands with re.escape() so that echoed shell commands are
+always matched, even when they contain special characters (like '+' in the
+example above).
+
+Signed-off-by: Marcin Niestroj <m.niestroj@emb.dev>
+---
+ .../pytest-twister-harness/src/twister_harness/helpers/shell.py | 2 +-
+ 1 file changed, 1 insertion(+), 1 deletion(-)
+
+diff --git a/scripts/pylib/pytest-twister-harness/src/twister_harness/helpers/shell.py b/scripts/pylib/pytest-twister-harness/src/twister_harness/helpers/shell.py
+index bf8b70cea91..7782617538c 100644
+--- a/scripts/pylib/pytest-twister-harness/src/twister_harness/helpers/shell.py
++++ b/scripts/pylib/pytest-twister-harness/src/twister_harness/helpers/shell.py
+@@ -58,7 +58,7 @@ class Shell:
+         timeout = timeout or self.base_timeout
+         command_ext = f'{command}\n\n'
+         regex_prompt = re.escape(self.prompt)
+-        regex_command = f'.*{command}'
++        regex_command = f'.*{re.escape(command)}'
+         self._device.clear_buffer()
+         self._device.write(command_ext.encode())
+         lines: list[str] = []
+-- 
+2.44.0
+
