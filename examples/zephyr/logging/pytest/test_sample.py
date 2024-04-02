@@ -60,8 +60,11 @@ async def test_logging(shell, device, wifi_ssid, wifi_psk):
 
     # Set WiFi credential
 
-    shell.exec_command(f"settings set wifi/ssid \"{wifi_ssid}\"")
-    shell.exec_command(f"settings set wifi/psk \"{wifi_psk}\"")
+    if wifi_ssid is not None:
+        shell.exec_command(f"settings set wifi/ssid \"{wifi_ssid}\"")
+
+    if wifi_psk is not None:
+        shell.exec_command(f"settings set wifi/psk \"{wifi_psk}\"")
 
     # Record timestamp and wait for fourth hello message
 

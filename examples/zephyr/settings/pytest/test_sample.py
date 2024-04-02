@@ -28,8 +28,11 @@ async def test_settings(shell, project, device, wifi_ssid, wifi_psk):
 
     # Set WiFi credential
 
-    shell.exec_command(f"settings set wifi/ssid \"{wifi_ssid}\"")
-    shell.exec_command(f"settings set wifi/psk \"{wifi_psk}\"")
+    if wifi_ssid is not None:
+        shell.exec_command(f"settings set wifi/ssid \"{wifi_ssid}\"")
+
+    if wifi_psk is not None:
+        shell.exec_command(f"settings set wifi/psk \"{wifi_psk}\"")
 
     shell._device.readlines_until(regex=".*Setting loop delay to 1 s", timeout=90.0)
 

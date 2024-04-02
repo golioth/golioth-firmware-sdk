@@ -22,14 +22,14 @@ def wifi_ssid(request):
     if request.config.getoption("--wifi-ssid") is not None:
         return request.config.getoption("--wifi-ssid")
     else:
-        return os.environ['WIFI_SSID']
+        return os.environ.get('WIFI_SSID')
 
 @pytest.fixture(scope="session")
 def wifi_psk(request):
     if request.config.getoption("--wifi-psk") is not None:
         return request.config.getoption("--wifi-psk")
     else:
-        return os.environ['WIFI_PSK']
+        return os.environ.get('WIFI_PSK')
 
 @pytest.fixture(scope="session")
 def west_board(request):

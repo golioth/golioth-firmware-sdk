@@ -24,8 +24,11 @@ async def test_fw_update(shell, project, device, wifi_ssid, wifi_psk, fw_info, r
 
     # Set WiFi credential
 
-    shell.exec_command(f"settings set wifi/ssid \"{wifi_ssid}\"")
-    shell.exec_command(f"settings set wifi/psk \"{wifi_psk}\"")
+    if wifi_ssid is not None:
+        shell.exec_command(f"settings set wifi/ssid \"{wifi_ssid}\"")
+
+    if wifi_psk is not None:
+        shell.exec_command(f"settings set wifi/psk \"{wifi_psk}\"")
 
     # Wait for first manifest to arrive (no update expected)
 
