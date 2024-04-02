@@ -5,3 +5,6 @@ manifest:
       file: west-zephyr.yml
       name-allowlist:
         - zephyr
+    userdata:
+      patches_dirs:
+        - patches/west-zephyr
