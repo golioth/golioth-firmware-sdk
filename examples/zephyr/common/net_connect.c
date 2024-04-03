@@ -48,6 +48,17 @@ void net_connect(void)
 {
     struct net_if *iface = net_if_get_default();
 
+    if (!net_if_is_up(iface))
+    {
+        LOG_INF("Bringing up network interface");
+        int ret = net_if_up(iface);
+        if ((ret < 0) && (ret != -EALREADY))
+        {
+            LOG_ERR("Failed to bring up network interface: %d", ret);
+            return;
+        }
+    }
+
     if (IS_ENABLED(CONFIG_GOLIOTH_SAMPLE_DHCP_BIND))
     {
         LOG_INF("Starting DHCP to obtain IP address");
