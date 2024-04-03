@@ -174,6 +174,17 @@ this sample application (i.e., `examples/zephyr/hello`) and type:
 $ west build -b nrf9160dk_nrf9160_ns examples/zephyr/fw_update
 $ west flash
 ```
+
+#### RAK5010 (v2 with BG95)
+
+On your host computer open a terminal window. From the
+`golioth-firmware-sdk` folder, type:
+
+```console
+$ west build -b rak5010_nrf52840 --sysbuild examples/zephyr/fw_update
+$ west flash
+```
+
 ### Verify flashed application
 
 ```console

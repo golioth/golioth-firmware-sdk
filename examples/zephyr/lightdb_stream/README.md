@@ -194,6 +194,16 @@ $ west build -b nrf9160dk_nrf9160_ns examples/zephyr/lightdb_stream
 $ west flash
 ```
 
+#### RAK5010 (v2 with BG95)
+
+On your host computer open a terminal window. From the
+`golioth-firmware-sdk` folder, type:
+
+```console
+$ west build -b rak5010_nrf52840 examples/zephyr/lightdb_stream
+$ west flash
+```
+
 ### Sample output
 
 This is the output from the serial console:

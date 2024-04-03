@@ -187,6 +187,16 @@ $ west build -b nrf9160dk_nrf9160_ns examples/zephyr/settings
 $ west flash
 ```
 
+#### RAK5010 (v2 with BG95)
+
+On your host computer open a terminal window. From the
+`golioth-firmware-sdk` folder, type:
+
+```console
+$ west build -b rak5010_nrf52840 examples/zephyr/settings
+$ west flash
+```
+
 ### Receiving remote settings updates
 
 This sample registers to receive settings updates made to the
