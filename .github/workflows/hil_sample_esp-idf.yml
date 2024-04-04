@@ -106,7 +106,7 @@ jobs:
           for sample in `find examples/esp_idf -type d -name pytest -exec dirname "{}" \;`
           do
             pytest --rootdir . $sample                                          \
-              --board esp-idf                                                   \
+              --board ${{ inputs.hil_board }}_espidf                                                   \
               --port ${!PORT_VAR}                                               \
               --fw-image $(basename $sample).bin                                \
               --api-url ${{ inputs.api-url }}                                   \
