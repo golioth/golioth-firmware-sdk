@@ -32,6 +32,22 @@ on:
         required: false
         type: string
         default: "coaps://coap.golioth.io"
+  push:
+    branches:
+      - 'twister-test*'
+    inputs:
+      api-url:
+        description: "API gateway URL for Golioth backend services"
+        required: false
+        default: "https://api.golioth.io"
+      api-key-id:
+        description: "Name of GitHub secret containing an API key that will be used to authenticate with the Golioth backend"
+        required: false
+        default: "PROD_CI_PROJECT_API_KEY"
+      coap_gateway_url:
+        description: "The CoAP gateway URL to be hardcoded into test firmware"
+        required: false
+        default: "coaps://coap.golioth.io"
 
 jobs:
   hil_test_zephyr:
