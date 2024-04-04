@@ -51,7 +51,9 @@ def wifi_psk(request):
 
 @pytest.fixture(scope="module")
 def board(board_name, port, baud, wifi_ssid, wifi_psk, fw_image, serial_number):
-    if board_name.lower() == "esp-idf":
+    if (board_name.lower() == "esp32s3_devkitc_espidf" or
+        board_name.lower() == "esp32c3_devkitm_espidf" or
+        board_name.lower() == "esp32_devkitc_wrover_espidf"):
         return ESPIDFBoard(port, baud, wifi_ssid, wifi_psk, fw_image, serial_number)
     elif board_name.lower() == "esp32_devkitc_wrover":
         return ESP32DevKitCWROVER(port, baud, wifi_ssid, wifi_psk, fw_image, serial_number)

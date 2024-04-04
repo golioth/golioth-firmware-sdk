@@ -103,7 +103,7 @@ jobs:
           for test in `ls tests/hil/tests`
           do
             pytest --rootdir . tests/hil/tests/$test                            \
-              --board esp-idf                                                   \
+              --board ${{ inputs.hil_board }}_espidf                                                   \
               --port ${!PORT_VAR}                                               \
               --fw-image ${test}.bin                                            \
               --api-url ${{ inputs.api-url }}                                   \

@@ -77,5 +77,9 @@ and deletes it after the test ends.
 The test can be invoked by the following command from the <sample>/pytest location:
 
 ```sh
-pytest -s --rootdir . --port /path/to/serial/port --board esp-idf --wifi-ssid your-wifi-ssid --wifi-psk your-wifi-psk --api-key your-api-key --fw-image /path/to/merged-binary
+pytest -s --rootdir . --port /path/to/serial/port --board your-esp-board-name --wifi-ssid your-wifi-ssid --wifi-psk your-wifi-psk --api-key your-api-key --fw-image /path/to/merged-binary
 ```
+
+For esp32c3, use --board esp32c3_devkitm_espidf
+For esp32s3, use --board esp32s3_devkitc_espidf
+For esp32 wrover, use --board esp32_devkitc_wrover_espidf
