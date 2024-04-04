@@ -172,7 +172,7 @@ jobs:
           export PATH=$PATH:$(go env GOPATH)/bin
           PORT_VAR=CI_${hil_board^^}_PORT
           SNR_VAR=CI_${hil_board^^}_SNR
-          zephyr/scripts/twister                                                                  \
+          zephyr/scripts/twister -vvv                                                             \
                 -p ${{ inputs.west_board }}                                                       \
                 -T modules/lib/golioth-firmware-sdk/examples/zephyr                               \
                 --device-testing                                                                  \
