@@ -3,16 +3,18 @@
  *
  * SPDX-License-Identifier: Apache-2.0
  */
+
 #include <golioth/golioth_sys.h>
-#include <unistd.h>
-#include <signal.h>
-#include <time.h>
-#include <semaphore.h>
-#include <pthread.h>
-#include <errno.h>
 #include <assert.h>
+#include <errno.h>
 #include <poll.h>
+#include <pthread.h>
+#include <semaphore.h>
+#include <signal.h>
+#include <string.h>
 #include <sys/eventfd.h>
+#include <time.h>
+#include <unistd.h>
 
 #define TAG "golioth_sys_linux"
 
