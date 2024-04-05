@@ -206,6 +206,3 @@ This is the output from the serial console:
 [00:00:06.270,000] <inf> hello_zephyr: Sending hello! 1
 [00:00:11.280,000] <inf> hello_zephyr: Sending hello! 2
 ```
-
-Responses to Hello messages are printed above as a hexdump of \"Hello
-mark\". This means that communication with Golioth is working.
