@@ -53,6 +53,12 @@ int main(void)
     k_sem_take(&connected, K_FOREVER);
 
     /* No while(true) loop needed, the Golioth client thread will handle updates */
+    while(1) {
+        for (uint8_t i = 0; i < 40; i++) {
+            LOG_INF("My log msg %d", i);
+        }
+        k_msleep(5000);
+    }
 
     return 0;
 }
