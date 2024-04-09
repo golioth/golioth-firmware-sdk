@@ -1,5 +1,4 @@
 import pytest
-import time
 from golioth import RPCResultError, RPCStatusCode, RPCTimeout
 
 pytestmark = pytest.mark.anyio
