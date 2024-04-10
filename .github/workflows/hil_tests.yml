@@ -122,6 +122,11 @@ jobs:
             manifest: .ci-west-ncs.yml
             run_tests: true
 
+          - hil_board: rak5010_nrf52840
+            west_board: rak5010_nrf52840
+            manifest: .ci-west-zephyr.yml
+            run_tests: false
+
           - hil_board: qemu_x86
             west_board: qemu_x86
             manifest: .ci-west-zephyr.yml
