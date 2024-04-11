@@ -9,6 +9,7 @@
 #if defined(CONFIG_GOLIOTH_STREAM)
 
 #define GOLIOTH_STREAM_PATH_PREFIX ".s/"
+#define GOLIOTH_LOCATION_PATH_PREFIX ".l/"
 
 enum golioth_status golioth_stream_set_async(struct golioth_client *client,
                                              const char *path,
@@ -47,6 +48,26 @@ enum golioth_status golioth_stream_set_sync(struct golioth_client *client,
                                    NULL,
                                    true,
                                    timeout_s);
+}
+
+enum golioth_status golioth_location_set_async(struct golioth_client *client,
+                                             const char *path,
+                                             enum golioth_content_type content_type,
+                                             const uint8_t *buf,
+                                             size_t buf_len,
+                                             golioth_set_cb_fn callback,
+                                             void *callback_arg)
+{
+    return golioth_coap_client_set(client,
+                                   GOLIOTH_LOCATION_PATH_PREFIX,
+                                   path,
+                                   content_type,
+                                   buf,
+                                   buf_len,
+                                   callback,
+                                   callback_arg,
+                                   false,
+                                   GOLIOTH_SYS_WAIT_FOREVER);
 }
 
 #endif  // CONFIG_GOLIOTH_STREAM

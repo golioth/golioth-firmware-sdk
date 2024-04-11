@@ -64,4 +64,11 @@ enum golioth_status golioth_stream_set_sync(struct golioth_client *client,
                                             size_t buf_len,
                                             int32_t timeout_s);
 
-/// @}
+enum golioth_status golioth_location_set_async(struct golioth_client *client,
+                                             const char *path,
+                                             enum golioth_content_type content_type,
+                                             const uint8_t *buf,
+                                             size_t buf_len,
+                                             golioth_set_cb_fn callback,
+                                             void *callback_arg);
+
