@@ -76,7 +76,8 @@ static coap_response_t coap_response_handler(coap_session_t *session,
     }
 
     struct golioth_response response = {
-        .status = (class == 2 ? GOLIOTH_OK : GOLIOTH_ERR_FAIL),
+        .status =
+            (class == 2 ? GOLIOTH_OK : (code == 0 ? GOLIOTH_ERR_BAD_REQUEST : GOLIOTH_ERR_FAIL)),
         .status_class = class,
         .status_code = code,
     };
@@ -96,6 +97,11 @@ static coap_response_t coap_response_handler(coap_session_t *session,
 
     if (req)
     {
+        if (req->status)
+        {
+            *req->status = response.status;
+        }
+
         if (req->type == GOLIOTH_COAP_REQUEST_EMPTY)
         {
             GLTH_LOGD(TAG, "%d.%02d (empty req), len %" PRIu32, class, code, (uint32_t) data_len);
