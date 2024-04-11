@@ -165,6 +165,32 @@ static int golioth_send_coap_empty(struct golioth_client *client)
     return golioth_send(client, packet.data, packet.offset, 0);
 }
 
+static enum golioth_status golioth_err_to_status(int err)
+{
+    switch (err)
+    {
+        case 0:
+            return GOLIOTH_OK;
+        case -ENOMEM:
+            return GOLIOTH_ERR_MEM_ALLOC;
+        case -EIO:
+            return GOLIOTH_ERR_IO;
+        case -ETIMEDOUT:
+            return GOLIOTH_ERR_TIMEOUT;
+        case -EINVAL:
+        case -EPERM:
+            return GOLIOTH_ERR_NOT_ALLOWED;
+        case -ENODATA:
+            return GOLIOTH_ERR_NO_MORE_DATA;
+        case -ENOSYS:
+            return GOLIOTH_ERR_NOT_IMPLEMENTED;
+        case -EFAULT:
+            return GOLIOTH_ERR_BAD_REQUEST;
+    }
+
+    return GOLIOTH_ERR_FAIL;
+}
+
 static int golioth_coap_cb(struct golioth_req_rsp *rsp)
 {
     golioth_coap_request_msg_t *req = rsp->user_data;
@@ -178,6 +204,8 @@ static int golioth_coap_cb(struct golioth_req_rsp *rsp)
     {
         if (req->request_complete_event)
         {
+            *req->status = golioth_err_to_status(rsp->err);
+
             golioth_event_group_set_bits(req->request_complete_event, RESPONSE_RECEIVED_EVENT_BIT);
 
             // Wait for user thread to receive the event.
@@ -350,30 +378,6 @@ static void reestablish_observations(struct golioth_client *client)
             golioth_coap_observe(&obs_info->req, client);
         }
     }
-}
-
-static enum golioth_status golioth_err_to_status(int err)
-{
-    switch (err)
-    {
-        case 0:
-            return GOLIOTH_OK;
-        case -ENOMEM:
-            return GOLIOTH_ERR_MEM_ALLOC;
-        case -EIO:
-            return GOLIOTH_ERR_IO;
-        case -ETIMEDOUT:
-            return GOLIOTH_ERR_TIMEOUT;
-        case -EINVAL:
-        case -EPERM:
-            return GOLIOTH_ERR_NOT_ALLOWED;
-        case -ENODATA:
-            return GOLIOTH_ERR_NO_MORE_DATA;
-        case -ENOSYS:
-            return GOLIOTH_ERR_NOT_IMPLEMENTED;
-    }
-
-    return GOLIOTH_ERR_FAIL;
 }
 
 static enum golioth_status coap_io_loop_once(struct golioth_client *client)
