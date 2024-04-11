@@ -61,7 +61,7 @@ struct golioth_response
 
 struct location_rsp
 {
-    char *data;
+    const char *data;
     size_t len;
 };
 
