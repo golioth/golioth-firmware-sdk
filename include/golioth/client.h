@@ -59,6 +59,12 @@ struct golioth_response
     uint8_t status_code;
 };
 
+struct location_rsp
+{
+    char *data;
+    size_t len;
+};
+
 /// Authentication type
 enum golioth_auth_type
 {

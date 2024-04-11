@@ -215,7 +215,14 @@ static int golioth_coap_cb(struct golioth_req_rsp *rsp)
             }
             break;
         case GOLIOTH_COAP_REQUEST_POST:
-            if (req->post.callback)
+            if (rsp->len > 0) {
+                struct location_rsp l_rsp = {
+                    .data = rsp->data,
+                    .len = rsp->len
+                };
+                req->post.callback(client, &response, req->path, &l_rsp);
+            }
+            else if (req->post.callback)
             {
                 req->post.callback(client, &response, req->path, req->post.arg);
             }
