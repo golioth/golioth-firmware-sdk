@@ -121,12 +121,14 @@ enum golioth_status golioth_coap_client_empty(struct golioth_client *client,
         .type = GOLIOTH_COAP_REQUEST_EMPTY,
         .ageout_ms = ageout_ms,
     };
+    enum golioth_status status = GOLIOTH_OK;
 
     if (is_synchronous)
     {
         // Created here, deleted by coap thread (or here if fail to enqueue
         request_msg.request_complete_event = golioth_event_group_create();
         request_msg.request_complete_ack_sem = golioth_sys_sem_create(1, 0);
+        request_msg.status = &status;
     }
 
     bool sent = golioth_mbox_try_send(client->request_queue, &request_msg);
@@ -137,6 +139,7 @@ enum golioth_status golioth_coap_client_empty(struct golioth_client *client,
         {
             golioth_event_group_destroy(request_msg.request_complete_event);
             golioth_sys_sem_destroy(request_msg.request_complete_ack_sem);
+            request_msg.status = NULL;
         }
         return GOLIOTH_ERR_QUEUE_FULL;
     }
@@ -161,6 +164,8 @@ enum golioth_status golioth_coap_client_empty(struct golioth_client *client,
         {
             return GOLIOTH_ERR_TIMEOUT;
         }
+
+        return status;
     }
     return GOLIOTH_OK;
 }
@@ -226,12 +231,14 @@ enum golioth_status golioth_coap_client_set(struct golioth_client *client,
         .ageout_ms = ageout_ms,
     };
     strncpy(request_msg.path, path, sizeof(request_msg.path) - 1);
+    enum golioth_status status = GOLIOTH_OK;
 
     if (is_synchronous)
     {
         // Created here, deleted by coap thread (or here if fail to enqueue
         request_msg.request_complete_event = golioth_event_group_create();
         request_msg.request_complete_ack_sem = golioth_sys_sem_create(1, 0);
+        request_msg.status = &status;
     }
 
     bool sent = golioth_mbox_try_send(client->request_queue, &request_msg);
@@ -250,6 +257,7 @@ enum golioth_status golioth_coap_client_set(struct golioth_client *client,
         {
             golioth_event_group_destroy(request_msg.request_complete_event);
             golioth_sys_sem_destroy(request_msg.request_complete_ack_sem);
+            request_msg.status = NULL;
         }
         return GOLIOTH_ERR_QUEUE_FULL;
     }
@@ -274,6 +282,8 @@ enum golioth_status golioth_coap_client_set(struct golioth_client *client,
         {
             return GOLIOTH_ERR_TIMEOUT;
         }
+
+        return status;
     }
     return GOLIOTH_OK;
 }
@@ -314,12 +324,14 @@ enum golioth_status golioth_coap_client_delete(struct golioth_client *client,
         .ageout_ms = ageout_ms,
     };
     strncpy(request_msg.path, path, sizeof(request_msg.path) - 1);
+    enum golioth_status status = GOLIOTH_OK;
 
     if (is_synchronous)
     {
         // Created here, deleted by coap thread (or here if fail to enqueue
         request_msg.request_complete_event = golioth_event_group_create();
         request_msg.request_complete_ack_sem = golioth_sys_sem_create(1, 0);
+        request_msg.status = &status;
     }
 
     bool sent = golioth_mbox_try_send(client->request_queue, &request_msg);
@@ -330,6 +342,7 @@ enum golioth_status golioth_coap_client_delete(struct golioth_client *client,
         {
             golioth_event_group_destroy(request_msg.request_complete_event);
             golioth_sys_sem_destroy(request_msg.request_complete_ack_sem);
+            request_msg.status = NULL;
         }
         return GOLIOTH_ERR_QUEUE_FULL;
     }
@@ -354,6 +367,8 @@ enum golioth_status golioth_coap_client_delete(struct golioth_client *client,
         {
             return GOLIOTH_ERR_TIMEOUT;
         }
+
+        return status;
     }
     return GOLIOTH_OK;
 }
@@ -384,6 +399,7 @@ static enum golioth_status golioth_coap_client_get_internal(struct golioth_clien
     }
 
     golioth_coap_request_msg_t request_msg = {};
+    enum golioth_status status = GOLIOTH_OK;
     request_msg.type = type;
     request_msg.path_prefix = path_prefix;
     strncpy(request_msg.path, path, sizeof(request_msg.path) - 1);
@@ -392,6 +408,7 @@ static enum golioth_status golioth_coap_client_get_internal(struct golioth_clien
         // Created here, deleted by coap thread (or here if fail to enqueue
         request_msg.request_complete_event = golioth_event_group_create();
         request_msg.request_complete_ack_sem = golioth_sys_sem_create(1, 0);
+        request_msg.status = &status;
     }
     request_msg.ageout_ms = ageout_ms;
     if (type == GOLIOTH_COAP_REQUEST_GET_BLOCK)
@@ -412,6 +429,7 @@ static enum golioth_status golioth_coap_client_get_internal(struct golioth_clien
         {
             golioth_event_group_destroy(request_msg.request_complete_event);
             golioth_sys_sem_destroy(request_msg.request_complete_ack_sem);
+            request_msg.status = NULL;
         }
         return GOLIOTH_ERR_QUEUE_FULL;
     }
@@ -436,6 +454,8 @@ static enum golioth_status golioth_coap_client_get_internal(struct golioth_clien
         {
             return GOLIOTH_ERR_TIMEOUT;
         }
+
+        return status;
     }
     return GOLIOTH_OK;
 }
