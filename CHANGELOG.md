@@ -4,6 +4,38 @@ All notable changes to this project will be documented in this file.
 The format is based on [Keep a Changelog](https://keepachangelog.com/en/1.0.0/),
 and this project adheres to [Semantic Versioning](https://semver.org/spec/v2.0.0.html).
 
+## [0.12.0] - 2024-04-15
+
+### Breaking Changes:
+
+- Previously, it was possible to implicitly include default Kconfig
+  settings from the Zephyr examples into client applications. This was
+  unintentional and has been fixed. As a result, if your application was
+  relying on those defaults, you'll now need to set those Kconfig values
+  explicitly in your application.
+
+### Added:
+
+- Add socket hello_nrf91_offload Zephyr example to demonstrate DTLS
+  sockets offload.
+- Zephyr: add rak5010_nrf52840 support to all examples
+- ESP-IDF: add fw_update example to demonstrate OTA firmware update
+- ESP-IDF: add settings example to demonstrate device settings service
+
+### Changed:
+
+- Zephyr: example code now explicitly sources Kconfig.defconfig file to
+  select necessary Kconfig symbols from the example common files.
+- Zephyr: update runtime settings in examples to take effect without
+  needing a reboot
+- Update libcoap version to v4.3.4a
+
+### Fixed:
+
+- Documentation updates
+- Certificate Provisioning: Increase nRF52840 network buffers to avoid
+  failing handshakes
+
 ## [0.11.1] - 2024-03-20
 
 ### Known Issues:
