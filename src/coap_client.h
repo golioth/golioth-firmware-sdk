@@ -91,6 +91,7 @@ typedef struct
     uint64_t ageout_ms;
     bool got_response;
     bool got_nack;
+    enum golioth_status *status;
 
     /// (sync request only) Notification from coap thread to user sync function that
     /// request is completed.
