@@ -66,31 +66,21 @@ integration guide and a platform porting guide.
 
 ## Verified Devices
 
-The following table lists the different hardware configurations we test the SDK against,
-and when it was last tested.
+The following table lists the different hardware configurations against which
+we test the SDK. Each of these devices is verified on each commit by our
+Continuous Integration system.
 
-The test itself covers most major functionality of the SDK, including connecting
-to the Golioth server, interacting with LightDB State and Stream, and performing
-OTA firmware updates.
+The tests fall into three categories. Hardware-in-the-Loop (HIL) integration
+tests are located in `tests/hil`. Unit tests are in `test/unit_tests`. Finally,
+each of the samples is also continously verified on target.
 
-The test procedure is (e.g. for ESP-IDF):
-
-```
-cd examples/esp_idf/test
-idf.py build
-idf.py flash
-python verify.py /dev/ttyUSB0
-```
-
-The `verify.py` script will return 0 on success (all tests pass), and non-zero otherwise.
-
-| Board                | Platform                 | Last Tested Commit   |
-| ---                  | ---                      | ---                  |
-| ESP32-S3-DevKitC-1   | ESP-IDF (v5.2.1)         | v0.11.1 (Mar 20, 2024) |
-| ESP32-C3-DevKitM-1   | ESP-IDF (v5.2.1)         | v0.11.1 (Mar 20, 2024) |
-| ESP32-DevKitC-WROVER | ESP-IDF (v5.2.1)         | v0.11.1 (Mar 20, 2024) |
-| ESP32-DevKitC-WROVER | Zephyr (v3.6.0)          | v0.11.1 (Mar 20, 2024) |
-| nRF52840 DK + ESP32  | Zephyr (v3.6.0)          | v0.11.1 (Mar 20, 2024) |
-| MIMXRT1024-EVK       | Zephyr (v3.6.0)          | v0.11.1 (Mar 20, 2024) |
-| nRF9160 DK           | nRF Connect SDK (v2.5.2) | v0.11.1 (Mar 20, 2024) |
-| CY8CPROTO-062-4343W  | ModusToolbox (3.0.0)     | v0.11.1 (Mar 20, 2024) |
+| Board                | Platform                 |
+| ---                  | ---                      |
+| ESP32-S3-DevKitC-1   | ESP-IDF (v5.2.1)         |
+| ESP32-C3-DevKitM-1   | ESP-IDF (v5.2.1)         |
+| ESP32-DevKitC-WROVER | ESP-IDF (v5.2.1)         |
+| ESP32-DevKitC-WROVER | Zephyr (v3.6.0)          |
+| nRF52840 DK + ESP32  | Zephyr (v3.6.0)          |
+| MIMXRT1024-EVK       | Zephyr (v3.6.0)          |
+| nRF9160 DK           | nRF Connect SDK (v2.5.2) |
+| CY8CPROTO-062-4343W  | ModusToolbox (3.0.0)     |
