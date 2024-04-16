@@ -62,14 +62,35 @@ static enum golioth_status download_block(download_ctx_t *ctx)
               (uint32_t) ctx->block_index + 1,
               (uint32_t) ctx->total_num_blocks);
 
-    GOLIOTH_STATUS_RETURN_IF_ERROR(golioth_ota_get_block_sync(ctx->client,
-                                                              ctx->ota_component->package,
-                                                              ctx->ota_component->version,
-                                                              ctx->block_index,
-                                                              ctx->download_buf,
-                                                              &ctx->block_bytes_downloaded,
-                                                              &ctx->is_last_block,
-                                                              GOLIOTH_SYS_WAIT_FOREVER));
+    enum golioth_status status;
+    int retry_count = 3;
+    while (retry_count > 0)
+    {
+        status = golioth_ota_get_block_sync(ctx->client,
+                                            ctx->ota_component->package,
+                                            ctx->ota_component->version,
+                                            ctx->block_index,
+                                            ctx->download_buf,
+                                            &ctx->block_bytes_downloaded,
+                                            &ctx->is_last_block,
+                                            GOLIOTH_SYS_WAIT_FOREVER);
+
+        if (status == GOLIOTH_OK)
+        {
+            break;
+        }
+        else if (retry_count == 1)
+        {
+            GLTH_LOGE(TAG, "Unable to download block. Status: %d", status);
+            return status;
+        }
+        else
+        {
+            GLTH_LOGW(TAG, "Failed to get block, will retry. Status: %d", status);
+            golioth_sys_msleep(150);
+            retry_count--;
+        }
+    }
 
     assert(ctx->block_bytes_downloaded <= GOLIOTH_OTA_BLOCKSIZE);
     block_stats_update(&ctx->block_stats, golioth_sys_now_ms() - download_start_ms);
