@@ -1075,6 +1075,15 @@ static void golioth_coap_client_thread(void *arg)
                     client->end_session = true;
                 }
             }
+
+            // Check if we should still run (non-blocking)
+            if (!golioth_sys_sem_take(client->run_sem, 0))
+            {
+                GLTH_LOGI(TAG, "Stopping");
+                golioth_disconnect(client);
+                break;
+            }
+            golioth_sys_sem_give(client->run_sem);
         }
 
         LOG_INF("Ending session");
