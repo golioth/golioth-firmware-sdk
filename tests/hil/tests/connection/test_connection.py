@@ -9,3 +9,8 @@ async def test_connect(board, device):
 
     # Confirm connection to Golioth
     assert None != board.wait_for_regex_in_line('Golioth CoAP client connected', timeout_s=120)
+
+    # Wait for reconnection
+    assert None != board.wait_for_regex_in_line('Stopping client', timeout_s=10)
+    assert None != board.wait_for_regex_in_line('Starting client', timeout_s=120)
+    assert None != board.wait_for_regex_in_line('Golioth CoAP client connected', timeout_s=120)

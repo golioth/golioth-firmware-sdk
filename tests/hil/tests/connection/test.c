@@ -11,6 +11,14 @@ void hil_test_entry(const struct golioth_client_config *config)
 
     while (1)
     {
-        golioth_sys_msleep(5000);
+        golioth_sys_msleep(10 * 1000);
+
+        GLTH_LOGI(TAG, "Stopping client");
+        golioth_client_stop(client);
+
+        golioth_sys_msleep(10 * 1000);
+
+        GLTH_LOGI(TAG, "Starting client");
+        golioth_client_start(client);
     }
 }
