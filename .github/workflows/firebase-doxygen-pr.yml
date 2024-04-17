@@ -17,7 +17,7 @@ jobs:
           cd docs/doxygen
           doxygen
       - name: Deploy docs to dev
-        uses: FirebaseExtended/action-hosting-deploy@v0
+        uses: FirebaseExtended/action-hosting-deploy@ac8041b3b04337509168113bf98b95879df22322
         with:
           repoToken: '${{ secrets.GITHUB_TOKEN }}'
           firebaseServiceAccount: '${{ secrets.FIREBASE_SERVICE_ACCOUNT_GOLIOTH }}'
