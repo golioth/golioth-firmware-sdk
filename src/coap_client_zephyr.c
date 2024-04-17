@@ -345,6 +345,31 @@ free_req:
     return err;
 }
 
+static void add_observation(golioth_coap_request_msg_t *req, struct golioth_client *client)
+{
+    // scan for available (not used) observation slot
+    golioth_coap_observe_info_t *obs_info = NULL;
+    bool found_slot = false;
+    for (int i = 0; i < CONFIG_GOLIOTH_MAX_NUM_OBSERVATIONS; i++)
+    {
+        obs_info = &client->observations[i];
+        if (!obs_info->in_use)
+        {
+            found_slot = true;
+            break;
+        }
+    }
+
+    if (!found_slot)
+    {
+        GLTH_LOGE(TAG, "Unable to observe path %s, no slots available", req->path);
+        return;
+    }
+
+    obs_info->in_use = true;
+    memcpy(&obs_info->req, req, sizeof(obs_info->req));
+}
+
 static int golioth_coap_observe(golioth_coap_request_msg_t *req, struct golioth_client *client)
 {
     int err;
@@ -475,6 +500,10 @@ static enum golioth_status coap_io_loop_once(struct golioth_client *client)
         case GOLIOTH_COAP_REQUEST_OBSERVE:
             LOG_DBG("Handle OBSERVE %s", req->path);
             err = golioth_coap_observe(req, client);
+            if (!err)
+            {
+                add_observation(req, client);
+            }
             break;
         default:
             LOG_WRN("Unknown request_msg type: %u", req->type);
