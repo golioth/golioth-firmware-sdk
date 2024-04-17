@@ -11,6 +11,8 @@
 
 LOG_TAG_DEFINE(test_rpc);
 
+static golioth_sys_sem_t disconnect_sem;
+
 static enum golioth_rpc_status on_no_response(zcbor_state_t *request_params_array,
                                               zcbor_state_t *response_detail_map,
                                               void *callback_arg)
@@ -129,11 +131,21 @@ static enum golioth_rpc_status on_malformed_response(zcbor_state_t *request_para
     return GOLIOTH_RPC_OK;
 }
 
+static enum golioth_rpc_status on_disconnect(zcbor_state_t *request_params_array,
+                                             zcbor_state_t *response_detail_map,
+                                             void *callback_arg)
+{
+    golioth_sys_sem_give(disconnect_sem);
+
+    return GOLIOTH_RPC_OK;
+}
+
 void hil_test_entry(const struct golioth_client_config *config)
 {
 
     struct golioth_client *client = golioth_client_create(config);
     struct golioth_rpc *grpc = golioth_rpc_init(client);
+    disconnect_sem = golioth_sys_sem_create(1, 0);
 
     golioth_rpc_register(grpc, "no_response", on_no_response, NULL);
 
@@ -143,8 +155,21 @@ void hil_test_entry(const struct golioth_client_config *config)
 
     golioth_rpc_register(grpc, "malformed_response", on_malformed_response, NULL);
 
+    golioth_rpc_register(grpc, "disconnect", on_disconnect, NULL);
+
     while (1)
     {
-        golioth_sys_msleep(5000);
+        golioth_sys_sem_take(disconnect_sem, GOLIOTH_SYS_WAIT_FOREVER);
+
+        // Delay to ensure RPC response makes it to cloud
+        golioth_sys_msleep(1000);
+
+        GLTH_LOGI(TAG, "Stopping client");
+        golioth_client_stop(client);
+
+        golioth_sys_msleep(3 * 1000);
+
+        GLTH_LOGI(TAG, "Starting client");
+        golioth_client_start(client);
     }
 }

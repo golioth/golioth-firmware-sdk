@@ -70,3 +70,13 @@ async def test_invalid_arg(board, device):
         rsp = await device.rpc.basic_return_type("foo")
 
     assert e.value.status_code == RPCStatusCode.INVALID_ARGUMENT
+
+async def test_observation_reestablishment(board, device):
+    rsp = await device.rpc.disconnect()
+
+    # Confirm re-connection to Golioth
+    assert None != board.wait_for_regex_in_line('Golioth CoAP client connected', timeout_s=120)
+
+    rsp = await device.rpc.basic_return_type("int")
+
+    assert rsp['value'] == 42
