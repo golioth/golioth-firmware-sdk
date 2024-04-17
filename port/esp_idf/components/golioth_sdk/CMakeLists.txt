@@ -45,6 +45,7 @@ idf_component_register(
         "${sdk_src}/event_group.c"
         "${sdk_src}/mbox.c"
         "${sdk_src}/fw_block_processor.c"
+        "${sdk_src}/coap_blockwise.c"
         "${sdk_src}/zcbor_utils.c"
     EMBED_TXTFILES
         "${sdk_src}/isrgrootx1.der"

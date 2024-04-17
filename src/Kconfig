@@ -62,6 +62,13 @@ config GOLIOTH_MAX_NUM_OBSERVATIONS
     help
         The maximum number of CoAP paths which can be simultaneously observed.
 
+config GOLIOTH_BLOCKWISE_DOWNLOAD_BUFFER_SIZE
+    int "Golioth blockwise downloads buffer size"
+    default 1024
+    help
+        Buffer size used in Blockwise Downloads. This size will also determine
+        the max size of each block.
+
 config GOLIOTH_OTA_THREAD_STACK_SIZE
     int "Golioth OTA thread stack size"
     default 4096
