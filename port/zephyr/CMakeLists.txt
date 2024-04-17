@@ -49,6 +49,7 @@ zephyr_library_sources(
     ../../src/event_group.c
     ../../src/fw_block_processor.c
     ../../src/fw_update.c
+    ../../src/coap_blockwise.c
     ../../src/lightdb_state.c
     ../../src/stream.c
     ../../src/log.c
