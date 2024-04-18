@@ -349,7 +349,27 @@ free_req:
     return err;
 }
 
-static void add_observation(golioth_coap_request_msg_t *req, struct golioth_client *client)
+static int golioth_coap_observe(golioth_coap_request_msg_t *req, struct golioth_client *client)
+{
+    int err = golioth_coap_req_cb(req->client,
+                                  COAP_METHOD_GET,
+                                  PATHV(req->path_prefix, req->path),
+                                  golioth_content_type_to_coap_format(req->observe.content_type),
+                                  NULL,
+                                  0,
+                                  golioth_coap_cb,
+                                  req,
+                                  GOLIOTH_COAP_REQ_OBSERVE);
+    if (err)
+    {
+        LOG_ERR("Failed to schedule CoAP OBSERVE: %d", err);
+        return err;
+    }
+
+    return err;
+}
+
+static int add_observation(golioth_coap_request_msg_t *req, struct golioth_client *client)
 {
     // scan for available (not used) observation slot
     golioth_coap_observe_info_t *obs_info = NULL;
@@ -367,31 +387,18 @@ static void add_observation(golioth_coap_request_msg_t *req, struct golioth_clie
     if (!found_slot)
     {
         GLTH_LOGE(TAG, "Unable to observe path %s, no slots available", req->path);
-        return;
+        return GOLIOTH_ERR_QUEUE_FULL;
+    }
+
+    int err = golioth_coap_observe(req, client);
+
+    if (err)
+    {
+        return err;
     }
 
     obs_info->in_use = true;
     memcpy(&obs_info->req, req, sizeof(obs_info->req));
-}
-
-static int golioth_coap_observe(golioth_coap_request_msg_t *req, struct golioth_client *client)
-{
-    int err;
-
-    err = golioth_coap_req_cb(req->client,
-                              COAP_METHOD_GET,
-                              PATHV(req->path_prefix, req->path),
-                              golioth_content_type_to_coap_format(req->observe.content_type),
-                              NULL,
-                              0,
-                              golioth_coap_cb,
-                              req,
-                              GOLIOTH_COAP_REQ_OBSERVE);
-    if (err)
-    {
-        LOG_ERR("Failed to schedule CoAP OBSERVE: %d", err);
-        return err;
-    }
 
     return 0;
 }
@@ -503,10 +510,12 @@ static enum golioth_status coap_io_loop_once(struct golioth_client *client)
             break;
         case GOLIOTH_COAP_REQUEST_OBSERVE:
             LOG_DBG("Handle OBSERVE %s", req->path);
-            err = golioth_coap_observe(req, client);
-            if (!err)
+            err = add_observation(req, client);
+            if (err == GOLIOTH_ERR_QUEUE_FULL)
             {
-                add_observation(req, client);
+                /* Observations are full, free the req but don't treat as a coap error */
+                err = GOLIOTH_OK;
+                goto free_req;
             }
             break;
         default:
