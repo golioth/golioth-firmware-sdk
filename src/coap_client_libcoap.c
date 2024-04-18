@@ -513,7 +513,46 @@ static void golioth_coap_delete(golioth_coap_request_msg_t *req, coap_session_t 
     coap_send(session, req_pdu);
 }
 
-static void add_observation(golioth_coap_request_msg_t *req, struct golioth_client *client)
+static enum golioth_status golioth_coap_observe(golioth_coap_request_msg_t *req,
+                                                struct golioth_client *client,
+                                                coap_session_t *session)
+{
+    // GET with an OBSERVE option
+    coap_pdu_t *req_pdu = coap_new_pdu(COAP_MESSAGE_CON, COAP_REQUEST_CODE_GET, session);
+    if (!req_pdu)
+    {
+        GLTH_LOGE(TAG, "coap_new_pdu() get failed");
+        return GOLIOTH_ERR_MEM_ALLOC;
+    }
+
+    golioth_coap_add_token(req_pdu, req, session);
+
+    unsigned char optbuf[4] = {};
+    coap_add_option(req_pdu,
+                    COAP_OPTION_OBSERVE,
+                    coap_encode_var_safe(optbuf, sizeof(optbuf), COAP_OBSERVE_ESTABLISH),
+                    optbuf);
+
+    golioth_coap_add_path(req_pdu, req->path_prefix, req->path);
+    golioth_coap_add_accept(req_pdu, req->observe.content_type);
+
+    int err = coap_send(session, req_pdu);
+    if (err == COAP_INVALID_MID)
+    {
+        /* The coap_send() function returns the CoAP message ID on success or COAP_INVALID_MID on
+         * failure. */
+        GLTH_LOGE(TAG, "Unable to observe path %s, cannot send CoAP PDU", req->path);
+        return GOLIOTH_ERR_BAD_REQUEST;
+    }
+    else
+    {
+        return GOLIOTH_OK;
+    }
+}
+
+static enum golioth_status add_observation(golioth_coap_request_msg_t *req,
+                                           struct golioth_client *client,
+                                           coap_session_t *session)
 {
     // scan for available (not used) observation slot
     golioth_coap_observe_info_t *obs_info = NULL;
@@ -531,37 +570,19 @@ static void add_observation(golioth_coap_request_msg_t *req, struct golioth_clie
     if (!found_slot)
     {
         GLTH_LOGE(TAG, "Unable to observe path %s, no slots available", req->path);
-        return;
+        return GOLIOTH_ERR_QUEUE_FULL;
+    }
+
+    int err = golioth_coap_observe(req, client, session);
+    if (err)
+    {
+        return err;
     }
 
     obs_info->in_use = true;
     memcpy(&obs_info->req, req, sizeof(obs_info->req));
-}
 
-static void golioth_coap_observe(golioth_coap_request_msg_t *req,
-                                 struct golioth_client *client,
-                                 coap_session_t *session)
-{
-    // GET with an OBSERVE option
-    coap_pdu_t *req_pdu = coap_new_pdu(COAP_MESSAGE_CON, COAP_REQUEST_CODE_GET, session);
-    if (!req_pdu)
-    {
-        GLTH_LOGE(TAG, "coap_new_pdu() get failed");
-        return;
-    }
-
-    golioth_coap_add_token(req_pdu, req, session);
-
-    unsigned char optbuf[4] = {};
-    coap_add_option(req_pdu,
-                    COAP_OPTION_OBSERVE,
-                    coap_encode_var_safe(optbuf, sizeof(optbuf), COAP_OBSERVE_ESTABLISH),
-                    optbuf);
-
-    golioth_coap_add_path(req_pdu, req->path_prefix, req->path);
-    golioth_coap_add_accept(req_pdu, req->observe.content_type);
-
-    coap_send(session, req_pdu);
+    return GOLIOTH_OK;
 }
 
 static void reestablish_observations(struct golioth_client *client, coap_session_t *session)
@@ -804,8 +825,11 @@ static enum golioth_status coap_io_loop_once(struct golioth_client *client,
             break;
         case GOLIOTH_COAP_REQUEST_OBSERVE:
             GLTH_LOGD(TAG, "Handle OBSERVE %s", request_msg.path);
-            golioth_coap_observe(&request_msg, client, session);
-            add_observation(&request_msg, client);
+            int err = add_observation(&request_msg, client, session);
+            if (err)
+            {
+                request_is_valid = false;
+            }
             break;
         default:
             GLTH_LOGW(TAG, "Unknown request_msg type: %u", request_msg.type);
