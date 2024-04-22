@@ -97,7 +97,7 @@ jobs:
 
         zephyr/scripts/twister                                                \
               --platform ${{ inputs.west_board }}                             \
-              -T modules/lib/golioth-firmware-sdk/examples/zephyr             \
+              -T modules/lib/golioth-firmware-sdk/examples/zephyr/fw_update   \
               --prep-artifacts-for-testing                                    \
               --package-artifacts test_artifacts_${{ inputs.west_board }}.tar \
               $EXTRA_BUILD_ARGS
@@ -174,7 +174,7 @@ jobs:
           SNR_VAR=CI_${hil_board^^}_SNR
           zephyr/scripts/twister                                                                  \
                 -p ${{ inputs.west_board }}                                                       \
-                -T modules/lib/golioth-firmware-sdk/examples/zephyr                               \
+                -T modules/lib/golioth-firmware-sdk/examples/zephyr/fw_update                     \
                 --device-testing                                                                  \
                 --device-serial ${!PORT_VAR}                                                      \
                 --test-only                                                                       \

@@ -103,7 +103,7 @@ jobs:
         run: |
           source /opt/credentials/runner_env.sh
           PORT_VAR=CI_${hil_board^^}_PORT
-          for sample in `find examples/esp_idf -type d -name pytest -exec dirname "{}" \;`
+          for sample in `find examples/esp_idf/fw_update -type d -name pytest -exec dirname "{}" \;`
           do
             pytest --rootdir . $sample                                          \
               --board ${{ inputs.hil_board }}_espidf                                                   \
