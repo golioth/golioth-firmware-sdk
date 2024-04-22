@@ -17,3 +17,7 @@ tags
 tags.lock
 tags.temp
 __pycache__
+
+# Generated artifacts
+ci_espidf_artifacts
+ci_zephyr_artifacts
