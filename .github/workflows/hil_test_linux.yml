@@ -71,6 +71,7 @@ jobs:
             --api-url ${{ inputs.api-url }}             \
             --api-key ${{ secrets[inputs.api-key-id] }} \
             --mask-secrets                              \
+            -rP                                         \
             --timeout=600
           lcov -c                                       \
                --directory build/${test}                \
