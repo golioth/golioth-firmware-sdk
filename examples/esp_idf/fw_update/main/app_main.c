@@ -15,7 +15,8 @@
 
 #define TAG "fw_update"
 
-static const char *_current_version = "1.2.3";
+static const char *_current_version = "255.8.9";
+static const char *_sdk_version = "0.16.0";
 
 static SemaphoreHandle_t _connected_sem = NULL;
 
@@ -33,7 +34,8 @@ static void on_client_event(struct golioth_client *client,
 
 void app_main(void)
 {
-    GLTH_LOGI(TAG, "Start FW Update sample.");
+    GLTH_LOGI(TAG, "CI Testing fw_update artifact");
+    GLTH_LOGI(TAG, "Golioth Firmware SDK version: %s", _sdk_version);
 
     // Initialize NVS first.
     nvs_init();
