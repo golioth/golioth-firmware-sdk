@@ -181,7 +181,7 @@ enum golioth_status golioth_coap_client_set(struct golioth_client *client,
                                             bool is_synchronous,
                                             int32_t timeout_s)
 {
-    if (!client)
+    if (!client || !path)
     {
         return GOLIOTH_ERR_NULL;
     }
@@ -296,7 +296,7 @@ enum golioth_status golioth_coap_client_delete(struct golioth_client *client,
                                                bool is_synchronous,
                                                int32_t timeout_s)
 {
-    if (!client)
+    if (!client || !path)
     {
         return GOLIOTH_ERR_NULL;
     }
@@ -381,7 +381,7 @@ static enum golioth_status golioth_coap_client_get_internal(struct golioth_clien
                                                             bool is_synchronous,
                                                             int32_t timeout_s)
 {
-    if (!client)
+    if (!client || !path)
     {
         return GOLIOTH_ERR_NULL;
     }
@@ -517,7 +517,7 @@ enum golioth_status golioth_coap_client_observe_async(struct golioth_client *cli
                                                       golioth_get_cb_fn callback,
                                                       void *arg)
 {
-    if (!client)
+    if (!client || !path)
     {
         return GOLIOTH_ERR_NULL;
     }
