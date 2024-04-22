@@ -8,6 +8,7 @@
 extern "C" {
 
 #include "freertos/FreeRTOS.h"
+#include "freertos/semphr.h"
 #include <golioth/client.h>
 #include <golioth/lightdb_state.h>
 

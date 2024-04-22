@@ -9,6 +9,7 @@
 #include "shell.h"
 #include "wifi.h"
 #include "freertos/FreeRTOS.h"
+#include "freertos/semphr.h"
 #include <golioth/client.h>
 #include <golioth/golioth_sys.h>
 
