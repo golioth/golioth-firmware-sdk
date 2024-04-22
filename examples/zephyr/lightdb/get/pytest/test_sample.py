@@ -42,7 +42,7 @@ async def test_lightdb_get(shell, device, wifi_ssid, wifi_psk):
 
     await device.lightdb.set("counter", 27)
 
-    shell._device.readlines_until(regex=".*22 63 6f 75 6e 74 65 72  22 3a 32 37             |\"counter \":27",
+    shell._device.readlines_until(regex=".*7b 22 63 6f 75 6e 74 65  72 22 3a 32 37 7d       |{\"counte r\":27}",
                                   timeout=10.0)
 
     await device.lightdb.set("counter", 99)
