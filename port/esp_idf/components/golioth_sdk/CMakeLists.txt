@@ -29,7 +29,6 @@ idf_component_register(
     SRCS
         "${sdk_port}/freertos/golioth_sys_freertos.c"
         "${sdk_port}/esp_idf/fw_update_esp_idf.c"
-        "${sdk_port}/esp_idf/golioth_log_esp_idf.c"
         "${sdk_src}/golioth_status.c"
         "${sdk_src}/coap_client.c"
         "${sdk_src}/coap_client_libcoap.c"
