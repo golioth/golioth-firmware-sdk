@@ -473,8 +473,7 @@ enum golioth_status golioth_lightdb_get_sync(struct golioth_client *client,
                                              int32_t timeout_s)
 {
     lightdb_get_response_t response = {
-        .type = content_type == GOLIOTH_CONTENT_TYPE_JSON ? LIGHTDB_GET_TYPE_STRING
-                                                          : LIGHTDB_GET_TYPE_BINARY,
+        .type = LIGHTDB_GET_TYPE_BINARY,
         .buf = buf,
         .buf_size = *buf_size,
     };

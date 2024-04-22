@@ -98,7 +98,7 @@ static void counter_get_json_sync(struct golioth_client *client)
     }
     else
     {
-        LOG_HEXDUMP_INF(sbuf, strlen(sbuf), "LightDB JSON (sync)");
+        LOG_HEXDUMP_INF(sbuf, len, "LightDB JSON (sync)");
     }
 }
 

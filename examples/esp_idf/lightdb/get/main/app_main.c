@@ -98,7 +98,7 @@ static void counter_get_json_sync(struct golioth_client *client)
     }
     else
     {
-        GLTH_LOG_BUFFER_HEXDUMP(TAG, sbuf, strlen((char *) sbuf), GOLIOTH_DEBUG_LOG_LEVEL_INFO);
+        GLTH_LOG_BUFFER_HEXDUMP(TAG, sbuf, len, GOLIOTH_DEBUG_LOG_LEVEL_INFO);
     }
 }
 

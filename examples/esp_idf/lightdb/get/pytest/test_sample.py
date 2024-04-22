@@ -38,7 +38,7 @@ async def test_lightdb_get(board, device):
 
     await device.lightdb.set("counter", 27)
 
-    board.wait_for_regex_in_line(r'.*22 63 6f 75 6e 74 65 72  22 3a 32 37             |\"counter \":27',
+    board.wait_for_regex_in_line(r'.*7b 22 63 6f 75 6e 74 65  72 22 3a 32 37 7d       |{\"counte r\":27}',
                                   timeout_s=10.0)
 
     await device.lightdb.set("counter", 99)
