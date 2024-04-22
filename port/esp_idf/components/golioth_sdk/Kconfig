@@ -8,11 +8,4 @@ menu "Golioth SDK Configuration"
 
 rsource '../../../../src/Kconfig'
 
-config GOLIOTH_ESPLOG_MAX_BUFF_SIZE
-    int "Maximum log buffer size allowed for ESP log backend"
-    default 128
-    help
-        Maximum log buffer size allowed for ESP log backend to be sent to
-        Golioth cloud
-
-endmenu  # Golioth SDK Configuration
+endmenu # Golioth SDK Configuration
