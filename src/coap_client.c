@@ -107,7 +107,7 @@ enum golioth_status golioth_coap_client_empty(struct golioth_client *client,
 
     if (!client->is_running)
     {
-        GLTH_LOGW(TAG, "Client not running, dropping request");
+        GLTH_LOGW(TAG, "Client not running, dropping empty request");
         return GOLIOTH_ERR_INVALID_STATE;
     }
 
@@ -190,7 +190,7 @@ enum golioth_status golioth_coap_client_set(struct golioth_client *client,
 
     if (!client->is_running)
     {
-        GLTH_LOGW(TAG, "Client not running, dropping request for path %s", path);
+        GLTH_LOGW(TAG, "Client not running, dropping set request for path %s%s", path_prefix, path);
         return GOLIOTH_ERR_INVALID_STATE;
     }
 
@@ -303,7 +303,10 @@ enum golioth_status golioth_coap_client_delete(struct golioth_client *client,
 
     if (!client->is_running)
     {
-        GLTH_LOGW(TAG, "Client not running, dropping request for path %s", path);
+        GLTH_LOGW(TAG,
+                  "Client not running, dropping delete request for path %s%s",
+                  path_prefix,
+                  path);
         return GOLIOTH_ERR_INVALID_STATE;
     }
 
@@ -388,7 +391,7 @@ static enum golioth_status golioth_coap_client_get_internal(struct golioth_clien
 
     if (!client->is_running)
     {
-        GLTH_LOGW(TAG, "Client not running, dropping get request");
+        GLTH_LOGW(TAG, "Client not running, dropping get request for path %s%s", path_prefix, path);
         return GOLIOTH_ERR_INVALID_STATE;
     }
 
@@ -524,7 +527,10 @@ enum golioth_status golioth_coap_client_observe_async(struct golioth_client *cli
 
     if (!client->is_running)
     {
-        GLTH_LOGW(TAG, "Client not running, dropping request for path %s", path);
+        GLTH_LOGW(TAG,
+                  "Client not running, dropping observe request for path %s%s",
+                  path_prefix,
+                  path);
         return GOLIOTH_ERR_INVALID_STATE;
     }
 
