@@ -13,6 +13,8 @@
 
 LOG_TAG_DEFINE(test_ota);
 
+static golioth_sys_sem_t connected_sem;
+
 #define GOLIOTH_OTA_REASON_CNT 10
 #define GOLIOTH_OTA_STATE_CNT 4
 #define TEST_BLOCK_CNT 42
@@ -224,11 +226,26 @@ static void on_manifest(struct golioth_client *client,
     }
 }
 
+static void on_client_event(struct golioth_client *client,
+                            enum golioth_client_event event,
+                            void *arg)
+{
+    if (event == GOLIOTH_CLIENT_EVENT_CONNECTED)
+    {
+        golioth_sys_sem_give(connected_sem);
+    }
+}
+
 void hil_test_entry(const struct golioth_client_config *config)
 {
+    connected_sem = golioth_sys_sem_create(1, 0);
+
     golioth_debug_set_cloud_log_enabled(false);
 
     client = golioth_client_create(config);
+    golioth_client_register_event_callback(client, on_client_event, NULL);
+
+    golioth_sys_sem_take(connected_sem, GOLIOTH_SYS_WAIT_FOREVER);
 
     golioth_ota_observe_manifest_async(client, on_manifest, &callback_arg);
 

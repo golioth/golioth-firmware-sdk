@@ -11,6 +11,7 @@
 
 LOG_TAG_DEFINE(test_rpc);
 
+static golioth_sys_sem_t connected_sem;
 static golioth_sys_sem_t disconnect_sem;
 
 static enum golioth_rpc_status on_no_response(zcbor_state_t *request_params_array,
@@ -140,12 +141,26 @@ static enum golioth_rpc_status on_disconnect(zcbor_state_t *request_params_array
     return GOLIOTH_RPC_OK;
 }
 
+static void on_client_event(struct golioth_client *client,
+                            enum golioth_client_event event,
+                            void *arg)
+{
+    if (event == GOLIOTH_CLIENT_EVENT_CONNECTED)
+    {
+        golioth_sys_sem_give(connected_sem);
+    }
+}
+
 void hil_test_entry(const struct golioth_client_config *config)
 {
+    connected_sem = golioth_sys_sem_create(1, 0);
+    disconnect_sem = golioth_sys_sem_create(1, 0);
 
     struct golioth_client *client = golioth_client_create(config);
+    golioth_client_register_event_callback(client, on_client_event, NULL);
     struct golioth_rpc *grpc = golioth_rpc_init(client);
-    disconnect_sem = golioth_sys_sem_create(1, 0);
+
+    golioth_sys_sem_take(connected_sem, GOLIOTH_SYS_WAIT_FOREVER);
 
     golioth_rpc_register(grpc, "no_response", on_no_response, NULL);
 
