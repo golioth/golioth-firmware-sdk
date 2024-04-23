@@ -71,7 +71,6 @@ struct golioth_client
     golioth_sys_sem_t run_sem;
     golioth_sys_timer_t keepalive_timer;
     bool is_running;
-    bool end_session;
     bool session_connected;
     struct golioth_client_config config;
     golioth_coap_observe_info_t observations[CONFIG_GOLIOTH_MAX_NUM_OBSERVATIONS];
