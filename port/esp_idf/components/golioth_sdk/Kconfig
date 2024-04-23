@@ -8,6 +8,13 @@ menu "Golioth SDK Configuration"
 
 rsource '../../../../src/Kconfig'
 
+config GOLIOTH_ESPLOG_AUTO_LOG_TO_CLOUD
+    int "Option to send logs to cloud"
+    default 0
+    help
+        If set to 1, ESP_LOGX statements will automatically upload to
+        Golioth cloud
+
 config GOLIOTH_ESPLOG_MAX_BUFF_SIZE
     int "Maximum log buffer size allowed for ESP log backend"
     default 128

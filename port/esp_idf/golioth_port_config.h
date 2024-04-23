@@ -34,31 +34,36 @@
         }                                                                    \
     } while (0)
 
-#define GLTH_LOGX(COLOR, LEVEL, LEVEL_STR, TAG, ...)  \
-    do                                                \
-    {                                                 \
-        if ((LEVEL) <= golioth_debug_get_log_level()) \
-        {                                             \
-            switch (LEVEL)                            \
-            {                                         \
-                case GOLIOTH_DEBUG_LOG_LEVEL_ERROR:   \
-                    ESP_LOGE(TAG, __VA_ARGS__);       \
-                    break;                            \
-                case GOLIOTH_DEBUG_LOG_LEVEL_WARN:    \
-                    ESP_LOGW(TAG, __VA_ARGS__);       \
-                    break;                            \
-                case GOLIOTH_DEBUG_LOG_LEVEL_INFO:    \
-                    ESP_LOGI(TAG, __VA_ARGS__);       \
-                    break;                            \
-                case GOLIOTH_DEBUG_LOG_LEVEL_DEBUG:   \
-                    ESP_LOGD(TAG, __VA_ARGS__);       \
-                    break;                            \
-                case GOLIOTH_DEBUG_LOG_LEVEL_VERBOSE: \
-                    ESP_LOGV(TAG, __VA_ARGS__);       \
-                    break;                            \
-                case GOLIOTH_DEBUG_LOG_LEVEL_NONE:    \
-                default:                              \
-                    break;                            \
-            }                                         \
-        }                                             \
+#define GLTH_LOGX(COLOR, LEVEL, LEVEL_STR, TAG, ...)                   \
+    do                                                                 \
+    {                                                                  \
+        if ((LEVEL) <= golioth_debug_get_log_level())                  \
+        {                                                              \
+            switch (LEVEL)                                             \
+            {                                                          \
+                case GOLIOTH_DEBUG_LOG_LEVEL_ERROR:                    \
+                    ESP_LOGE(TAG, __VA_ARGS__);                        \
+                    break;                                             \
+                case GOLIOTH_DEBUG_LOG_LEVEL_WARN:                     \
+                    ESP_LOGW(TAG, __VA_ARGS__);                        \
+                    break;                                             \
+                case GOLIOTH_DEBUG_LOG_LEVEL_INFO:                     \
+                    ESP_LOGI(TAG, __VA_ARGS__);                        \
+                    break;                                             \
+                case GOLIOTH_DEBUG_LOG_LEVEL_DEBUG:                    \
+                    ESP_LOGD(TAG, __VA_ARGS__);                        \
+                    break;                                             \
+                case GOLIOTH_DEBUG_LOG_LEVEL_VERBOSE:                  \
+                    ESP_LOGV(TAG, __VA_ARGS__);                        \
+                    break;                                             \
+                case GOLIOTH_DEBUG_LOG_LEVEL_NONE:                     \
+                default:                                               \
+                    break;                                             \
+            }                                                          \
+            if (!CONFIG_GOLIOTH_ESPLOG_AUTO_LOG_TO_CLOUD)              \
+            {                                                          \
+                uint64_t now_ms = golioth_sys_now_ms();                \
+                golioth_debug_printf(now_ms, LEVEL, TAG, __VA_ARGS__); \
+            }                                                          \
+        }                                                              \
     } while (0)
