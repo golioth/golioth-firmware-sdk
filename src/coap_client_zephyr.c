@@ -30,7 +30,6 @@ LOG_MODULE_REGISTER(golioth_coap_client_zephyr);
 
 enum
 {
-    FLAG_RECONNECT,
     FLAG_STOP_CLIENT,
 };
 
@@ -978,7 +977,6 @@ static void golioth_coap_client_thread(void *arg)
         client->is_running = true;
 
         /* Flush pending events */
-        atomic_clear_bit(&flags, FLAG_RECONNECT);
         (void) eventfd_read(fds[POLLFD_EVENT].fd, &eventfd_value);
 
         err = golioth_connect(client);
@@ -1058,22 +1056,17 @@ static void golioth_coap_client_thread(void *arg)
 
             if (event_occurred)
             {
-                bool reconnect_request = atomic_test_and_clear_bit(&flags, FLAG_RECONNECT);
                 bool stop_request = atomic_test_and_clear_bit(&flags, FLAG_STOP_CLIENT);
                 bool receive_timeout = (recv_expiry <= k_uptime_get());
 
                 /*
-                 * Reconnect and stop requests are handled similar to recv timeout.
+                 * Stop requests are handled similar to recv timeout.
                  */
-                if (reconnect_request || receive_timeout || stop_request)
+                if (receive_timeout || stop_request)
                 {
                     if (stop_request)
                     {
                         LOG_INF("Stop request");
-                    }
-                    else if (reconnect_request)
-                    {
-                        LOG_INF("Reconnect per request");
                     }
                     else
                     {
