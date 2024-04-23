@@ -1,7 +1,7 @@
 import logging
-import time
 
 import pytest
+import trio
 
 LOGGER = logging.getLogger(__name__)
 
@@ -12,7 +12,7 @@ async def test_lightdb_get(shell, device, wifi_ssid, wifi_psk):
 
     await device.lightdb.delete("counter")
 
-    time.sleep(2)
+    await trio.sleep(2)
 
     # Set Golioth credential
 
