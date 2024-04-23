@@ -5,6 +5,8 @@
 
 LOG_TAG_DEFINE(test_settings);
 
+static golioth_sys_sem_t connected_sem;
+
 static enum golioth_settings_status on_test_int(int32_t new_value, void *arg)
 {
     GLTH_LOGI(TAG, "Received test_int: %" PRId32, new_value);
@@ -42,17 +44,31 @@ static enum golioth_settings_status on_test_string(const char *new_value,
     return GOLIOTH_SETTINGS_SUCCESS;
 }
 
+static void on_client_event(struct golioth_client *client,
+                            enum golioth_client_event event,
+                            void *arg)
+{
+    if (event == GOLIOTH_CLIENT_EVENT_CONNECTED)
+    {
+        golioth_sys_sem_give(connected_sem);
+    }
+}
+
 void hil_test_entry(const struct golioth_client_config *config)
 {
-    enum golioth_status status;
+    connected_sem = golioth_sys_sem_create(1, 0);
 
     golioth_debug_set_cloud_log_enabled(false);
 
     struct golioth_client *client = golioth_client_create(config);
+    golioth_client_register_event_callback(client, on_client_event, NULL);
+
+    golioth_sys_sem_take(connected_sem, GOLIOTH_SYS_WAIT_FOREVER);
 
     struct golioth_settings *settings = golioth_settings_init(client);
 
-    status = golioth_settings_register_int(settings, "TEST_INT", on_test_int, NULL);
+    enum golioth_status status =
+        golioth_settings_register_int(settings, "TEST_INT", on_test_int, NULL);
 
     status = golioth_settings_register_int_with_range(settings,
                                                       "TEST_INT_RANGE",
