@@ -1,9 +1,7 @@
-import contextlib
 import logging
-import pytest
 import time
-import yaml
-import datetime
+
+import pytest
 
 LOGGER = logging.getLogger(__name__)
 
