@@ -966,7 +966,6 @@ static void golioth_coap_client_thread(void *arg)
 
     while (1)
     {
-        client->end_session = false;
         client->session_connected = false;
 
         client->is_running = false;
@@ -1015,7 +1014,7 @@ static void golioth_coap_client_thread(void *arg)
         reestablish_observations(client);
 
         LOG_INF("Entering CoAP I/O loop");
-        while (!client->end_session)
+        while (true)
         {
             event_occurred = false;
 
@@ -1073,8 +1072,7 @@ static void golioth_coap_client_thread(void *arg)
                         LOG_WRN("Receive timeout");
                     }
 
-                    golioth_disconnect(client);
-                    continue;
+                    break;
                 }
 
                 if (ping_expiry <= k_uptime_get())
@@ -1095,7 +1093,7 @@ static void golioth_coap_client_thread(void *arg)
                 if (err)
                 {
                     LOG_ERR("Failed to receive: %d", err);
-                    golioth_disconnect(client);
+                    break;
                 }
             }
 
@@ -1103,7 +1101,7 @@ static void golioth_coap_client_thread(void *arg)
             {
                 if (coap_io_loop_once(client) != GOLIOTH_OK)
                 {
-                    client->end_session = true;
+                    break;
                 }
             }
 
@@ -1111,7 +1109,6 @@ static void golioth_coap_client_thread(void *arg)
             if (!golioth_sys_sem_take(client->run_sem, 0))
             {
                 GLTH_LOGI(TAG, "Stopping");
-                golioth_disconnect(client);
                 break;
             }
             golioth_sys_sem_give(client->run_sem);
@@ -1127,6 +1124,8 @@ static void golioth_coap_client_thread(void *arg)
                                    client->event_callback_arg);
         }
         client->session_connected = false;
+
+        golioth_disconnect(client);
 
         // Small delay before starting a new session
         golioth_sys_msleep(1000);
