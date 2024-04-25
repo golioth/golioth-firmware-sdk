@@ -63,6 +63,7 @@ static int get_temperature(struct sensor_value *val)
             LOG_ERR("Failed to get temperature: %d", err);
             return err;
         }
+        break;
     }
 
     return err;
