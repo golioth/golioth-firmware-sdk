@@ -970,8 +970,8 @@ static void golioth_coap_client_thread(void *arg)
 
         client->is_running = false;
         LOG_DBG("Waiting for the \"run\" signal");
-        golioth_sys_sem_take(client->run_sem, GOLIOTH_SYS_WAIT_FOREVER);
-        golioth_sys_sem_give(client->run_sem);
+        k_poll(&client->run_event, 1, K_FOREVER);
+        client->run_event.state = K_POLL_STATE_NOT_READY;
         LOG_DBG("Received \"run\" signal");
         client->is_running = true;
 
@@ -1104,14 +1104,6 @@ static void golioth_coap_client_thread(void *arg)
                     break;
                 }
             }
-
-            // Check if we should still run (non-blocking)
-            if (!golioth_sys_sem_take(client->run_sem, 0))
-            {
-                GLTH_LOGI(TAG, "Stopping");
-                break;
-            }
-            golioth_sys_sem_give(client->run_sem);
         }
 
         LOG_INF("Ending session");
@@ -1254,13 +1246,11 @@ struct golioth_client *golioth_client_create(const struct golioth_client_config 
     fds[POLLFD_EVENT].fd = eventfd(0, EFD_NONBLOCK);
     fds[POLLFD_EVENT].events = ZSOCK_POLLIN;
 
-    new_client->run_sem = golioth_sys_sem_create(1, 0);
-    if (!new_client->run_sem)
-    {
-        LOG_ERR("Failed to create run semaphore");
-        goto error;
-    }
-    golioth_sys_sem_give(new_client->run_sem);
+    k_sem_init(&new_client->run_sem, 1, 1);
+    k_poll_event_init(&new_client->run_event,
+                      K_POLL_TYPE_SEM_AVAILABLE,
+                      K_POLL_MODE_NOTIFY_ONLY,
+                      &new_client->run_sem);
 
     new_client->request_queue = golioth_mbox_create(CONFIG_GOLIOTH_COAP_REQUEST_QUEUE_MAX_ITEMS,
                                                     sizeof(golioth_coap_request_msg_t));
@@ -1316,4 +1306,81 @@ struct golioth_client *golioth_client_create(const struct golioth_client_config 
 error:
     golioth_client_destroy(new_client);
     return NULL;
+}
+
+static void purge_request_mbox(golioth_mbox_t request_mbox)
+{
+    golioth_coap_request_msg_t request_msg = {};
+    size_t num_messages = golioth_mbox_num_messages(request_mbox);
+
+    for (size_t i = 0; i < num_messages; i++)
+    {
+        bool ok = golioth_mbox_recv(request_mbox, &request_msg, 0);
+
+        assert(ok);
+        (void) ok;
+
+        if (request_msg.type == GOLIOTH_COAP_REQUEST_POST)
+        {
+            // free dynamically allocated user payload copy
+            golioth_sys_free(request_msg.post.payload);
+        }
+    }
+}
+
+void golioth_client_destroy(struct golioth_client *client)
+{
+    if (!client)
+    {
+        return;
+    }
+    if (client->keepalive_timer)
+    {
+        golioth_sys_timer_destroy(client->keepalive_timer);
+    }
+    if (client->coap_thread_handle)
+    {
+        golioth_sys_thread_destroy(client->coap_thread_handle);
+    }
+    if (client->request_queue)
+    {
+        purge_request_mbox(client->request_queue);
+        golioth_mbox_destroy(client->request_queue);
+    }
+    golioth_sys_free(client);
+}
+
+enum golioth_status golioth_client_start(struct golioth_client *client)
+{
+    if (!client)
+    {
+        return GOLIOTH_ERR_NULL;
+    }
+    atomic_clear_bit(&flags, FLAG_STOP_CLIENT);
+    k_sem_give(&client->run_sem);
+    return GOLIOTH_OK;
+}
+
+enum golioth_status golioth_client_stop(struct golioth_client *client)
+{
+    if (!client)
+    {
+        return GOLIOTH_ERR_NULL;
+    }
+
+    GLTH_LOGI(TAG, "Attempting to stop client");
+
+    k_sem_take(&client->run_sem, K_NO_WAIT);
+
+    atomic_set_bit(&flags, FLAG_STOP_CLIENT);
+
+    golioth_client_wakeup(client);
+
+    // Wait for client to be fully stopped
+    while (golioth_client_is_running(client))
+    {
+        golioth_sys_msleep(100);
+    }
+
+    return GOLIOTH_OK;
 }

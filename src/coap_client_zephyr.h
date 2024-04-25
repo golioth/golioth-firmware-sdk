@@ -68,7 +68,8 @@ struct golioth_client
 {
     golioth_mbox_t request_queue;
     golioth_sys_thread_t coap_thread_handle;
-    golioth_sys_sem_t run_sem;
+    struct k_sem run_sem;
+    struct k_poll_event run_event;
     golioth_sys_timer_t keepalive_timer;
     bool is_running;
     bool session_connected;
