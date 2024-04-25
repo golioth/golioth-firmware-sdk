@@ -217,6 +217,11 @@ static int golioth_coap_cb(struct golioth_req_rsp *rsp)
         }
 
         err = rsp->err;
+        if (req->type == GOLIOTH_COAP_REQUEST_OBSERVE)
+        {
+            // don't free observations so we can reestablish later
+            return err;
+        }
         goto free_req;
     }
 
