@@ -34,5 +34,5 @@ async def test_lightdb_stream(shell, device, wifi_ssid, wifi_psk):
             LOGGER.info("ts: {0}, temp: {1}".format(value['timestamp'], value['data']['sensor']['temp']))
             assert (value["data"]["sensor"]["temp"] == temp)
             temp += 0.5
-            if temp == 21.5:
+            if temp == 22.0:
                 break
