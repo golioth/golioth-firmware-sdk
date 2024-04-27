@@ -176,7 +176,7 @@ int main(void)
             continue;
         }
 
-        LOG_DBG("Sending temperature %d.%06d (as object async)", temp.val1, abs(temp.val2));
+        LOG_DBG("Sending temperature %d.%06d (as object sync)", temp.val1, abs(temp.val2));
 
         temperature_push_sync(&temp);
 
@@ -190,7 +190,7 @@ int main(void)
             continue;
         }
 
-        LOG_DBG("Sending temperature %d.%06d (as object sync)", temp.val1, abs(temp.val2));
+        LOG_DBG("Sending temperature %d.%06d (as object async)", temp.val1, abs(temp.val2));
 
         temperature_push_async(&temp);
         k_sleep(K_SECONDS(5));
