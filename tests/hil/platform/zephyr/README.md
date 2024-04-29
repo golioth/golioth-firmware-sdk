@@ -17,3 +17,29 @@ root of the SDK repository:
 ```sh
 west build -p -b nrf52840dk_nrf52840 tests/hil/platform/zephyr -- -DGOLIOTH_HIL_TEST=connection
 ```
+
+## Example of running Zephyr RPC test locally on nRF52840dk
+
+```
+cd modules/lib/golioth-firmware-sdk
+
+# Dependencies
+pip install tests/hil/scripts/pytest-hil/
+
+# Build
+west build -p -b nrf52840dk tests/hil/platform/zephyr -- -DGOLIOTH_HIL_TEST=rpc
+
+# Run test
+pytest --rootdir . tests/hil/tests/rpc         \
+  --board nrf52840dk                           \
+  --port /dev/ttyACM0                          \
+  --fw-image build/zephyr/zephyr.hex           \
+  --serial-number 1050266122                   \
+  --api-url "https://api.golioth.io"           \
+  --api-key "i2u___GOLIOTHAPIKEY___uW2odN9avN" \
+  --wifi-ssid "WiFiAPssid"                     \
+  --wifi-psk "WifiAPpassword"                  \
+  -v -s
+```
+
+The last two flags show verbose output and print statements
