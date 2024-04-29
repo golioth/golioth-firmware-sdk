@@ -10,7 +10,7 @@ async def setup(project, board, device):
     board.set_golioth_psk_credentials(golioth_cred.identity, golioth_cred.key)
 
     # Confirm connection to Golioth
-    assert None != board.wait_for_regex_in_line('Golioth CoAP client connected', timeout_s=120)
+    assert None != board.wait_for_regex_in_line('RPC observation established', timeout_s=120)
 
 ##### Tests #####
 
