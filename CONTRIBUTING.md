@@ -25,10 +25,9 @@ to <coc@golioth.io>.
 
 ## I Have a Question
 
-After referring to our documentation [Documentation](https://docs.golioth.io) and searching for
-existing [Issues](https://github.com/golioth/golioth-firmware-sdk/issues) and
-[Discussions](https://github.com/golioth/golioth-firmware-sdk/discussions) feel free to ask a question
-at the project's [Discussion Board](https://github.com/golioth/golioth-firmware-sdk/discussions/new?category=q-a).
+After referring to our [Documentation](https://docs.golioth.io) and searching for existing
+[Issues](https://github.com/golioth/golioth-firmware-sdk/issues), feel free to ask a question or
+start a discussion in our [Forum](https://forum.golioth.io/).
 
 - Provide as much context as you can about what you're running into.
 - Provide project and platform versions (target board, version of our SDK), depending on what seems relevant.
@@ -140,8 +139,9 @@ and find related suggestions.
 
 ### How Do I Submit a Good Enhancement Suggestion?
 
-Enhancement suggestions are currently tracked as [Discussions](https://github.com/golioth/golioth-firmware-sdk/discussions).
-We recommend establishing the following in your discussion topic and description.
+Enhancement suggestions are currently tracked as discussions in our
+[Forum](https://forum.golioth.io/). We recommend establishing the following in your discussion topic
+and description:
 
 - Use a **clear and descriptive title** for the issue to identify the suggestion.
 - Provide a **step-by-step description of the suggested enhancement** with as many details as possible.
