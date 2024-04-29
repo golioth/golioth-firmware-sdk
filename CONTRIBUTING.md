@@ -173,7 +173,7 @@ Each commit message should contain:
 Here's an example:
 
 ```
-golioth_rpc: add void* callback_arg
+golioth_rpc: add void *callback_arg
 
 Added a convenience callback_arg, so user can capture their own
 data and forward it to the RPC method callback when it's invoked.

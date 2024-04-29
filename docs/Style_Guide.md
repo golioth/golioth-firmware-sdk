@@ -18,25 +18,18 @@ If there are style questions not covered by this guide, then as a fallback, it's
 
 # Tools: clang-format, editorconfig, git hooks
 
-Basic style is checked in CI using `clang-format` (e.g. where to put braces, indentation width,
-etc). If that check fails, the pull request can not merge.
+Basic style is checked in CI using `clang-format` based on rules defined in
+[`.clang-format`](../.clang-format) (e.g. where to put braces, indentation width, etc). If that check
+fails, the pull request can not merge.
 
-It's recommended to install an [editorconfig](https://editorconfig.org/) plugin in your
-editor so that it can use the formatting rules defined in `.editorconfig` from this repo.
+It's recommended to install an [editorconfig](https://editorconfig.org/) plugin in your editor so
+that it can use the formatting rules defined in [`.editorconfig`](../.editorconfig) from this repo.
 
-It's also recommended to install a git pre-commit hook, which will run `clang-format`
-for every local commit, which is useful to catch formatting errors early:
-
-```sh
-cd scripts/git_hooks
-./install_hooks.sh
-```
-
-Or, if you prefer, you can manually run clang-format:
+It's also recommended to manually run `clang-format` before making commits locally, which is useful
+to catch formatting errors early:
 
 ```sh
-cd scripts/lint
-./check_clang_format.sh
+git clang-format --diff main
 ```
 
 # Naming
@@ -118,7 +111,7 @@ cd scripts/lint
   any of the other possible choices.
 
   ```c
-  widget_t* widget_create(...);
+  widget_t *widget_create(...);
   void widget_destroy(widget_t*);
   ```
 
@@ -159,7 +152,7 @@ place to add a code comment.
     - `direction` is one of `in`, `out`, or `inout`
     - Note: a lot of existing code does not specify param direction (these need to be fixed).
 * Use separate `@retval <value> <description>` lines for each possible return type.
-* For `const char*` string parameters, indicate whether the string is expected
+* For `const char *` string parameters, indicate whether the string is expected
   to be NULL-terminated or not.
 * If there are parameters that must not be NULL, indicate this in the description.
 * If there are optional parameters which can be NULL or 0, indicate this in the description.
@@ -185,8 +178,9 @@ Put this header at the top of each file, updating the copyright year whenever yo
 
 # Formatting and Style
 
-Most of the rules in this section are covered by `.clang-format` and `.editorconfig`.
-They are listed out here for convenience.
+- Most of the rules in this section are codified in [`.clang-format`](../.clang-format) and
+[`.editorconfig`](../.editorconfig).
+- They are listed out here for convenience.
 
 If an exception to clang-format is needed, you can wrap your code like this:
 
@@ -210,25 +204,27 @@ If an exception to clang-format is needed, you can wrap your code like this:
 
 * One blank line between functions in a source file
   ```c
-  void foo(void) {
+  void foo(void)
+  {
+      // ...
   }
 
-  void bar(void) {
+  void bar(void)
+  {
+      // ...
   }
   ```
 
-* Use spaces after control flow constructs and before braces
+* Use spaces after control flow constructs
   ```diff
-  -if(condition) {
-  -if (condition){
-  -if(condition){
-  +if (condition) {
+  -if(condition)
+  +if (condition)
   ```
 
 * No extra space inside parentheses for control flow constructs
   ```diff
-  -if ( condition1, condition2 ) {
-  +if (condition1, condition2) {
+  -if ( condition1, condition2 )
+  +if (condition1, condition2)
   ```
 
 * No extra space after function names or inside parentheses
@@ -241,57 +237,60 @@ If an exception to clang-format is needed, you can wrap your code like this:
   +foo(param1, param2);
   ```
 
-* Pointers should hug the type, not the variable
+* Pointers should hug the variable, not the type
 
   ```diff
-  -char *my_string;
-  +char* my_string;
+  -char* my_string;
+  +char *my_string;
   ```
 
 * Prefer the "west-const" style (as opposed to "east-const")
 
   ```diff
-  -char const* my_string;
-  +const char* my_string;
+  -char const *my_string;
+  +const char *my_string;
   ```
 
-* Continuation lines get eight spaces at the start of the line, relative to previous line.
+* Align arguments after an open bracket.
 
   ```c
-  result_type_t do_something(uint8_t number_of_times) {
+  result_type_t do_something(uint8_t number_of_times)
   ```
   ```c
-  result_type_t do_something_tricky(
-          uint8_t number_of_times, object* target) {
+  result_type_t do_something_tricky(uint8_t number_of_times,
+                                    object *target)
   ```
   ```c
-  result_type_t do_something_even_trickier(
-          uint8_t number_of_times,
-          const modifier* modifier,
-          object* target) {
+  result_type_t do_something_even_trickier(uint8_t number_of_times,
+                                           const modifier *modifier,
+                                           object *target)
   ```
   ```diff
   -void my_function(uint32_t var_a, uint32_t var_b,
-  -        uint32_t var_c,
-  -        uint32_t var_d) {
-  +void my_function(
-  +        uint32_t var_a,
-  +        uint32_t var_b,
-  +        uint32_t var_c,
-  +        uint32_t var_d) {
+  -                 uint32_t var_c,
+  -                 uint32_t var_d)
+  +void my_function(uint32_t var_a,
+  +                 uint32_t var_b,
+  +                 uint32_t var_c,
+  +                 uint32_t var_d)
   ```
 
 ## Braces
 
-* Use "Egyptian braces":
+* Use "Allman" style braces:
 
   ```c
   // comment here if it describes the whole if/else if/else sequence
-  if (condition1) {
+  if (condition1)
+  {
       // comment here; describes "current state at this point in code"
-  } else if (condition2) {
+  }
+  else if (condition2)
+  {
       // comment here
-  } else {
+  }
+  else
+  {
       // comment here
   }
   ```
@@ -321,12 +320,14 @@ If an exception to clang-format is needed, you can wrap your code like this:
 
   ```diff
   -uint32_t x = 0;
-  -for (uint32_t i = 0; i < num_elements; i++) {
+  -for (uint32_t i = 0; i < num_elements; i++)
+  -{
   -    x = my_array[i];
   -    // more code...
   -}
 
-  +for (uint32_t i = 0; i < num_elements; i++) {
+  +for (uint32_t i = 0; i < num_elements; i++)
+  +{
   +    uint32_t x = my_array[i];
   +    // more code...
   +}
@@ -346,9 +347,9 @@ If an exception to clang-format is needed, you can wrap your code like this:
   output parameters.
 * Returning structs by value can be okay if they're small (e.g. 4-16 bytes).
 * Output parameters should appear after input parameters
-* Struct input parameters should be passed by `const*`. This makes it clear they're not mutated.
+* Struct input parameters should be passed by `const *`. This makes it clear they're not mutated.
   ```c
-  size_t get_widget_size(const widget_t* widget);
+  size_t get_widget_size(const widget_t *widget);
   ```
 * Prefer to return early from a function on error instead of using cascading if/else branches.
 * `goto`'s may be used for error handling and cleanup in a function, to simplify control flow.
@@ -395,10 +396,11 @@ If an exception to clang-format is needed, you can wrap your code like this:
       by users.
 * If indentation is 4 or more levels deep, you should refactor the function.
 * If you allow a caller to register a callback function, make sure they can also register
-  a user-defined `void*` that will be passed to the callback when called.
+  a user-defined `void *` that will be passed to the callback when called.
 
   ```c
-  static void on_event(event_t event, void* user_arg) {
+  static void on_event(event_t event, void *user_arg)
+  {
       // ...
   }
 
