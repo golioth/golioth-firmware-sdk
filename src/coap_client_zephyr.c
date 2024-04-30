@@ -28,6 +28,16 @@ LOG_MODULE_REGISTER(golioth_coap_client_zephyr);
 #define GOLIOTH_MAX_IDENTITY_LEN 32
 #define GOLIOTH_EMPTY_PACKET_LEN (16 + GOLIOTH_MAX_IDENTITY_LEN)
 
+#define BLOCKSIZE_TO_SZX(blockSize) \
+    ((blockSize == 16)         ? 0  \
+         : (blockSize == 32)   ? 1  \
+         : (blockSize == 64)   ? 2  \
+         : (blockSize == 128)  ? 3  \
+         : (blockSize == 256)  ? 4  \
+         : (blockSize == 512)  ? 5  \
+         : (blockSize == 1024) ? 6  \
+                               : -1)
+
 enum
 {
     FLAG_RECONNECT,
@@ -96,6 +106,32 @@ static enum coap_content_format golioth_content_type_to_coap_format(
             assert(0);
             return COAP_CONTENT_FORMAT_APP_OCTET_STREAM;
     }
+}
+
+static int golioth_coap_req_append_block1_option(golioth_coap_request_msg_t *req_msg,
+                                                 struct golioth_coap_req *req)
+{
+    unsigned int val = 0;
+    if (req->request_wo_block1.data)
+    {
+        /*
+         * Block1 was already appended once, so just copy state before
+         * it was done.
+         */
+        req->request = req->request_wo_block1;
+    }
+    else
+    {
+        /*
+         * Block1 is about to be appended for the first time, so
+         * remember coap_packet state before adding this option.
+         */
+        req->request_wo_block1 = req->request;
+    }
+    val |= BLOCKSIZE_TO_SZX(CONFIG_GOLIOTH_BLOCKWISE_UPLOAD_BLOCK_SIZE) & 0x07;
+    val |= req_msg->post_block.is_last ? 0x00 : 0x08;
+    val |= req_msg->post_block.block_index << 4;
+    return coap_append_option_int(&req->request, COAP_OPTION_BLOCK1, val);
 }
 
 static int golioth_coap_req_append_block2_option(struct golioth_coap_req *req)
@@ -253,6 +289,12 @@ static int golioth_coap_cb(struct golioth_req_rsp *rsp)
                 req->post.callback(client, &response, req->path, req->post.arg);
             }
             break;
+        case GOLIOTH_COAP_REQUEST_POST_BLOCK:
+            if (req->post_block.callback)
+            {
+                req->post_block.callback(client, &response, req->path, req->post_block.arg);
+            }
+            break;
         case GOLIOTH_COAP_REQUEST_DELETE:
             if (req->delete.callback)
             {
@@ -339,6 +381,86 @@ static int golioth_coap_get_block(golioth_coap_request_msg_t *req)
     if (err)
     {
         LOG_ERR("Failed to schedule CoAP GET BLOCK: %d", err);
+        goto free_req;
+    }
+
+    return 0;
+
+free_req:
+    golioth_coap_req_free(coap_req);
+
+    return err;
+}
+
+static int golioth_coap_post_block(golioth_coap_request_msg_t *req)
+{
+    const uint8_t **pathv = PATHV(req->path_prefix, req->path);
+    size_t path_len = coap_pathv_estimate_alloc_len(pathv);
+    bool first = req->post_block.block_index == 0;
+    struct golioth_coap_req *coap_req;
+    struct golioth_client *client = req->client;
+    int err;
+    size_t buffer_len = GOLIOTH_COAP_MAX_NON_PAYLOAD_LEN + path_len + req->post_block.payload_size;
+
+    err = golioth_coap_req_new(&coap_req,
+                               client,
+                               COAP_METHOD_POST,
+                               req->post_block.content_type,
+                               buffer_len,
+                               golioth_coap_cb,
+                               req);
+    if (err)
+    {
+        return err;
+    }
+
+    if (first)
+    {
+        /* Save token for subsequent block requests */
+        client->block_token_len = coap_header_get_token(&coap_req->request, client->block_token);
+    }
+    else
+    {
+        /* Override token with the one geenrated in first block request */
+        memcpy(&coap_req->request.data[4], client->block_token, client->block_token_len);
+    }
+
+    err = coap_packet_append_uri_path_from_pathv(&coap_req->request, pathv);
+    if (err)
+    {
+        LOG_ERR("Unable add uri path to packet");
+        goto free_req;
+    }
+
+    coap_req->block_ctx.current = (req->post_block.block_index * req->post_block.payload_size);
+
+    err = golioth_coap_req_append_block1_option(req, coap_req);
+    if (err)
+    {
+        LOG_ERR("Unable to append block1: %d", err);
+        goto free_req;
+    }
+
+    err = coap_packet_append_payload_marker(&coap_req->request);
+    if (err)
+    {
+        LOG_ERR("Unable to add payload marker to packet");
+        goto free_req;
+    }
+
+    err = coap_packet_append_payload(&coap_req->request,
+                                     req->post_block.payload,
+                                     req->post_block.payload_size);
+    if (err)
+    {
+        LOG_ERR("Unable to add payload to packet");
+        goto free_req;
+    }
+
+    err = golioth_coap_req_schedule(coap_req);
+    if (err)
+    {
+        LOG_ERR("Failed to schedule CoAP POST BLOCK: %d", err);
         goto free_req;
     }
 
@@ -443,6 +565,11 @@ static enum golioth_status coap_io_loop_once(struct golioth_client *client)
             golioth_sys_free(req->post.payload);
         }
 
+        if (req->type == GOLIOTH_COAP_REQUEST_POST_BLOCK && req->post_block.payload_size > 0)
+        {
+            golioth_sys_free(req->post_block.payload);
+        }
+
         if (req->request_complete_event)
         {
             golioth_event_group_destroy(req->request_complete_event);
@@ -489,6 +616,11 @@ static enum golioth_status coap_io_loop_once(struct golioth_client *client)
                                       req,
                                       0);
             golioth_sys_free(req->post.payload);
+            break;
+        case GOLIOTH_COAP_REQUEST_POST_BLOCK:
+            LOG_DBG("Handle POST_BLOCK %s", req->path);
+            err = golioth_coap_post_block(req);
+            golioth_sys_free(req->post_block.payload);
             break;
         case GOLIOTH_COAP_REQUEST_DELETE:
             LOG_DBG("Handle DELETE %s", req->path);

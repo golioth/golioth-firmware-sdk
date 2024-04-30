@@ -443,6 +443,7 @@ static int golioth_coap_req_init(struct golioth_coap_req *req,
     req->cb = (cb ? cb : golioth_req_rsp_default_handler);
     req->user_data = user_data;
     req->request_wo_block2.data = NULL;
+    req->request_wo_block1.data = NULL;
     req->reply.seq = 0;
     req->reply.ts = -COAP_OBSERVE_TS_DIFF_NEWER;
 

@@ -172,6 +172,10 @@ typedef void (*golioth_set_cb_fn)(struct golioth_client *client,
                                   const struct golioth_response *response,
                                   const char *path,
                                   void *arg);
+typedef void (*golioth_set_block_cb_fn)(struct golioth_client *client,
+                                        const struct golioth_response *response,
+                                        const char *path,
+                                        void *arg);
 
 /// Create a Golioth client
 ///

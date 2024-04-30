@@ -51,7 +51,10 @@ struct golioth_coap_req
 {
     sys_dnode_t node;
     struct coap_packet request;
+    // TODO: Can we use request_wo_block_option for both request_wo_block1 and 2?
+    struct coap_packet request_wo_block1;
     struct coap_packet request_wo_block2;
+    // TODO: block_ctx for both block1 and block2?
     struct coap_block_context block_ctx;
     struct golioth_coap_reply reply;
 
