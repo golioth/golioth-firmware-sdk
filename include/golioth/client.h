@@ -157,7 +157,8 @@ typedef void (*golioth_get_block_cb_fn)(struct golioth_client *client,
                                         bool is_last,
                                         void *arg);
 
-/// Callback function type for all asynchronous set and delete requests
+/// Callback function type for all asynchronous set and delete requests as well as
+/// blockwise uploads
 ///
 /// Will be called when a response is received or on timeout (i.e. response never received).
 /// The callback function should check response->status to determine which case it is (response

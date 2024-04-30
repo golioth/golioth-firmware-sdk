@@ -99,22 +99,23 @@ enum golioth_status golioth_coap_client_empty(struct golioth_client *client,
     return GOLIOTH_OK;
 }
 
-enum golioth_status golioth_coap_client_set(struct golioth_client *client,
-                                            const char *path_prefix,
-                                            const char *path,
-                                            enum golioth_content_type content_type,
-                                            const uint8_t *payload,
-                                            size_t payload_size,
-                                            golioth_set_cb_fn callback,
-                                            void *callback_arg,
-                                            bool is_synchronous,
-                                            int32_t timeout_s)
+static enum golioth_status golioth_coap_client_set_internal(struct golioth_client *client,
+                                                            const char *path_prefix,
+                                                            const char *path,
+                                                            const uint8_t *payload,
+                                                            size_t payload_size,
+                                                            golioth_coap_request_type_t type,
+                                                            void *request_params,
+                                                            bool is_synchronous,
+                                                            int32_t timeout_s)
 {
     if (!client || !path)
     {
         return GOLIOTH_ERR_NULL;
     }
 
+    golioth_coap_request_msg_t request_msg = {};
+    enum golioth_status status = GOLIOTH_OK;
     uint8_t *request_payload = NULL;
 
     if (!client->is_running)
@@ -146,28 +147,30 @@ enum golioth_status golioth_coap_client_set(struct golioth_client *client,
         ageout_ms = golioth_sys_now_ms() + (1000 * timeout_s);
     }
 
-    golioth_coap_request_msg_t request_msg = {
-        .type = GOLIOTH_COAP_REQUEST_POST,
-        .path_prefix = path_prefix,
-        .post =
-            {
-                .content_type = content_type,
-                .payload = request_payload,
-                .payload_size = payload_size,
-                .callback = callback,
-                .arg = callback_arg,
-            },
-        .ageout_ms = ageout_ms,
-    };
+    request_msg.type = type;
+    request_msg.path_prefix = path_prefix;
+    request_msg.ageout_ms = ageout_ms;
     strncpy(request_msg.path, path, sizeof(request_msg.path) - 1);
-    enum golioth_status status = GOLIOTH_OK;
-
     if (is_synchronous)
     {
         // Created here, deleted by coap thread (or here if fail to enqueue
         request_msg.request_complete_event = golioth_event_group_create();
         request_msg.request_complete_ack_sem = golioth_sys_sem_create(1, 0);
         request_msg.status = &status;
+    }
+
+    if (type == GOLIOTH_COAP_REQUEST_POST_BLOCK)
+    {
+        request_msg.post_block = *(golioth_coap_post_block_params_t *) request_params;
+        request_msg.post_block.payload = request_payload;
+        request_msg.post_block.payload_size = payload_size;
+    }
+    else
+    {
+        assert(type == GOLIOTH_COAP_REQUEST_POST);
+        request_msg.post = *(golioth_coap_post_params_t *) request_params;
+        request_msg.post.payload = request_payload;
+        request_msg.post.payload_size = payload_size;
     }
 
     bool sent = golioth_mbox_try_send(client->request_queue, &request_msg);
@@ -215,6 +218,64 @@ enum golioth_status golioth_coap_client_set(struct golioth_client *client,
         return status;
     }
     return GOLIOTH_OK;
+}
+
+enum golioth_status golioth_coap_client_set(struct golioth_client *client,
+                                            const char *path_prefix,
+                                            const char *path,
+                                            enum golioth_content_type content_type,
+                                            const uint8_t *payload,
+                                            size_t payload_size,
+                                            golioth_set_cb_fn callback,
+                                            void *callback_arg,
+                                            bool is_synchronous,
+                                            int32_t timeout_s)
+{
+    golioth_coap_post_params_t params = {
+        .content_type = content_type,
+        .callback = callback,
+        .arg = callback_arg,
+    };
+    return golioth_coap_client_set_internal(client,
+                                            path_prefix,
+                                            path,
+                                            payload,
+                                            payload_size,
+                                            GOLIOTH_COAP_REQUEST_POST,
+                                            &params,
+                                            is_synchronous,
+                                            timeout_s);
+}
+
+enum golioth_status golioth_coap_client_set_block(struct golioth_client *client,
+                                                  const char *path_prefix,
+                                                  const char *path,
+                                                  bool is_last,
+                                                  enum golioth_content_type content_type,
+                                                  size_t block_index,
+                                                  const uint8_t *payload,
+                                                  size_t payload_size,
+                                                  golioth_set_cb_fn callback,
+                                                  void *callback_arg,
+                                                  bool is_synchronous,
+                                                  int32_t timeout_s)
+{
+    golioth_coap_post_block_params_t params = {
+        .is_last = is_last,
+        .content_type = content_type,
+        .block_index = block_index,
+        .callback = callback,
+        .arg = callback_arg,
+    };
+    return golioth_coap_client_set_internal(client,
+                                            path_prefix,
+                                            path,
+                                            payload,
+                                            payload_size,
+                                            GOLIOTH_COAP_REQUEST_POST_BLOCK,
+                                            &params,
+                                            is_synchronous,
+                                            timeout_s);
 }
 
 enum golioth_status golioth_coap_client_delete(struct golioth_client *client,

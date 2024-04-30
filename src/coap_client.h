@@ -28,6 +28,20 @@ typedef struct
 
 typedef struct
 {
+    bool is_last;
+    enum golioth_content_type content_type;
+    size_t block_index;
+    // CoAP payload assumed to be dynamically allocated before enqueue
+    // and freed after dequeue.
+    uint8_t *payload;
+    // Size of payload, in bytes
+    size_t payload_size;
+    golioth_set_cb_fn callback;
+    void *arg;
+} golioth_coap_post_block_params_t;
+
+typedef struct
+{
     enum golioth_content_type content_type;
     golioth_get_cb_fn callback;
     void *arg;
@@ -61,7 +75,7 @@ typedef enum
     GOLIOTH_COAP_REQUEST_GET,
     GOLIOTH_COAP_REQUEST_GET_BLOCK,
     GOLIOTH_COAP_REQUEST_POST,
-    // TODO - support for POST_BLOCK
+    GOLIOTH_COAP_REQUEST_POST_BLOCK,
     GOLIOTH_COAP_REQUEST_DELETE,
     GOLIOTH_COAP_REQUEST_OBSERVE,
 } golioth_coap_request_type_t;
@@ -82,6 +96,7 @@ typedef struct
         golioth_coap_get_params_t get;
         golioth_coap_get_block_params_t get_block;
         golioth_coap_post_params_t post;
+        golioth_coap_post_block_params_t post_block;
         golioth_coap_delete_params_t delete;
         golioth_coap_observe_params_t observe;
     };
@@ -131,6 +146,19 @@ enum golioth_status golioth_coap_client_set(struct golioth_client *client,
                                             void *callback_arg,
                                             bool is_synchronous,
                                             int32_t timeout_s);
+
+enum golioth_status golioth_coap_client_set_block(struct golioth_client *client,
+                                                  const char *path_prefix,
+                                                  const char *path,
+                                                  bool is_last,
+                                                  enum golioth_content_type content_type,
+                                                  size_t block_index,
+                                                  const uint8_t *payload,
+                                                  size_t payload_size,
+                                                  golioth_set_cb_fn callback,
+                                                  void *callback_arg,
+                                                  bool is_synchronous,
+                                                  int32_t timeout_s);
 
 enum golioth_status golioth_coap_client_delete(struct golioth_client *client,
                                                const char *path_prefix,
