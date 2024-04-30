@@ -16,6 +16,16 @@
 #include "mbox.h"
 #include "coap_client_libcoap.h"
 
+#define BLOCKSIZE_TO_SZX(blockSize) \
+    ((blockSize == 16)         ? 0  \
+         : (blockSize == 32)   ? 1  \
+         : (blockSize == 64)   ? 2  \
+         : (blockSize == 128)  ? 3  \
+         : (blockSize == 256)  ? 4  \
+         : (blockSize == 512)  ? 5  \
+         : (blockSize == 1024) ? 6  \
+                               : -1)
+
 LOG_TAG_DEFINE(golioth_coap_client_libcoap);
 
 static bool _initialized;
@@ -200,6 +210,13 @@ static coap_response_t coap_response_handler(coap_session_t *session,
                 if (req->post.callback)
                 {
                     req->post.callback(client, &response, req->path, req->post.arg);
+                }
+            }
+            else if (req->type == GOLIOTH_COAP_REQUEST_POST_BLOCK)
+            {
+                if (req->post_block.callback)
+                {
+                    req->post_block.callback(client, &response, req->path, req->post_block.arg);
                 }
             }
             else if (req->type == GOLIOTH_COAP_REQUEST_DELETE)
@@ -400,6 +417,25 @@ static void golioth_coap_add_accept(coap_pdu_t *request, enum golioth_content_ty
                     typebuf);
 }
 
+static void golioth_coap_add_block1(coap_pdu_t *request,
+                                    size_t block_index,
+                                    size_t block_size,
+                                    bool is_last)
+{
+    size_t szx = BLOCKSIZE_TO_SZX(block_size);
+    assert(szx != -1);
+    coap_block_t block = {
+        .num = block_index,
+        .m = !is_last,
+        .szx = szx,
+    };
+
+    unsigned char buf[4];
+    unsigned int opt_length =
+        coap_encode_var_safe(buf, sizeof(buf), (block.num << 4 | block.m << 3 | block.szx));
+    coap_add_option(request, COAP_OPTION_BLOCK1, opt_length, buf);
+}
+
 static void golioth_coap_add_block2(coap_pdu_t *request, size_t block_index, size_t block_size)
 {
     size_t szx = 6;  // 1024 bytes
@@ -496,6 +532,43 @@ static void golioth_coap_post(golioth_coap_request_msg_t *req, coap_session_t *s
     golioth_coap_add_path(req_pdu, req->path_prefix, req->path);
     golioth_coap_add_content_type(req_pdu, req->post.content_type);
     coap_add_data(req_pdu, req->post.payload_size, (unsigned char *) req->post.payload);
+    coap_send(session, req_pdu);
+}
+
+static void golioth_coap_post_block(golioth_coap_request_msg_t *req,
+                                    struct golioth_client *client,
+                                    coap_session_t *session)
+{
+    coap_pdu_t *req_pdu = coap_new_pdu(COAP_MESSAGE_CON, COAP_REQUEST_CODE_POST, session);
+    if (!req_pdu)
+    {
+        GLTH_LOGE(TAG, "coap_new_pdu() post failed");
+        return;
+    }
+
+    if (req->post_block.block_index == 0)
+    {
+        // Save this token for further blocks
+        golioth_coap_add_token(req_pdu, req, session);
+        memcpy(client->block_token, req->token, req->token_len);
+        client->block_token_len = req->token_len;
+    }
+    else
+    {
+        coap_add_token(req_pdu, client->block_token_len, client->block_token);
+
+        // Copy block token into the current req_pdu token, since this is what
+        // is checked in coap_response_handler to verify the response has been received.
+        memcpy(req->token, client->block_token, client->block_token_len);
+        req->token_len = client->block_token_len;
+    }
+
+    golioth_coap_add_path(req_pdu, req->path_prefix, req->path);
+    golioth_coap_add_block1(req_pdu,
+                            req->post_block.block_index,
+                            CONFIG_GOLIOTH_BLOCKWISE_UPLOAD_BLOCK_SIZE,
+                            req->post_block.is_last);
+    coap_add_data(req_pdu, req->post_block.payload_size, (unsigned char *) req->post_block.payload);
     coap_send(session, req_pdu);
 }
 
@@ -788,6 +861,12 @@ static enum golioth_status coap_io_loop_once(struct golioth_client *client,
             golioth_sys_free(request_msg.post.payload);
         }
 
+        if (request_msg.type == GOLIOTH_COAP_REQUEST_POST_BLOCK
+            && request_msg.post_block.payload_size > 0)
+        {
+            golioth_sys_free(request_msg.post_block.payload);
+        }
+
         if (request_msg.request_complete_event)
         {
             assert(request_msg.request_complete_ack_sem);
@@ -818,6 +897,12 @@ static enum golioth_status coap_io_loop_once(struct golioth_client *client,
             golioth_coap_post(&request_msg, session);
             assert(request_msg.post.payload);
             golioth_sys_free(request_msg.post.payload);
+            break;
+        case GOLIOTH_COAP_REQUEST_POST_BLOCK:
+            GLTH_LOGD(TAG, "Handle POST_BLOCK %s", request_msg.path);
+            golioth_coap_post_block(&request_msg, client, session);
+            assert(request_msg.post_block.payload);
+            golioth_sys_free(request_msg.post_block.payload);
             break;
         case GOLIOTH_COAP_REQUEST_DELETE:
             GLTH_LOGD(TAG, "Handle DELETE %s", request_msg.path);
@@ -956,6 +1041,14 @@ static enum golioth_status coap_io_loop_once(struct golioth_client *client,
         else if (request_msg.type == GOLIOTH_COAP_REQUEST_POST && request_msg.post.callback)
         {
             request_msg.post.callback(client, &response, request_msg.path, request_msg.post.arg);
+        }
+        else if (request_msg.type == GOLIOTH_COAP_REQUEST_POST_BLOCK
+                 && request_msg.post_block.callback)
+        {
+            request_msg.post_block.callback(client,
+                                            &response,
+                                            request_msg.path,
+                                            request_msg.post_block.arg);
         }
         else if (request_msg.type == GOLIOTH_COAP_REQUEST_DELETE && request_msg.delete.callback)
         {
