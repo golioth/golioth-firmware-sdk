@@ -390,15 +390,19 @@ static int add_observation(golioth_coap_request_msg_t *req, struct golioth_clien
         return GOLIOTH_ERR_QUEUE_FULL;
     }
 
-    int err = golioth_coap_observe(req, client);
+    /* Store request message in Golioth client */
+    memcpy(&obs_info->req, req, sizeof(obs_info->req));
+
+    /* Use observation slot in client as the request message */
+    int err = golioth_coap_observe(&obs_info->req, client);
 
     if (err)
     {
         return err;
     }
 
+    /* Successfully established observation */
     obs_info->in_use = true;
-    memcpy(&obs_info->req, req, sizeof(obs_info->req));
 
     return 0;
 }
@@ -517,6 +521,8 @@ static enum golioth_status coap_io_loop_once(struct golioth_client *client)
                 err = GOLIOTH_OK;
                 goto free_req;
             }
+            /* Need to free local req message; observations use client slots for req messages */
+            goto free_req;
             break;
         default:
             LOG_WRN("Unknown request_msg type: %u", req->type);
