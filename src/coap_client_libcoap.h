@@ -21,3 +21,5 @@ struct golioth_client
     golioth_client_event_cb_fn event_callback;
     void *event_callback_arg;
 };
+
+void golioth_cancel_all_observations(struct golioth_client *client);
