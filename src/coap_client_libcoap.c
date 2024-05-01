@@ -672,6 +672,26 @@ static enum golioth_status add_observation(golioth_coap_request_msg_t *req,
     return GOLIOTH_OK;
 }
 
+void golioth_cancel_all_observations(struct golioth_client *client)
+{
+    golioth_coap_observe_info_t *obs_info = NULL;
+    for (int i = 0; i < CONFIG_GOLIOTH_MAX_NUM_OBSERVATIONS; i++)
+    {
+        obs_info = &client->observations[i];
+        if (obs_info->in_use)
+        {
+            obs_info->in_use = false;
+            golioth_coap_client_observe_release(client,
+                                                obs_info->req.path_prefix,
+                                                obs_info->req.path,
+                                                obs_info->req.observe.content_type,
+                                                obs_info->req.token,
+                                                obs_info->req.token_len,
+                                                NULL);
+        }
+    }
+}
+
 static void reestablish_observations(struct golioth_client *client, coap_session_t *session)
 {
     golioth_coap_observe_info_t *obs_info = NULL;
