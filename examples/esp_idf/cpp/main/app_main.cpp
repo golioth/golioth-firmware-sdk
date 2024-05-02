@@ -48,7 +48,7 @@ extern "C" void app_main(void) {
 
     int counter = 0;
     while (1) {
-        ESP_LOGI(TAG, "Hello, Golioth %d!", counter);
+        GLTH_LOGI(TAG, "Hello, Golioth %d!", counter);
         golioth_lightdb_set_int_async(client, "counter", counter, NULL, NULL);
         vTaskDelay(5000 / portTICK_PERIOD_MS);
         counter++;
