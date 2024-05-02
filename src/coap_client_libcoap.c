@@ -588,7 +588,8 @@ static void golioth_coap_delete(golioth_coap_request_msg_t *req, coap_session_t 
 
 static enum golioth_status golioth_coap_observe(golioth_coap_request_msg_t *req,
                                                 struct golioth_client *client,
-                                                coap_session_t *session)
+                                                coap_session_t *session,
+                                                bool eager_release)
 {
     // GET with an OBSERVE option
     coap_pdu_t *req_pdu = coap_new_pdu(COAP_MESSAGE_CON, COAP_REQUEST_CODE_GET, session);
@@ -598,13 +599,26 @@ static enum golioth_status golioth_coap_observe(golioth_coap_request_msg_t *req,
         return GOLIOTH_ERR_MEM_ALLOC;
     }
 
-    golioth_coap_add_token(req_pdu, req, session);
-
     unsigned char optbuf[4] = {};
-    coap_add_option(req_pdu,
-                    COAP_OPTION_OBSERVE,
-                    coap_encode_var_safe(optbuf, sizeof(optbuf), COAP_OBSERVE_ESTABLISH),
-                    optbuf);
+
+    if (eager_release)
+    {
+        coap_add_token(req_pdu, req->token_len, req->token);
+
+        coap_add_option(req_pdu,
+                        COAP_OPTION_OBSERVE,
+                        coap_encode_var_safe(optbuf, sizeof(optbuf), COAP_OBSERVE_CANCEL),
+                        optbuf);
+    }
+    else
+    {
+        golioth_coap_add_token(req_pdu, req, session);
+
+        coap_add_option(req_pdu,
+                        COAP_OPTION_OBSERVE,
+                        coap_encode_var_safe(optbuf, sizeof(optbuf), COAP_OBSERVE_ESTABLISH),
+                        optbuf);
+    }
 
     golioth_coap_add_path(req_pdu, req->path_prefix, req->path);
     golioth_coap_add_accept(req_pdu, req->observe.content_type);
@@ -646,7 +660,7 @@ static enum golioth_status add_observation(golioth_coap_request_msg_t *req,
         return GOLIOTH_ERR_QUEUE_FULL;
     }
 
-    int err = golioth_coap_observe(req, client, session);
+    int err = golioth_coap_observe(req, client, session, false);
     if (err)
     {
         return err;
@@ -666,7 +680,7 @@ static void reestablish_observations(struct golioth_client *client, coap_session
         obs_info = &client->observations[i];
         if (obs_info->in_use)
         {
-            golioth_coap_observe(&obs_info->req, client, session);
+            golioth_coap_observe(&obs_info->req, client, session, false);
         }
     }
 }
@@ -876,6 +890,7 @@ static enum golioth_status coap_io_loop_once(struct golioth_client *client,
         return GOLIOTH_OK;
     }
 
+    int err;
     // Handle message and send request to server
     bool request_is_valid = true;
     switch (request_msg.type)
@@ -910,9 +925,21 @@ static enum golioth_status coap_io_loop_once(struct golioth_client *client,
             break;
         case GOLIOTH_COAP_REQUEST_OBSERVE:
             GLTH_LOGD(TAG, "Handle OBSERVE %s", request_msg.path);
-            int err = add_observation(&request_msg, client, session);
+            err = add_observation(&request_msg, client, session);
             if (err)
             {
+                GLTH_LOGE(TAG, "Error adding observation: %d", err);
+                request_is_valid = false;
+            }
+            break;
+        case GOLIOTH_COAP_REQUEST_OBSERVE_RELEASE:
+            GLTH_LOGD(TAG, "Handle OBSERVE CANCEL %s", request_msg.path);
+            err = golioth_coap_observe(&request_msg, client, session, true);
+            if (err == COAP_INVALID_MID)
+            {
+                GLTH_LOGE(TAG,
+                          "Unable to release observed path %s, cannot send CoAP PDU",
+                          request_msg.path);
                 request_is_valid = false;
             }
             break;
