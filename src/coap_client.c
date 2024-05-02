@@ -23,7 +23,11 @@ static void purge_request_mbox(golioth_mbox_t request_mbox)
 
     for (size_t i = 0; i < num_messages; i++)
     {
-        assert(golioth_mbox_recv(request_mbox, &request_msg, 0));
+        bool ok = golioth_mbox_recv(request_mbox, &request_msg, 0);
+
+        assert(ok);
+        (void) ok;
+
         if (request_msg.type == GOLIOTH_COAP_REQUEST_POST)
         {
             // free dynamically allocated user payload copy
