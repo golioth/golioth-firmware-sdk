@@ -81,3 +81,17 @@ async def test_observation_repeat_restart(board, device):
 
         assert rsp['value'] == 42
         print(f"Loop {i} successful!")
+
+async def test_observation_cancel_all(board, device):
+    rsp = await device.rpc.cancel_all()
+
+    assert None != board.wait_for_regex_in_line('Cancelling observations', timeout_s=10)
+    assert None != board.wait_for_regex_in_line('Observations cancelled', timeout_s=10)
+
+    with pytest.raises(RPCTimeout):
+        rsp = await device.rpc.basic_return_type("int")
+
+    assert None != board.wait_for_regex_in_line('RPC observation established', timeout_s=30)
+
+    rsp = await device.rpc.basic_return_type("int")
+    assert rsp['value'] == 42
