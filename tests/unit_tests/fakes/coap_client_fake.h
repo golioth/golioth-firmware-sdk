@@ -22,3 +22,6 @@ DECLARE_FAKE_VALUE_FUNC(enum golioth_status,
                         void *,
                         bool,
                         int32_t);
+DECLARE_FAKE_VOID_FUNC(golioth_coap_client_cancel_observations_by_prefix,
+                       struct golioth_client *,
+                       const char *);
