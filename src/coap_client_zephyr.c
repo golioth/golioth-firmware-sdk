@@ -531,13 +531,18 @@ static int add_observation(golioth_coap_request_msg_t *req, struct golioth_clien
     return 0;
 }
 
-void golioth_cancel_all_observations(struct golioth_client *client)
+void golioth_cancel_all_observations_by_prefix(struct golioth_client *client, const char *prefix)
 {
     for (int i = 0; i < CONFIG_GOLIOTH_MAX_NUM_OBSERVATIONS; i++)
     {
         golioth_coap_observe_info_t *obs_info = &client->observations[i];
         if (obs_info->in_use)
         {
+            if ((prefix != NULL) && (strcmp(prefix, obs_info->req.path_prefix) != 0))
+            {
+                continue;
+            }
+
             int err = golioth_coap_req_find_and_cancel_observation(client, &obs_info->req);
             if (err)
             {
@@ -546,6 +551,11 @@ void golioth_cancel_all_observations(struct golioth_client *client)
             obs_info->in_use = false;
         }
     }
+}
+
+void golioth_cancel_all_observations(struct golioth_client *client)
+{
+    golioth_cancel_all_observations_by_prefix(client, NULL);
 }
 
 static int golioth_deregister_observation(golioth_coap_request_msg_t *req,
