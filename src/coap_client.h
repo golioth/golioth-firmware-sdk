@@ -204,6 +204,8 @@ enum golioth_status golioth_coap_client_observe_release(struct golioth_client *c
                                                         size_t token_len,
                                                         void *arg);
 
+void golioth_coap_client_cancel_all_observations(struct golioth_client *client);
+
 /// Getters, for internal SDK code to access data within the
 /// coap client struct.
 golioth_sys_thread_t golioth_coap_client_get_thread(struct golioth_client *client);

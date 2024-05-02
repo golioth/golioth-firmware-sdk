@@ -630,6 +630,11 @@ enum golioth_status golioth_coap_client_observe_release(struct golioth_client *c
     return GOLIOTH_OK;
 }
 
+void golioth_coap_client_cancel_all_observations(struct golioth_client *client)
+{
+    golioth_cancel_all_observations(client);
+}
+
 void golioth_client_register_event_callback(struct golioth_client *client,
                                             golioth_client_event_cb_fn callback,
                                             void *arg)
