@@ -99,3 +99,5 @@ struct golioth_client
 };
 
 int golioth_send_coap(struct golioth_client *client, struct coap_packet *packet);
+
+void golioth_cancel_all_observations(struct golioth_client *client);

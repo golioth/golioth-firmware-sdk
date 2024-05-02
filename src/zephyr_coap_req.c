@@ -11,6 +11,7 @@ LOG_MODULE_DECLARE(golioth_coap_client);
 
 #include <zephyr/random/random.h>
 
+#include "coap_client.h"
 #include "zephyr_coap_req.h"
 #include "zephyr_coap_utils.h"
 
@@ -760,6 +761,69 @@ static void golioth_coap_reqs_cancel_all_with_reason(struct golioth_client *clie
 
         golioth_coap_req_cancel_and_free(req);
     }
+}
+
+static int __golioth_coap_req_find_and_cancel_observation(
+    struct golioth_client *client,
+    golioth_coap_request_msg_t *cancel_req_msg)
+{
+    struct golioth_coap_req *req, *next;
+
+    SYS_DLIST_FOR_EACH_CONTAINER_SAFE(&client->coap_reqs, req, next, node)
+    {
+        if ((req->user_data == cancel_req_msg) && (req->is_observe))
+        {
+            int err;
+            uint8_t coap_token[COAP_TOKEN_MAX_LEN];
+            size_t coap_token_len = coap_header_get_token(&req->request, coap_token);
+            int coap_content_format = coap_get_option_int(&req->request, COAP_OPTION_ACCEPT);
+
+            if (coap_token_len == 0)
+            {
+                LOG_ERR("Unable to get coap token from request. Got length: %d", coap_token_len);
+                err = GOLIOTH_ERR_NO_MORE_DATA;
+                goto remove_from_coap_reqs_and_free;
+            }
+
+            if (coap_content_format < 0)
+            {
+                LOG_ERR("Unable to get coap content format from request: %d", coap_content_format);
+                err = GOLIOTH_ERR_INVALID_FORMAT;
+                goto remove_from_coap_reqs_and_free;
+            }
+
+            golioth_coap_request_msg_t *req_msg = req->user_data;
+
+            /* Enqueue an "eager release" request for this observation */
+            err = golioth_coap_client_observe_release(client,
+                                                      req_msg->path_prefix,
+                                                      req_msg->path,
+                                                      coap_content_format,
+                                                      coap_token,
+                                                      coap_token_len,
+                                                      NULL);
+            if (err)
+            {
+                LOG_ERR("Error encoding observe release request: %d", err);
+            }
+
+        remove_from_coap_reqs_and_free:
+            golioth_coap_req_cancel_and_free(req);
+            return err;
+        }
+    }
+
+    return GOLIOTH_ERR_NO_MORE_DATA;
+}
+
+int golioth_coap_req_find_and_cancel_observation(struct golioth_client *client,
+                                                 golioth_coap_request_msg_t *cancel_req_msg)
+{
+    k_mutex_lock(&client->coap_reqs_lock, K_FOREVER);
+    int err = __golioth_coap_req_find_and_cancel_observation(client, cancel_req_msg);
+    k_mutex_unlock(&client->coap_reqs_lock);
+
+    return err;
 }
 
 void golioth_coap_reqs_on_connect(struct golioth_client *client)

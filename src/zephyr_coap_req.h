@@ -7,6 +7,7 @@
 
 #include <stdint.h>
 
+#include "coap_client.h"
 #include "coap_client_zephyr.h"
 
 /**
@@ -121,6 +122,22 @@ void golioth_coap_req_free(struct golioth_coap_req *req);
  * @retval <0 On failure
  */
 int golioth_coap_req_schedule(struct golioth_coap_req *req);
+
+/**
+ * @brief Cancel a CoAP observation
+ *
+ * Search the client coap_reqs array for a request that has a user_data pointer that matches the
+ * provided goloth_coap_request_msg_t pointer. Enqueue an observation release request to be sent to
+ * the server. Remove the request from the client coap_reqs list and free the memory.
+ *
+ * @param[in] client Client instance
+ * @param[in] cancel_req_msg pointer to request message used to match with CoAP request
+ *
+ * @retval 0 On success
+ * @retval <0 On failure
+ */
+int golioth_coap_req_find_and_cancel_observation(struct golioth_client *client,
+                                                 golioth_coap_request_msg_t *cancel_req_msg);
 
 /**
  * @brief Create and schedule CoAP request for sending
