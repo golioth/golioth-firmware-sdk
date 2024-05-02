@@ -7,6 +7,7 @@
 #include <assert.h>
 #include <string.h>
 #include <golioth/golioth_debug.h>
+#include "golioth_util.h"
 
 #ifdef __ZEPHYR__
 #include "coap_client_zephyr.h"
@@ -569,6 +570,60 @@ enum golioth_status golioth_coap_client_observe(struct golioth_client *client,
     if (!sent)
     {
         GLTH_LOGW(TAG, "Failed to enqueue request, queue full");
+        return GOLIOTH_ERR_QUEUE_FULL;
+    }
+
+    return GOLIOTH_OK;
+}
+
+enum golioth_status golioth_coap_client_observe_release(struct golioth_client *client,
+                                                        const char *path_prefix,
+                                                        const char *path,
+                                                        enum golioth_content_type content_type,
+                                                        uint8_t *token,
+                                                        size_t token_len,
+                                                        void *arg)
+{
+    if (!client || !path)
+    {
+        return GOLIOTH_ERR_NULL;
+    }
+
+    if (!client->is_running)
+    {
+        GLTH_LOGW(TAG,
+                  "Client not running, dropping observe release request for path %s%s",
+                  path_prefix,
+                  path);
+        return GOLIOTH_ERR_INVALID_STATE;
+    }
+
+    golioth_coap_request_msg_t request_msg = {
+        .type = GOLIOTH_COAP_REQUEST_OBSERVE_RELEASE,
+        .path_prefix = path_prefix,
+        .ageout_ms = GOLIOTH_SYS_WAIT_FOREVER,
+        .observe =
+            {
+                .content_type = content_type,
+                .arg = arg,
+            },
+    };
+
+    if (strlen(path) > sizeof(request_msg.path) - 1)
+    {
+        GLTH_LOGE(TAG, "Path too long: %d > %d", strlen(path), sizeof(request_msg.path) - 1);
+        return GOLIOTH_ERR_INVALID_FORMAT;
+    }
+    strncpy(request_msg.path, path, sizeof(request_msg.path) - 1);
+
+    size_t t_len = min(token_len, sizeof(request_msg.token));
+    memcpy(request_msg.token, token, t_len);
+    request_msg.token_len = t_len;
+
+    bool sent = golioth_mbox_try_send(client->request_queue, &request_msg);
+    if (!sent)
+    {
+        GLTH_LOGE(TAG, "Failed to enqueue request, queue full");
         return GOLIOTH_ERR_QUEUE_FULL;
     }
 

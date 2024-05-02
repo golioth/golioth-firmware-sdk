@@ -78,6 +78,7 @@ typedef enum
     GOLIOTH_COAP_REQUEST_POST_BLOCK,
     GOLIOTH_COAP_REQUEST_DELETE,
     GOLIOTH_COAP_REQUEST_OBSERVE,
+    GOLIOTH_COAP_REQUEST_OBSERVE_RELEASE,
 } golioth_coap_request_type_t;
 
 typedef struct
@@ -194,6 +195,14 @@ enum golioth_status golioth_coap_client_observe(struct golioth_client *client,
                                                 enum golioth_content_type content_type,
                                                 golioth_get_cb_fn callback,
                                                 void *callback_arg);
+
+enum golioth_status golioth_coap_client_observe_release(struct golioth_client *client,
+                                                        const char *path_prefix,
+                                                        const char *path,
+                                                        enum golioth_content_type content_type,
+                                                        uint8_t *token,
+                                                        size_t token_len,
+                                                        void *arg);
 
 /// Getters, for internal SDK code to access data within the
 /// coap client struct.
