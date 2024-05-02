@@ -4,6 +4,25 @@ All notable changes to this project will be documented in this file.
 The format is based on [Keep a Changelog](https://keepachangelog.com/en/1.0.0/),
 and this project adheres to [Semantic Versioning](https://semver.org/spec/v2.0.0.html).
 
+## [0.12.2] - 2024-05-02
+
+### Removed:
+
+- Removed automatic ESP-IDF logging - this will be reintroduced in a future
+  release with more configuration options.
+
+### Added:
+
+- Improved "client not running" error logs with additional context
+
+### Fixed:
+
+- Zephyr: Fix crash when repeatedly stopping and starting the client
+- Zephyr: Fix up to 10 second delay when stopping client
+- Zephyr: Fixed hang when attemtping to stop an already stopped client
+- Fixed dropped function call when `assert()` is disabled
+- Return error instead of crashing on NULL input
+
 ## [0.12.1] - 2024-04-22
 
 ### Added:
