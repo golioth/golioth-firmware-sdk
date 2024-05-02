@@ -9,14 +9,13 @@
 #include <golioth/rpc.h>
 #include <golioth/zcbor_utils.h>
 
-/* temporary ugly include until service-specific cancel is implemented */
-#include "../../../../src/coap_client.h"
-
 LOG_TAG_DEFINE(test_rpc);
 
 static golioth_sys_sem_t connected_sem;
 static golioth_sys_sem_t disconnect_sem;
 static golioth_sys_sem_t cancel_all_sem;
+
+struct golioth_rpc *grpc = NULL;
 
 static enum golioth_rpc_status on_no_response(zcbor_state_t *request_params_array,
                                               zcbor_state_t *response_detail_map,
@@ -166,7 +165,7 @@ static void on_client_event(struct golioth_client *client,
 
 static void perform_rpc_registration(struct golioth_client *client)
 {
-    struct golioth_rpc *grpc = golioth_rpc_init(client);
+    grpc = golioth_rpc_init(client);
 
     golioth_rpc_register(grpc, "no_response", on_no_response, NULL);
 
@@ -216,8 +215,7 @@ void hil_test_entry(const struct golioth_client_config *config)
             golioth_sys_msleep(1000);
 
             GLTH_LOGI(TAG, "Cancelling observations");
-            /* This will be converted to RPC API in a future PR */
-            golioth_coap_client_cancel_all_observations(client);
+            golioth_rpc_deinit(grpc);
 
             golioth_sys_msleep(3 * 1000);
 
