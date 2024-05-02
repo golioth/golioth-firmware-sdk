@@ -263,6 +263,7 @@ static int golioth_coap_cb(struct golioth_req_rsp *rsp)
     switch (req->type)
     {
         case GOLIOTH_COAP_REQUEST_EMPTY:
+        case GOLIOTH_COAP_REQUEST_OBSERVE_RELEASE:
             goto free_req;
         case GOLIOTH_COAP_REQUEST_GET:
             if (req->get.callback)
@@ -529,6 +530,62 @@ static int add_observation(golioth_coap_request_msg_t *req, struct golioth_clien
     return 0;
 }
 
+static int golioth_deregister_observation(golioth_coap_request_msg_t *req,
+                                          struct golioth_client *client)
+{
+    struct coap_packet packet;
+    const uint8_t **pathv = PATHV(req->path_prefix, req->path);
+    size_t path_len = coap_pathv_estimate_alloc_len(pathv);
+    size_t packet_len = GOLIOTH_COAP_MAX_NON_PAYLOAD_LEN + path_len;
+    uint8_t buffer[packet_len];
+    int err;
+
+    err = coap_packet_init(&packet,
+                           buffer,
+                           sizeof(buffer),
+                           COAP_VERSION_1,
+                           COAP_TYPE_CON,
+                           req->token_len,
+                           req->token,
+                           COAP_METHOD_GET,
+                           coap_next_id());
+    if (err)
+    {
+        return err;
+    }
+
+    err = coap_append_option_int(&packet, COAP_OPTION_OBSERVE, 1); /* deregister */
+
+    if (err)
+    {
+        LOG_ERR("Unable add observe deregister option");
+        return err;
+    }
+
+    err = coap_packet_append_uri_path_from_pathv(&packet, pathv);
+    if (err)
+    {
+        LOG_ERR("Unable add path option");
+        return err;
+    }
+
+    err = coap_append_option_int(&packet, COAP_OPTION_ACCEPT, req->observe.content_type);
+    if (err)
+    {
+        LOG_ERR("Unable to add content format to packet");
+        return err;
+    }
+
+    err = golioth_send_coap(client, &packet);
+    if (err)
+    {
+        LOG_ERR("Unable to send observe deregister packet");
+        return err;
+    }
+
+    return err;
+}
+
 static void reestablish_observations(struct golioth_client *client)
 {
     golioth_coap_observe_info_t *obs_info = NULL;
@@ -655,6 +712,10 @@ static enum golioth_status coap_io_loop_once(struct golioth_client *client)
             }
             /* Need to free local req message; observations use client slots for req messages */
             goto free_req;
+            break;
+        case GOLIOTH_COAP_REQUEST_OBSERVE_RELEASE:
+            LOG_DBG("Handle OBSERVE RELEASE %s", req->path);
+            err = golioth_deregister_observation(req, client);
             break;
         default:
             LOG_WRN("Unknown request_msg type: %u", req->type);
