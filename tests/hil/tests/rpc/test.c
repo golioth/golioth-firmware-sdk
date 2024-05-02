@@ -9,10 +9,14 @@
 #include <golioth/rpc.h>
 #include <golioth/zcbor_utils.h>
 
+/* temporary ugly include until service-specific cancel is implemented */
+#include "../../../../src/coap_client.h"
+
 LOG_TAG_DEFINE(test_rpc);
 
 static golioth_sys_sem_t connected_sem;
 static golioth_sys_sem_t disconnect_sem;
+static golioth_sys_sem_t cancel_all_sem;
 
 static enum golioth_rpc_status on_no_response(zcbor_state_t *request_params_array,
                                               zcbor_state_t *response_detail_map,
@@ -141,6 +145,15 @@ static enum golioth_rpc_status on_disconnect(zcbor_state_t *request_params_array
     return GOLIOTH_RPC_OK;
 }
 
+static enum golioth_rpc_status on_cancel_all(zcbor_state_t *request_params_array,
+                                             zcbor_state_t *response_detail_map,
+                                             void *callback_arg)
+{
+    golioth_sys_sem_give(cancel_all_sem);
+
+    return GOLIOTH_RPC_OK;
+}
+
 static void on_client_event(struct golioth_client *client,
                             enum golioth_client_event event,
                             void *arg)
@@ -151,16 +164,9 @@ static void on_client_event(struct golioth_client *client,
     }
 }
 
-void hil_test_entry(const struct golioth_client_config *config)
+static void perform_rpc_registration(struct golioth_client *client)
 {
-    connected_sem = golioth_sys_sem_create(1, 0);
-    disconnect_sem = golioth_sys_sem_create(1, 0);
-
-    struct golioth_client *client = golioth_client_create(config);
-    golioth_client_register_event_callback(client, on_client_event, NULL);
     struct golioth_rpc *grpc = golioth_rpc_init(client);
-
-    golioth_sys_sem_take(connected_sem, GOLIOTH_SYS_WAIT_FOREVER);
 
     golioth_rpc_register(grpc, "no_response", on_no_response, NULL);
 
@@ -172,19 +178,56 @@ void hil_test_entry(const struct golioth_client_config *config)
 
     golioth_rpc_register(grpc, "disconnect", on_disconnect, NULL);
 
+    golioth_rpc_register(grpc, "cancel_all", on_cancel_all, NULL);
+}
+
+void hil_test_entry(const struct golioth_client_config *config)
+{
+    connected_sem = golioth_sys_sem_create(1, 0);
+    disconnect_sem = golioth_sys_sem_create(1, 0);
+    cancel_all_sem = golioth_sys_sem_create(1, 0);
+
+    struct golioth_client *client = golioth_client_create(config);
+    golioth_client_register_event_callback(client, on_client_event, NULL);
+
+    golioth_sys_sem_take(connected_sem, GOLIOTH_SYS_WAIT_FOREVER);
+
+    perform_rpc_registration(client);
+
     while (1)
     {
-        golioth_sys_sem_take(disconnect_sem, GOLIOTH_SYS_WAIT_FOREVER);
+        if (golioth_sys_sem_take(disconnect_sem, 0))
+        {
+            // Delay to ensure RPC response makes it to cloud
+            golioth_sys_msleep(1000);
 
-        // Delay to ensure RPC response makes it to cloud
-        golioth_sys_msleep(1000);
+            GLTH_LOGI(TAG, "Stopping client");
+            golioth_client_stop(client);
 
-        GLTH_LOGI(TAG, "Stopping client");
-        golioth_client_stop(client);
+            golioth_sys_msleep(3 * 1000);
 
-        golioth_sys_msleep(3 * 1000);
+            GLTH_LOGI(TAG, "Starting client");
+            golioth_client_start(client);
+        }
 
-        GLTH_LOGI(TAG, "Starting client");
-        golioth_client_start(client);
+        if (golioth_sys_sem_take(cancel_all_sem, 0))
+        {
+            // Delay to ensure RPC response makes it to cloud
+            golioth_sys_msleep(1000);
+
+            GLTH_LOGI(TAG, "Cancelling observations");
+            /* This will be converted to RPC API in a future PR */
+            golioth_coap_client_cancel_all_observations(client);
+
+            golioth_sys_msleep(3 * 1000);
+
+            GLTH_LOGI(TAG, "Observations cancelled");
+            golioth_sys_msleep(12 * 1000);
+
+            /* re-register for future tests */
+            perform_rpc_registration(client);
+        }
+
+        golioth_sys_msleep(100);
     }
 }
