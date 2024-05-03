@@ -92,6 +92,16 @@ typedef enum golioth_settings_status (*golioth_string_setting_cb)(const char *ne
 /// @return NULL - Error initializing Settings service
 struct golioth_settings *golioth_settings_init(struct golioth_client *client);
 
+/// Deinitialize the Settings service
+///
+/// Cancel all registered settings and free the Golioth Settings service handle.
+///
+/// @param settings Golioth Settings service handle.
+///
+/// @return GOLIOTH_OK - RPC service successfully deinitialized
+/// @return otherwise - Error deinitializing the Settings service
+enum golioth_status golioth_settings_deinit(struct golioth_settings *settings);
+
 /// Register a specific setting of type int
 ///
 /// @param settings Settings handle

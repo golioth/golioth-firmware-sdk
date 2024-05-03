@@ -467,6 +467,20 @@ finish:
     return gsettings;
 }
 
+enum golioth_status golioth_settings_deinit(struct golioth_settings *settings)
+{
+
+    if (settings == NULL)
+    {
+        GLTH_LOGE(TAG, "Settings service handle must not be NULL");
+        return GOLIOTH_ERR_NULL;
+    }
+
+    golioth_coap_client_cancel_observations_by_prefix(settings->client, SETTINGS_PATH_PREFIX);
+    free(settings);
+    return GOLIOTH_OK;
+}
+
 enum golioth_status golioth_settings_register_int(struct golioth_settings *settings,
                                                   const char *setting_name,
                                                   golioth_int_setting_cb callback,
