@@ -91,6 +91,16 @@ typedef enum golioth_rpc_status (*golioth_rpc_cb_fn)(zcbor_state_t *request_para
 /// @return NULL - Error initializing RPC service
 struct golioth_rpc *golioth_rpc_init(struct golioth_client *client);
 
+/// Deinitialize the RPC service
+///
+/// Cancel all registered RPCs and free the Golioth RPC service handle.
+///
+/// @param grpc Golioth RPC service handle.
+///
+/// @return GOLIOTH_OK - RPC service successfully deinitialized
+/// @return otherwise - Error deinitializing the RPC service
+enum golioth_status golioth_rpc_deinit(struct golioth_rpc *grpc);
+
 /// Register an RPC method
 ///
 /// @param grpc Golioth RPC service handle

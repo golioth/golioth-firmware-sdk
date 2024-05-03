@@ -234,6 +234,20 @@ struct golioth_rpc *golioth_rpc_init(struct golioth_client *client)
     return grpc;
 }
 
+enum golioth_status golioth_rpc_deinit(struct golioth_rpc *grpc)
+{
+
+    if (grpc == NULL)
+    {
+        GLTH_LOGE(TAG, "RPC service handle must not be NULL");
+        return GOLIOTH_ERR_NULL;
+    }
+
+    golioth_coap_client_cancel_observations_by_prefix(grpc->client, GOLIOTH_RPC_PATH_PREFIX);
+    free(grpc);
+    return GOLIOTH_OK;
+}
+
 enum golioth_status golioth_rpc_register(struct golioth_rpc *grpc,
                                          const char *method,
                                          golioth_rpc_cb_fn callback,
