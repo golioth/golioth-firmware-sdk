@@ -405,7 +405,12 @@ static void on_settings(struct golioth_client *client,
         return;
     }
 
-    finalize_and_send_response(client, &settings_response, version);
+    err = finalize_and_send_response(client, &settings_response, version);
+    if (err)
+    {
+        GLTH_LOGE(TAG, "Failed to send a response to server: %d", err);
+        return;
+    }
 }
 
 static struct golioth_setting *alloc_setting(struct golioth_settings *settings)
