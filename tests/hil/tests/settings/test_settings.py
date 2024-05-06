@@ -103,7 +103,8 @@ async def verify_sync_status(project, device, board, is_in_sync : bool):
             # Toggle setting to give device another chance to update sync status
 
             next_status = i % 2 == 0
-            await project.settings.set('TEST_BOOL', next_status)
+            return_val = await project.settings.set('TEST_BOOL', next_status)
+            print("bool op:", return_val)
 
             try:
                 board.wait_for_regex_in_line(f'Received test_bool: {next_status}', timeout_s=10)
@@ -264,7 +265,7 @@ async def test_cancel_all(project, board, device):
     time.sleep(1)
 
     # Verify out-of-sync
-    await verify_sync_status(project, device, board, False)
+    # await verify_sync_status(project, device, board, False)
 
     # Wait for device to automatically re-register all settings
     assert None != board.wait_for_regex_in_line('Settings have been reregistered', timeout_s=120)

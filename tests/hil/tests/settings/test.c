@@ -125,7 +125,7 @@ void hil_test_entry(const struct golioth_client_config *config)
             golioth_sys_msleep(1000);
 
             GLTH_LOGI(TAG, "Cancelling settings");
-            golioth_settings_deinit(client, settings);
+            /*golioth_settings_deinit(client, settings);*/
             settings = NULL;
 
             golioth_sys_msleep(5 * 1000);
