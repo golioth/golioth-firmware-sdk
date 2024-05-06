@@ -9,6 +9,8 @@ VALUE_OUTSIDE_RANGE = 4
 VALUE_STRING_TOO_LONG = 5
 GENERAL_ERROR = 6
 
+SYNC_MAX_RETRY = 10
+
 pytestmark = pytest.mark.anyio
 
 @pytest.fixture(autouse=True, scope="module")
@@ -29,6 +31,7 @@ async def setup(project, board, device):
     await project.settings.set('TEST_STRING', "foo")
     await project.settings.set('TEST_NOT_REGISTERED', 27)
     await project.settings.set('TEST_WRONG_TYPE', "wrong")
+    await project.settings.set('TEST_CANCEL', False)
 
     # Set Golioth credentials
     golioth_cred = (await device.credentials.list())[0]
@@ -180,3 +183,27 @@ async def test_unrecognized_key(device):
 
 async def test_wrong_type(device):
     await assert_settings_error(device, 'TEST_WRONG_TYPE', VALUE_FORMAT_NOT_VALID)
+
+async def test_cancel_all(board, device):
+    # Cancel all settings
+    await device.settings.set('TEST_CANCEL', True)
+
+    assert None != board.wait_for_regex_in_line('Cancelling settings', timeout_s=10)
+    assert None != board.wait_for_regex_in_line('Settings have been cancelled', timeout_s=10)
+
+    # Check that we no longer receive this settings change
+    await device.settings.set('TEST_INT', 1337)
+
+    with pytest.raises(RuntimeError) as e:
+        assert None != board.wait_for_regex_in_line('Received test_int', timeout_s=10)
+
+    assert str(e.value) == "Timeout"
+
+    # Reset to expected value so we don't re-trigger test on settings registration
+    await device.settings.set('TEST_CANCEL', False)
+
+    # Wait for device to automatically re-register all settings
+    assert None != board.wait_for_regex_in_line('Settings have been reregistered', timeout_s=10)
+
+    await device.settings.set('TEST_INT', 72)
+    assert None != board.wait_for_regex_in_line('Received test_int: 72', timeout_s=10)
