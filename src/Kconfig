@@ -185,6 +185,16 @@ config GOLIOTH_SETTINGS
 
 if GOLIOTH_SETTINGS
 
+config GOLIOTH_SETTINGS_MAX_RESPONSE_LEN
+    int "Maximum number of bytes to allocate for Settings response payload"
+    default 256
+    help
+        Maximum number of bytes to allocate for the Golioth Settings service response payload. This
+        value determines the memory available for the response_detail_map which is used to pass sync
+        information like error codes back to the server. If you have a number of settings that are
+        not in sync (wrong value, wrong type, out of bounds, etc.), increase this value to resolve
+        `golioth_settings: Failed to send a response to server: -12` errors.
+
 config GOLIOTH_MAX_NUM_SETTINGS
     int "Max number of Golioth settings"
     default 16

@@ -42,7 +42,6 @@ LOG_TAG_DEFINE(golioth_settings);
 #define SETTINGS_PATH_PREFIX ".c/"
 #define SETTINGS_STATUS_PATH "status"
 
-#define GOLIOTH_SETTINGS_MAX_RESPONSE_LEN 256
 #define GOLIOTH_SETTINGS_MAX_NAME_LEN 63 /* not including NULL */
 
 /// Private struct for storing a single setting
@@ -74,7 +73,7 @@ struct golioth_settings
 struct settings_response
 {
     zcbor_state_t zse[1 /* num_backups */ + 2];
-    uint8_t buf[GOLIOTH_SETTINGS_MAX_RESPONSE_LEN];
+    uint8_t buf[CONFIG_GOLIOTH_SETTINGS_MAX_RESPONSE_LEN];
     size_t num_errors;
     struct golioth_settings *settings;
 };
