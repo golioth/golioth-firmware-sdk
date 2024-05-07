@@ -150,7 +150,7 @@ void golioth_basics(struct golioth_client *client)
     //      Logging
     //      Over-the-Air (OTA) firmware updates
     //      LightDB state
-    //      LightDB Stream
+    //      Stream
 
     // You can use any of the GLTH_LOGX macros (e.g. GLTH_LOGI, GLTH_LOGE),
     // to log a message to stdout.
@@ -229,7 +229,7 @@ void golioth_basics(struct golioth_client *client)
     // Once set, the on_my_config callback function should be called here.
     golioth_lightdb_observe_async(client, "desired/my_config", on_my_config, NULL);
 
-    // LightDB Stream functions are similar to LightDB state.
+    // Golioth Stream functions are similar to LightDB state.
     const char *sbuf = "{\"my_stream_int\":15}";
     golioth_stream_set_async(client,
                              "/",

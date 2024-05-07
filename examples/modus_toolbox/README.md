@@ -22,7 +22,7 @@ This example supports all Golioth services, including Over-the-Air firmware
 updates:
 
 * LightDB: https://docs.golioth.io/cloud/services/lightdb
-* LightDB Stream: https://docs.golioth.io/cloud/services/lightdb-stream
+* Stream: https://docs.golioth.io/data-routing
 * Logging: https://docs.golioth.io/cloud/services/logging
 * OTA: https://docs.golioth.io/cloud/services/ota
 
