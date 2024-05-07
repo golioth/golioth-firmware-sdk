@@ -163,9 +163,9 @@ config GOLIOTH_LIGHTDB_STATE_FLOAT_HELPERS
 endif # GOLIOTH_LIGHTDB_STATE
 
 config GOLIOTH_STREAM
-    bool "Golioth LightDB Stream service"
+    bool "Golioth Stream service"
     help
-        Enable the Golioth LightDB Stream service
+        Enable the Golioth Stream service
 
 config GOLIOTH_RPC
     bool "Golioth RPC service"

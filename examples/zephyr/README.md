@@ -89,7 +89,7 @@ west update
   - [Golioth LightDB get sample](lightdb/get/README.md)
   - [Golioth LightDB observe sample](lightdb/observe/README.md)
   - [Golioth LightDB set sample](lightdb/set/README.md)
-  - [Golioth LightDB Stream sample](lightdb_stream/README.md)
+  - [Golioth Stream sample](stream/README.md)
   - [Golioth Logging sample](logging/README.md)
   - [Golioth RPC sample](rpc/README.md)
   - [Golioth Settings sample](settings/README.md)
