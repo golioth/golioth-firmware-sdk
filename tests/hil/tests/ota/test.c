@@ -14,6 +14,8 @@
 LOG_TAG_DEFINE(test_ota);
 
 static golioth_sys_sem_t connected_sem;
+static golioth_sys_sem_t reason_test_sem;
+static golioth_sys_sem_t block_test_sem;
 
 #define GOLIOTH_OTA_REASON_CNT 10
 #define GOLIOTH_OTA_STATE_CNT 4
@@ -24,8 +26,6 @@ static golioth_sys_sem_t connected_sem;
 #define DUMMY_VER_EXTRA "1.2.5"
 
 static uint8_t callback_arg = 17;
-static bool reason_test_pending = false;
-static bool block_test_pending = false;
 static uint8_t block_buf[GOLIOTH_OTA_BLOCKSIZE];
 
 struct golioth_client *client;
@@ -215,13 +215,11 @@ static void on_manifest(struct golioth_client *client,
         }
         else if (strcmp(main->version, DUMMY_VER_SAME) == 0)
         {
-            // Use trigger to avoid deadlock
-            block_test_pending = true;
+            golioth_sys_sem_give(block_test_sem);
         }
         else if (strcmp(main->version, DUMMY_VER_UPDATE) == 0)
         {
-            // Use trigger to avoid deadlock
-            reason_test_pending = true;
+            golioth_sys_sem_give(reason_test_sem);
         }
     }
 }
@@ -239,6 +237,8 @@ static void on_client_event(struct golioth_client *client,
 void hil_test_entry(const struct golioth_client_config *config)
 {
     connected_sem = golioth_sys_sem_create(1, 0);
+    reason_test_sem = golioth_sys_sem_create(1, 0);
+    block_test_sem = golioth_sys_sem_create(1, 0);
 
     golioth_debug_set_cloud_log_enabled(false);
 
@@ -251,17 +251,15 @@ void hil_test_entry(const struct golioth_client_config *config)
 
     while (1)
     {
-        if (reason_test_pending)
+        if (golioth_sys_sem_take(reason_test_sem, 0))
         {
-            reason_test_pending = false;
             test_reason_and_state();
         }
-        else if (block_test_pending)
+        if (golioth_sys_sem_take(block_test_sem, 0))
         {
-            block_test_pending = false;
             test_block_ops();
         }
 
-        golioth_sys_msleep(1000);
+        golioth_sys_msleep(100);
     }
 }
