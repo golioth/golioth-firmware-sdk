@@ -282,7 +282,7 @@ static void fw_update_thread(void *arg)
                                             GOLIOTH_OTA_REASON_READY,
                                             _config.fw_package_name,
                                             _config.current_version,
-                                            NULL,
+                                            _main_component->version,
                                             GOLIOTH_SYS_WAIT_FOREVER);
 
         if (fw_update_change_boot_image() != GOLIOTH_OK)
