@@ -55,7 +55,7 @@ instructions to build and run the examples.
 The `golioth_basics` example (`examples/<platform>/golioth_basics`) is recommended
 as a starting point, to learn how to connect to Golioth and use services like
 [LightDB State](https://docs.golioth.io/cloud/services/lightdb),
-[LightDB Stream](https://docs.golioth.io/cloud/services/lightdb-stream),
+[Stream](https://docs.golioth.io/cloud/services/lightdb-stream),
 [Logging](https://docs.golioth.io/cloud/services/logging),
 and [OTA](https://docs.golioth.io/cloud/services/ota).
 

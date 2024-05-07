@@ -9,12 +9,12 @@
 #include <golioth/client.h>
 
 /// @defgroup golioth_stream golioth_stream
-/// Functions for interacting with Golioth LightDB Stream service.
+/// Functions for interacting with Golioth Stream service.
 ///
 /// https://docs.golioth.io/reference/protocols/coap/stream
 /// @{
 
-/// Set an object in LightDB stream at a particular path asynchronously
+/// Set an object in stream at a particular path asynchronously
 ///
 /// This function will enqueue a request and return immediately without
 /// waiting for a response from the server. Optionally, the user may supply
@@ -23,7 +23,7 @@
 /// never received).
 ///
 /// @param client The client handle from @ref golioth_client_create
-/// @param path The path in LightDB stream to set (e.g. "my_obj")
+/// @param path The path in stream to set (e.g. "my_obj")
 /// @param content_type The serialization format of buf
 /// @param buf A buffer containing the object to send
 /// @param buf_len Length of buf
@@ -43,7 +43,7 @@ enum golioth_status golioth_stream_set_async(struct golioth_client *client,
                                              golioth_set_cb_fn callback,
                                              void *callback_arg);
 
-/// Set an object in LightDB stream at a particular path synchronously
+/// Set an object in stream at a particular path synchronously
 ///
 /// This function will block until one of three things happen (whichever comes first):
 ///
@@ -52,7 +52,7 @@ enum golioth_status golioth_stream_set_async(struct golioth_client *client,
 /// 3. The default GOLIOTH_COAP_RESPONSE_TIMEOUT_S period expires without receiving a response
 ///
 /// @param client The client handle from @ref golioth_client_create
-/// @param path The path in LightDB stream to set (e.g. "my_obj")
+/// @param path The path in stream to set (e.g. "my_obj")
 /// @param content_type The serialization format of buf
 /// @param buf A buffer containing the object to send
 /// @param buf_len Length of buf
