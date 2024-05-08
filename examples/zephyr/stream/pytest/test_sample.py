@@ -9,7 +9,7 @@ LOGGER = logging.getLogger(__name__)
 
 pytestmark = pytest.mark.anyio
 
-async def test_lightdb_stream(shell, device, wifi_ssid, wifi_psk):
+async def test_stream(shell, device, wifi_ssid, wifi_psk):
     time.sleep(2)
 
     # Set Golioth credential
