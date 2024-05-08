@@ -5,7 +5,7 @@
  */
 
 #include <zephyr/logging/log.h>
-LOG_MODULE_REGISTER(stream, LOG_LEVEL_DBG);
+LOG_MODULE_REGISTER(golioth_stream, LOG_LEVEL_DBG);
 
 #include <golioth/client.h>
 #include <golioth/stream.h>
@@ -222,7 +222,7 @@ int main(void)
     struct sensor_value temp;
     int err;
 
-    LOG_DBG("Start LightDB Stream sample");
+    LOG_DBG("Start Golioth stream sample");
 
     IF_ENABLED(CONFIG_GOLIOTH_SAMPLE_COMMON, (net_connect();))
 
