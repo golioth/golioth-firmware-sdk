@@ -1,11 +1,12 @@
-# Golioth LightDB Stream sample
+# Golioth Stream service sample
 
 ## Overview
 
-This LightDB Stream application demonstrates how to connect with Golioth
-and periodically send data to LightDB Stream. In this sample temperature
-measurements are sent to `/temp` LightDB Stream path. For platforms that
-do not have temperature sensor a value is generated from 20 up to 30.
+This Golioth Stream application demonstrates how to connect with Golioth
+and periodically send data to the Stream service. In this sample
+temperature measurements are sent to `/sensor/temp` Stream path. For
+platforms that do not have temperature sensor a value is generated from
+20 up to 30.
 
 ## Requirements
 
@@ -94,11 +95,11 @@ CONFIG_GOLIOTH_SAMPLE_HARDCODED_KEY_PATH="keys/device.key.der"
 This application has been built and tested with QEMU x86 (qemu_x86).
 
 On your Linux host computer, open a terminal window, locate the source
-code of this sample application (i.e., `examples/zephyr/lightdb_stream`)
+code of this sample application (i.e., `examples/zephyr/stream`)
 and type:
 
 ```console
-$ west build -b qemu_x86 examples/zephyr/lightdb_stream
+$ west build -b qemu_x86 examples/zephyr/stream
 $ west build -t run
 ```
 
@@ -124,11 +125,11 @@ CONFIG_GOLIOTH_SAMPLE_WIFI_PSK="my-psk"
 ```
 
 On your host computer open a terminal window, locate the source code of
-this sample application (i.e., `examples/zephyr/lightdb_stream`) and
+this sample application (i.e., `examples/zephyr/stream`) and
 type:
 
 ```console
-$ west build -b esp32_devkitc_wrover examples/zephyr/lightdb_stream
+$ west build -b esp32_devkitc_wrover examples/zephyr/stream
 $ west flash
 ```
 
@@ -175,22 +176,22 @@ CONFIG_GOLIOTH_SAMPLE_WIFI_PSK="my-psk"
 ```
 
 On your host computer open a terminal window, locate the source code of
-this sample application (i.e., `examples/zephyr/lightdb_stream`) and
+this sample application (i.e., `examples/zephyr/stream`) and
 type:
 
 ```console
-$ west build -b nrf52840dk_nrf52840 examples/zephyr/lightdb_stream
+$ west build -b nrf52840dk_nrf52840 examples/zephyr/stream
 $ west flash
 ```
 
 #### nRF9160 DK
 
 On your host computer open a terminal window, locate the source code of
-this sample application (i.e., `examples/zephyr/lightdb_stream`) and
+this sample application (i.e., `examples/zephyr/stream`) and
 type:
 
 ```console
-$ west build -b nrf9160dk_nrf9160_ns examples/zephyr/lightdb_stream
+$ west build -b nrf9160dk_nrf9160_ns examples/zephyr/stream
 $ west flash
 ```
 
@@ -200,7 +201,7 @@ On your host computer open a terminal window. From the
 `golioth-firmware-sdk` folder, type:
 
 ```console
-$ west build -b rak5010_nrf52840 examples/zephyr/lightdb_stream
+$ west build -b rak5010_nrf52840 examples/zephyr/stream
 $ west flash
 ```
 
