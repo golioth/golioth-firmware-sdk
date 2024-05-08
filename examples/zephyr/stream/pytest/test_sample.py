@@ -31,8 +31,8 @@ async def test_stream(shell, device, wifi_ssid, wifi_psk):
     temp = 20.0
     async with contextlib.aclosing(device.stream.iter()) as stream_iter:
         async for value in stream_iter:
-            LOGGER.info("ts: {0}, temp: {1}".format(value['timestamp'], value['data']['sensor']['temp']))
-            assert (value["data"]["sensor"]["temp"] == temp)
+            LOGGER.info("ts: {0}, temp: {1}".format(value['timestamp'], value['data']['temp']))
+            assert (value["data"]["temp"] == temp)
             temp += 0.5
             if temp == 22.0:
                 break
