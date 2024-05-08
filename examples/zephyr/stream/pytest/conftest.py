@@ -1,9 +1,9 @@
 import os
 import pytest
 
-def pytest_addoption(parser):
-    parser.addoption("--wifi-ssid", type=str, help="WiFi SSID")
-    parser.addoption("--wifi-psk",  type=str, help="WiFi PSK")
+# def pytest_addoption(parser):
+    # parser.addoption("--wifi-ssid", type=str, help="WiFi SSID")
+    # parser.addoption("--wifi-psk",  type=str, help="WiFi PSK")
 
 @pytest.fixture(scope='session')
 def anyio_backend():

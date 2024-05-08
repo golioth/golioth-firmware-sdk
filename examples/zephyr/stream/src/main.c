@@ -17,6 +17,8 @@ LOG_MODULE_REGISTER(golioth_stream, LOG_LEVEL_DBG);
 #include <zephyr/drivers/sensor.h>
 #include <zephyr/kernel.h>
 
+#define SYNC_TIMEOUT_S 2
+
 struct golioth_client *client;
 static K_SEM_DEFINE(connected, 0, 1);
 
@@ -88,10 +90,10 @@ static int get_temperature(struct sensor_value *val)
 
 #endif
 
-static void temperature_push_handler(struct golioth_client *client,
-                                     const struct golioth_response *response,
-                                     const char *path,
-                                     void *arg)
+static void temperature_async_push_handler(struct golioth_client *client,
+                                           const struct golioth_response *response,
+                                           const char *path,
+                                           void *arg)
 {
     if (response->status != GOLIOTH_OK)
     {
@@ -102,45 +104,6 @@ static void temperature_push_handler(struct golioth_client *client,
     LOG_DBG("Temperature successfully pushed");
 
     return;
-}
-
-static void temperature_push_json(const struct sensor_value *temp, bool async)
-{
-    char sbuf[sizeof("{\"temp\":-4294967295.123456}")];
-    int err;
-
-    snprintk(sbuf, sizeof(sbuf), "{\"temp\":%d.%06d}", temp->val1, abs(temp->val2));
-
-    if (async)
-    {
-        err = golioth_stream_set_async(client,
-                                       "sensor",
-                                       GOLIOTH_CONTENT_TYPE_JSON,
-                                       sbuf,
-                                       strlen(sbuf),
-                                       temperature_push_handler,
-                                       NULL);
-    }
-    else
-    {
-        err = golioth_stream_set_sync(client,
-                                      "sensor",
-                                      GOLIOTH_CONTENT_TYPE_JSON,
-                                      sbuf,
-                                      strlen(sbuf),
-                                      2);
-    }
-
-    if (err)
-    {
-        LOG_WRN("Failed to push temperature: %d", err);
-        return;
-    }
-
-    if (!async)
-    {
-        LOG_DBG("Temperature successfully pushed");
-    }
 }
 
 static void temperature_push_cbor(const struct sensor_value *temp, bool async)
@@ -185,24 +148,25 @@ static void temperature_push_cbor(const struct sensor_value *temp, bool async)
 
     size_t payload_size = (intptr_t) zse->payload - (intptr_t) buf;
 
+    /* Empty path ("") is used to send the payload to the Stream root path */
     if (async)
     {
         err = golioth_stream_set_async(client,
-                                       "sensor",
+                                       "",
                                        GOLIOTH_CONTENT_TYPE_CBOR,
                                        buf,
                                        payload_size,
-                                       temperature_push_handler,
+                                       temperature_async_push_handler,
                                        NULL);
     }
     else
     {
         err = golioth_stream_set_sync(client,
-                                      "sensor",
+                                      "",
                                       GOLIOTH_CONTENT_TYPE_CBOR,
                                       buf,
                                       payload_size,
-                                      2);
+                                      SYNC_TIMEOUT_S);
     }
 
     if (err)
@@ -239,34 +203,6 @@ int main(void)
 
     while (true)
     {
-        /* Synchronous using JSON object */
-        err = get_temperature(&temp);
-        if (err)
-        {
-            k_sleep(K_SECONDS(1));
-            continue;
-        }
-
-        LOG_DBG("Sending temperature %d.%06d (as JSON object sync)", temp.val1, abs(temp.val2));
-
-        temperature_push_json(&temp, false);
-
-        k_sleep(K_SECONDS(5));
-
-        /* Callback-based using JSON object */
-        err = get_temperature(&temp);
-        if (err)
-        {
-            k_sleep(K_SECONDS(1));
-            continue;
-        }
-
-        LOG_DBG("Sending temperature %d.%06d (as JSON object async)", temp.val1, abs(temp.val2));
-
-        temperature_push_json(&temp, true);
-
-        k_sleep(K_SECONDS(5));
-
         /* Synchronous using CBOR map */
         err = get_temperature(&temp);
         if (err)
@@ -275,7 +211,7 @@ int main(void)
             continue;
         }
 
-        LOG_DBG("Sending temperature %d.%06d (as CBOR map sync)", temp.val1, abs(temp.val2));
+        LOG_INF("Sending temperature %d.%06d (sync)", temp.val1, abs(temp.val2));
 
         temperature_push_cbor(&temp, false);
 
@@ -289,7 +225,7 @@ int main(void)
             continue;
         }
 
-        LOG_DBG("Sending temperature %d.%06d (as CBOR map async)", temp.val1, abs(temp.val2));
+        LOG_INF("Sending temperature %d.%06d (async)", temp.val1, abs(temp.val2));
 
         temperature_push_cbor(&temp, true);
 
