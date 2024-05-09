@@ -27,7 +27,7 @@ cd modules/lib/golioth-firmware-sdk
 pip install tests/hil/scripts/pytest-hil/
 
 # Build
-west build -p -b nrf52840dk tests/hil/platform/zephyr -- -DGOLIOTH_HIL_TEST=rpc
+west build -p -b nrf52840dk_nrf52840 tests/hil/platform/zephyr -- -DGOLIOTH_HIL_TEST=rpc
 
 # Run test
 pytest --rootdir . tests/hil/tests/rpc         \
