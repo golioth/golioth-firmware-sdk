@@ -10,6 +10,12 @@
 #include "coap_client.h"
 #include "coap_blockwise.h"
 
+#define IS_VALID_POWER_OF_TWO(x) (((x) & ((x) -1)) == 0)
+
+#define IS_VALID_BLOCK_SIZE(x) ((x) >= 16 && (x) <= 1024 && IS_VALID_POWER_OF_TWO(x))
+
+LOG_TAG_DEFINE(blockwise_module);
+
 struct blockwise_transfer
 {
     bool is_last;
@@ -63,65 +69,113 @@ static void on_block_sent(struct golioth_client *client,
     ctx->status = response->status;
 }
 
-// Function to call the application's read block callback after a successful
-// blockwise upload
-static void call_read_block_callback(struct blockwise_transfer *ctx)
+// Function to call the application's read block callback for obtaining
+// blockwise upload data
+static enum golioth_status call_read_block_callback(struct blockwise_transfer *ctx)
 {
-    int err = ctx->callback.read_cb(ctx->offset,
-                                    ctx->block_buffer,
-                                    &ctx->block_size,
-                                    &ctx->is_last,
-                                    ctx->callback_arg);
-    if (err != GOLIOTH_OK)
+    size_t block_size = 0;
+    enum golioth_status status = ctx->callback.read_cb(ctx->offset,
+                                                       ctx->block_buffer,
+                                                       &block_size,
+                                                       &ctx->is_last,
+                                                       ctx->callback_arg);
+    if (status != GOLIOTH_OK)
     {
-        // TODO: handle application callback error
+        return status;
     }
+
+    if (block_size == 0 || block_size > CONFIG_GOLIOTH_BLOCKWISE_UPLOAD_BLOCK_SIZE)
+    {
+        return GOLIOTH_ERR_INVALID_BLOCK_SIZE;
+    }
+
+    if (ctx->is_last)
+    {
+        ctx->block_size = block_size;
+    }
+    else if (ctx->block_size == 0)
+    {
+        // This is the first time we called ctx->callback.read_cb()
+        // Make sure the block size is a valid size for blockwise uploads
+        if (!IS_VALID_BLOCK_SIZE(block_size))
+        {
+            return GOLIOTH_ERR_INVALID_BLOCK_SIZE;
+        }
+        ctx->block_size = block_size;
+    }
+    else if (block_size != ctx->block_size)
+    {
+        // Size of all blocks must be the same
+        return GOLIOTH_ERR_INVALID_BLOCK_SIZE;
+    }
+
+    return GOLIOTH_OK;
 }
 
 // Function to upload a single block
-static enum golioth_status upload_single_block(struct golioth_client *client,
-                                               struct blockwise_transfer *ctx)
+static void upload_single_block(struct golioth_client *client, struct blockwise_transfer *ctx)
 {
-    assert(ctx->block_size > 0 && ctx->block_size <= CONFIG_GOLIOTH_BLOCKWISE_UPLOAD_BLOCK_SIZE);
-    return golioth_coap_client_set_block(client,
-                                         ctx->path_prefix,
-                                         ctx->path,
-                                         ctx->is_last,
-                                         GOLIOTH_CONTENT_TYPE_JSON,
-                                         ctx->offset,
-                                         ctx->block_buffer,
-                                         ctx->block_size,
-                                         on_block_sent,
-                                         ctx,
-                                         true,
-                                         GOLIOTH_SYS_WAIT_FOREVER);
+    enum golioth_status status = golioth_coap_client_set_block(client,
+                                                               ctx->path_prefix,
+                                                               ctx->path,
+                                                               ctx->is_last,
+                                                               ctx->content_type,
+                                                               ctx->offset,
+                                                               ctx->block_buffer,
+                                                               ctx->block_size,
+                                                               on_block_sent,
+                                                               ctx,
+                                                               true,
+                                                               GOLIOTH_SYS_WAIT_FOREVER);
+    ctx->status = status;
 }
 
 // Function to handle blockwise upload errors
-static enum golioth_status handle_upload_error()
+// This function retries for all errors like invalid state, failed mem alloc,
+// queue full, disconnects, etc returned by golioth_coap_client_set_block
+static enum golioth_status handle_upload_error(struct golioth_client *client,
+                                               struct blockwise_transfer *ctx)
 {
-    // TODO: handle errors like disconnects etc
-    return GOLIOTH_OK;
+    while (1)
+    {
+        GLTH_LOGE(TAG, "Blockwise upload failed with error %d. Retrying.", ctx->status);
+        golioth_sys_msleep(CONFIG_GOLIOTH_BLOCKWISE_RETRY_SLEEP_TIME_MS);
+        upload_single_block(client, ctx);
+        if (ctx->status == GOLIOTH_OK)
+        {
+            ctx->retry_count = 0;
+            break;
+        }
+        else
+        {
+            if (CONFIG_GOLIOTH_BLOCKWISE_RETRY_COUNT != -1)
+            {
+                ctx->retry_count++;
+                if (ctx->retry_count > CONFIG_GOLIOTH_BLOCKWISE_RETRY_COUNT)
+                {
+                    break;
+                }
+            }
+        }
+    }
+    return ctx->status;
 }
 
 // Function to manage blockwise upload and handle errors
 static enum golioth_status process_blockwise_uploads(struct golioth_client *client,
                                                      struct blockwise_transfer *ctx)
 {
-    enum golioth_status status = GOLIOTH_ERR_FAIL;
-    ctx->block_size = 0;
-    call_read_block_callback(ctx);
-    if (ctx->block_size)
+    enum golioth_status status = call_read_block_callback(ctx);
+    if (status == GOLIOTH_OK)
     {
-        status = upload_single_block(client, ctx);
+        upload_single_block(client, ctx);
         if (ctx->status == GOLIOTH_OK)
         {
             ctx->offset++;
         }
         else
         {
-            // TODO: handle_upload_error
-            status = handle_upload_error();
+            status = handle_upload_error(client, ctx);
         }
     }
     return status;
@@ -134,10 +188,16 @@ enum golioth_status golioth_blockwise_post(struct golioth_client *client,
                                            read_block_cb cb,
                                            void *callback_arg)
 {
-    enum golioth_status status = GOLIOTH_ERR_FAIL;
+    enum golioth_status status;
+
     if (!client || !path || !cb)
     {
-        return status;
+        return GOLIOTH_ERR_NULL;
+    }
+
+    if (!path_prefix)
+    {
+        path_prefix = "";
     }
 
     struct blockwise_transfer *ctx = malloc(sizeof(struct blockwise_transfer));
