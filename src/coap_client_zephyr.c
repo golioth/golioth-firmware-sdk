@@ -22,6 +22,7 @@
 
 #include <mbedtls/ssl_ciphersuites.h>
 #include <golioth_ciphersuites.h>
+#include "golioth_openthread.h"
 
 LOG_MODULE_REGISTER(golioth_coap_client_zephyr);
 
@@ -740,6 +741,7 @@ static int golioth_connect(struct golioth_client *client)
 {
     char uri[] = CONFIG_GOLIOTH_COAP_HOST_URI;
     char *host = &uri[sizeof("coaps://") - 1];
+    char ipv6_addr[40];
     const char *port = "5684";
     char *colon;
     int err;
@@ -759,6 +761,18 @@ static int golioth_connect(struct golioth_client *client)
     {
         *colon = '\0';
         port = colon + 1;
+    }
+
+    if (IS_ENABLED(CONFIG_NET_L2_OPENTHREAD))
+    {
+        err = golioth_ot_synthesize_ipv6_address(host, ipv6_addr);
+        if (err)
+        {
+            LOG_ERR("Failed to synthesize Golioth Server IPv6 address: %d", err);
+            return err;
+        }
+
+        host = ipv6_addr;
     }
 
     err = golioth_connect_host_port(client, host, port);

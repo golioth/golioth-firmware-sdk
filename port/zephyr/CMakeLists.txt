@@ -73,6 +73,7 @@ zephyr_library_sources(
 )
 
 zephyr_library_sources_ifdef(CONFIG_GOLIOTH_FW_UPDATE golioth_fw_zephyr.c)
+zephyr_library_sources_ifdef(CONFIG_NET_L2_OPENTHREAD golioth_openthread.c)
 
 if(CONFIG_GOLIOTH_AUTH_METHOD_CERT)
   include_cert(CONFIG_GOLIOTH_HARDCODED_CA_CRT_PATH ca_crt)
