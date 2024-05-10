@@ -124,6 +124,12 @@ static enum golioth_status golioth_coap_client_set_internal(struct golioth_clien
         return GOLIOTH_ERR_INVALID_STATE;
     }
 
+    if (strlen(path) > sizeof(request_msg.path) - 1)
+    {
+        GLTH_LOGE(TAG, "Path too long: %d > %d", strlen(path), sizeof(request_msg.path) - 1);
+        return GOLIOTH_ERR_INVALID_FORMAT;
+    }
+
     if (payload_size > 0)
     {
         // We will allocate memory and copy the payload
@@ -150,7 +156,9 @@ static enum golioth_status golioth_coap_client_set_internal(struct golioth_clien
     request_msg.type = type;
     request_msg.path_prefix = path_prefix;
     request_msg.ageout_ms = ageout_ms;
+
     strncpy(request_msg.path, path, sizeof(request_msg.path) - 1);
+
     if (is_synchronous)
     {
         // Created here, deleted by coap thread (or here if fail to enqueue
@@ -316,7 +324,14 @@ enum golioth_status golioth_coap_client_delete(struct golioth_client *client,
             },
         .ageout_ms = ageout_ms,
     };
+
+    if (strlen(path) > sizeof(request_msg.path) - 1)
+    {
+        GLTH_LOGE(TAG, "Path too long: %d > %d", strlen(path), sizeof(request_msg.path) - 1);
+        return GOLIOTH_ERR_INVALID_FORMAT;
+    }
     strncpy(request_msg.path, path, sizeof(request_msg.path) - 1);
+
     enum golioth_status status = GOLIOTH_OK;
 
     if (is_synchronous)
@@ -395,7 +410,14 @@ static enum golioth_status golioth_coap_client_get_internal(struct golioth_clien
     enum golioth_status status = GOLIOTH_OK;
     request_msg.type = type;
     request_msg.path_prefix = path_prefix;
+
+    if (strlen(path) > sizeof(request_msg.path) - 1)
+    {
+        GLTH_LOGE(TAG, "Path too long: %d > %d", strlen(path), sizeof(request_msg.path) - 1);
+        return GOLIOTH_ERR_INVALID_FORMAT;
+    }
     strncpy(request_msg.path, path, sizeof(request_msg.path) - 1);
+
     if (is_synchronous)
     {
         // Created here, deleted by coap thread (or here if fail to enqueue
@@ -535,6 +557,12 @@ enum golioth_status golioth_coap_client_observe_async(struct golioth_client *cli
                 .arg = arg,
             },
     };
+
+    if (strlen(path) > sizeof(request_msg.path) - 1)
+    {
+        GLTH_LOGE(TAG, "Path too long: %d > %d", strlen(path), sizeof(request_msg.path) - 1);
+        return GOLIOTH_ERR_INVALID_FORMAT;
+    }
     strncpy(request_msg.path, path, sizeof(request_msg.path) - 1);
 
     bool sent = golioth_mbox_try_send(client->request_queue, &request_msg);
