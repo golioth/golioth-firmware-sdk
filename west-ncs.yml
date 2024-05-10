@@ -4,6 +4,10 @@ manifest:
       revision: v2.5.2
       url: http://github.com/nrfconnect/sdk-nrf
       import: true
+    - name: golioth-zephyr-boards
+      path: deps/modules/lib/golioth-boards
+      revision: v1.1.1
+      url: https://github.com/golioth/golioth-zephyr-boards
 
   self:
     path: modules/lib/golioth-firmware-sdk

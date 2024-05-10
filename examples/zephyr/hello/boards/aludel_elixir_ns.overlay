@@ -1,0 +1,30 @@
+&uart1 {
+    status = "okay";
+    current-speed = <115200>;
+    pinctrl-0 = <&esp_at_uart_default>;
+    pinctrl-1 = <&esp_at_uart_sleep>;
+    pinctrl-names = "default", "sleep";
+
+    esp_wifi: esp-wifi {
+        compatible = "espressif,esp-at";
+        power-gpios = <&gpio0 18 (GPIO_ACTIVE_HIGH | GPIO_OPEN_DRAIN)>;
+        status = "okay";
+    };
+};
+
+&pinctrl {
+    esp_at_uart_default: esp-at-uart-default {
+        group1 {
+            psels = <NRF_PSEL(UART_TX, 0, 25)>,
+                    <NRF_PSEL(UART_RX, 0, 31)>;
+        };
+    };
+
+    esp_at_uart_sleep: esp-at-uart-sleep {
+        group1 {
+            psels = <NRF_PSEL(UART_TX, 0, 25)>,
+                    <NRF_PSEL(UART_RX, 0, 31)>;
+            low-power-enable;
+        };
+    };
+};
