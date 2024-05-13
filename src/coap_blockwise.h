@@ -35,5 +35,6 @@ typedef enum golioth_status (*write_block_cb)(uint32_t offset,
 enum golioth_status golioth_blockwise_get(struct golioth_client *client,
                                           const char *path_prefix,
                                           const char *path,
+                                          enum golioth_content_type content_type,
                                           write_block_cb cb,
                                           void *callback_arg);
