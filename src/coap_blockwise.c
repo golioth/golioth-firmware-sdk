@@ -177,12 +177,14 @@ static void blockwise_download_init(struct blockwise_transfer *ctx,
                                     uint8_t *data_buf,
                                     const char *path_prefix,
                                     const char *path,
+                                    enum golioth_content_type content_type,
                                     write_block_cb cb,
                                     void *callback_arg)
 {
     ctx->is_last = false;
     ctx->path_prefix = path_prefix;
     ctx->path = path;
+    ctx->content_type = content_type;
     ctx->retry_count = 0;
     ctx->block_size = 0;
     ctx->offset = 0;
@@ -236,7 +238,7 @@ static enum golioth_status download_single_block(struct golioth_client *client,
     return golioth_coap_client_get_block(client,
                                          ctx->path_prefix,
                                          ctx->path,
-                                         GOLIOTH_CONTENT_TYPE_JSON,
+                                         ctx->content_type,
                                          ctx->offset,
                                          ctx->block_size,
                                          on_block_rcvd,
@@ -272,6 +274,7 @@ static enum golioth_status process_blockwise_downloads(struct golioth_client *cl
 enum golioth_status golioth_blockwise_get(struct golioth_client *client,
                                           const char *path_prefix,
                                           const char *path,
+                                          enum golioth_content_type content_type,
                                           write_block_cb cb,
                                           void *callback_arg)
 {
@@ -294,7 +297,7 @@ enum golioth_status golioth_blockwise_get(struct golioth_client *client,
         return GOLIOTH_ERR_MEM_ALLOC;
     }
 
-    blockwise_download_init(ctx, data_buff, path_prefix, path, cb, callback_arg);
+    blockwise_download_init(ctx, data_buff, path_prefix, path, content_type, cb, callback_arg);
     while (!ctx->is_last)
     {
         if ((status = process_blockwise_downloads(client, ctx)) != GOLIOTH_OK)

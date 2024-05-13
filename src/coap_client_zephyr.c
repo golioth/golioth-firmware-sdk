@@ -404,7 +404,7 @@ static int golioth_coap_post_block(golioth_coap_request_msg_t *req)
     err = golioth_coap_req_new(&coap_req,
                                client,
                                COAP_METHOD_POST,
-                               req->post_block.content_type,
+                               COAP_TYPE_CON,
                                buffer_len,
                                golioth_coap_cb,
                                req);
@@ -437,6 +437,15 @@ static int golioth_coap_post_block(golioth_coap_request_msg_t *req)
     if (err)
     {
         LOG_ERR("Unable to append block1: %d", err);
+        goto free_req;
+    }
+
+    err = coap_append_option_int(&coap_req->request,
+                                 COAP_OPTION_CONTENT_FORMAT,
+                                 golioth_content_type_to_coap_format(req->post_block.content_type));
+    if (err)
+    {
+        LOG_ERR("Unable to add content type to packet, err: %d", err);
         goto free_req;
     }
 

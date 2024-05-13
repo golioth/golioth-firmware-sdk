@@ -515,6 +515,7 @@ static void golioth_coap_get_block(golioth_coap_request_msg_t *req,
     }
 
     golioth_coap_add_path(req_pdu, req->path_prefix, req->path);
+    golioth_coap_add_accept(req_pdu, req->get_block.content_type);
     golioth_coap_add_block2(req_pdu, req->get_block.block_index, req->get_block.block_size);
     coap_send(session, req_pdu);
 }
@@ -564,6 +565,7 @@ static void golioth_coap_post_block(golioth_coap_request_msg_t *req,
     }
 
     golioth_coap_add_path(req_pdu, req->path_prefix, req->path);
+    golioth_coap_add_content_type(req_pdu, req->post.content_type);
     golioth_coap_add_block1(req_pdu,
                             req->post_block.block_index,
                             CONFIG_GOLIOTH_BLOCKWISE_UPLOAD_BLOCK_SIZE,
