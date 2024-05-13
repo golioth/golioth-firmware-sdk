@@ -253,18 +253,18 @@ static void blockwise_download_init(struct blockwise_transfer *ctx,
 
 // Function to call the application's write block callback after a successful
 // blockwise download
-static void call_write_block_callback(struct blockwise_transfer *ctx)
+static enum golioth_status call_write_block_callback(struct blockwise_transfer *ctx)
 {
-    if (ctx->callback.write_cb(ctx->offset,
-                               ctx->block_buffer,
-                               ctx->block_size,
-                               ctx->is_last,
-                               ctx->callback_arg)
-        != GOLIOTH_OK)
+    enum golioth_status status = ctx->callback.write_cb(ctx->offset,
+                                                        ctx->block_buffer,
+                                                        ctx->block_size,
+                                                        ctx->is_last,
+                                                        ctx->callback_arg);
+    if (status == GOLIOTH_OK)
     {
-        // TODO: handle application callback error
+        ctx->offset++;
     }
-    ctx->offset++;
+    return status;
 }
 
 // Blockwise download's internal callback function that the COAP client calls
@@ -290,41 +290,66 @@ static void on_block_rcvd(struct golioth_client *client,
 }
 
 // Function to download a single block
-static enum golioth_status download_single_block(struct golioth_client *client,
-                                                 struct blockwise_transfer *ctx)
+static void download_single_block(struct golioth_client *client, struct blockwise_transfer *ctx)
 {
-    return golioth_coap_client_get_block(client,
-                                         ctx->path_prefix,
-                                         ctx->path,
-                                         GOLIOTH_CONTENT_TYPE_JSON,
-                                         ctx->offset,
-                                         ctx->block_size,
-                                         on_block_rcvd,
-                                         ctx,
-                                         true,
-                                         GOLIOTH_SYS_WAIT_FOREVER);
+    enum golioth_status status = golioth_coap_client_get_block(client,
+                                                               ctx->path_prefix,
+                                                               ctx->path,
+                                                               GOLIOTH_CONTENT_TYPE_JSON,
+                                                               ctx->offset,
+                                                               ctx->block_size,
+                                                               on_block_rcvd,
+                                                               ctx,
+                                                               true,
+                                                               GOLIOTH_SYS_WAIT_FOREVER);
+    ctx->status = status;
 }
 
 // Function to handle blockwise download errors
-static enum golioth_status handle_download_error()
+// This function retries for all errors like invalid state, failed mem alloc,
+// queue full, disconnects, etc returned by golioth_coap_client_get_block
+static enum golioth_status handle_download_error(struct golioth_client *client,
+                                                 struct blockwise_transfer *ctx)
 {
-    // TODO: handle errors like disconnects etc
-    return GOLIOTH_OK;
+    while (1)
+    {
+        GLTH_LOGE(TAG, "Blockwise download failed with error %d. Retrying.", ctx->status);
+        golioth_sys_msleep(CONFIG_GOLIOTH_BLOCKWISE_RETRY_SLEEP_TIME_MS);
+        download_single_block(client, ctx);
+        if (ctx->status == GOLIOTH_OK)
+        {
+            ctx->retry_count = 0;
+            ctx->status = call_write_block_callback(ctx);
+            break;
+        }
+        else
+        {
+            if (CONFIG_GOLIOTH_BLOCKWISE_RETRY_COUNT != -1)
+            {
+                ctx->retry_count++;
+                if (ctx->retry_count > CONFIG_GOLIOTH_BLOCKWISE_RETRY_COUNT)
+                {
+                    break;
+                }
+            }
+        }
+    }
+    return ctx->status;
 }
 
 // Function to manage blockwise downloads and handle errors
 static enum golioth_status process_blockwise_downloads(struct golioth_client *client,
                                                        struct blockwise_transfer *ctx)
 {
-    enum golioth_status status = download_single_block(client, ctx);
+    enum golioth_status status;
+    download_single_block(client, ctx);
     if (ctx->status == GOLIOTH_OK)
     {
-        call_write_block_callback(ctx);
+        status = call_write_block_callback(ctx);
     }
     else
     {
-        // TODO: handle_download_error
-        status = handle_download_error();
+        status = handle_download_error(client, ctx);
     }
     return status;
 }
@@ -335,10 +360,16 @@ enum golioth_status golioth_blockwise_get(struct golioth_client *client,
                                           write_block_cb cb,
                                           void *callback_arg)
 {
-    enum golioth_status status = GOLIOTH_ERR_FAIL;
+    enum golioth_status status;
+
     if (!client || !path || !cb)
     {
-        return status;
+        return GOLIOTH_ERR_NULL;
+    }
+
+    if (!path_prefix)
+    {
+        path_prefix = "";
     }
 
     struct blockwise_transfer *ctx = malloc(sizeof(struct blockwise_transfer));
