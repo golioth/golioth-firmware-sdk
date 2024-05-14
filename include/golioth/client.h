@@ -41,6 +41,7 @@ enum golioth_content_type
 {
     GOLIOTH_CONTENT_TYPE_JSON,
     GOLIOTH_CONTENT_TYPE_CBOR,
+    GOLIOTH_CONTENT_TYPE_OCTET_STREAM,
 };
 
 /// Response status and CoAP class/code

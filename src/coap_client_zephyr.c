@@ -101,8 +101,9 @@ static enum coap_content_format golioth_content_type_to_coap_format(
             return COAP_CONTENT_FORMAT_APP_JSON;
         case GOLIOTH_CONTENT_TYPE_CBOR:
             return COAP_CONTENT_FORMAT_APP_CBOR;
+        case GOLIOTH_CONTENT_TYPE_OCTET_STREAM:
+            return COAP_CONTENT_FORMAT_APP_OCTET_STREAM;
         default:
-            assert(0);
             return COAP_CONTENT_FORMAT_APP_OCTET_STREAM;
     }
 }
