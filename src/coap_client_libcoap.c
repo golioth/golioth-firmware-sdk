@@ -390,8 +390,9 @@ static uint32_t golioth_content_type_to_coap_type(enum golioth_content_type cont
             return COAP_MEDIATYPE_APPLICATION_JSON;
         case GOLIOTH_CONTENT_TYPE_CBOR:
             return COAP_MEDIATYPE_APPLICATION_CBOR;
+        case GOLIOTH_CONTENT_TYPE_OCTET_STREAM:
+            return COAP_MEDIATYPE_APPLICATION_OCTET_STREAM;
         default:
-            assert(0);
             return COAP_MEDIATYPE_APPLICATION_OCTET_STREAM;
     }
 }
