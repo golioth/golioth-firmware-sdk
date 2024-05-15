@@ -6,6 +6,13 @@ and this project adheres to [Semantic Versioning](https://semver.org/spec/v2.0.0
 
 ## [Unreleased]
 
+### Breaking Changes:
+
+- Added content type parameter to golioth_lightdb_observe_async().
+  Previously this defaulted to JSON. Existing projects can add
+  GOLIOTH_CONTENT_TYPE_JSON as the third param of this API call to
+  replicate behavior prior to this change.
+
 ### Changed
 
 - Kconfig: reorganized how Kconfig options are presented in the

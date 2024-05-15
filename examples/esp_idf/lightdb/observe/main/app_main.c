@@ -92,7 +92,11 @@ void app_main(void)
     xSemaphoreTake(_connected_sem, portMAX_DELAY);
 
     /* Observe LightDB State Path */
-    golioth_lightdb_observe_async(client, "counter", counter_observe_handler, NULL);
+    golioth_lightdb_observe_async(client,
+                                  "counter",
+                                  GOLIOTH_CONTENT_TYPE_JSON,
+                                  counter_observe_handler,
+                                  NULL);
 
     while (true)
     {

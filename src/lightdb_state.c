@@ -188,13 +188,14 @@ enum golioth_status golioth_lightdb_delete_async(struct golioth_client *client,
 
 enum golioth_status golioth_lightdb_observe_async(struct golioth_client *client,
                                                   const char *path,
+                                                  enum golioth_content_type content_type,
                                                   golioth_get_cb_fn callback,
                                                   void *arg)
 {
     return golioth_coap_client_observe(client,
                                        GOLIOTH_LIGHTDB_STATE_PATH_PREFIX,
                                        path,
-                                       GOLIOTH_CONTENT_TYPE_JSON,
+                                       content_type,
                                        callback,
                                        arg);
 }
