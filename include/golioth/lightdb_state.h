@@ -294,6 +294,7 @@ enum golioth_status golioth_lightdb_delete_sync(struct golioth_client *client,
 ///
 /// @param client The client handle from @ref golioth_client_create
 /// @param path The path in LightDB state to observe (e.g. "my_integer")
+/// @param content_type The serialization format to request for the path
 /// @param callback Callback to call on response received or timeout. Can be NULL.
 /// @param callback_arg Callback argument, passed directly when callback invoked. Can be NULL.
 ///
@@ -304,6 +305,7 @@ enum golioth_status golioth_lightdb_delete_sync(struct golioth_client *client,
 /// @retval GOLIOTH_ERR_QUEUE_FULL request queue is full, this request is dropped
 enum golioth_status golioth_lightdb_observe_async(struct golioth_client *client,
                                                   const char *path,
+                                                  enum golioth_content_type content_type,
                                                   golioth_get_cb_fn callback,
                                                   void *callback_arg);
 

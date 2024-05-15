@@ -395,7 +395,11 @@ static void test_lightdb_invalid(struct golioth_client *client)
 
 static void test_lightdb_observe_setup(struct golioth_client *client)
 {
-    golioth_lightdb_observe_async(client, "hil/lightdb/observed/int", int_cb, NULL);
+    golioth_lightdb_observe_async(client,
+                                  "hil/lightdb/observed/int",
+                                  GOLIOTH_CONTENT_TYPE_JSON,
+                                  int_cb,
+                                  NULL);
 }
 
 static void test_lightdb_observe(struct golioth_client *client)

@@ -227,7 +227,11 @@ void golioth_basics(struct golioth_client *client)
     // If you want to try this out, log into Golioth console (console.golioth.io),
     // go to the "LightDB State" tab, and add a new item for desired/my_config.
     // Once set, the on_my_config callback function should be called here.
-    golioth_lightdb_observe_async(client, "desired/my_config", on_my_config, NULL);
+    golioth_lightdb_observe_async(client,
+                                  "desired/my_config",
+                                  GOLIOTH_CONTENT_TYPE_JSON,
+                                  on_my_config,
+                                  NULL);
 
     // Golioth Stream functions are similar to LightDB state.
     const char *sbuf = "{\"my_stream_int\":15}";
