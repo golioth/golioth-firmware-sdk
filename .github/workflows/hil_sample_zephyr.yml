@@ -124,6 +124,8 @@ jobs:
       options: --privileged
 
     steps:
+      - name: Remove existing repository
+        run: rm -rf modules/lib/golioth-firmware-sdk
       - name: Checkout repository and submodules
         uses: actions/checkout@v4
         with:
