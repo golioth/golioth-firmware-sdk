@@ -124,8 +124,10 @@ jobs:
       options: --privileged
 
     steps:
-      - name: Remove existing repository
-        run: rm -rf modules/lib/golioth-firmware-sdk
+      - name: List repository files
+        run: |
+          ls -lah
+          ls -lah examples/zephyr
       - name: Checkout repository and submodules
         uses: actions/checkout@v4
         with:
@@ -153,6 +155,13 @@ jobs:
           pip3 install -r zephyr/scripts/requirements-run-test.txt
 
           pip3 install git+https://github.com/golioth/python-golioth-tools@v0.6.3
+      - name: List repository files
+        run: |
+          ls -lah
+          ls -lah examples/zephyr
+      - name: List repository files
+        run: |
+          ls -lah modules/lib/golioth-firmware-sdk/examples/zephyr
       - name: Power On USB Hub
         run: python3 /opt/golioth-scripts/usb_hub_power.py on
       - name: Download build
