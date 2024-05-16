@@ -1,0 +1,84 @@
+#
+# Copyright (C) 2024 Golioth, Inc.
+#
+# SPDX-License-Identifier: Apache-2.0
+#
+#
+
+config GOLIOTH_COAP_HOST_URI
+    string "CoAP server URI"
+    default "coaps://coap.golioth.io"
+    help
+        The URI of the CoAP server
+
+config GOLIOTH_COAP_RESPONSE_TIMEOUT_S
+    int "CoAP response timeout"
+    default 10
+    help
+        Maximum time, in seconds, the CoAP thread will block while waiting
+        for a response from the server.
+
+config GOLIOTH_COAP_REQUEST_QUEUE_TIMEOUT_MS
+    int "CoAP request queue timeout"
+    default 1000
+    help
+        Maximum time, in milliseconds, the CoAP thread will block while
+        waiting for something to arrive in the request queue.
+        This is also how often to poll for received observations.
+
+config GOLIOTH_COAP_REQUEST_QUEUE_MAX_ITEMS
+    int "CoAP request queue max num items"
+    default 10
+    help
+        The size, in items, of the CoAP thread request queue.
+        If the queue is full, any attempts to queue new messages
+        will fail.
+
+config GOLIOTH_MAX_NUM_OBSERVATIONS
+    int "Golioth CoAP maximum number observations"
+    default 8
+    help
+        The maximum number of CoAP paths which can be simultaneously observed.
+
+config GOLIOTH_BLOCKWISE_UPLOAD_BLOCK_SIZE
+    int "Golioth blockwise uploads block size"
+    default 1024
+    help
+        Block size in Blockwise Uploads.
+
+config GOLIOTH_BLOCKWISE_DOWNLOAD_BUFFER_SIZE
+    int "Golioth blockwise downloads buffer size"
+    default 1024
+    help
+        Buffer size used in Blockwise Downloads. This size will also determine
+        the max size of each block.
+
+config GOLIOTH_COAP_THREAD_PRIORITY
+    int "Golioth CoAP thread priority"
+    default 5
+    help
+        Thread priority of the Golioth CoAP thread.
+
+config GOLIOTH_COAP_THREAD_STACK_SIZE
+    int "Golioth CoAP thread stack size"
+    default 6144
+    help
+        Thread stack size of the Golioth CoAP thread, in bytes.
+
+config GOLIOTH_COAP_KEEPALIVE_INTERVAL_S
+    int "Golioth CoAP keepalive interval, in seconds"
+    default 9
+    help
+        How often to send a "keepalive" dummy client request to the server.
+        If the session is idle for this amount of time, then the keepalive
+        request will be sent.
+        Can be useful to keep the CoAP session active, and to mitigate
+        against NAT and server timeouts.
+        Set to 0 to disable.
+
+config GOLIOTH_COAP_MAX_PATH_LEN
+    int "Golioth maximum CoAP path length"
+    default 39
+    help
+        Maximum length of a CoAP path (everything after
+        "coaps://coap.golioth.io/").

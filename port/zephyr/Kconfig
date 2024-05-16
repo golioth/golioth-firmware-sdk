@@ -1,6 +1,9 @@
 # Copyright (c) 2023 Golioth, Inc.
 # SPDX-License-Identifier: Apache-2.0
 
+module = GOLIOTH
+module-str = Golioth
+
 menuconfig GOLIOTH_FIRMWARE_SDK
 	bool "Golioth Firmware SDK"
 	select COAP
@@ -23,9 +26,11 @@ menuconfig GOLIOTH_FIRMWARE_SDK
 
 if GOLIOTH_FIRMWARE_SDK
 
-menu "Golioth SDK Configuration"
-
 source "${ZEPHYR_GOLIOTH_FIRMWARE_SDK_MODULE_DIR}/src/Kconfig"
+
+menu "Authentication"
+
+source "${ZEPHYR_GOLIOTH_FIRMWARE_SDK_MODULE_DIR}/src/Kconfig.authentication"
 
 config GOLIOTH_USE_CONNECTION_ID
 	bool "Use DTLS 1.2 Connection IDs"
@@ -139,6 +144,15 @@ config GOLIOTH_HOSTNAME_VERIFICATION_SKIP
 
 endif # GOLIOTH_HOSTNAME_VERIFICATION
 
+config GOLIOTH_HARDCODED_CA_CRT_PATH
+    default "${ZEPHYR_GOLIOTH_FIRMWARE_SDK_MODULE_DIR}/src/isrgrootx1.der"
+
+endmenu # authentication
+
+menu "CoAP"
+
+source "${ZEPHYR_GOLIOTH_FIRMWARE_SDK_MODULE_DIR}/src/Kconfig.coap"
+
 config GOLIOTH_COAP_CLIENT_PING_INTERVAL_SEC
 	int "Ping interval (seconds)"
 	default 9
@@ -159,22 +173,11 @@ config GOLIOTH_COAP_CLIENT_RX_BUF_SIZE
 	  Size of receive buffer, which is used for reading data from network
 	  socket.
 
-endmenu
+endmenu # CoAP Settings
 
-config GOLIOTH_HARDCODED_CA_CRT_PATH
-    default "${ZEPHYR_GOLIOTH_FIRMWARE_SDK_MODULE_DIR}/src/isrgrootx1.der"
+menu "Logging"
 
-config GOLIOTH_ZEPHYR_THREAD_STACKS
-	int "Number of thread stacks in Zephyr pool"
-	default 2
-	help
-	  Number of thread stacks statically allocated for the use in golioth_sys_thread_create().
-
-config GOLIOTH_ZEPHYR_THREAD_STACK_SIZE
-	int "Thread stack sizes in Zephyr pool"
-	default GOLIOTH_COAP_THREAD_STACK_SIZE
-	help
-	  Threads stacks sizes for the use in golioth_sys_thread_create().
+source "subsys/logging/Kconfig.template.log_config"
 
 config LOG_BACKEND_GOLIOTH
 	bool "Golioth logging backend"
@@ -197,10 +200,22 @@ config LOG_BACKEND_GOLIOTH_MAX_LOG_STRING_SIZE
 
 endif # LOG_BACKEND_GOLIOTH
 
-module = GOLIOTH
-module-str = Golioth
-source "subsys/logging/Kconfig.template.log_config"
+source "${ZEPHYR_GOLIOTH_FIRMWARE_SDK_MODULE_DIR}/src/Kconfig.logging"
+
+endmenu # Logging
 
 rsource '${ZEPHYR_GOLIOTH_FIRMWARE_SDK_MODULE_DIR}/examples/zephyr/common/Kconfig'
+
+config GOLIOTH_ZEPHYR_THREAD_STACKS
+	int "Number of thread stacks in Zephyr pool"
+	default 2
+	help
+	  Number of thread stacks statically allocated for the use in golioth_sys_thread_create().
+
+config GOLIOTH_ZEPHYR_THREAD_STACK_SIZE
+	int "Thread stack sizes in Zephyr pool"
+	default GOLIOTH_COAP_THREAD_STACK_SIZE
+	help
+	  Threads stacks sizes for the use in golioth_sys_thread_create().
 
 endif # GOLIOTH_FIRMWARE_SDK

@@ -1,0 +1,31 @@
+#
+# Copyright (C) 2024 Golioth, Inc.
+#
+# SPDX-License-Identifier: Apache-2.0
+#
+
+choice GOLIOTH_AUTH_METHOD
+    prompt "Authentication method support"
+
+config GOLIOTH_AUTH_METHOD_PSK
+    bool "PSK-ID / PSK only"
+    imply GOLIOTH_AUTH_PSK_MBEDTLS_DEPS
+    help
+      Only PSK based authentication will be supported.
+
+config GOLIOTH_AUTH_METHOD_CERT
+    bool "Certificate based only"
+    imply GOLIOTH_AUTH_CERT_MBEDTLS_DEPS
+    help
+      Only certificate based authentication will be supported.
+
+endchoice
+
+if GOLIOTH_AUTH_METHOD_CERT
+
+config GOLIOTH_HARDCODED_CA_CRT_PATH
+    string "Server CA certificate path"
+    help
+      Path to a certificate that will be used to authenticate the server
+
+endif
