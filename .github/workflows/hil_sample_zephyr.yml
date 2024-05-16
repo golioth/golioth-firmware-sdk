@@ -124,10 +124,14 @@ jobs:
       options: --privileged
 
     steps:
+      - name: Remove working files
+        run: |
+          rm -rf *
+          rm -rf .??*
       - name: List repository files
         run: |
+          pwd
           ls -lah
-          ls -lah examples/zephyr
       - name: Checkout repository and submodules
         uses: actions/checkout@v4
         with:
@@ -158,7 +162,6 @@ jobs:
       - name: List repository files
         run: |
           ls -lah
-          ls -lah examples/zephyr
       - name: List repository files
         run: |
           ls -lah modules/lib/golioth-firmware-sdk/examples/zephyr
