@@ -1,0 +1,49 @@
+#
+# Copyright (C) 2024 Golioth, Inc.
+#
+# SPDX-License-Identifier: Apache-2.0
+#
+
+config GOLIOTH_DEBUG_LOG
+    bool "Enable internal debug logs"
+    default y
+    help
+        Enable/disable GLTH_LOGX log statements.
+
+        If disabled, then the GLTH_LOGX macros will
+        be removed/undefined.
+
+config GOLIOTH_AUTO_LOG_TO_CLOUD
+    bool "Enable automatic logging to Golioth"
+    default y
+    help
+        Enable/disable automatic logging to Golioth for GLTH_LOGX statements
+
+        If enabled, GLTH_LOGX statements will log to stdout as well as to
+        Golioth. If disabled, they will only go to stdout.
+
+        Enabling can result is a large amount of data transmitted to Golioth,
+        so use with caution.
+
+        If you enable this, it might be a good idea to increase
+        GOLIOTH_COAP_REQUEST_QUEUE_MAX_ITEMS, since there will be many
+        more CoAP requests (one per GLTH_LOGX statement). Otherwise you
+        will see warnings like "Failed to enqueue request, queue full".
+
+        There is an internal feature flag that is set by default to the value of this
+        configuration item. The flag can also be set at runtime.
+
+config GOLIOTH_DEBUG_DEFAULT_LOG_LEVEL
+    int "Default log level for Golioth SDK"
+    default 3
+    help
+        The default log level, which is used to filter GLTH_LOGX statements.
+
+        0: None
+        1: Error
+        2: Warn
+        3: Info
+        4: Debug
+        5: Verbose
+
+        This value can be overriden at runtime with golioth_debug_set_log_level().

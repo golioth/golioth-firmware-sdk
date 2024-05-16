@@ -8,4 +8,22 @@ menu "Golioth SDK Configuration"
 
 rsource '../../../../src/Kconfig'
 
+menu "Authentication"
+
+rsource '../../../../src/Kconfig.authentication'
+
+endmenu # Authentication
+
+menu "CoAP"
+
+rsource '../../../../src/Kconfig.coap'
+
+endmenu # CoAP
+
+menu "Logging"
+
+rsource '../../../../src/Kconfig.logging'
+
+endmenu # Logging
+
 endmenu # Golioth SDK Configuration

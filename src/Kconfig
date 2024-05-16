@@ -4,76 +4,12 @@
 # SPDX-License-Identifier: Apache-2.0
 #
 
-config GOLIOTH_COAP_HOST_URI
-    string "CoAP server URI"
-    default "coaps://coap.golioth.io"
+config GOLIOTH_FW_UPDATE
+    bool "Golioth Firmware Update service"
     help
-        The URI of the CoAP server
+        Enable the Golioth Firmware Update service
 
-config GOLIOTH_COAP_RESPONSE_TIMEOUT_S
-    int "CoAP response timeout"
-    default 10
-    help
-        Maximum time, in seconds, the CoAP thread will block while waiting
-        for a response from the server.
-
-config GOLIOTH_COAP_REQUEST_QUEUE_TIMEOUT_MS
-    int "CoAP request queue timeout"
-    default 1000
-    help
-        Maximum time, in milliseconds, the CoAP thread will block while
-        waiting for something to arrive in the request queue.
-        This is also how often to poll for received observations.
-
-config GOLIOTH_COAP_REQUEST_QUEUE_MAX_ITEMS
-    int "CoAP request queue max num items"
-    default 10
-    help
-        The size, in items, of the CoAP thread request queue.
-        If the queue is full, any attempts to queue new messages
-        will fail.
-
-config GOLIOTH_COAP_THREAD_PRIORITY
-    int "Golioth CoAP thread priority"
-    default 5
-    help
-        Thread priority of the Golioth CoAP thread.
-
-config GOLIOTH_COAP_THREAD_STACK_SIZE
-    int "Golioth CoAP thread stack size"
-    default 6144
-    help
-        Thread stack size of the Golioth CoAP thread, in bytes.
-
-config GOLIOTH_COAP_KEEPALIVE_INTERVAL_S
-    int "Golioth CoAP keepalive interval, in seconds"
-    default 9
-    help
-        How often to send a "keepalive" dummy client request to the server.
-        If the session is idle for this amount of time, then the keepalive
-        request will be sent.
-        Can be useful to keep the CoAP session active, and to mitigate
-        against NAT and server timeouts.
-        Set to 0 to disable.
-
-config GOLIOTH_MAX_NUM_OBSERVATIONS
-    int "Golioth CoAP maximum number observations"
-    default 8
-    help
-        The maximum number of CoAP paths which can be simultaneously observed.
-
-config GOLIOTH_BLOCKWISE_UPLOAD_BLOCK_SIZE
-    int "Golioth blockwise uploads block size"
-    default 1024
-    help
-        Block size in Blockwise Uploads.
-
-config GOLIOTH_BLOCKWISE_DOWNLOAD_BUFFER_SIZE
-    int "Golioth blockwise downloads buffer size"
-    default 1024
-    help
-        Buffer size used in Blockwise Downloads. This size will also determine
-        the max size of each block.
+if GOLIOTH_FW_UPDATE
 
 config GOLIOTH_OTA_THREAD_STACK_SIZE
     int "Golioth OTA thread stack size"
@@ -134,17 +70,7 @@ config GOLIOTH_OTA_PATCH
         as patches, and will apply the bsdiff patching algorithm to them, using the currently
         running firmware image as the old/base version.
 
-config GOLIOTH_COAP_MAX_PATH_LEN
-    int "Golioth maximum CoAP path length"
-    default 39
-    help
-        Maximum length of a CoAP path (everything after
-        "coaps://coap.golioth.io/").
-
-config GOLIOTH_FW_UPDATE
-    bool "Golioth Firmware Update service"
-    help
-        Enable the Golioth Firmware Update service
+endif # GOLIOTH_FW_UPDATE
 
 config GOLIOTH_LIGHTDB_STATE
     bool "Golioth LightDB State service"
@@ -216,73 +142,3 @@ config GOLIOTH_MAX_NUM_SETTINGS
         by the application.
 
 endif # GOLIOTH_SETTINGS
-
-config GOLIOTH_DEBUG_LOG
-    bool "Enable internal debug logs"
-    default y
-    help
-        Enable/disable GLTH_LOGX log statements.
-
-        If disabled, then the GLTH_LOGX macros will
-        be removed/undefined.
-
-config GOLIOTH_AUTO_LOG_TO_CLOUD
-    bool "Enable automatic logging to Golioth"
-    default y
-    help
-        Enable/disable automatic logging to Golioth for GLTH_LOGX statements
-
-        If enabled, GLTH_LOGX statements will log to stdout as well as to
-        Golioth. If disabled, they will only go to stdout.
-
-        Enabling can result is a large amount of data transmitted to Golioth,
-        so use with caution.
-
-        If you enable this, it might be a good idea to increase
-        GOLIOTH_COAP_REQUEST_QUEUE_MAX_ITEMS, since there will be many
-        more CoAP requests (one per GLTH_LOGX statement). Otherwise you
-        will see warnings like "Failed to enqueue request, queue full".
-
-        There is an internal feature flag that is set by default to the value of this
-        configuration item. The flag can also be set at runtime.
-
-config GOLIOTH_DEBUG_DEFAULT_LOG_LEVEL
-    int "Default log level for Golioth SDK"
-    default 3
-    help
-        The default log level, which is used to filter GLTH_LOGX statements.
-
-        0: None
-        1: Error
-        2: Warn
-        3: Info
-        4: Debug
-        5: Verbose
-
-        This value can be overriden at runtime with golioth_debug_set_log_level().
-
-choice GOLIOTH_AUTH_METHOD
-    prompt "Authentication method support"
-
-config GOLIOTH_AUTH_METHOD_PSK
-    bool "PSK-ID / PSK only"
-    imply GOLIOTH_AUTH_PSK_MBEDTLS_DEPS
-    help
-      Only PSK based authentication will be supported.
-
-config GOLIOTH_AUTH_METHOD_CERT
-    bool "Certificate based only"
-    imply GOLIOTH_AUTH_CERT_MBEDTLS_DEPS
-    help
-      Only certificate based authentication will be supported.
-
-endchoice
-
-if GOLIOTH_AUTH_METHOD_CERT
-
-config GOLIOTH_HARDCODED_CA_CRT_PATH
-    string "Server CA certificate path"
-    help
-      Path to a certificate that will be used to authenticate the server
-
-endif
