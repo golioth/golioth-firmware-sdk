@@ -19,7 +19,7 @@ static void block_stats_init(block_latency_stats_t *stats)
     stats->block_max_ms = 0;
 }
 
-static void block_stats_update(block_latency_stats_t *stats, uint32_t block_latency_ms)
+void block_stats_update(block_latency_stats_t *stats, uint32_t block_latency_ms)
 {
     stats->block_min_ms = min(stats->block_min_ms, block_latency_ms);
     stats->block_max_ms = max(stats->block_max_ms, block_latency_ms);
@@ -44,61 +44,6 @@ static void download_init(download_ctx_t *ctx,
     // Due to the way this size is populated in the manifest on the server, the actual
     // number of blocks may be different.
     ctx->total_num_blocks = golioth_ota_size_to_nblocks(ota_component->size);
-}
-
-static enum golioth_status download_block(download_ctx_t *ctx)
-{
-    if (ctx->is_last_block)
-    {
-        // We've already downloaded the last block
-        return GOLIOTH_ERR_NO_MORE_DATA;
-    }
-
-    const uint64_t download_start_ms = golioth_sys_now_ms();
-
-    GLTH_LOGI(TAG,
-              "Downloading block index %" PRIu32 " (%" PRIu32 "/%" PRIu32 ")",
-              (uint32_t) ctx->block_index,
-              (uint32_t) ctx->block_index + 1,
-              (uint32_t) ctx->total_num_blocks);
-
-    enum golioth_status status;
-    int retry_count = 3;
-    while (retry_count > 0)
-    {
-        status = golioth_ota_get_block_sync(ctx->client,
-                                            ctx->ota_component->package,
-                                            ctx->ota_component->version,
-                                            ctx->block_index,
-                                            ctx->download_buf,
-                                            &ctx->block_bytes_downloaded,
-                                            &ctx->is_last_block,
-                                            GOLIOTH_SYS_WAIT_FOREVER);
-
-        if (status == GOLIOTH_OK)
-        {
-            break;
-        }
-        else if (retry_count == 1)
-        {
-            GLTH_LOGE(TAG, "Unable to download block. Status: %d", status);
-            return status;
-        }
-        else
-        {
-            GLTH_LOGW(TAG, "Failed to get block, will retry. Status: %d", status);
-            golioth_sys_msleep(150);
-            retry_count--;
-        }
-    }
-
-    assert(ctx->block_bytes_downloaded <= GOLIOTH_OTA_BLOCKSIZE);
-    block_stats_update(&ctx->block_stats, golioth_sys_now_ms() - download_start_ms);
-
-    ctx->block_index++;
-
-    assert(ctx->output_fn);
-    return ctx->output_fn(ctx->download_buf, ctx->block_bytes_downloaded, ctx->output_fn_arg);
 }
 
 static void decompress_init(decompress_ctx_t *ctx)
@@ -336,12 +281,6 @@ void fw_block_processor_init(fw_block_processor_ctx_t *ctx,
     // Connect output of patch to input of handle_block
     ctx->patch.output_fn = handle_block;
     ctx->patch.output_fn_arg = &ctx->handle_block;
-}
-
-enum golioth_status fw_block_processor_process(fw_block_processor_ctx_t *ctx)
-{
-    // Call the first function in the block processing chain.
-    return download_block(&ctx->download);
 }
 
 void fw_block_processor_log_results(const fw_block_processor_ctx_t *ctx)

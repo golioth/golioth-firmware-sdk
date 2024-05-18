@@ -19,7 +19,6 @@
 LOG_TAG_DEFINE(golioth_ota);
 
 #define GOLIOTH_OTA_MANIFEST_PATH ".u/desired"
-#define GOLIOTH_OTA_COMPONENT_PATH_PREFIX ".u/c/"
 
 enum
 {
@@ -297,72 +296,6 @@ enum golioth_status golioth_ota_payload_as_manifest(const uint8_t *payload,
     manifest->seqnum = manifest_sequence_number;
 
     return GOLIOTH_OK;
-}
-
-static void on_block_rcvd(struct golioth_client *client,
-                          const struct golioth_response *response,
-                          const char *path,
-                          const uint8_t *payload,
-                          size_t payload_size,
-                          bool is_last,
-                          void *arg)
-{
-    assert(arg);
-    assert(payload_size <= GOLIOTH_OTA_BLOCKSIZE);
-
-    if (response->status != GOLIOTH_OK)
-    {
-        return;
-    }
-
-    block_get_output_params_t *out_params = (block_get_output_params_t *) arg;
-    assert(out_params->buf);
-    assert(out_params->block_nbytes);
-
-    if (out_params->is_last)
-    {
-        *out_params->is_last = is_last;
-    }
-
-    memcpy(out_params->buf, payload, payload_size);
-    *out_params->block_nbytes = payload_size;
-}
-
-enum golioth_status golioth_ota_get_block_sync(struct golioth_client *client,
-                                               const char *package,
-                                               const char *version,
-                                               size_t block_index,
-                                               uint8_t *buf,  // >= GOLIOTH_OTA_BLOCKSIZE bytes
-                                               size_t *block_nbytes,
-                                               bool *is_last,
-                                               int32_t timeout_s)
-{
-    char path[GOLIOTH_OTA_MAX_COMPONENT_URI_LEN] = {};
-    snprintf(path, sizeof(path), "%s@%s", package, version);
-    block_get_output_params_t out_params = {
-        .buf = buf,
-        .block_nbytes = block_nbytes,
-        .is_last = is_last,
-    };
-
-    // TODO - use Content-Format 10742 (application/octet-stream with heatshink encoding)
-    //        once it is supported by the cloud.
-    //
-    // Ref: https://golioth.atlassian.net/wiki/spaces/EN/pages/262275073/OTA+Compressed+Artifacts
-
-    enum golioth_status status = GOLIOTH_OK;
-    status = golioth_coap_client_get_block(client,
-                                           GOLIOTH_OTA_COMPONENT_PATH_PREFIX,
-                                           path,
-                                           GOLIOTH_CONTENT_TYPE_JSON,
-                                           block_index,
-                                           GOLIOTH_OTA_BLOCKSIZE,
-                                           on_block_rcvd,
-                                           &out_params,
-                                           true,
-                                           timeout_s);
-
-    return status;
 }
 
 enum golioth_ota_state golioth_ota_get_state(void)

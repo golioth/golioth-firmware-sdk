@@ -25,6 +25,7 @@
 /// Maximum size of Relative URI to download binary (+ 7 bytes for Path)
 #define GOLIOTH_OTA_MAX_COMPONENT_URI_LEN \
     (CONFIG_GOLIOTH_OTA_MAX_PACKAGE_NAME_LEN + CONFIG_GOLIOTH_OTA_MAX_VERSION_LEN + 7)
+#define GOLIOTH_OTA_COMPONENT_PATH_PREFIX ".u/c/"
 
 /// State of OTA update, reported to Golioth server
 enum golioth_ota_state
@@ -128,43 +129,6 @@ const struct golioth_ota_component *golioth_ota_find_component(
 enum golioth_status golioth_ota_observe_manifest_async(struct golioth_client *client,
                                                        golioth_get_cb_fn callback,
                                                        void *arg);
-
-/// Get a single artfifact block synchronously
-///
-/// Since some artifacts (e.g. "main" firmware) are larger than the amount of RAM
-/// the device has, it is assumed the user will call this function multiple times
-/// to handle blocks one at a time.
-///
-/// This function will block until one of three things happen (whichever comes first):
-///
-/// 1. A response is received from the server
-/// 2. The user-provided timeout_s period expires without receiving a response
-/// 3. The default GOLIOTH_COAP_RESPONSE_TIMEOUT_S period expires without receiving a response
-///
-/// @param client The client handle from @ref golioth_client_create
-/// @param package Package name, to identify the artifact
-/// @param version Version of package, to identify the artifact
-/// @param block_index 0-based index of block to get
-/// @param buf Output param, memory allocated by caller, block data will be copied here.
-///           Must be at least GOLIOTH_OTA_BLOCKSIZE bytes.
-/// @param block_nbytes Output param, memory allocated by caller, populated with number
-///             of bytes in the block, 0 to GOLIOTH_OTA_BLOCKSIZE.
-/// @param is_last Set to true, if this is the last block
-/// @param timeout_s The timeout, in seconds, for receiving a server response
-///
-/// @retval GOLIOTH_OK response received from server, get was successful
-/// @retval GOLIOTH_ERR_NULL invalid client handle
-/// @retval GOLIOTH_ERR_INVALID_STATE client is not running, currently stopped
-/// @retval GOLIOTH_ERR_QUEUE_FULL request queue is full, this request is dropped
-/// @retval GOLIOTH_ERR_TIMEOUT response not received from server, timeout occurred
-enum golioth_status golioth_ota_get_block_sync(struct golioth_client *client,
-                                               const char *package,
-                                               const char *version,
-                                               size_t block_index,
-                                               uint8_t *buf,
-                                               size_t *block_nbytes,
-                                               bool *is_last,
-                                               int32_t timeout_s);
 
 /// Report the state of OTA update to Golioth server synchronously
 ///

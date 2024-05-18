@@ -100,5 +100,5 @@ void fw_block_processor_init(fw_block_processor_ctx_t *ctx,
                              struct golioth_client *client,
                              const struct golioth_ota_component *component,
                              uint8_t *download_buf);
-enum golioth_status fw_block_processor_process(fw_block_processor_ctx_t *ctx);
+void block_stats_update(block_latency_stats_t *stats, uint32_t block_latency_ms);
 void fw_block_processor_log_results(const fw_block_processor_ctx_t *ctx);
