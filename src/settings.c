@@ -449,12 +449,12 @@ struct golioth_settings *golioth_settings_init(struct golioth_client *client)
     gsettings->client = client;
     gsettings->num_settings = 0;
 
-    enum golioth_status status = golioth_coap_client_observe_async(client,
-                                                                   SETTINGS_PATH_PREFIX,
-                                                                   "",
-                                                                   GOLIOTH_CONTENT_TYPE_CBOR,
-                                                                   on_settings,
-                                                                   gsettings);
+    enum golioth_status status = golioth_coap_client_observe(client,
+                                                             SETTINGS_PATH_PREFIX,
+                                                             "",
+                                                             GOLIOTH_CONTENT_TYPE_CBOR,
+                                                             on_settings,
+                                                             gsettings);
 
     if (status != GOLIOTH_OK)
     {

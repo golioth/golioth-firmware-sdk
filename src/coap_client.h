@@ -188,12 +188,12 @@ enum golioth_status golioth_coap_client_get_block(struct golioth_client *client,
                                                   bool is_synchronous,
                                                   int32_t timeout_s);
 
-enum golioth_status golioth_coap_client_observe_async(struct golioth_client *client,
-                                                      const char *path_prefix,
-                                                      const char *path,
-                                                      enum golioth_content_type content_type,
-                                                      golioth_get_cb_fn callback,
-                                                      void *callback_arg);
+enum golioth_status golioth_coap_client_observe(struct golioth_client *client,
+                                                const char *path_prefix,
+                                                const char *path,
+                                                enum golioth_content_type content_type,
+                                                golioth_get_cb_fn callback,
+                                                void *callback_arg);
 
 /// Getters, for internal SDK code to access data within the
 /// coap client struct.

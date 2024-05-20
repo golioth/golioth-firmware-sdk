@@ -525,12 +525,12 @@ enum golioth_status golioth_coap_client_get_block(struct golioth_client *client,
                                             timeout_s);
 }
 
-enum golioth_status golioth_coap_client_observe_async(struct golioth_client *client,
-                                                      const char *path_prefix,
-                                                      const char *path,
-                                                      enum golioth_content_type content_type,
-                                                      golioth_get_cb_fn callback,
-                                                      void *arg)
+enum golioth_status golioth_coap_client_observe(struct golioth_client *client,
+                                                const char *path_prefix,
+                                                const char *path,
+                                                enum golioth_content_type content_type,
+                                                golioth_get_cb_fn callback,
+                                                void *arg)
 {
     if (!client || !path)
     {
