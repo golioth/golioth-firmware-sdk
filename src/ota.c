@@ -86,12 +86,12 @@ enum golioth_status golioth_ota_observe_manifest_async(struct golioth_client *cl
                                                        golioth_get_cb_fn callback,
                                                        void *arg)
 {
-    return golioth_coap_client_observe_async(client,
-                                             "",
-                                             GOLIOTH_OTA_MANIFEST_PATH,
-                                             GOLIOTH_CONTENT_TYPE_CBOR,
-                                             callback,
-                                             arg);
+    return golioth_coap_client_observe(client,
+                                       "",
+                                       GOLIOTH_OTA_MANIFEST_PATH,
+                                       GOLIOTH_CONTENT_TYPE_CBOR,
+                                       callback,
+                                       arg);
 }
 
 enum golioth_status golioth_ota_report_state_sync(struct golioth_client *client,

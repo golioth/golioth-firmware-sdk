@@ -191,12 +191,12 @@ enum golioth_status golioth_lightdb_observe_async(struct golioth_client *client,
                                                   golioth_get_cb_fn callback,
                                                   void *arg)
 {
-    return golioth_coap_client_observe_async(client,
-                                             GOLIOTH_LIGHTDB_STATE_PATH_PREFIX,
-                                             path,
-                                             GOLIOTH_CONTENT_TYPE_JSON,
-                                             callback,
-                                             arg);
+    return golioth_coap_client_observe(client,
+                                       GOLIOTH_LIGHTDB_STATE_PATH_PREFIX,
+                                       path,
+                                       GOLIOTH_CONTENT_TYPE_JSON,
+                                       callback,
+                                       arg);
 }
 
 enum golioth_status golioth_lightdb_set_int_sync(struct golioth_client *client,

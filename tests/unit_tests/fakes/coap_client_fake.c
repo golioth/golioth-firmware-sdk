@@ -2,7 +2,7 @@
 #include "coap_client_fake.h"
 
 DEFINE_FAKE_VALUE_FUNC(enum golioth_status,
-                       golioth_coap_client_observe_async,
+                       golioth_coap_client_observe,
                        struct golioth_client *,
                        const char *,
                        const char *,

@@ -256,12 +256,12 @@ enum golioth_status golioth_rpc_register(struct golioth_rpc *grpc,
     grpc->num_rpcs++;
     if (grpc->num_rpcs == 1)
     {
-        return golioth_coap_client_observe_async(grpc->client,
-                                                 GOLIOTH_RPC_PATH_PREFIX,
-                                                 "",
-                                                 GOLIOTH_CONTENT_TYPE_CBOR,
-                                                 on_rpc,
-                                                 grpc);
+        return golioth_coap_client_observe(grpc->client,
+                                           GOLIOTH_RPC_PATH_PREFIX,
+                                           "",
+                                           GOLIOTH_CONTENT_TYPE_CBOR,
+                                           on_rpc,
+                                           grpc);
     }
     return GOLIOTH_OK;
 }

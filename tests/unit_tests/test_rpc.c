@@ -57,7 +57,7 @@ void tearDown(void)
     last_err_msg = NULL;
     last_wrn_msg = NULL;
     last_coap_payload_size = 0;
-    RESET_FAKE(golioth_coap_client_observe_async);
+    RESET_FAKE(golioth_coap_client_observe);
     RESET_FAKE(golioth_coap_client_set);
     RESET_FAKE(test_rpc_method_fn);
     FFF_RESET_HISTORY();
@@ -69,7 +69,7 @@ void test_rpc_register(void)
 
     TEST_ASSERT_EQUAL(GOLIOTH_OK, ret);
     TEST_ASSERT_EQUAL(1, grpc.num_rpcs);
-    TEST_ASSERT_EQUAL(1, golioth_coap_client_observe_async_fake.call_count);
+    TEST_ASSERT_EQUAL(1, golioth_coap_client_observe_fake.call_count);
 }
 
 void test_rpc_register_multi(void)
@@ -81,7 +81,7 @@ void test_rpc_register_multi(void)
     }
 
     TEST_ASSERT_EQUAL(3, grpc.num_rpcs);
-    TEST_ASSERT_EQUAL(1, golioth_coap_client_observe_async_fake.call_count);
+    TEST_ASSERT_EQUAL(1, golioth_coap_client_observe_fake.call_count);
 }
 
 void test_rpc_register_too_many(void)
