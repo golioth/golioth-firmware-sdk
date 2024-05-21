@@ -261,12 +261,6 @@ config GOLIOTH_DEBUG_DEFAULT_LOG_LEVEL
 
         This value can be overriden at runtime with golioth_debug_set_log_level().
 
-config GOLIOTH_LIBCOAP_EXTRA_FDS_MAX
-	int "libcoap extra I/O file descriptors"
-	default 1
-	help
-	  Maximum number of extra I/O file descriptors passed to coap_io_process_with_fds() API.
-
 choice GOLIOTH_AUTH_METHOD
     prompt "Authentication method support"
 
