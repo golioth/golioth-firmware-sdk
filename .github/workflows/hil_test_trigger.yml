@@ -8,6 +8,10 @@ on:
     # Run workflow at the start of every day (12 AM UTC)
     - cron: "0 0 * * *"
 
+concurrency:
+  group: ${{ github.workflow }}-${{ github.event.pull_request.number || github.ref }}
+  cancel-in-progress: true
+
 jobs:
   hil_tests:
     uses: ./.github/workflows/hil_tests.yml
