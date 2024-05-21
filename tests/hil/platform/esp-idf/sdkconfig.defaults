@@ -31,3 +31,6 @@ CONFIG_GOLIOTH_LIGHTDB_STATE_FLOAT_HELPERS=y
 
 # Allow multiple artifacts in a manifest
 CONFIG_GOLIOTH_OTA_MAX_NUM_COMPONENTS=2
+
+# Allow for larger error message buffer for Settings service
+CONFIG_GOLIOTH_SETTINGS_MAX_RESPONSE_LEN=512
