@@ -75,6 +75,20 @@ config GOLIOTH_BLOCKWISE_DOWNLOAD_BUFFER_SIZE
         Buffer size used in Blockwise Downloads. This size will also determine
         the max size of each block.
 
+config GOLIOTH_BLOCKWISE_RETRY_COUNT
+    int "Retry count in blockwise transfer failures"
+    default 3
+    help
+        Number of times the blockwise transfer module will retry a transfer
+        in case of failures. Set to -1 to retry until Success
+
+config GOLIOTH_BLOCKWISE_RETRY_SLEEP_TIME_MS
+    int "Time in ms between blockwise transfer retries"
+    default 5000
+    help
+        Time in milliseconds between blockwise transfer retries in case of
+        failures.
+
 config GOLIOTH_OTA_THREAD_STACK_SIZE
     int "Golioth OTA thread stack size"
     default 4096

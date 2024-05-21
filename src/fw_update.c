@@ -12,6 +12,7 @@
 #include <golioth/golioth_sys.h>
 #include <golioth/fw_update.h>
 #include "fw_block_processor.h"
+#include "coap_blockwise.h"
 
 #if defined(CONFIG_GOLIOTH_FW_UPDATE)
 
@@ -29,6 +30,36 @@ static golioth_fw_update_state_change_callback _state_callback;
 static void *_state_callback_arg;
 static struct golioth_fw_update_config _config;
 static fw_block_processor_ctx_t _fw_block_processor;
+static uint64_t block_start_time_ms;
+
+static enum golioth_status on_fw_block_received(uint32_t offset,
+                                                uint8_t *data,
+                                                size_t len,
+                                                bool is_last,
+                                                void *callback_arg)
+{
+    uint64_t block_end_time_ms = golioth_sys_now_ms();
+    download_ctx_t *ctx = &_fw_block_processor.download;
+
+    ctx->block_bytes_downloaded = len;
+    ctx->is_last_block = is_last;
+    ctx->block_index = offset;
+
+    memcpy(ctx->download_buf, data, len);
+
+    GLTH_LOGI(TAG,
+              "Downloaded block index %" PRIu32 " (%" PRIu32 "/%" PRIu32 ")",
+              (uint32_t) ctx->block_index,
+              (uint32_t) ctx->block_index + 1,
+              (uint32_t) ctx->total_num_blocks);
+
+    // TODO: these do not truly reflect the block download start and end times
+    block_stats_update(&ctx->block_stats, block_end_time_ms - block_start_time_ms);
+    block_start_time_ms = block_end_time_ms;
+
+    assert(ctx->output_fn);
+    return ctx->output_fn(ctx->download_buf, ctx->block_bytes_downloaded, ctx->output_fn_arg);
+}
 
 static enum golioth_status download_and_write_flash(void)
 {
@@ -38,21 +69,29 @@ static enum golioth_status download_and_write_flash(void)
 
     fw_block_processor_init(&_fw_block_processor, _client, _main_component, _ota_block_buffer);
 
-    const uint64_t start_time_ms = golioth_sys_now_ms();
+    const char *package = _fw_block_processor.download.ota_component->package;
+    const char *version = _fw_block_processor.download.ota_component->version;
+    char path[GOLIOTH_OTA_MAX_COMPONENT_URI_LEN] = {};
+    snprintf(path, sizeof(path), "%s@%s", package, version);
 
-    // Process blocks one at a time until there are no more blocks (GOLIOTH_ERR_NO_MORE_DATA),
-    // or an error occurs.
-    while (fw_block_processor_process(&_fw_block_processor) == GOLIOTH_OK)
+    const uint64_t start_time_ms = golioth_sys_now_ms();
+    block_start_time_ms = start_time_ms;
+
+    enum golioth_status download_status = golioth_blockwise_get(_client,
+                                                                GOLIOTH_OTA_COMPONENT_PATH_PREFIX,
+                                                                path,
+                                                                on_fw_block_received,
+                                                                NULL);
+    if (download_status == GOLIOTH_OK)
     {
+        GLTH_LOGI(TAG, "Download took %" PRIu64 " ms", golioth_sys_now_ms() - start_time_ms);
+
+        fw_block_processor_log_results(&_fw_block_processor);
+
+        fw_update_post_download();
     }
 
-    GLTH_LOGI(TAG, "Download took %" PRIu64 " ms", golioth_sys_now_ms() - start_time_ms);
-
-    fw_block_processor_log_results(&_fw_block_processor);
-
-    fw_update_post_download();
-
-    return GOLIOTH_OK;
+    return download_status;
 }
 
 static enum golioth_status golioth_fw_update_report_state_sync(struct golioth_client *client,
