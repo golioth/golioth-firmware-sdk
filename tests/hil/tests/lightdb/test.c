@@ -14,10 +14,19 @@ LOG_TAG_DEFINE(test_lightdb);
 
 #define TIMEOUT 30
 
-static unsigned int observed_events_count;
+#define MAX_OBSERVED_EVENTS 6
+static unsigned int observed_cbor_events_count;
+static unsigned int observed_json_events_count;
 static golioth_sys_sem_t observed_sem;
-static uint8_t observed_payload[256];
-static size_t observed_payload_size;
+
+struct obs_data
+{
+    enum golioth_content_type type;
+    size_t observed_payload_size;
+    uint8_t observed_payload[256];
+};
+
+static struct obs_data observed_data[MAX_OBSERVED_EVENTS];
 
 static void int_cb(struct golioth_client *client,
                    const struct golioth_response *response,
@@ -31,10 +40,36 @@ static void int_cb(struct golioth_client *client,
         GLTH_LOGE(TAG, "Failed to received observed int: %d", response->status);
     }
 
-    observed_events_count++;
+    int idx = observed_cbor_events_count + observed_json_events_count;
+    memcpy(observed_data[idx].observed_payload,
+           payload,
+           MIN(payload_size, sizeof(observed_data[idx].observed_payload)));
+    observed_data[idx].observed_payload_size = payload_size;
+    observed_data[idx].type = GOLIOTH_CONTENT_TYPE_JSON;
+    observed_json_events_count++;
 
-    memcpy(observed_payload, payload, MIN(payload_size, sizeof(observed_payload)));
-    observed_payload_size = payload_size;
+    golioth_sys_sem_give(observed_sem);
+}
+
+static void int_cbor_cb(struct golioth_client *client,
+                        const struct golioth_response *response,
+                        const char *path,
+                        const uint8_t *payload,
+                        size_t payload_size,
+                        void *arg)
+{
+    if (response->status != GOLIOTH_OK)
+    {
+        GLTH_LOGE(TAG, "Failed to received observed int: %d", response->status);
+    }
+
+    int idx = observed_cbor_events_count + observed_json_events_count;
+    memcpy(observed_data[idx].observed_payload,
+           payload,
+           MIN(payload_size, sizeof(observed_data[idx].observed_payload)));
+    observed_data[idx].observed_payload_size = payload_size;
+    observed_data[idx].type = GOLIOTH_CONTENT_TYPE_CBOR;
+    observed_cbor_events_count++;
 
     golioth_sys_sem_give(observed_sem);
 }
@@ -400,26 +435,46 @@ static void test_lightdb_observe_setup(struct golioth_client *client)
                                   GOLIOTH_CONTENT_TYPE_JSON,
                                   int_cb,
                                   NULL);
+
+    golioth_lightdb_observe_async(client,
+                                  "hil/lightdb/observed/cbor/int",
+                                  GOLIOTH_CONTENT_TYPE_CBOR,
+                                  int_cbor_cb,
+                                  NULL);
 }
 
 static void test_lightdb_observe(struct golioth_client *client)
 {
-    while (observed_events_count < 3)
+
+    for (int events_count = 0; events_count < MAX_OBSERVED_EVENTS; events_count++)
     {
         char event_path[64];
-        unsigned int events_count;
 
         golioth_sys_sem_take(observed_sem, 30000);
-        events_count = observed_events_count;
 
         sprintf(event_path, "hil/lightdb/observed/events/%u", events_count);
 
-        golioth_lightdb_set_sync(client,
-                                 event_path,
-                                 GOLIOTH_CONTENT_TYPE_JSON,
-                                 observed_payload,
-                                 observed_payload_size,
-                                 TIMEOUT);
+        if (observed_data[events_count].type == GOLIOTH_CONTENT_TYPE_JSON)
+        {
+            /* Use JSON */
+            golioth_lightdb_set_sync(client,
+                                     event_path,
+                                     GOLIOTH_CONTENT_TYPE_JSON,
+                                     observed_data[events_count].observed_payload,
+                                     observed_data[events_count].observed_payload_size,
+                                     TIMEOUT);
+        }
+        else
+        {
+            /* Use CBOR */
+            golioth_lightdb_set_sync(client,
+                                     event_path,
+                                     GOLIOTH_CONTENT_TYPE_CBOR,
+                                     observed_data[events_count].observed_payload,
+                                     observed_data[events_count].observed_payload_size,
+                                     TIMEOUT);
+        }
+
         golioth_lightdb_set_int_sync(client,
                                      "hil/lightdb/observed/events/count",
                                      events_count,

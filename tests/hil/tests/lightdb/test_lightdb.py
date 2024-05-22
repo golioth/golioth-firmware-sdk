@@ -1,5 +1,6 @@
 import pytest
 import trio
+from enum import Enum
 
 pytestmark = pytest.mark.anyio
 
@@ -32,6 +33,7 @@ async def setup(project, board, device):
     await device.lightdb.set('hil/lightdb/to_delete/async/obj', {'a': '16', 'b': 12})
 
     await device.lightdb.set('hil/lightdb/observed/int', 0)
+    await device.lightdb.set('hil/lightdb/observed/cbor/int', 0)
 
     # Mark test data ready
     await device.lightdb.set('hil/lightdb/desired/ready', True)
@@ -86,15 +88,26 @@ async def test_lightdb_deleted(device):
 async def test_lightdb_invalid(device):
     assert (await device.lightdb.get('hil/lightdb/invalid/sync/set_dot')) == 'GOLIOTH_ERR_BAD_REQUEST'
 
+class Coap_Content_Type(Enum):
+    JSON = 1
+    CBOR = 2
+
 class ObserveTester:
     def __init__(self, device):
         self.events_count = 1
         self.device = device
 
-    async def set(self, value: int):
+    async def set(self, value: int, content_type: Coap_Content_Type):
         self.events_count += 1
 
-        await self.device.lightdb.set('hil/lightdb/observed/int', value)
+        if content_type == Coap_Content_Type.JSON:
+            observe_path = 'hil/lightdb/observed/int'
+        elif content_type == Coap_Content_Type.CBOR:
+            observe_path = 'hil/lightdb/observed/cbor/int'
+        else:
+            assert False
+
+        await self.device.lightdb.set(observe_path, value)
         with trio.fail_after(10):
             count = None
 
@@ -105,10 +118,15 @@ class ObserveTester:
 async def test_lightdb_observed(device):
     ot = ObserveTester(device)
 
-    await ot.set(15)
-    await ot.set(17)
+    await ot.set(15, Coap_Content_Type.JSON)
+    await ot.set(17, Coap_Content_Type.JSON)
+    await ot.set(19, Coap_Content_Type.CBOR)
+    await ot.set(21, Coap_Content_Type.CBOR)
 
-    assert (await device.lightdb.get('hil/lightdb/observed/events/count')) == 3
-    assert (await device.lightdb.get('hil/lightdb/observed/events/1')) == 0
+    assert (await device.lightdb.get('hil/lightdb/observed/events/count')) == 5
+    assert (await device.lightdb.get('hil/lightdb/observed/events/0')) == 0 # Initial JSON value
+    assert (await device.lightdb.get('hil/lightdb/observed/events/1')) == 0 # Initial CBOR value
     assert (await device.lightdb.get('hil/lightdb/observed/events/2')) == 15
     assert (await device.lightdb.get('hil/lightdb/observed/events/3')) == 17
+    assert (await device.lightdb.get('hil/lightdb/observed/events/4')) == 19
+    assert (await device.lightdb.get('hil/lightdb/observed/events/5')) == 21
