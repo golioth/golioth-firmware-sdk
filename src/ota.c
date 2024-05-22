@@ -9,6 +9,7 @@
 #include <zcbor_decode.h>
 #include <zcbor_encode.h>
 #include <golioth/ota.h>
+#include "coap_blockwise.h"
 #include "coap_client.h"
 #include <golioth/golioth_debug.h>
 #include "golioth_util.h"
@@ -326,6 +327,43 @@ static void on_block_rcvd(struct golioth_client *client,
 
     memcpy(out_params->buf, payload, payload_size);
     *out_params->block_nbytes = payload_size;
+}
+
+struct ota_component_blockwise_ctx
+{
+    const struct golioth_ota_component *component;
+    ota_component_block_write_cb cb;
+    void *arg;
+};
+
+static enum golioth_status ota_component_write_cb_wrapper(uint32_t offset,
+                                                          uint8_t *block_buffer,
+                                                          size_t block_size,
+                                                          bool is_last,
+                                                          void *callback_arg)
+{
+    struct ota_component_blockwise_ctx *ctx = callback_arg;
+
+    return ctx->cb(ctx->component, offset, block_buffer, block_size, is_last, ctx->arg);
+}
+
+enum golioth_status golioth_ota_download_component(struct golioth_client *client,
+                                                   const struct golioth_ota_component *component,
+                                                   ota_component_block_write_cb cb,
+                                                   void *arg)
+{
+    struct ota_component_blockwise_ctx ctx = {
+        .component = component,
+        .cb = cb,
+        .arg = arg,
+    };
+
+    return golioth_blockwise_get(client,
+                                 "",
+                                 component->uri,
+                                 GOLIOTH_CONTENT_TYPE_OCTET_STREAM,
+                                 ota_component_write_cb_wrapper,
+                                 &ctx);
 }
 
 enum golioth_status golioth_ota_get_block_sync(struct golioth_client *client,

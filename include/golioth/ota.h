@@ -129,6 +129,19 @@ enum golioth_status golioth_ota_observe_manifest_async(struct golioth_client *cl
                                                        golioth_get_cb_fn callback,
                                                        void *arg);
 
+typedef enum golioth_status (*ota_component_block_write_cb)(
+    const struct golioth_ota_component *component,
+    uint32_t offset,
+    uint8_t *block_buffer,
+    size_t block_size,
+    bool is_last,
+    void *arg);
+
+enum golioth_status golioth_ota_download_component(struct golioth_client *client,
+                                                   const struct golioth_ota_component *component,
+                                                   ota_component_block_write_cb cb,
+                                                   void *arg);
+
 /// Get a single artfifact block synchronously
 ///
 /// Since some artifacts (e.g. "main" firmware) are larger than the amount of RAM
