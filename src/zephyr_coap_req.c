@@ -697,6 +697,8 @@ static int64_t golioth_coap_req_poll_prepare(struct golioth_coap_req *req, uint3
 
     if (send)
     {
+#ifndef CONFIG_LOG_BACKEND_GOLIOTH
+        /* Do not log if backend logging is enabled to avoid compounding network problems */
         if (resend)
         {
             LOG_WRN("Resending request %p (reply %p) (retries %d)",
@@ -704,6 +706,9 @@ static int64_t golioth_coap_req_poll_prepare(struct golioth_coap_req *req, uint3
                     &req->reply,
                     (int) req->pending.retries);
         }
+#else
+        (void) resend;
+#endif
 
         err = golioth_coap_req_send(req);
         if (err)
