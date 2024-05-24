@@ -79,6 +79,8 @@ async def test_observation_repeat_restart(board, device):
 
         rsp = await device.rpc.basic_return_type("int")
 
+        assert None != board.wait_for_regex_in_line('Received basic_return_type RPC', timeout_s=10)
+
         assert rsp['value'] == 42
         print(f"Loop {i} successful!")
 
@@ -94,4 +96,7 @@ async def test_observation_cancel_all(board, device):
     assert None != board.wait_for_regex_in_line('RPC observation established', timeout_s=30)
 
     rsp = await device.rpc.basic_return_type("int")
+
+    assert None != board.wait_for_regex_in_line('Received basic_return_type RPC', timeout_s=10)
+
     assert rsp['value'] == 42
