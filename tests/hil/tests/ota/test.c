@@ -93,7 +93,11 @@ static void test_reason_and_state(void)
 
         if (status != GOLIOTH_OK)
         {
-            GLTH_LOGE(TAG, "Unable to report ota state: %d", status);
+            GLTH_LOGE(TAG, "Unable to report ota status: %d", status);
+        }
+        else
+        {
+            GLTH_LOGI(TAG, "OTA status reported successfully");
         }
         golioth_sys_msleep(7000);
     }
