@@ -4,7 +4,7 @@ All notable changes to this project will be documented in this file.
 The format is based on [Keep a Changelog](https://keepachangelog.com/en/1.0.0/),
 and this project adheres to [Semantic Versioning](https://semver.org/spec/v2.0.0.html).
 
-## [Unreleased]
+## [0.13.0] 2024-05-28
 
 ### Breaking Changes:
 
@@ -13,10 +13,50 @@ and this project adheres to [Semantic Versioning](https://semver.org/spec/v2.0.0
   GOLIOTH_CONTENT_TYPE_JSON as the third param of this API call to
   replicate behavior prior to this change.
 
+### Highlights:
+
+- Added the ability to cancel RPC and Settings observations
+- Updated Stream example and documentation to show usage of Golioth's
+  Pipelines feature.
+- Exposed additional APIs for downloading OTA components.
+  - This can be used to implement more complex update scenarios in the user
+    application (i.e. outside of the SDK).
+  - Note that users who choose to implement their own update logic will need to
+    manage applying the update and reporting state back to Golioth, tasks which
+    are handled by the built-in, but more limited, firmware update module in
+    the SDK.
+
+### Added:
+
+- Stream example for ESP-IDF
+- Stream service now accepts binary (OCTET_STREAM) data
+- Log on failure to send settings response
+- Add retry logic to firmware update block download
+- Settings response length is now configurable
+- New Blockwise Transfer module, for CoAP blockwise uploads and downloads
+- Add support to the CoAP client for eager release of observations
+- RPC: add ability to cancel observations
+- Settings: add ability to cancel observations
+- Added support for resolving IPv6 addresses on Thread networks
+- Added `golioth_ota_download_component()` API to OTA service
+
+### Fixed:
+
+- Fixed swapped sync/async messages in Stream example
+- Stream example now works correctly with on-board temperature sensors
+- Target version is now set when reporting OTA status to UPDATING
+- Fixed memory leak when maxing out observations
+- LightDB State gets of JSON objects would strip leading and trailing
+  curly brackets
+- Fixed potential buffer overflow during string copy
+- Removed unused Kconfig symbols
+
 ### Changed
 
 - Kconfig: reorganized how Kconfig options are presented in the
   menuconfig interface.
+- Use CBOR in Stream example instead of JSON
+- Contribution and Style guides have been updated
 
 ## [0.12.2] - 2024-05-02
 
