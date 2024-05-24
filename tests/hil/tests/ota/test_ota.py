@@ -178,8 +178,7 @@ async def test_reason_and_state(board, device, project, releases):
     # Test reason and state code updates
 
     for i, r in enumerate(golioth_ota_reason):
-        board.wait_for_regex_in_line("Updating status", timeout_s=20)
-        time.sleep(3) # Wait for server to propagate
+        board.wait_for_regex_in_line("OTA status reported successfully", timeout_s=20)
 
         await device.refresh()
 
