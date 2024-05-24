@@ -47,6 +47,8 @@ static enum golioth_rpc_status on_basic_return_type(zcbor_state_t *request_param
     // one of {int, string, float, bool}
     struct zcbor_string type;
 
+    GLTH_LOGI(TAG, "Received basic_return_type RPC");
+
     bool ok = zcbor_tstr_decode(request_params_array, &type);
     if (!ok)
     {
@@ -139,6 +141,8 @@ static enum golioth_rpc_status on_disconnect(zcbor_state_t *request_params_array
                                              zcbor_state_t *response_detail_map,
                                              void *callback_arg)
 {
+    GLTH_LOGI(TAG, "Received disconnect RPC");
+
     golioth_sys_sem_give(disconnect_sem);
 
     return GOLIOTH_RPC_OK;
@@ -148,6 +152,8 @@ static enum golioth_rpc_status on_cancel_all(zcbor_state_t *request_params_array
                                              zcbor_state_t *response_detail_map,
                                              void *callback_arg)
 {
+    GLTH_LOGI(TAG, "Received cancel_all RPC");
+
     golioth_sys_sem_give(cancel_all_sem);
 
     return GOLIOTH_RPC_OK;
