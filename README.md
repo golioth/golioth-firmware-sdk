@@ -71,7 +71,7 @@ we test the SDK. Each of these devices is verified on each commit by our
 Continuous Integration system.
 
 The tests fall into three categories. Hardware-in-the-Loop (HIL) integration
-tests are located in `tests/hil`. Unit tests are in `test/unit_tests`. Finally,
+tests are located in `tests/hil`. Unit tests are in `tests/unit_tests`. Finally,
 each of the samples is also continously verified on target.
 
 | Board                | Platform                 |
