@@ -2,11 +2,13 @@
 #include <golioth/golioth_debug.h>
 #include <golioth/golioth_sys.h>
 #include <golioth/settings.h>
+#include <string.h>
 
 LOG_TAG_DEFINE(test_settings);
 
 static golioth_sys_sem_t connected_sem;
 static golioth_sys_sem_t cancel_all_sem;
+static golioth_sys_sem_t restart_sem;
 
 static enum golioth_settings_status on_test_int(int32_t new_value, void *arg)
 {
@@ -57,6 +59,19 @@ static enum golioth_settings_status on_test_cancel(bool new_value, void *arg)
     return GOLIOTH_SETTINGS_SUCCESS;
 }
 
+static enum golioth_settings_status on_test_restart(bool new_value, void *arg)
+{
+    GLTH_LOGI(TAG, "Received test_restart: %s", new_value ? "true" : "false");
+
+    if (new_value)
+    {
+        /* Run the client restart test */
+        golioth_sys_sem_give(restart_sem);
+    }
+
+    return GOLIOTH_SETTINGS_SUCCESS;
+}
+
 static void on_client_event(struct golioth_client *client,
                             enum golioth_client_event event,
                             void *arg)
@@ -87,6 +102,8 @@ static struct golioth_settings *perform_settings_registration(struct golioth_cli
 
     status = golioth_settings_register_string(settings, "TEST_STRING", on_test_string, NULL);
 
+    status = golioth_settings_register_bool(settings, "TEST_RESTART", on_test_restart, NULL);
+
     status = golioth_settings_register_int(settings, "TEST_WRONG_TYPE", on_test_int, NULL);
 
     status = golioth_settings_register_bool(settings, "TEST_CANCEL", on_test_cancel, NULL);
@@ -100,6 +117,7 @@ void hil_test_entry(const struct golioth_client_config *config)
 {
     connected_sem = golioth_sys_sem_create(1, 0);
     cancel_all_sem = golioth_sys_sem_create(1, 0);
+    restart_sem = golioth_sys_sem_create(1, 0);
 
     golioth_debug_set_cloud_log_enabled(false);
 
@@ -131,6 +149,22 @@ void hil_test_entry(const struct golioth_client_config *config)
 
             golioth_sys_msleep(5 * 1000);
             GLTH_LOGI(TAG, "Settings have been reregistered");
+        }
+
+        if (golioth_sys_sem_take(restart_sem, 0))
+        {
+            // Delay to ensure RPC response makes it to cloud
+            golioth_sys_msleep(1000);
+
+            golioth_client_stop(client);
+            golioth_sys_msleep(15 * 1000);
+
+            golioth_client_start(client);
+            golioth_sys_msleep(5 * 1000);
+            GLTH_LOGI(TAG, "Client restarted");
+
+            /* clear the semaphore so this doesn't rerun unexpectedly */
+            golioth_sys_sem_take(restart_sem, 0);
         }
 
         golioth_sys_msleep(100);
