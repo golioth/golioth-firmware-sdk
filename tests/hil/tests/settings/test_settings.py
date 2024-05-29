@@ -32,6 +32,7 @@ async def setup(project, board, device):
     await project.settings.set('TEST_NOT_REGISTERED', 27)
     await project.settings.set('TEST_WRONG_TYPE', "wrong")
     await project.settings.set('TEST_CANCEL', False)
+    await project.settings.set('TEST_RESTART', False)
 
     # Set Golioth credentials
     golioth_cred = (await device.credentials.list())[0]
@@ -207,3 +208,24 @@ async def test_cancel_all(board, device):
 
     await device.settings.set('TEST_INT', 72)
     assert None != board.wait_for_regex_in_line('Received test_int: 72', timeout_s=10)
+
+
+async def test_restart(board, device):
+    await device.settings.set('TEST_RESTART', True)
+    assert None != board.wait_for_regex_in_line('Received test_restart: true', timeout_s=10)
+    assert None != board.wait_for_regex_in_line('Ending session', timeout_s=10)
+
+    # Check that we no longer receive this settings change
+    await device.settings.set('TEST_RESTART', False)
+    with pytest.raises(RuntimeError) as e:
+        assert None != board.wait_for_regex_in_line('Received test_restart: false', timeout_s=5)
+    assert str(e.value) == "Timeout"
+
+    # Wait for client to restart
+    assert None != board.wait_for_regex_in_line('Client restarted', timeout_s=60)
+
+    # Wait for rush of initial settings log messages to pass
+    await trio.sleep(2)
+
+    await device.settings.set('TEST_INT', 2320)
+    assert None != board.wait_for_regex_in_line('Received test_int: 2320', timeout_s=10)
