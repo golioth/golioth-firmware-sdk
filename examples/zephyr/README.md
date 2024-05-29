@@ -99,8 +99,7 @@ west update
   - [Golioth Cloud](https://docs.golioth.io/cloud)
   - [LightDB
     state](https://docs.golioth.io/reference/protocols/coap/lightdb)
-  - [LightDB
-    Stream](https://docs.golioth.io/reference/protocols/coap/lightdb-stream)
+  - [Stream](https://docs.golioth.io/reference/protocols/coap/streaming-data)
   - [Logging](https://docs.golioth.io/reference/protocols/coap/logging)
   - [OTA](https://docs.golioth.io/reference/protocols/coap/ota)
   - [Authentication](https://docs.golioth.io/firmware/zephyr-device-sdk/authentication)
