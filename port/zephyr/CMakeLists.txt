@@ -40,6 +40,7 @@ zephyr_library_sources(
     ../../src/golioth_debug.c
     ../../src/event_group.c
     ../../src/fw_update.c
+    ../../src/gateway.c
     ../../src/coap_blockwise.c
     ../../src/lightdb_state.c
     ../../src/location.c
