@@ -17,9 +17,6 @@
 
 LOG_TAG_DEFINE(golioth_fw_update);
 
-#define FW_OBSERVATION_RETRY_COUNT 3
-#define FW_OBSERVATION_RETRY_TIMEOUT_MS 5000
-
 static struct golioth_client *_client;
 static golioth_sys_sem_t _manifest_rcvd;
 static struct golioth_ota_manifest _ota_manifest;
@@ -128,7 +125,6 @@ static bool manifest_version_is_different(const struct golioth_ota_manifest *man
 static void fw_report_and_observe(void)
 {
     enum golioth_status status;
-    int retry_count = FW_OBSERVATION_RETRY_COUNT;
 
     status = golioth_fw_update_report_state_sync(_client,
                                                  GOLIOTH_OTA_STATE_IDLE,
@@ -143,7 +139,10 @@ static void fw_report_and_observe(void)
         GLTH_LOGE(TAG, "Failed to report firmware state: %d", status);
     }
 
-    while (retry_count > 0)
+    status = GOLIOTH_ERR_NULL;
+    uint32_t retry_delay_s = 5;
+
+    while (status != GOLIOTH_OK)
     {
         status = golioth_ota_observe_manifest_async(_client, on_ota_manifest, NULL);
 
@@ -151,15 +150,19 @@ static void fw_report_and_observe(void)
         {
             break;
         }
-        else if (retry_count == 1)
+
+        GLTH_LOGW(TAG,
+                  "Failed to observe manifest, retry in %" PRIu32 "s: %d",
+                  retry_delay_s,
+                  status);
+
+        golioth_sys_msleep(retry_delay_s * 1000);
+
+        retry_delay_s = retry_delay_s * 2;
+
+        if (retry_delay_s > CONFIG_GOLIOTH_OTA_OBSERVATION_RETRY_MAX_DELAY_S)
         {
-            GLTH_LOGE(TAG, "Failed to observe firmware manifest: %d", status);
-        }
-        else
-        {
-            GLTH_LOGW(TAG, "Failed to observe manifest, will retry. %d", status);
-            golioth_sys_msleep(FW_OBSERVATION_RETRY_TIMEOUT_MS);
-            retry_count--;
+            retry_delay_s = CONFIG_GOLIOTH_OTA_OBSERVATION_RETRY_MAX_DELAY_S;
         }
     }
 }

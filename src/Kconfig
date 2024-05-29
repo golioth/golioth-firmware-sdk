@@ -37,6 +37,17 @@ config GOLIOTH_OTA_MAX_NUM_COMPONENTS
     help
         Maximum number of components in an OTA manifest.
 
+config GOLIOTH_OTA_OBSERVATION_RETRY_MAX_DELAY_S
+    int "Golioth maximum delay before retrying firmware OTA manifest observation"
+    default 300 # 5 minutes
+    help
+        Maximum number of seconds to delay between attempts to establish an OTA manifest
+        observation.
+
+        When registering an observation for firmware updates fails, a delay will be used with a
+        backoff doubling between retry attempts. The delay value will increase until this limit is
+        reached.
+
 config GOLIOTH_OTA_DECOMPRESS
     bool "Enable decompression of OTA artifacts"
     help
