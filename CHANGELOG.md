@@ -4,6 +4,21 @@ All notable changes to this project will be documented in this file.
 The format is based on [Keep a Changelog](https://keepachangelog.com/en/1.0.0/),
 and this project adheres to [Semantic Versioning](https://semver.org/spec/v2.0.0.html).
 
+## [0.13.1] 2024-05-31
+
+### Fixed:
+
+- Infinite loop in OTA manifest observation retry logic that occurred
+  when retries were exhausted.
+- Documentation: update links to Stream service
+
+### Changed
+
+- Registering an OTA manifest observation will be retried until
+  successful, with a delay that doubles after each unsuccessful attempt.
+  Use CONFIG_GOLIOTH_FW_OBSERVATION_RETRY_MAX_DELAY_MS to configure the
+  maximum delay (defaults to 5 minutes).
+
 ## [0.13.0] 2024-05-28
 
 ### Breaking Changes:
