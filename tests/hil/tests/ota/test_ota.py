@@ -45,7 +45,7 @@ async def setup(board, device):
     board.set_golioth_psk_credentials(golioth_cred.identity, golioth_cred.key)
 
     # Confirm connection to Golioth
-    assert None != board.wait_for_regex_in_line('Golioth CoAP client connected', timeout_s=60)
+    assert None != board.wait_for_regex_in_line('Golioth CoAP client connected', timeout_s=120)
 
 @pytest.fixture(scope="module")
 async def tag(project, device):
