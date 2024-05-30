@@ -19,6 +19,18 @@ on:
         required: false
         type: boolean
         default: true
+      extra_cmake_args:
+        required: false
+        type: string
+        default: ""
+      extra_twister_args:
+        required: false
+        type: string
+        default: ""
+      use_dev_id:
+        required: false
+        type: boolean
+        default: true
       api-url:
         required: true
         type: string
@@ -43,6 +55,22 @@ on:
         required: false
         type: string
       run_tests:
+        required: false
+        type: boolean
+        default: true
+      extra_cmake_args:
+        required: false
+        type: string
+        default: ""
+      extra_twister_args:
+        required: false
+        type: string
+        default: ""
+      extra_cmake_args:
+        required: false
+        type: string
+        default: ""
+      use_dev_id:
         required: false
         type: boolean
         default: true
@@ -95,12 +123,17 @@ jobs:
       run: |
         export EXTRA_BUILD_ARGS=-x=CONFIG_GOLIOTH_COAP_HOST_URI=\"${{ inputs.coap_gateway_url }}\"
 
+        if [[ -n "${{ inputs.extra_cmake_args }}" == false ]]; then
+          EXTRA_CMAKE_ARGS='-x="${{ inputs.extra_cmake_args }}"'
+        fi
+
         zephyr/scripts/twister                                                \
               --platform ${{ inputs.west_board }}                             \
               -T modules/lib/golioth-firmware-sdk/examples/zephyr             \
               --prep-artifacts-for-testing                                    \
-              --package-artifacts test_artifacts_${{ inputs.hil_board }}.tar \
-              $EXTRA_BUILD_ARGS
+              --package-artifacts test_artifacts_${{ inputs.hil_board }}.tar  \
+              $EXTRA_BUILD_ARGS                                               \
+              $EXTRA_CMAKE_ARGS
 
     - name: Save artifacts
       uses: actions/upload-artifact@v4
@@ -172,13 +205,19 @@ jobs:
           export PATH=$PATH:$(go env GOPATH)/bin
           PORT_VAR=CI_${hil_board^^}_PORT
           SNR_VAR=CI_${hil_board^^}_SNR
+          EXTRA_WEST_FLASH_ARGS='--west-flash="--skip-rebuild,--dev-id=${!SNR_VAR}"'
+          if [[ ${{ inputs.use_dev_id }} == false ]]; then
+            EXTRA_WEST_FLASH_ARGS='--west-flash="--skip-rebuild"'
+          fi
           zephyr/scripts/twister                                                                  \
                 -p ${{ inputs.west_board }}                                                       \
                 -T modules/lib/golioth-firmware-sdk/examples/zephyr                               \
                 --device-testing                                                                  \
                 --device-serial ${!PORT_VAR}                                                      \
                 --test-only                                                                       \
-                --west-flash="--skip-rebuild,--dev-id=${!SNR_VAR}"                                \
+                ${EXTRA_WEST_FLASH_ARGS}                                                          \
+                ${{ inputs.extra_twister_args }}                                                  \
+                -v                                                                                \
                 --pytest-args="--api-url=${{ inputs.api-url }}"                                   \
                 --pytest-args="--api-key=${{ secrets[inputs.api-key-id] }}"                       \
                 --pytest-args="--wifi-ssid=${{ secrets[format('{0}_WIFI_SSID', runner.name)] }}"  \
@@ -226,7 +265,19 @@ jobs:
           elif [[ "${hil_board}" == "mimxrt1024_evk" ]]; then
             JLinkExe -nogui 1 -if swd -speed auto -device MIMXRT1024XXX5A -CommanderScript erase_mimxrt1024_evk.jlink -SelectEmuBySN ${!SNR_VAR}
 
+          elif [[ "${hil_board}" == "rak5010_nrf52840" ]]; then
+            gdb \
+            -ex "set confirm off" \
+            -ex "target extended-remote "${BLACKMAGIC_PORT} \
+            -ex "monitor swdp_scan" \
+            -ex "attach 1" \
+            -ex "monitor erase_mass" \
+            -ex "kill" \
+            -ex "quit" \
+            -silent
+
           fi
+
       - name: Power Off USB Hub
         if: always()
         run: python3 /opt/golioth-scripts/usb_hub_power.py off

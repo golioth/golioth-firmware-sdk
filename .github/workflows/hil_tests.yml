@@ -125,7 +125,10 @@ jobs:
           - hil_board: rak5010_nrf52840
             west_board: rak5010/nrf52840
             manifest: .ci-west-zephyr.yml
-            run_tests: false
+            run_tests: true
+            use_dev_id: false
+            extra_cmake_args: 'BOARD_FLASH_RUNNER=blackmagicprobe'
+            extra_twister_args: '--flash-before'
 
           - hil_board: qemu_x86
             west_board: qemu_x86
@@ -138,6 +141,9 @@ jobs:
       manifest: ${{ matrix.manifest }}
       binary_blob: ${{ matrix.binary_blob }}
       run_tests: ${{ matrix.run_tests }}
+      use_dev_id: ${{ matrix.use_dev_id }}
+      extra_cmake_args: ${{ matrix.extra_cmake_args }}
+      extra_twister_args: ${{ matrix.extra_twister_args }}
       api-url: ${{ inputs.api-url }}
       api-key-id: ${{ inputs.api-key-id }}
       coap_gateway_url: ${{ inputs.coap_gateway_url }}
