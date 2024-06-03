@@ -155,8 +155,10 @@ jobs:
               --wifi-ssid ${{ secrets[format('{0}_WIFI_SSID', runner.name)] }}  \
               --wifi-psk ${{ secrets[format('{0}_WIFI_PSK', runner.name)] }}    \
               --mask-secrets                                                    \
-              --timeout=600
+              --timeout=600                                                     \
+              || EXITCODE=$?
           done
+          exit $EXITCODE
       - name: Erase flash
         if: always()
         shell: bash

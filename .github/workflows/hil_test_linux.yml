@@ -72,7 +72,8 @@ jobs:
             --api-key ${{ secrets[inputs.api-key-id] }} \
             --mask-secrets                              \
             -rP                                         \
-            --timeout=600
+            --timeout=600                               \
+            || EXITCODE=$?
           lcov -c                                       \
                --directory build/${test}                \
                --include "*/golioth-firmware-sdk/src/*" \
@@ -102,6 +103,7 @@ jobs:
         echo "| --- | --- |" >> $GITHUB_OUTPUT
         echo "$coverage_summary" >> $GITHUB_OUTPUT
         echo "EOF" >> $GITHUB_OUTPUT
+        exit $EXITCODE
     - name: Find Comment
       uses: peter-evans/find-comment@v3
       if: github.event_name == 'pull_request'
