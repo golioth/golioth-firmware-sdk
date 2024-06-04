@@ -37,6 +37,7 @@ async def test_lightdb_delete(shell, device, wifi_ssid, wifi_psk):
     # Verify lightdb delete (async)
 
     shell._device.readlines_until(regex=".*Counter deleted successfully", timeout=10.0)
+    await trio.sleep(2)
     counter = await device.lightdb.get("counter")
     assert counter is None
 
@@ -49,5 +50,6 @@ async def test_lightdb_delete(shell, device, wifi_ssid, wifi_psk):
     # Verify lightdb delete (sync)
 
     shell._device.readlines_until(regex=".*Counter deleted successfully", timeout=10.0)
+    await trio.sleep(2)
     counter = await device.lightdb.get("counter")
     assert counter is None
