@@ -1,5 +1,5 @@
 import pytest
-import time
+import trio
 
 SUCCESS = 0
 KEY_NOT_RECOGNIZED = 1
@@ -60,7 +60,7 @@ async def test_set_int(board, device):
     assert None != board.wait_for_regex_in_line('Received test_int: 42', timeout_s=10)
 
     # Wait for device to respond to server
-    time.sleep(1)
+    await trio.sleep(1)
 
     await assert_settings_error(device, 'TEST_INT', None)
 
@@ -71,7 +71,7 @@ async def test_int_too_large(board, device):
         board.wait_for_regex_in_line('Received test_int: 8589934592', timeout_s=10)
 
     # Wait for device to respond to server
-    time.sleep(1)
+    await trio.sleep(1)
 
     await assert_settings_error(device, 'TEST_INT', VALUE_OUTSIDE_RANGE)
 
@@ -82,7 +82,7 @@ async def test_int_too_small(board, device):
         board.wait_for_regex_in_line('Received test_int: -8589934592', timeout_s=10)
 
     # Wait for device to respond to server
-    time.sleep(1)
+    await trio.sleep(1)
 
     await assert_settings_error(device, 'TEST_INT', VALUE_OUTSIDE_RANGE)
 
@@ -92,7 +92,7 @@ async def test_set_int_range(board, device):
     assert None != board.wait_for_regex_in_line('Received test_int_range: 5', timeout_s=10)
 
     # Wait for device to respond to server
-    time.sleep(1)
+    await trio.sleep(1)
 
     await assert_settings_error(device, 'TEST_INT_RANGE', None)
 
@@ -102,7 +102,7 @@ async def test_set_int_range_min(board, device):
     assert None != board.wait_for_regex_in_line('Received test_int_range: 0', timeout_s=10)
 
     # Wait for device to respond to server
-    time.sleep(1)
+    await trio.sleep(1)
 
     await assert_settings_error(device, 'TEST_INT_RANGE', None)
 
@@ -112,7 +112,7 @@ async def test_set_int_range_max(board, device):
     assert None != board.wait_for_regex_in_line('Received test_int_range: 100', timeout_s=10)
 
     # Wait for device to respond to server
-    time.sleep(1)
+    await trio.sleep(1)
 
     await assert_settings_error(device, 'TEST_INT_RANGE', None)
 
@@ -123,7 +123,7 @@ async def test_set_int_range_out_min(board, device):
         board.wait_for_regex_in_line('Received test_int_range: -1', timeout_s=10)
 
     # Wait for device to respond to server
-    time.sleep(1)
+    await trio.sleep(1)
 
     await assert_settings_error(device, 'TEST_INT_RANGE', VALUE_OUTSIDE_RANGE)
 
@@ -134,7 +134,7 @@ async def test_set_int_range_out_max(board, device):
         assert None != board.wait_for_regex_in_line('Received test_int_range: 101', timeout_s=10)
 
     # Wait for device to respond to server
-    time.sleep(1)
+    await trio.sleep(1)
 
     await assert_settings_error(device, 'TEST_INT_RANGE', VALUE_OUTSIDE_RANGE)
 
@@ -144,7 +144,7 @@ async def test_set_bool(board, device):
     assert None != board.wait_for_regex_in_line('Received test_bool: true', timeout_s=10)
 
     # Wait for device to respond to server
-    time.sleep(1)
+    await trio.sleep(1)
 
     await assert_settings_error(device, 'TEST_BOOL', None)
 
@@ -154,7 +154,7 @@ async def test_set_float(board, device):
     assert None != board.wait_for_regex_in_line('Received test_float: 3.14', timeout_s=10)
 
     # Wait for device to respond to server
-    time.sleep(1)
+    await trio.sleep(1)
 
     await assert_settings_error(device, 'TEST_FLOAT', None)
 
@@ -164,7 +164,7 @@ async def test_set_float_whole(board, device):
     assert None != board.wait_for_regex_in_line('Received test_float: 10', timeout_s=10)
 
     # Wait for device to respond to server
-    time.sleep(1)
+    await trio.sleep(1)
 
     await assert_settings_error(device, 'TEST_FLOAT', None)
 
@@ -174,7 +174,7 @@ async def test_set_string(board, device):
     assert None != board.wait_for_regex_in_line('Received test_string: bar', timeout_s=10)
 
     # Wait for device to respond to server
-    time.sleep(1)
+    await trio.sleep(1)
 
     await assert_settings_error(device, 'TEST_STRING', None)
 
