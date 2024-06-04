@@ -1,8 +1,5 @@
-import logging
 import pytest
-import pprint
-import time
-import yaml
+import trio
 
 pytestmark = pytest.mark.anyio
 
@@ -18,7 +15,7 @@ async def test_settings(shell, project, device, wifi_ssid, wifi_psk):
 
     await project.settings.set('LOOP_DELAY_S', 1)
 
-    time.sleep(2)
+    await trio.sleep(2)
 
     # Set Golioth credential
 
