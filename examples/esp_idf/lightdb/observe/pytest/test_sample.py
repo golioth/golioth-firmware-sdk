@@ -2,13 +2,11 @@
 #
 # SPDX-License-Identifier: Apache-2.0
 
-import contextlib
 import logging
-import pytest
-import time
-import yaml
-import datetime
 import re
+
+import pytest
+import trio
 
 LOGGER = logging.getLogger(__name__)
 
@@ -19,7 +17,7 @@ async def test_lightdb_observe(board, device):
 
     await device.lightdb.delete("counter")
 
-    time.sleep(2)
+    await trio.sleep(2)
 
     # Set Golioth credential
     golioth_cred = (await device.credentials.list())[0]
@@ -28,7 +26,7 @@ async def test_lightdb_observe(board, device):
     # Wait for device to connect
     board.wait_for_regex_in_line('.*Golioth client connected', timeout_s=30.0)
 
-    time.sleep(2)
+    await trio.sleep(2)
 
     pattern = re.compile(r'.*6e 75 6c 6c\s+\|null')
     success_pattern = board.wait_for_regex_in_line(pattern, timeout_s=10.0)
@@ -37,7 +35,7 @@ async def test_lightdb_observe(board, device):
 
     await device.lightdb.set("counter", 87)
 
-    time.sleep(2)
+    await trio.sleep(2)
 
     pattern = re.compile(r'.*38 37\s+\|87')
     success_pattern = board.wait_for_regex_in_line(pattern, timeout_s=10.0)

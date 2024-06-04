@@ -2,13 +2,11 @@
 #
 # SPDX-License-Identifier: Apache-2.0
 
-import contextlib
 import logging
-import pytest
-import time
-import yaml
-import datetime
 import re
+
+import pytest
+import trio
 
 LOGGER = logging.getLogger(__name__)
 
@@ -19,7 +17,7 @@ async def test_lightdb_set(board, device):
 
     await device.lightdb.delete("counter")
 
-    time.sleep(2)
+    await trio.sleep(2)
 
     # Set Golioth credential
     golioth_cred = (await device.credentials.list())[0]
@@ -34,6 +32,6 @@ async def test_lightdb_set(board, device):
         pattern = re.compile(fr"Setting counter to {i}")
         board.wait_for_regex_in_line(pattern, timeout_s=30.0)
         board.wait_for_regex_in_line('Counter successfully set', timeout_s=5.0)
-        time.sleep(1)
+        await trio.sleep(1)
         counter = await device.lightdb.get("counter")
         assert counter == i

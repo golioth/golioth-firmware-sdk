@@ -2,13 +2,10 @@
 #
 # SPDX-License-Identifier: Apache-2.0
 
-import contextlib
 import logging
+
 import pytest
-import time
-import yaml
-import datetime
-import re
+import trio
 
 LOGGER = logging.getLogger(__name__)
 
@@ -19,7 +16,7 @@ async def test_lightdb_get(board, device):
 
     await device.lightdb.delete("counter")
 
-    time.sleep(2)
+    await trio.sleep(2)
 
     # Set Golioth credential
     golioth_cred = (await device.credentials.list())[0]

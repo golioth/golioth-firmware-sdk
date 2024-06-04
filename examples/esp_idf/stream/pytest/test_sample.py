@@ -4,15 +4,16 @@
 
 import contextlib
 import logging
+
 import pytest
-import time
+import trio
 
 LOGGER = logging.getLogger(__name__)
 
 pytestmark = pytest.mark.anyio
 
 async def test_stream(board, device):
-    time.sleep(2)
+    await trio.sleep(2)
 
     # Set Golioth credential
     golioth_cred = (await device.credentials.list())[0]

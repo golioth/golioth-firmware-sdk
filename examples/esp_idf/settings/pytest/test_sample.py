@@ -3,10 +3,9 @@
 # SPDX-License-Identifier: Apache-2.0
 
 import logging
+
 import pytest
-import pprint
-import time
-import yaml
+import trio
 
 LOGGER = logging.getLogger(__name__)
 
@@ -24,7 +23,7 @@ async def test_settings(board, project, device):
 
     await project.settings.set('LOOP_DELAY_S', 1)
 
-    time.sleep(2)
+    await trio.sleep(2)
 
     # Set Golioth credential
     golioth_cred = (await device.credentials.list())[0]

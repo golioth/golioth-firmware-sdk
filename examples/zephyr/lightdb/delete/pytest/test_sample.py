@@ -1,9 +1,7 @@
-import contextlib
 import logging
+
 import pytest
-import time
-import yaml
-import datetime
+import trio
 
 LOGGER = logging.getLogger(__name__)
 
@@ -16,7 +14,7 @@ async def test_lightdb_delete(shell, device, wifi_ssid, wifi_psk):
     counter = await device.lightdb.get("counter")
     assert counter == 34
 
-    time.sleep(2)
+    await trio.sleep(2)
 
     # Set Golioth credential
 
