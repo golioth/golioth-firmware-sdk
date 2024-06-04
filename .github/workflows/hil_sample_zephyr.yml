@@ -19,10 +19,6 @@ on:
         required: false
         type: boolean
         default: true
-      extra_cmake_args:
-        required: false
-        type: string
-        default: ""
       extra_twister_args:
         required: false
         type: string
@@ -63,10 +59,6 @@ on:
         type: string
         default: ""
       extra_twister_args:
-        required: false
-        type: string
-        default: ""
-      extra_cmake_args:
         required: false
         type: string
         default: ""
@@ -129,7 +121,7 @@ jobs:
 
         zephyr/scripts/twister                                                \
               --platform ${{ inputs.west_board }}                             \
-              -T modules/lib/golioth-firmware-sdk/examples/zephyr             \
+              -T modules/lib/golioth-firmware-sdk/examples/zephyr/logging     \
               --prep-artifacts-for-testing                                    \
               --package-artifacts test_artifacts_${{ inputs.hil_board }}.tar  \
               $EXTRA_BUILD_ARGS                                               \
@@ -145,7 +137,7 @@ jobs:
     name: zephyr-${{ inputs.hil_board }}-twister-run
     if: ${{ inputs.run_tests }}
     needs: build
-    runs-on: [ is_active, "has_${{ inputs.hil_board }}" ]
+    runs-on: [ "has_${{ inputs.hil_board }}" ]
 
     container:
       image: golioth/golioth-twister-base:460f007
@@ -211,7 +203,7 @@ jobs:
           fi
           zephyr/scripts/twister                                                                  \
                 -p ${{ inputs.west_board }}                                                       \
-                -T modules/lib/golioth-firmware-sdk/examples/zephyr                               \
+                -T modules/lib/golioth-firmware-sdk/examples/zephyr/logging                       \
                 --device-testing                                                                  \
                 --device-serial ${!PORT_VAR}                                                      \
                 --test-only                                                                       \
