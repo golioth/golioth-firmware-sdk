@@ -6,7 +6,6 @@ import logging
 from time import sleep
 
 LOGGER = logging.getLogger(__name__)
-PROJ_NAME = 'firmware_ci'
 
 FS_SUBDIR = "/lfs1/credentials"
 FS_CRT_PATH = f"{FS_SUBDIR}/client_cert.der"
@@ -43,7 +42,7 @@ async def test_credentials(shell, project, device_name, device_port, certificate
     # Generate device certificates
 
     subprocess.run(["modules/lib/golioth-firmware-sdk/scripts/certificates/generate_device_certificate.sh",
-                    PROJ_NAME, device_name])
+                    project.info['id'], device_name])
 
     # Set Golioth credential
 
@@ -52,14 +51,14 @@ async def test_credentials(shell, project, device_name, device_port, certificate
 
     result = subprocess.run(["mcumgr", "--conntype", "serial",
                              f"--connstring=dev={device_port},baud=115200", "fs", "upload",
-                             f"{PROJ_NAME}-{device_name}.crt.der", FS_CRT_PATH],
+                             f"{project.info['id']}-{device_name}.crt.der", FS_CRT_PATH],
                              capture_output = True, text = True)
     subprocess_logger(result, 'mcumgr crt')
     assert result.returncode == 0
 
     result = subprocess.run(["mcumgr", "--conntype", "serial",
                              f"--connstring=dev={device_port},baud=115200", "fs", "upload",
-                             f"{PROJ_NAME}-{device_name}.key.der", FS_KEY_PATH],
+                             f"{project.info['id']}-{device_name}.key.der", FS_KEY_PATH],
                              capture_output = True, text = True)
     subprocess_logger(result, 'mcumgr key')
     assert result.returncode == 0
