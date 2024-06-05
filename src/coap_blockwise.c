@@ -15,7 +15,6 @@ struct blockwise_transfer
     bool is_last;
     enum golioth_status status;
     enum golioth_content_type content_type;
-    int retry_count;
     uint32_t offset;
     size_t block_size;
     const char *path_prefix;
@@ -44,7 +43,6 @@ static void blockwise_upload_init(struct blockwise_transfer *ctx,
     ctx->path_prefix = path_prefix;
     ctx->path = path;
     ctx->content_type = content_type;
-    ctx->retry_count = 0;
     ctx->block_size = 0;
     ctx->offset = 0;
     ctx->block_buffer = data_buf;
@@ -185,7 +183,6 @@ static void blockwise_download_init(struct blockwise_transfer *ctx,
     ctx->path_prefix = path_prefix;
     ctx->path = path;
     ctx->content_type = content_type;
-    ctx->retry_count = 0;
     ctx->block_size = 0;
     ctx->offset = 0;
     ctx->block_buffer = data_buf;
