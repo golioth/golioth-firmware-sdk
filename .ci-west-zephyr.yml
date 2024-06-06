@@ -12,7 +12,11 @@ manifest:
         - mbedtls
         - mcuboot
         - net-tools
+        - picolibc
         - segger
         - tinycrypt
         - zcbor
         - zephyr
+    userdata:
+      patches_dirs:
+        - patches/west-zephyr
