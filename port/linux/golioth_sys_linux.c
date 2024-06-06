@@ -54,7 +54,7 @@ uint64_t golioth_sys_now_ms(void) {
 golioth_sys_sem_t golioth_sys_sem_create(uint32_t sem_max_count, uint32_t sem_initial_count) {
     int fd;
 
-    fd = eventfd(sem_initial_count, EFD_SEMAPHORE);
+    fd = eventfd(sem_initial_count, sem_max_count == 1 ? 0 : EFD_SEMAPHORE);
     if (fd < 0) {
         GLTH_LOGE(TAG, "eventfd creation failed, errno: %d", errno);
         assert(false);
