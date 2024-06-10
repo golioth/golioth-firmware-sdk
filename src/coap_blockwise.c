@@ -13,7 +13,6 @@
 struct blockwise_transfer
 {
     bool is_last;
-    enum golioth_status response_status;
     enum golioth_content_type content_type;
     golioth_sys_sem_t sem;
     uint32_t block_idx;
@@ -27,6 +26,21 @@ struct blockwise_transfer
         write_block_cb write_cb;
     } callback;
     void *callback_arg;
+};
+
+struct post_block_ctx
+{
+    enum golioth_status status;
+    golioth_sys_sem_t sem;
+};
+
+struct get_block_ctx
+{
+    uint8_t *buffer;
+    size_t rcvd_bytes;
+    enum golioth_status status;
+    golioth_sys_sem_t sem;
+    bool is_last;
 };
 
 /* Blockwise Uploads related functions */
@@ -58,8 +72,8 @@ static void on_block_sent(struct golioth_client *client,
                           void *arg)
 {
     assert(arg);
-    struct blockwise_transfer *ctx = (struct blockwise_transfer *) arg;
-    ctx->response_status = response->status;
+    struct post_block_ctx *ctx = arg;
+    ctx->status = response->status;
 
     golioth_sys_sem_give(ctx->sem);
 }
@@ -85,6 +99,11 @@ static enum golioth_status upload_single_block(struct golioth_client *client,
 {
     assert(ctx->block_size > 0 && ctx->block_size <= CONFIG_GOLIOTH_BLOCKWISE_UPLOAD_BLOCK_SIZE);
 
+    struct post_block_ctx arg = {
+        .status = GOLIOTH_ERR_FAIL,
+        .sem = ctx->sem,
+    };
+
     enum golioth_status err = golioth_coap_client_set_block(client,
                                                             ctx->path_prefix,
                                                             ctx->path,
@@ -94,13 +113,13 @@ static enum golioth_status upload_single_block(struct golioth_client *client,
                                                             ctx->block_buffer,
                                                             ctx->block_size,
                                                             on_block_sent,
-                                                            ctx,
+                                                            &arg,
                                                             false,
                                                             GOLIOTH_SYS_WAIT_FOREVER);
     if (GOLIOTH_OK == err)
     {
         golioth_sys_sem_take(ctx->sem, GOLIOTH_SYS_WAIT_FOREVER);
-        err = ctx->response_status;
+        err = arg.status;
     }
 
     return err;
@@ -245,14 +264,14 @@ static void on_block_rcvd(struct golioth_client *client,
     // assert valid values of arg, payload size and block_buffer
     assert(arg);
     assert(payload_size <= CONFIG_GOLIOTH_BLOCKWISE_DOWNLOAD_BUFFER_SIZE);
-    struct blockwise_transfer *ctx = (struct blockwise_transfer *) arg;
-    assert(ctx->block_buffer);
+    struct get_block_ctx *ctx = arg;
+    assert(ctx->buffer);
 
     // copy blockwise download values returned by COAP client into ctx
     ctx->is_last = is_last;
-    memcpy(ctx->block_buffer, payload, payload_size);
-    ctx->block_size = payload_size;
-    ctx->response_status = response->status;
+    memcpy(ctx->buffer, payload, payload_size);
+    ctx->rcvd_bytes = payload_size;
+    ctx->status = response->status;
 
     golioth_sys_sem_give(ctx->sem);
 }
@@ -261,6 +280,14 @@ static void on_block_rcvd(struct golioth_client *client,
 static enum golioth_status download_single_block(struct golioth_client *client,
                                                  struct blockwise_transfer *ctx)
 {
+    struct get_block_ctx arg = {
+        .is_last = false,
+        .status = GOLIOTH_ERR_FAIL,
+        .buffer = ctx->block_buffer,
+        .rcvd_bytes = 0,
+        .sem = ctx->sem,
+    };
+
     enum golioth_status err = golioth_coap_client_get_block(client,
                                                             ctx->path_prefix,
                                                             ctx->path,
@@ -268,13 +295,17 @@ static enum golioth_status download_single_block(struct golioth_client *client,
                                                             ctx->block_idx,
                                                             ctx->block_size,
                                                             on_block_rcvd,
-                                                            ctx,
+                                                            &arg,
                                                             false,
                                                             GOLIOTH_SYS_WAIT_FOREVER);
     if (GOLIOTH_OK == err)
     {
         golioth_sys_sem_take(ctx->sem, GOLIOTH_SYS_WAIT_FOREVER);
-        err = ctx->response_status;
+        err = arg.status;
+
+        // TODO: These don't need to be stored in the ctx struct
+        ctx->is_last = arg.is_last;
+        ctx->block_size = arg.rcvd_bytes;
     }
 
     return err;
