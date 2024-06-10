@@ -16,7 +16,7 @@ struct blockwise_transfer
     enum golioth_status response_status;
     enum golioth_content_type content_type;
     golioth_sys_sem_t sem;
-    uint32_t offset;
+    uint32_t block_idx;
     size_t block_size;
     const char *path_prefix;
     const char *path;
@@ -45,7 +45,7 @@ static void blockwise_upload_init(struct blockwise_transfer *ctx,
     ctx->path = path;
     ctx->content_type = content_type;
     ctx->block_size = 0;
-    ctx->offset = 0;
+    ctx->block_idx = 0;
     ctx->block_buffer = data_buf;
     ctx->callback_arg = callback_arg;
     ctx->callback.read_cb = cb;
@@ -68,7 +68,7 @@ static void on_block_sent(struct golioth_client *client,
 // blockwise upload
 static void call_read_block_callback(struct blockwise_transfer *ctx)
 {
-    int err = ctx->callback.read_cb(ctx->offset,
+    int err = ctx->callback.read_cb(ctx->block_idx,
                                     ctx->block_buffer,
                                     &ctx->block_size,
                                     &ctx->is_last,
@@ -90,7 +90,7 @@ static enum golioth_status upload_single_block(struct golioth_client *client,
                                                             ctx->path,
                                                             ctx->is_last,
                                                             ctx->content_type,
-                                                            ctx->offset,
+                                                            ctx->block_idx,
                                                             ctx->block_buffer,
                                                             ctx->block_size,
                                                             on_block_sent,
@@ -125,7 +125,7 @@ static enum golioth_status process_blockwise_uploads(struct golioth_client *clie
         status = upload_single_block(client, ctx);
         if (status == GOLIOTH_OK)
         {
-            ctx->offset++;
+            ctx->block_idx++;
         }
         else
         {
@@ -211,7 +211,7 @@ static void blockwise_download_init(struct blockwise_transfer *ctx,
     ctx->path = path;
     ctx->content_type = content_type;
     ctx->block_size = 0;
-    ctx->offset = 0;
+    ctx->block_idx = 0;
     ctx->block_buffer = data_buf;
     ctx->callback_arg = callback_arg;
     ctx->callback.write_cb = cb;
@@ -221,7 +221,7 @@ static void blockwise_download_init(struct blockwise_transfer *ctx,
 // blockwise download
 static void call_write_block_callback(struct blockwise_transfer *ctx)
 {
-    if (ctx->callback.write_cb(ctx->offset,
+    if (ctx->callback.write_cb(ctx->block_idx,
                                ctx->block_buffer,
                                ctx->block_size,
                                ctx->is_last,
@@ -230,7 +230,7 @@ static void call_write_block_callback(struct blockwise_transfer *ctx)
     {
         // TODO: handle application callback error
     }
-    ctx->offset++;
+    ctx->block_idx++;
 }
 
 // Blockwise download's internal callback function that the COAP client calls
@@ -265,7 +265,7 @@ static enum golioth_status download_single_block(struct golioth_client *client,
                                                             ctx->path_prefix,
                                                             ctx->path,
                                                             ctx->content_type,
-                                                            ctx->offset,
+                                                            ctx->block_idx,
                                                             ctx->block_size,
                                                             on_block_rcvd,
                                                             ctx,

@@ -336,7 +336,7 @@ struct ota_component_blockwise_ctx
     void *arg;
 };
 
-static enum golioth_status ota_component_write_cb_wrapper(uint32_t offset,
+static enum golioth_status ota_component_write_cb_wrapper(uint32_t block_idx,
                                                           uint8_t *block_buffer,
                                                           size_t block_size,
                                                           bool is_last,
@@ -344,7 +344,7 @@ static enum golioth_status ota_component_write_cb_wrapper(uint32_t offset,
 {
     struct ota_component_blockwise_ctx *ctx = callback_arg;
 
-    return ctx->cb(ctx->component, offset, block_buffer, block_size, is_last, ctx->arg);
+    return ctx->cb(ctx->component, block_idx, block_buffer, block_size, is_last, ctx->arg);
 }
 
 enum golioth_status golioth_ota_download_component(struct golioth_client *client,

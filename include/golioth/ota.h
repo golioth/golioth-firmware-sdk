@@ -131,7 +131,7 @@ enum golioth_status golioth_ota_observe_manifest_async(struct golioth_client *cl
 
 typedef enum golioth_status (*ota_component_block_write_cb)(
     const struct golioth_ota_component *component,
-    uint32_t offset,
+    uint32_t block_idx,
     uint8_t *block_buffer,
     size_t block_size,
     bool is_last,
