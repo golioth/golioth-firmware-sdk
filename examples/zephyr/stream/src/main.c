@@ -158,6 +158,11 @@ static void temperature_push_cbor(const struct sensor_value *temp, bool async)
                                        payload_size,
                                        temperature_async_push_handler,
                                        NULL);
+        if (err)
+        {
+            LOG_WRN("Failed to push temperature (async): %d", err);
+            return;
+        }
     }
     else
     {
@@ -167,12 +172,11 @@ static void temperature_push_cbor(const struct sensor_value *temp, bool async)
                                       buf,
                                       payload_size,
                                       SYNC_TIMEOUT_S);
-    }
-
-    if (err)
-    {
-        LOG_WRN("Failed to push temperature: %d", err);
-        return;
+        if (err)
+        {
+            LOG_WRN("Failed to push temperature (sync): %d", err);
+            return;
+        }
     }
 
     if (!async)
@@ -215,7 +219,7 @@ int main(void)
 
         temperature_push_cbor(&temp, false);
 
-        k_sleep(K_SECONDS(5));
+        k_msleep(200);
 
         /* Callback-based using CBOR map */
         err = get_temperature(&temp);
@@ -229,7 +233,7 @@ int main(void)
 
         temperature_push_cbor(&temp, true);
 
-        k_sleep(K_SECONDS(5));
+        k_msleep(200);
     }
 
     return 0;
