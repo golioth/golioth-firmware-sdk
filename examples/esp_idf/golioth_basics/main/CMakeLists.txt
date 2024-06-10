@@ -26,10 +26,6 @@ set(deps
     "bt"
 )
 
-if(CONFIG_GOLIOTH_BLE_SERVICE_ENABLED)
-    list(APPEND srcs "${esp_idf_common}/ble.c")
-endif()
-
 idf_component_register(
     INCLUDE_DIRS "${includes}"
     SRCS "${srcs}"
