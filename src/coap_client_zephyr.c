@@ -1502,6 +1502,9 @@ struct golioth_client *golioth_client_create(const struct golioth_client_config 
     new_client->tls.sec_tag_list = sec_tag_list;
     new_client->tls.sec_tag_count = ARRAY_SIZE(sec_tag_list);
 
+    new_client->resend_report_count = 0;
+    new_client->resend_report_last_ms = 0;
+
     fds[POLLFD_EVENT].fd = eventfd(0, EFD_NONBLOCK);
     fds[POLLFD_EVENT].events = ZSOCK_POLLIN;
 
