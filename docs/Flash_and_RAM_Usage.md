@@ -3,8 +3,7 @@
 This page documents the flash, static RAM, and dynamic RAM usage of the Golioth SDK.
 
 All measurements were taken by building the `golioth_basics` example in ESP-IDF v4.4.2, targeting
-[ESP32-DevkitC](https://www.espressif.com/en/products/devkits/esp32-devkitc/overview) and
-with BLE disabled (`CONFIG_GOLIOTH_BLE_SERVICE_ENABLED=n`).
+[ESP32-DevkitC](https://www.espressif.com/en/products/devkits/esp32-devkitc/overview).
 
 In general, the flash and RAM usage of the Golioth SDK will be similar on other platforms.
 
