@@ -91,6 +91,9 @@ struct golioth_client
     bool coap_reqs_connected;
     struct k_mutex coap_reqs_lock;
 
+    uint16_t resend_report_count;
+    uint32_t resend_report_last_ms;
+
     void (*on_connect)(struct golioth_client *client);
     void (*wakeup)(struct golioth_client *client);
 

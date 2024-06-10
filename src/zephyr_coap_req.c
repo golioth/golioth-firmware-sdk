@@ -17,6 +17,8 @@ LOG_MODULE_DECLARE(golioth_coap_client);
 
 static const int64_t COAP_OBSERVE_TS_DIFF_NEWER = 128 * (int64_t) MSEC_PER_SEC;
 
+#define RESEND_REPORT_TIMEFRAME_S 10
+
 #define COAP_RESPONSE_CODE_CLASS(code) ((code) >> 5)
 
 void golioth_coap_reqs_init(struct golioth_client *client)
@@ -699,10 +701,12 @@ static int64_t golioth_coap_req_poll_prepare(struct golioth_coap_req *req, uint3
     {
         if (resend)
         {
-            LOG_WRN("Resending request %p (reply %p) (retries %d)",
+            LOG_DBG("Resending request %p (reply %p) (retries %d)",
                     req,
                     &req->reply,
                     (int) req->pending.retries);
+
+            req->client->resend_report_count++;
         }
 
         err = golioth_coap_req_send(req);
@@ -710,6 +714,16 @@ static int64_t golioth_coap_req_poll_prepare(struct golioth_coap_req *req, uint3
         {
             LOG_ERR("Send error: %d", err);
         }
+    }
+
+    if (req->client->resend_report_count
+        && ((now - req->client->resend_report_last_ms) >= (RESEND_REPORT_TIMEFRAME_S * 1000)))
+    {
+        LOG_WRN("%u resends in last %d seconds",
+                req->client->resend_report_count,
+                RESEND_REPORT_TIMEFRAME_S);
+        req->client->resend_report_last_ms = now;
+        req->client->resend_report_count = 0;
     }
 
     return timeout;
