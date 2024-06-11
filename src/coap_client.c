@@ -55,9 +55,22 @@ enum golioth_status golioth_coap_client_empty(struct golioth_client *client,
 
     if (is_synchronous)
     {
-        // Created here, deleted by coap thread (or here if fail to enqueue
+        // Created here, deleted by coap thread (or here if fail to create or enqueue)
         request_msg.request_complete_event = golioth_event_group_create();
+        if (!request_msg.request_complete_event)
+        {
+            GLTH_LOGW(TAG, "Failed to create event group");
+            return GOLIOTH_ERR_MEM_ALLOC;
+        }
+
         request_msg.request_complete_ack_sem = golioth_sys_sem_create(1, 0);
+        if (!request_msg.request_complete_ack_sem)
+        {
+            GLTH_LOGW(TAG, "Failed to create semaphore");
+            golioth_event_group_destroy(request_msg.request_complete_event);
+            return GOLIOTH_ERR_MEM_ALLOC;
+        }
+
         request_msg.status = &status;
     }
 
@@ -162,9 +175,30 @@ static enum golioth_status golioth_coap_client_set_internal(struct golioth_clien
 
     if (is_synchronous)
     {
-        // Created here, deleted by coap thread (or here if fail to enqueue
+        // Created here, deleted by coap thread (or here if fail to create or enqueue)
         request_msg.request_complete_event = golioth_event_group_create();
+        if (!request_msg.request_complete_event)
+        {
+            GLTH_LOGW(TAG, "Failed to create event group");
+            if (request_payload)
+            {
+                golioth_sys_free(request_payload);
+            }
+            return GOLIOTH_ERR_MEM_ALLOC;
+        }
+
         request_msg.request_complete_ack_sem = golioth_sys_sem_create(1, 0);
+        if (!request_msg.request_complete_ack_sem)
+        {
+            GLTH_LOGW(TAG, "Failed to create semaphore");
+            golioth_event_group_destroy(request_msg.request_complete_event);
+            if (request_payload)
+            {
+                golioth_sys_free(request_payload);
+            }
+            return GOLIOTH_ERR_MEM_ALLOC;
+        }
+
         request_msg.status = &status;
     }
 
@@ -337,9 +371,22 @@ enum golioth_status golioth_coap_client_delete(struct golioth_client *client,
 
     if (is_synchronous)
     {
-        // Created here, deleted by coap thread (or here if fail to enqueue
+        // Created here, deleted by coap thread (or here if fail to create or enqueue)
         request_msg.request_complete_event = golioth_event_group_create();
+        if (!request_msg.request_complete_event)
+        {
+            GLTH_LOGW(TAG, "Failed to create event group");
+            return GOLIOTH_ERR_MEM_ALLOC;
+        }
+
         request_msg.request_complete_ack_sem = golioth_sys_sem_create(1, 0);
+        if (!request_msg.request_complete_ack_sem)
+        {
+            GLTH_LOGW(TAG, "Failed to create semaphore");
+            golioth_event_group_destroy(request_msg.request_complete_event);
+            return GOLIOTH_ERR_MEM_ALLOC;
+        }
+
         request_msg.status = &status;
     }
 
@@ -421,11 +468,25 @@ static enum golioth_status golioth_coap_client_get_internal(struct golioth_clien
 
     if (is_synchronous)
     {
-        // Created here, deleted by coap thread (or here if fail to enqueue
+        // Created here, deleted by coap thread (or here if fail to create or enqueue)
         request_msg.request_complete_event = golioth_event_group_create();
+        if (!request_msg.request_complete_event)
+        {
+            GLTH_LOGW(TAG, "Failed to create event group");
+            return GOLIOTH_ERR_MEM_ALLOC;
+        }
+
         request_msg.request_complete_ack_sem = golioth_sys_sem_create(1, 0);
+        if (!request_msg.request_complete_ack_sem)
+        {
+            GLTH_LOGW(TAG, "Failed to create semaphore");
+            golioth_event_group_destroy(request_msg.request_complete_event);
+            return GOLIOTH_ERR_MEM_ALLOC;
+        }
+
         request_msg.status = &status;
     }
+
     request_msg.ageout_ms = ageout_ms;
     if (type == GOLIOTH_COAP_REQUEST_GET_BLOCK)
     {

@@ -11,11 +11,34 @@ golioth_event_group_t golioth_event_group_create(void)
 {
     golioth_event_group_t eg =
         (golioth_event_group_t) golioth_sys_malloc(sizeof(struct golioth_event_group));
+    if (!eg)
+    {
+        return NULL;
+    }
+
     memset(eg, 0, sizeof(struct golioth_event_group));
     eg->bitmap = 0;
+
     eg->bitmap_mutex = golioth_sys_sem_create(1, 1);
+    if (!eg->bitmap_mutex)
+    {
+        goto cleanup_eg;
+    }
+
     eg->sem = golioth_sys_sem_create(1, 0);
+    if (!eg->sem)
+    {
+        goto cleanup_eg_with_mutex;
+    }
+
     return eg;
+
+cleanup_eg_with_mutex:
+    golioth_sys_sem_destroy(eg->bitmap_mutex);
+
+cleanup_eg:
+    golioth_sys_free(eg);
+    return NULL;
 }
 
 void golioth_event_group_set_bits(golioth_event_group_t eg, uint32_t bits_to_set)
