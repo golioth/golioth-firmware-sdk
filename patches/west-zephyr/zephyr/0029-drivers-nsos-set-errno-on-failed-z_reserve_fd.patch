@@ -1,0 +1,28 @@
+From 762d076c14364f2152a11c0b4bd4164a36dc1d61 Mon Sep 17 00:00:00 2001
+From: Marcin Niestroj <m.niestroj@emb.dev>
+Date: Tue, 7 May 2024 15:07:38 +0200
+Subject: [PATCH] drivers: nsos: set errno on failed z_reserve_fd()
+
+Just propagate proper error code, which is the negated return value from
+z_reserve_fd().
+
+Signed-off-by: Marcin Niestroj <m.niestroj@emb.dev>
+---
+ drivers/net/nsos_sockets.c | 1 +
+ 1 file changed, 1 insertion(+)
+
+diff --git a/drivers/net/nsos_sockets.c b/drivers/net/nsos_sockets.c
+index d8382df4bc7..7050c962a14 100644
+--- a/drivers/net/nsos_sockets.c
++++ b/drivers/net/nsos_sockets.c
+@@ -624,6 +624,7 @@ static int nsos_accept(void *obj, struct sockaddr *addr, socklen_t *addrlen)
+ 
+ 	zephyr_fd = z_reserve_fd();
+ 	if (zephyr_fd < 0) {
++		errno = -zephyr_fd;
+ 		goto close_adapt_fd;
+ 	}
+ 
+-- 
+2.45.2
+

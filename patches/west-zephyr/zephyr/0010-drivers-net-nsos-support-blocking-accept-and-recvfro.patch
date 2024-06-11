@@ -1,4 +1,4 @@
-From e78a356f68a8a6989d3698ea9933ffff91c7e3ab Mon Sep 17 00:00:00 2001
+From 703d42511614b7bfd31d9e5c7790adc19787395e Mon Sep 17 00:00:00 2001
 From: Marcin Niestroj <m.niestroj@emb.dev>
 Date: Fri, 23 Feb 2024 14:10:26 +0100
 Subject: [PATCH] drivers: net: nsos: support blocking accept() and recvfrom()
@@ -13,18 +13,18 @@ Signed-off-by: Marcin Niestroj <m.niestroj@emb.dev>
  1 file changed, 90 insertions(+), 3 deletions(-)
 
 diff --git a/drivers/net/nsos_sockets.c b/drivers/net/nsos_sockets.c
-index e7366871bf9..fab72e3e578 100644
+index 03bc5a7ac8a..b70940697a9 100644
 --- a/drivers/net/nsos_sockets.c
 +++ b/drivers/net/nsos_sockets.c
-@@ -36,6 +36,7 @@ BUILD_ASSERT(CONFIG_HEAP_MEM_POOL_SIZE > 0);
+@@ -37,6 +37,7 @@ BUILD_ASSERT(CONFIG_HEAP_MEM_POOL_SIZE > 0);
  #define NSOS_IRQ_PRIORITY	(2)
  
  struct nsos_socket {
 +	int fd;
  	struct nsos_mid_pollfd pollfd;
  	struct k_poll_signal poll;
- };
-@@ -174,6 +175,8 @@ static int nsos_socket_create(int family, int type, int proto)
+ 
+@@ -177,6 +178,8 @@ static int nsos_socket_create(int family, int type, int proto)
  		goto free_fd;
  	}
  
@@ -33,7 +33,7 @@ index e7366871bf9..fab72e3e578 100644
  	sock->pollfd.fd = nsos_adapt_socket(family_mid, type_mid, proto_mid);
  	if (sock->pollfd.fd < 0) {
  		errno = errno_from_nsos_mid(-sock->pollfd.fd);
-@@ -519,6 +522,59 @@ static int nsos_listen(void *obj, int backlog)
+@@ -523,6 +526,59 @@ static int nsos_listen(void *obj, int backlog)
  	return ret;
  }
  
@@ -93,7 +93,7 @@ index e7366871bf9..fab72e3e578 100644
  static int nsos_accept(void *obj, struct sockaddr *addr, socklen_t *addrlen)
  {
  	struct nsos_socket *accept_sock = obj;
-@@ -530,7 +586,7 @@ static int nsos_accept(void *obj, struct sockaddr *addr, socklen_t *addrlen)
+@@ -534,7 +590,7 @@ static int nsos_accept(void *obj, struct sockaddr *addr, socklen_t *addrlen)
  	struct nsos_socket *conn_sock;
  	int ret;
  
@@ -102,7 +102,7 @@ index e7366871bf9..fab72e3e578 100644
  	if (ret < 0) {
  		errno = errno_from_nsos_mid(-ret);
  		return -1;
-@@ -555,6 +611,7 @@ static int nsos_accept(void *obj, struct sockaddr *addr, socklen_t *addrlen)
+@@ -559,6 +615,7 @@ static int nsos_accept(void *obj, struct sockaddr *addr, socklen_t *addrlen)
  		goto free_zephyr_fd;
  	}
  
@@ -110,7 +110,7 @@ index e7366871bf9..fab72e3e578 100644
  	conn_sock->pollfd.fd = adapt_fd;
  
  	z_finalize_fd(zephyr_fd, conn_sock, &nsos_socket_fd_op_vtable.fd_vtable);
-@@ -610,6 +667,36 @@ static ssize_t nsos_sendmsg(void *obj, const struct msghdr *msg, int flags)
+@@ -614,6 +671,36 @@ static ssize_t nsos_sendmsg(void *obj, const struct msghdr *msg, int flags)
  	return -1;
  }
  
@@ -147,7 +147,7 @@ index e7366871bf9..fab72e3e578 100644
  static ssize_t nsos_recvfrom(void *obj, void *buf, size_t len, int flags,
  			     struct sockaddr *addr, socklen_t *addrlen)
  {
-@@ -627,8 +714,8 @@ static ssize_t nsos_recvfrom(void *obj, void *buf, size_t len, int flags,
+@@ -631,8 +718,8 @@ static ssize_t nsos_recvfrom(void *obj, void *buf, size_t len, int flags,
  
  	flags_mid = ret;
  
@@ -159,5 +159,5 @@ index e7366871bf9..fab72e3e578 100644
  		goto return_ret;
  	}
 -- 
-2.43.2
+2.45.2
 

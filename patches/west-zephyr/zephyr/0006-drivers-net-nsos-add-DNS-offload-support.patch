@@ -1,4 +1,4 @@
-From bf6fa089a1c288c9c30b053bd0f75826c83d2184 Mon Sep 17 00:00:00 2001
+From bcbb93ed16b993a99a8d3c1530ef326012423d65 Mon Sep 17 00:00:00 2001
 From: Marcin Niestroj <m.niestroj@emb.dev>
 Date: Fri, 10 Nov 2023 22:07:10 +0100
 Subject: [PATCH] drivers: net: nsos: add DNS offload support
@@ -9,35 +9,34 @@ APIs.
 Signed-off-by: Marcin Niestroj <m.niestroj@emb.dev>
 ---
  drivers/net/CMakeLists.txt |   2 +
- drivers/net/nsos.h         |  22 ++++
- drivers/net/nsos_adapt.c   | 210 +++++++++++++++++++++++++++++++++++++
- drivers/net/nsos_dns.c     |  65 ++++++++++++
- drivers/net/nsos_dns.h     |  36 +++++++
- drivers/net/nsos_sockets.c | 132 +++++++++++++++++++++++
- 6 files changed, 467 insertions(+)
- create mode 100644 drivers/net/nsos_dns.c
- create mode 100644 drivers/net/nsos_dns.h
+ drivers/net/nsos.h         |  18 +++
+ drivers/net/nsos_adapt.c   | 224 +++++++++++++++++++++++++++++++++++++
+ drivers/net/nsos_netdb.c   |  73 ++++++++++++
+ drivers/net/nsos_netdb.h   |  36 ++++++
+ drivers/net/nsos_sockets.c | 137 +++++++++++++++++++++++
+ 6 files changed, 490 insertions(+)
+ create mode 100644 drivers/net/nsos_netdb.c
+ create mode 100644 drivers/net/nsos_netdb.h
 
 diff --git a/drivers/net/CMakeLists.txt b/drivers/net/CMakeLists.txt
-index d839b9690c3..10dae7521ca 100644
+index d839b9690c3..a9f9bb38293 100644
 --- a/drivers/net/CMakeLists.txt
 +++ b/drivers/net/CMakeLists.txt
-@@ -14,8 +14,10 @@ if(CONFIG_NET_NATIVE_OFFLOADED_SOCKETS)
-   zephyr_library_include_directories(
+@@ -15,7 +15,9 @@ if(CONFIG_NET_NATIVE_OFFLOADED_SOCKETS)
      ${ZEPHYR_BASE}/subsys/net/lib/sockets
    )
-+  zephyr_library_sources(nsos_dns.c)
    zephyr_library_sources(nsos_errno.c)
++  zephyr_library_sources(nsos_netdb.c)
    zephyr_library_sources(nsos_sockets.c)
    target_sources(native_simulator INTERFACE nsos_adapt.c)
-+  target_sources(native_simulator INTERFACE nsos_dns.c)
    target_sources(native_simulator INTERFACE nsos_errno.c)
++  target_sources(native_simulator INTERFACE nsos_netdb.c)
  endif()
 diff --git a/drivers/net/nsos.h b/drivers/net/nsos.h
-index 238a8429df9..3f8f09a6a8d 100644
+index 13a6b8f8826..1c19fc99936 100644
 --- a/drivers/net/nsos.h
 +++ b/drivers/net/nsos.h
-@@ -76,6 +76,21 @@ struct nsos_mid_pollfd {
+@@ -75,6 +75,17 @@ struct nsos_mid_pollfd {
  	short revents;
  };
  
@@ -50,16 +49,12 @@ index 238a8429df9..3f8f09a6a8d 100644
 +	struct nsos_mid_sockaddr *ai_addr;
 +	char                     *ai_canonname;
 +	struct nsos_mid_addrinfo *ai_next;
-+
-+	/* internal */
-+	void *zephyr_data;
-+	void *host_data;
 +};
 +
  static inline void nsos_socket_flag_convert(int *flags_a, int flag_a,
  					    int *flags_b, int flag_b)
  {
-@@ -98,4 +113,11 @@ int nsos_adapt_sendto(int fd, const void *buf, size_t len, int flags,
+@@ -97,4 +108,11 @@ int nsos_adapt_sendto(int fd, const void *buf, size_t len, int flags,
  int nsos_adapt_recvfrom(int fd, void *buf, size_t len, int flags,
  			struct nsos_mid_sockaddr *addr, size_t *addrlen);
  
@@ -72,7 +67,7 @@ index 238a8429df9..3f8f09a6a8d 100644
 +
  #endif /* __DRIVERS_NET_NSOS_H__ */
 diff --git a/drivers/net/nsos_adapt.c b/drivers/net/nsos_adapt.c
-index bdcede54b47..4dd193c7759 100644
+index 37dfe9b2368..348866fba78 100644
 --- a/drivers/net/nsos_adapt.c
 +++ b/drivers/net/nsos_adapt.c
 @@ -11,18 +11,27 @@
@@ -88,8 +83,8 @@ index bdcede54b47..4dd193c7759 100644
  #include <unistd.h>
  
  #include "nsos.h"
-+#include "nsos_dns.h"
  #include "nsos_errno.h"
++#include "nsos_netdb.h"
  
  #include "nsi_tracing.h"
  
@@ -196,7 +191,7 @@ index bdcede54b47..4dd193c7759 100644
  static int socket_flags_from_nsos_mid(int flags_mid)
  {
  	int flags = 0;
-@@ -321,3 +402,132 @@ int nsos_adapt_recvfrom(int fd, void *buf, size_t len, int flags,
+@@ -331,3 +412,146 @@ int nsos_adapt_recvfrom(int fd, void *buf, size_t len, int flags,
  
  	return ret;
  }
@@ -254,8 +249,12 @@ index bdcede54b47..4dd193c7759 100644
 +			(struct nsos_mid_sockaddr *)&wrap->addr_storage;
 +		wrap->addrinfo_mid.ai_addrlen = sizeof(wrap->addr_storage);
 +
-+		sockaddr_to_nsos_mid(res_p->ai_addr, res_p->ai_addrlen,
-+				     wrap->addrinfo_mid.ai_addr, &wrap->addrinfo_mid.ai_addrlen);
++		ret = sockaddr_to_nsos_mid(res_p->ai_addr, res_p->ai_addrlen,
++					   wrap->addrinfo_mid.ai_addr,
++					   &wrap->addrinfo_mid.ai_addrlen);
++		if (ret < 0) {
++			goto free_wraps;
++		}
 +
 +		wrap->addrinfo_mid.ai_canonname =
 +			res_p->ai_canonname ? strdup(res_p->ai_canonname) : NULL;
@@ -269,6 +268,12 @@ index bdcede54b47..4dd193c7759 100644
 +	return 0;
 +
 +free_wraps:
++	for (struct nsos_mid_addrinfo *res_p = &nsos_res_wraps[0].addrinfo_mid;
++	     res_p;
++	     res_p = res_p->ai_next) {
++		free(res_p->ai_canonname);
++	}
++
 +	free(nsos_res_wraps);
 +
 +	return ret;
@@ -326,22 +331,34 @@ index bdcede54b47..4dd193c7759 100644
 +	struct nsos_addrinfo_wrap *wrap =
 +		CONTAINER_OF(res_mid, struct nsos_addrinfo_wrap, addrinfo_mid);
 +
++	for (struct nsos_mid_addrinfo *res_p = res_mid; res_p; res_p = res_p->ai_next) {
++		free(res_p->ai_canonname);
++	}
++
 +	freeaddrinfo(wrap->addrinfo);
 +	free(wrap);
 +}
-diff --git a/drivers/net/nsos_dns.c b/drivers/net/nsos_dns.c
+diff --git a/drivers/net/nsos_netdb.c b/drivers/net/nsos_netdb.c
 new file mode 100644
-index 00000000000..a2b10921eaa
+index 00000000000..60b8324dcb4
 --- /dev/null
-+++ b/drivers/net/nsos_dns.c
-@@ -0,0 +1,65 @@
++++ b/drivers/net/nsos_netdb.c
+@@ -0,0 +1,73 @@
 +/**
 + * Copyright (c) 2023-2024 Marcin Niestroj
 + *
 + * SPDX-License-Identifier: Apache-2.0
++ *
++ * netdb.h related code common to Zephyr (top: nsos_sockets.c) and Linux
++ * (bottom: nsos_adapt.c).
++ *
++ * It is needed by both sides to share the same macro definitions/values
++ * (prefixed with NSOS_MID_), which is not possible to achieve with two separate
++ * standard libc libraries, since they use different values for the same
++ * symbols.
 + */
 +
-+#include "nsos_dns.h"
++#include "nsos_netdb.h"
 +
 +#ifdef __ZEPHYR__
 +
@@ -400,11 +417,11 @@ index 00000000000..a2b10921eaa
 +
 +	return err;
 +}
-diff --git a/drivers/net/nsos_dns.h b/drivers/net/nsos_dns.h
+diff --git a/drivers/net/nsos_netdb.h b/drivers/net/nsos_netdb.h
 new file mode 100644
-index 00000000000..66d8d183ab8
+index 00000000000..d15f2c08eb8
 --- /dev/null
-+++ b/drivers/net/nsos_dns.h
++++ b/drivers/net/nsos_netdb.h
 @@ -0,0 +1,36 @@
 +/**
 + * Copyright (c) 2023-2024 Marcin Niestroj
@@ -412,8 +429,8 @@ index 00000000000..66d8d183ab8
 + * SPDX-License-Identifier: Apache-2.0
 + */
 +
-+#ifndef __DRIVERS_NET_NSOS_DNS_H__
-+#define __DRIVERS_NET_NSOS_DNS_H__
++#ifndef __DRIVERS_NET_NSOS_NETDB_H__
++#define __DRIVERS_NET_NSOS_NETDB_H__
 +
 +enum nsos_resolve_status {
 +	/** Invalid value for `ai_flags' field */
@@ -441,30 +458,31 @@ index 00000000000..66d8d183ab8
 +int eai_to_nsos_mid(int err);
 +int eai_from_nsos_mid(int err);
 +
-+#endif /* __DRIVERS_NET_NSOS_DNS_H__ */
++#endif /* __DRIVERS_NET_NSOS_NETDB_H__ */
 diff --git a/drivers/net/nsos_sockets.c b/drivers/net/nsos_sockets.c
-index 710d7232a4e..1ee607be6ee 100644
+index 4d3ea153ba1..fd6c028314c 100644
 --- a/drivers/net/nsos_sockets.c
 +++ b/drivers/net/nsos_sockets.c
-@@ -10,6 +10,9 @@
+@@ -10,6 +10,10 @@
   * Zephyr (top) side of NSOS (Native Simulator Offloaded Sockets).
   */
  
-+#define _POSIX_C_SOURCE 200809
++#undef _POSIX_C_SOURCE
++#define _POSIX_C_SOURCE 200809L
 +
 +#include <string.h>
  #include <zephyr/net/ethernet.h>
  #include <zephyr/net/net_ip.h>
  #include <zephyr/net/offloaded_netdev.h>
-@@ -18,6 +21,7 @@
- 
+@@ -19,6 +23,7 @@
  #include "sockets_internal.h"
  #include "nsos.h"
-+#include "nsos_dns.h"
  #include "nsos_errno.h"
++#include "nsos_netdb.h"
  
  #include "nsi_host_trampolines.h"
-@@ -494,6 +498,132 @@ static bool nsos_is_supported(int family, int type, int proto)
+ 
+@@ -501,6 +506,136 @@ static bool nsos_is_supported(int family, int type, int proto)
  NET_SOCKET_OFFLOAD_REGISTER(nsos, CONFIG_NET_SOCKETS_OFFLOAD_PRIORITY, AF_UNSPEC,
  			    nsos_is_supported, nsos_socket_create);
  
@@ -505,7 +523,7 @@ index 710d7232a4e..1ee607be6ee 100644
 +		return 0;
 +	}
 +
-+	res_wraps = calloc(n_res, sizeof(*res_wraps));
++	res_wraps = k_calloc(n_res, sizeof(*res_wraps));
 +	if (!res_wraps) {
 +		return -ENOMEM;
 +	}
@@ -585,8 +603,12 @@ index 710d7232a4e..1ee607be6ee 100644
 +	struct zsock_addrinfo_wrap *wrap =
 +		CONTAINER_OF(res, struct zsock_addrinfo_wrap, addrinfo);
 +
++	for (struct zsock_addrinfo *res_p = res; res_p; res_p = res_p->ai_next) {
++		free(res_p->ai_canonname);
++	}
++
 +	nsos_adapt_freeaddrinfo(wrap->addrinfo_mid);
-+	free(wrap);
++	k_free(wrap);
 +}
 +
 +static const struct socket_dns_offload nsos_dns_ops = {
@@ -597,7 +619,7 @@ index 710d7232a4e..1ee607be6ee 100644
  static int nsos_socket_offload_init(const struct device *arg)
  {
  	ARG_UNUSED(arg);
-@@ -504,6 +634,8 @@ static int nsos_socket_offload_init(const struct device *arg)
+@@ -511,6 +646,8 @@ static int nsos_socket_offload_init(const struct device *arg)
  static void nsos_iface_api_init(struct net_if *iface)
  {
  	iface->if_dev->socket_offload = nsos_socket_create;
@@ -607,5 +629,5 @@ index 710d7232a4e..1ee607be6ee 100644
  
  static int nsos_iface_enable(const struct net_if *iface, bool enabled)
 -- 
-2.43.2
+2.45.2
 

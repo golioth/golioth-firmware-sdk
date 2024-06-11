@@ -1,4 +1,4 @@
-From 1bcaba37b7fc7d8e83cdfa0b4d62958a6c34c2b2 Mon Sep 17 00:00:00 2001
+From afe60db4e7d7c98f354a21434a0515c96f5054c6 Mon Sep 17 00:00:00 2001
 From: Marcin Niestroj <m.niestroj@emb.dev>
 Date: Sat, 11 Nov 2023 16:03:47 +0100
 Subject: [PATCH] samples: http_get: add tests with Native Simulator offloaded
@@ -34,7 +34,7 @@ index 00000000000..0af19c1b112
 +CONFIG_NET_NATIVE_OFFLOADED_SOCKETS=y
 +CONFIG_HEAP_MEM_POOL_SIZE=1024
 diff --git a/samples/net/sockets/http_get/sample.yaml b/samples/net/sockets/http_get/sample.yaml
-index 2de78ce0bee..582e54d8bce 100644
+index 2de78ce0bee..4bdb915f2e5 100644
 --- a/samples/net/sockets/http_get/sample.yaml
 +++ b/samples/net/sockets/http_get/sample.yaml
 @@ -3,7 +3,6 @@ sample:
@@ -81,7 +81,7 @@ index 2de78ce0bee..582e54d8bce 100644
 +        - "(.*)</BODY>(.*)"
 +    platform_allow:
 +      - native_sim
-+      - native_sim_64
++      - native_sim/native/64
 +    extra_args: OVERLAY_CONFIG="overlay-nsos.conf"
 +  sample.get.sockets.http_get.nsos.https:
 +    harness: console
@@ -94,8 +94,8 @@ index 2de78ce0bee..582e54d8bce 100644
 +        - "(.*)</BODY>(.*)"
 +    platform_allow:
 +      - native_sim
-+      - native_sim_64
++      - native_sim/native/64
 +    extra_args: OVERLAY_CONFIG="overlay-nsos.conf;overlay-tls.conf"
 -- 
-2.43.2
+2.45.2
 

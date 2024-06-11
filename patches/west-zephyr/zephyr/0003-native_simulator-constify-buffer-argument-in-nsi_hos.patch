@@ -1,4 +1,4 @@
-From 65b085a4da135dd8165a09060308fe14ac6b3fc1 Mon Sep 17 00:00:00 2001
+From d0ead4d7bdaedf6926a29dad11020f28baac706e Mon Sep 17 00:00:00 2001
 From: Marcin Niestroj <m.niestroj@emb.dev>
 Date: Tue, 20 Feb 2024 20:02:16 +0100
 Subject: [PATCH] native_simulator: constify 'buffer' argument in
@@ -40,5 +40,5 @@ index 093a66d53ca..eb378b7533f 100644
  	return write(fd, buffer, size);
  }
 -- 
-2.43.2
+2.45.2
 

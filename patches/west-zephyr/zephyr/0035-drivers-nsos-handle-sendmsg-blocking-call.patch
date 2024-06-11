@@ -1,0 +1,34 @@
+From 4a84d8b3130b89f4a33a162d453c7bafb2abf8b9 Mon Sep 17 00:00:00 2001
+From: Marcin Niestroj <m.niestroj@emb.dev>
+Date: Tue, 7 May 2024 15:19:26 +0200
+Subject: [PATCH] drivers: nsos: handle sendmsg() blocking call
+
+Use poll(), similar to sendto() and accept() APIs.
+
+Signed-off-by: Marcin Niestroj <m.niestroj@emb.dev>
+---
+ drivers/net/nsos_sockets.c | 6 ++++++
+ 1 file changed, 6 insertions(+)
+
+diff --git a/drivers/net/nsos_sockets.c b/drivers/net/nsos_sockets.c
+index 17e41957980..9a9594579a2 100644
+--- a/drivers/net/nsos_sockets.c
++++ b/drivers/net/nsos_sockets.c
+@@ -761,8 +761,14 @@ static ssize_t nsos_sendmsg(void *obj, const struct msghdr *msg, int flags)
+ 	msg_mid.msg_controllen = 0;
+ 	msg_mid.msg_flags = 0;
+ 
++	ret = nsos_poll_if_blocking(sock, ZSOCK_POLLOUT, K_FOREVER, flags);
++	if (ret < 0) {
++		goto free_msg_iov;
++	}
++
+ 	ret = nsos_adapt_sendmsg(sock->poll.mid.fd, &msg_mid, flags_mid);
+ 
++free_msg_iov:
+ 	k_free(msg_iov);
+ 
+ return_ret:
+-- 
+2.45.2
+

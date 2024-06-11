@@ -1,4 +1,4 @@
-From 8c526e228f5742843e9dfe9e013befa21992b48d Mon Sep 17 00:00:00 2001
+From d6d6cb68402f48338513fa6a99d0496e6c8e8db0 Mon Sep 17 00:00:00 2001
 From: Marcin Niestroj <m.niestroj@emb.dev>
 Date: Tue, 6 Feb 2024 13:24:09 +0100
 Subject: [PATCH] drivers: net: nsos: implement poll() syscall
@@ -8,58 +8,91 @@ sockets. Whenever there is a socket event ready to be processed by Zephyr,
 raise native_sim (newly introduced) CPU interrupt, so that Zephyr driver
 can signal readiness with k_poll().
 
-Maintain two lists of Zephyr poll() executions, one for Zephyr and one for
-host system. Iterated through them whenever there is some event to be
-processed.
+Maintain a list of Zephyr poll() executions in Zephyr context. Iterate
+through them whenever there is some event to be processed.
 
 Signed-off-by: Marcin Niestroj <m.niestroj@emb.dev>
 ---
- drivers/net/CMakeLists.txt                    |   3 +
- drivers/net/nsos.h                            |   8 +
- drivers/net/nsos_adapt.c                      |  76 +++++++
- drivers/net/nsos_sockets.c                    | 193 +++++++++++++++---
- .../native/src/include/nsi_cpu0_interrupts.h  |   1 +
- 5 files changed, 255 insertions(+), 26 deletions(-)
+ boards/posix/native_sim/board_soc.h |   2 +
+ drivers/net/CMakeLists.txt          |   4 +
+ drivers/net/Kconfig                 |  16 ++-
+ drivers/net/nsos.h                  |   4 +
+ drivers/net/nsos_adapt.c            | 128 ++++++++++++++++++
+ drivers/net/nsos_sockets.c          | 195 ++++++++++++++++++++++++----
+ 6 files changed, 322 insertions(+), 27 deletions(-)
 
+diff --git a/boards/posix/native_sim/board_soc.h b/boards/posix/native_sim/board_soc.h
+index 2d2419038f4..81cc5679482 100644
+--- a/boards/posix/native_sim/board_soc.h
++++ b/boards/posix/native_sim/board_soc.h
+@@ -22,4 +22,6 @@
+ 
+ #include "nsi_cpu0_interrupts.h"
+ 
++#define NSOS_IRQ 3
++
+ #endif /* BOARDS_POSIX_NATIVE_SIM_BOARD_SOC_H */
 diff --git a/drivers/net/CMakeLists.txt b/drivers/net/CMakeLists.txt
-index 6508490f926..98ee3a9b090 100644
+index 8516d4472ef..456d27c02e9 100644
 --- a/drivers/net/CMakeLists.txt
 +++ b/drivers/net/CMakeLists.txt
-@@ -18,6 +18,9 @@ if(CONFIG_NET_NATIVE_OFFLOADED_SOCKETS)
-   zephyr_library_sources(nsos_errno.c)
+@@ -18,6 +18,10 @@ if(CONFIG_NET_NATIVE_OFFLOADED_SOCKETS)
    zephyr_library_sources(nsos_fcntl.c)
+   zephyr_library_sources(nsos_netdb.c)
    zephyr_library_sources(nsos_sockets.c)
 +  target_compile_options(native_simulator BEFORE INTERFACE
-+    -I${ZEPHYR_BASE}/include
++    -I${BOARD_DIR}
++    -DNSOS_EPOLL_WAIT_INTERVAL=${CONFIG_NET_NATIVE_OFFLOADED_SOCKETS_EPOLL_WAIT_INTERVAL}
 +  )
    target_sources(native_simulator INTERFACE nsos_adapt.c)
-   target_sources(native_simulator INTERFACE nsos_dns.c)
    target_sources(native_simulator INTERFACE nsos_errno.c)
+   target_sources(native_simulator INTERFACE nsos_fcntl.c)
+diff --git a/drivers/net/Kconfig b/drivers/net/Kconfig
+index 77513d340a0..afa6517eab3 100644
+--- a/drivers/net/Kconfig
++++ b/drivers/net/Kconfig
+@@ -229,7 +229,7 @@ endif # NET_CAN
+ # Native simulator offloaded sockets
+ #
+ 
+-config NET_NATIVE_OFFLOADED_SOCKETS
++menuconfig NET_NATIVE_OFFLOADED_SOCKETS
+ 	bool "Native Simulator offloaded sockets"
+ 	depends on ARCH_POSIX
+ 	depends on NATIVE_LIBRARY
+@@ -241,4 +241,18 @@ config NET_NATIVE_OFFLOADED_SOCKETS
+ 	  This driver main advantage is that it is possible to use this driver without any
+ 	  additional setup on the host side, unlike with the native TAP Ethernet driver.
+ 
++if NET_NATIVE_OFFLOADED_SOCKETS
++
++config NET_NATIVE_OFFLOADED_SOCKETS_EPOLL_WAIT_INTERVAL
++	int "Interval between epoll_wait() calls (in simulated microseconds)"
++	default 1000
++	help
++	  Number of simulated microseconds before next epoll_wait() call, when there were no pending
++	  events detected.
++
++	  Decrease that value when lower network traffic latency is expected, at the expense of more
++	  CPU processing overhead.
++
++endif # NET_NATIVE_OFFLOADED_SOCKETS
++
+ endif # NET_DRIVERS
 diff --git a/drivers/net/nsos.h b/drivers/net/nsos.h
-index 9af667fb311..79a24989bae 100644
+index d9ac86c910a..14b495177c3 100644
 --- a/drivers/net/nsos.h
 +++ b/drivers/net/nsos.h
-@@ -10,6 +10,7 @@
- #include <stddef.h>
- #include <stdint.h>
- #include <sys/types.h>
-+#include <zephyr/sys/dlist.h>
- 
- /* Protocol families. */
- #define NSOS_MID_PF_UNSPEC       0          /**< Unspecified protocol family.  */
-@@ -75,6 +76,11 @@ struct nsos_mid_pollfd {
+@@ -74,6 +74,8 @@ struct nsos_mid_pollfd {
  	int fd;
  	short events;
  	short revents;
 +
 +	void (*cb)(struct nsos_mid_pollfd *pollfd_mid);
-+
-+	sys_dnode_t zephyr_node;
-+	sys_dnode_t host_node;
  };
  
  struct nsos_mid_addrinfo {
-@@ -114,6 +120,8 @@ int nsos_adapt_sendto(int fd, const void *buf, size_t len, int flags,
+@@ -109,6 +111,8 @@ int nsos_adapt_sendto(int fd, const void *buf, size_t len, int flags,
  int nsos_adapt_recvfrom(int fd, void *buf, size_t len, int flags,
  			struct nsos_mid_sockaddr *addr, size_t *addrlen);
  
@@ -69,36 +102,90 @@ index 9af667fb311..79a24989bae 100644
  int nsos_adapt_fcntl_getfl(int fd);
  int nsos_adapt_fcntl_setfl(int fd, int flags);
 diff --git a/drivers/net/nsos_adapt.c b/drivers/net/nsos_adapt.c
-index d97b99e5de9..6309ab89404 100644
+index fe7f9ba47ac..a7ecd46eeb4 100644
 --- a/drivers/net/nsos_adapt.c
 +++ b/drivers/net/nsos_adapt.c
-@@ -25,10 +25,17 @@
- #include "nsos_errno.h"
- #include "nsos_fcntl.h"
+@@ -17,6 +17,7 @@
+ #include <poll.h>
+ #include <stdlib.h>
+ #include <string.h>
++#include <sys/epoll.h>
+ #include <sys/socket.h>
+ #include <unistd.h>
  
+@@ -25,10 +26,21 @@
+ #include "nsos_fcntl.h"
+ #include "nsos_netdb.h"
+ 
++#include "board_soc.h"
 +#include "irq_ctrl.h"
-+#include "nsi_cpu0_interrupts.h"
 +#include "nsi_hws_models_if.h"
++#include "nsi_tasks.h"
  #include "nsi_tracing.h"
  
  #include <stdio.h>
  
-+#include <zephyr/sys/dlist.h>
++static int nsos_epoll_fd;
++static int nsos_adapt_nfds;
 +
-+static sys_dlist_t nsos_adapt_sockets = SYS_DLIST_STATIC_INIT(&nsos_adapt_sockets);
++#ifndef ARRAY_SIZE
++#define ARRAY_SIZE(array) (sizeof(array) / sizeof((array)[0]))
++#endif
 +
  #ifndef CONTAINER_OF
  #define CONTAINER_OF(ptr, type, field)                               \
  		((type *)(((char *)(ptr)) - offsetof(type, field)))
-@@ -446,6 +453,21 @@ int nsos_adapt_recvfrom(int fd, void *buf, size_t len, int flags,
+@@ -456,6 +468,71 @@ int nsos_adapt_recvfrom(int fd, void *buf, size_t len, int flags,
  	return ret;
  }
  
++#define MAP_POLL_EPOLL(_event_from, _event_to)	\
++	if (events_from & (_event_from)) {	\
++		events_from &= ~(_event_from);	\
++		events_to |= _event_to;		\
++	}
++
++static int nsos_poll_to_epoll_events(int events_from)
++{
++	int events_to = 0;
++
++	MAP_POLL_EPOLL(POLLIN, EPOLLIN);
++	MAP_POLL_EPOLL(POLLOUT, EPOLLOUT);
++	MAP_POLL_EPOLL(POLLERR, EPOLLERR);
++
++	return events_to;
++}
++
++static int nsos_epoll_to_poll_events(int events_from)
++{
++	int events_to = 0;
++
++	MAP_POLL_EPOLL(EPOLLIN, POLLIN);
++	MAP_POLL_EPOLL(EPOLLOUT, POLLOUT);
++	MAP_POLL_EPOLL(EPOLLERR, POLLERR);
++
++	return events_to;
++}
++
++#undef MAP_POLL_EPOLL
++
 +static uint64_t nsos_adapt_poll_time = NSI_NEVER;
 +
 +void nsos_adapt_poll_add(struct nsos_mid_pollfd *pollfd)
 +{
-+	sys_dlist_append(&nsos_adapt_sockets, &pollfd->host_node);
++	struct epoll_event ev = {
++		.data.ptr = pollfd,
++		.events = nsos_poll_to_epoll_events(pollfd->events),
++	};
++	int err;
++
++	nsos_adapt_nfds++;
++
++	err = epoll_ctl(nsos_epoll_fd, EPOLL_CTL_ADD, pollfd->fd, &ev);
++	if (err) {
++		nsi_print_error_and_exit("error in EPOLL_CTL_ADD: errno=%d\n", errno);
++		return;
++	}
 +
 +	nsos_adapt_poll_time = nsi_hws_get_time() + 1;
 +	nsi_hws_find_next_event();
@@ -106,83 +193,88 @@ index d97b99e5de9..6309ab89404 100644
 +
 +void nsos_adapt_poll_remove(struct nsos_mid_pollfd *pollfd)
 +{
-+	sys_dlist_remove(&pollfd->host_node);
++	int err;
++
++	err = epoll_ctl(nsos_epoll_fd, EPOLL_CTL_DEL, pollfd->fd, NULL);
++	if (err) {
++		nsi_print_error_and_exit("error in EPOLL_CTL_ADD: errno=%d\n", errno);
++		return;
++	}
++
++	nsos_adapt_nfds--;
 +}
 +
  struct nsos_addrinfo_wrap {
  	struct nsos_mid_addrinfo addrinfo_mid;
  	struct nsos_mid_sockaddr_storage addr_storage;
-@@ -595,3 +617,57 @@ int nsos_adapt_fcntl_setfl(int fd, int flags)
+@@ -619,3 +696,54 @@ int nsos_adapt_fcntl_setfl(int fd, int flags)
  
  	return 0;
  }
 +
++static void nsos_adapt_init(void)
++{
++	nsos_epoll_fd = epoll_create(1);
++	if (nsos_epoll_fd < 0) {
++		nsi_print_error_and_exit("error from epoll_create(): errno=%d\n", errno);
++		return;
++	}
++}
++
++NSI_TASK(nsos_adapt_init, HW_INIT, 500);
++
 +static void nsos_adapt_poll_triggered(void)
 +{
-+	static struct pollfd *nsos_adapt_fds;
-+	struct nsos_mid_pollfd *pollfd_mid;
-+	struct pollfd *fds;
-+	int nfds = sys_dlist_len(&nsos_adapt_sockets);
++	static struct epoll_event events[1024];
 +	int ret;
 +
-+	fds = realloc(nsos_adapt_fds, sizeof(*fds) * nfds);
-+	if (nfds > 0 && !fds) {
-+		nsi_print_warning("error in nsos_adapt realloc()\n");
-+		return;
-+	}
-+
-+	nsos_adapt_fds = fds;
-+
-+	if (nfds == 0) {
++	if (nsos_adapt_nfds == 0) {
 +		nsos_adapt_poll_time = NSI_NEVER;
-+		nsi_hws_find_next_event();
 +		return;
 +	}
 +
-+	nfds = 0;
-+	SYS_DLIST_FOR_EACH_CONTAINER(&nsos_adapt_sockets, pollfd_mid, host_node) {
-+		fds[nfds].fd = pollfd_mid->fd;
-+		fds[nfds].events = pollfd_mid->events;
-+		fds[nfds].revents = pollfd_mid->revents;
-+		nfds++;
-+	}
-+
-+	ret = poll(fds, nfds, 0);
++	ret = epoll_wait(nsos_epoll_fd, events, ARRAY_SIZE(events), 0);
 +	if (ret < 0) {
-+		nsi_print_warning("error in nsos_adapt poll(): errno=%d\n", errno);
++		if (errno == EINTR) {
++			nsi_print_warning("interrupted epoll_wait()\n");
++			nsos_adapt_poll_time = nsi_hws_get_time() + 1;
++			return;
++		}
++
++		nsi_print_error_and_exit("error in nsos_adapt poll(): errno=%d\n", errno);
 +
 +		nsos_adapt_poll_time = NSI_NEVER;
-+		nsi_hws_find_next_event();
 +		return;
 +	}
 +
-+	nfds = 0;
-+	SYS_DLIST_FOR_EACH_CONTAINER(&nsos_adapt_sockets, pollfd_mid, host_node) {
-+		pollfd_mid->revents = fds[nfds].revents;
-+		nfds++;
++	for (int i = 0; i < ret; i++) {
++		struct nsos_mid_pollfd *pollfd = events[i].data.ptr;
++
++		pollfd->revents = nsos_epoll_to_poll_events(events[i].events);
 +	}
 +
 +	if (ret > 0) {
 +		hw_irq_ctrl_set_irq(NSOS_IRQ);
++		nsos_adapt_poll_time = nsi_hws_get_time() + 1;
++	} else {
++		nsos_adapt_poll_time = nsi_hws_get_time() + NSOS_EPOLL_WAIT_INTERVAL;
 +	}
-+
-+	nsos_adapt_poll_time = nsi_hws_get_time() + 1;
 +}
 +
 +NSI_HW_EVENT(nsos_adapt_poll_time, nsos_adapt_poll_triggered, 500);
 diff --git a/drivers/net/nsos_sockets.c b/drivers/net/nsos_sockets.c
-index d1b7f85775e..e7366871bf9 100644
+index abb4c1a36db..03bc5a7ac8a 100644
 --- a/drivers/net/nsos_sockets.c
 +++ b/drivers/net/nsos_sockets.c
-@@ -12,6 +12,7 @@
- 
- #define _POSIX_C_SOURCE 200809
+@@ -13,6 +13,7 @@
+ #undef _POSIX_C_SOURCE
+ #define _POSIX_C_SOURCE 200809L
  
 +#include <soc.h>
  #include <string.h>
  #include <zephyr/net/ethernet.h>
  #include <zephyr/net/net_ip.h>
-@@ -19,6 +20,7 @@
+@@ -20,6 +21,7 @@
  #include <zephyr/net/socket_offload.h>
  #include <zephyr/posix/fcntl.h>
  #include <zephyr/sys/fdtable.h>
@@ -190,7 +282,7 @@ index d1b7f85775e..e7366871bf9 100644
  
  #include "sockets_internal.h"
  #include "nsos.h"
-@@ -28,11 +30,17 @@
+@@ -29,11 +31,19 @@
  
  #include "nsi_host_trampolines.h"
  
@@ -207,13 +299,15 @@ index d1b7f85775e..e7366871bf9 100644
 +struct nsos_socket {
 +	struct nsos_mid_pollfd pollfd;
 +	struct k_poll_signal poll;
++
++	sys_dnode_t node;
 +};
 +
 +static sys_dlist_t nsos_sockets = SYS_DLIST_STATIC_INIT(&nsos_sockets);
  
  static int socket_family_to_nsos_mid(int family, int *family_mid)
  {
-@@ -131,7 +139,7 @@ static const struct socket_op_vtable nsos_socket_fd_op_vtable;
+@@ -132,7 +142,7 @@ static const struct socket_op_vtable nsos_socket_fd_op_vtable;
  static int nsos_socket_create(int family, int type, int proto)
  {
  	int fd;
@@ -222,7 +316,7 @@ index d1b7f85775e..e7366871bf9 100644
  	int family_mid;
  	int type_mid;
  	int proto_mid;
-@@ -160,16 +168,25 @@ static int nsos_socket_create(int family, int type, int proto)
+@@ -161,16 +171,25 @@ static int nsos_socket_create(int family, int type, int proto)
  		return -1;
  	}
  
@@ -252,7 +346,7 @@ index d1b7f85775e..e7366871bf9 100644
  free_fd:
  	z_free_fd(fd);
  
-@@ -183,9 +200,10 @@ static int nsos_adapt_get_zephyr_errno(void)
+@@ -184,9 +203,10 @@ static int nsos_adapt_get_zephyr_errno(void)
  
  static ssize_t nsos_read(void *obj, void *buf, size_t sz)
  {
@@ -264,7 +358,7 @@ index d1b7f85775e..e7366871bf9 100644
  	if (ret < 0) {
  		errno = nsos_adapt_get_zephyr_errno();
  	}
-@@ -195,9 +213,10 @@ static ssize_t nsos_read(void *obj, void *buf, size_t sz)
+@@ -196,9 +216,10 @@ static ssize_t nsos_read(void *obj, void *buf, size_t sz)
  
  static ssize_t nsos_write(void *obj, const void *buf, size_t sz)
  {
@@ -276,7 +370,7 @@ index d1b7f85775e..e7366871bf9 100644
  	if (ret < 0) {
  		errno = nsos_adapt_get_zephyr_errno();
  	}
-@@ -207,9 +226,10 @@ static ssize_t nsos_write(void *obj, const void *buf, size_t sz)
+@@ -208,9 +229,10 @@ static ssize_t nsos_write(void *obj, const void *buf, size_t sz)
  
  static int nsos_close(void *obj)
  {
@@ -288,7 +382,7 @@ index d1b7f85775e..e7366871bf9 100644
  	if (ret < 0) {
  		errno = nsos_adapt_get_zephyr_errno();
  	}
-@@ -217,14 +237,100 @@ static int nsos_close(void *obj)
+@@ -218,14 +240,100 @@ static int nsos_close(void *obj)
  	return ret;
  }
  
@@ -317,7 +411,7 @@ index d1b7f85775e..e7366871bf9 100644
 +	k_poll_signal_init(&sock->poll);
 +	k_poll_event_init(*pev, K_POLL_TYPE_SIGNAL, K_POLL_MODE_NOTIFY_ONLY, &sock->poll);
 +
-+	sys_dlist_append(&nsos_sockets, &sock->pollfd.zephyr_node);
++	sys_dlist_append(&nsos_sockets, &sock->node);
 +
 +	nsos_adapt_poll_add(&sock->pollfd);
 +
@@ -348,7 +442,7 @@ index d1b7f85775e..e7366871bf9 100644
 +	flags = 0;
 +
 +	nsos_adapt_poll_remove(&sock->pollfd);
-+	sys_dlist_remove(&sock->pollfd.zephyr_node);
++	sys_dlist_remove(&sock->node);
 +
 +	k_poll_signal_check(&sock->poll, &signaled, &flags);
 +	if (!signaled) {
@@ -393,7 +487,7 @@ index d1b7f85775e..e7366871bf9 100644
  
  	case ZFD_IOCTL_POLL_OFFLOAD:
  		return -EOPNOTSUPP;
-@@ -232,7 +338,7 @@ static int nsos_ioctl(void *obj, unsigned int request, va_list args)
+@@ -233,7 +341,7 @@ static int nsos_ioctl(void *obj, unsigned int request, va_list args)
  	case F_GETFL: {
  		int flags;
  
@@ -402,16 +496,16 @@ index d1b7f85775e..e7366871bf9 100644
  
  		return fl_from_nsos_mid(flags);
  	}
-@@ -247,7 +353,7 @@ static int nsos_ioctl(void *obj, unsigned int request, va_list args)
- 			return -1;
+@@ -247,7 +355,7 @@ static int nsos_ioctl(void *obj, unsigned int request, va_list args)
+ 			return -errno_from_nsos_mid(-ret);
  		}
  
--		return nsos_adapt_fcntl_setfl(OBJ_TO_FD(obj), flags);
-+		return nsos_adapt_fcntl_setfl(sock->pollfd.fd, flags);
- 	}
- 	}
+-		ret = nsos_adapt_fcntl_setfl(OBJ_TO_FD(obj), flags);
++		ret = nsos_adapt_fcntl_setfl(sock->pollfd.fd, flags);
  
-@@ -353,6 +459,7 @@ static int sockaddr_from_nsos_mid(struct sockaddr *addr, socklen_t *addrlen,
+ 		return -errno_from_nsos_mid(-ret);
+ 	}
+@@ -355,6 +463,7 @@ static int sockaddr_from_nsos_mid(struct sockaddr *addr, socklen_t *addrlen,
  
  static int nsos_bind(void *obj, const struct sockaddr *addr, socklen_t addrlen)
  {
@@ -419,7 +513,7 @@ index d1b7f85775e..e7366871bf9 100644
  	struct nsos_mid_sockaddr_storage addr_storage_mid;
  	struct nsos_mid_sockaddr *addr_mid = (struct nsos_mid_sockaddr *)&addr_storage_mid;
  	size_t addrlen_mid;
-@@ -363,7 +470,7 @@ static int nsos_bind(void *obj, const struct sockaddr *addr, socklen_t addrlen)
+@@ -365,7 +474,7 @@ static int nsos_bind(void *obj, const struct sockaddr *addr, socklen_t addrlen)
  		goto return_ret;
  	}
  
@@ -428,7 +522,7 @@ index d1b7f85775e..e7366871bf9 100644
  
  return_ret:
  	if (ret < 0) {
-@@ -376,6 +483,7 @@ return_ret:
+@@ -378,6 +487,7 @@ return_ret:
  
  static int nsos_connect(void *obj, const struct sockaddr *addr, socklen_t addrlen)
  {
@@ -436,7 +530,7 @@ index d1b7f85775e..e7366871bf9 100644
  	struct nsos_mid_sockaddr_storage addr_storage_mid;
  	struct nsos_mid_sockaddr *addr_mid = (struct nsos_mid_sockaddr *)&addr_storage_mid;
  	size_t addrlen_mid;
-@@ -386,7 +494,7 @@ static int nsos_connect(void *obj, const struct sockaddr *addr, socklen_t addrle
+@@ -388,7 +498,7 @@ static int nsos_connect(void *obj, const struct sockaddr *addr, socklen_t addrle
  		goto return_ret;
  	}
  
@@ -445,7 +539,7 @@ index d1b7f85775e..e7366871bf9 100644
  
  return_ret:
  	if (ret < 0) {
-@@ -399,9 +507,10 @@ return_ret:
+@@ -401,9 +511,10 @@ return_ret:
  
  static int nsos_listen(void *obj, int backlog)
  {
@@ -457,7 +551,7 @@ index d1b7f85775e..e7366871bf9 100644
  	if (ret < 0) {
  		errno = errno_from_nsos_mid(-ret);
  		return -1;
-@@ -412,12 +521,16 @@ static int nsos_listen(void *obj, int backlog)
+@@ -414,12 +525,16 @@ static int nsos_listen(void *obj, int backlog)
  
  static int nsos_accept(void *obj, struct sockaddr *addr, socklen_t *addrlen)
  {
@@ -475,7 +569,7 @@ index d1b7f85775e..e7366871bf9 100644
  	if (ret < 0) {
  		errno = errno_from_nsos_mid(-ret);
  		return -1;
-@@ -436,10 +549,21 @@ static int nsos_accept(void *obj, struct sockaddr *addr, socklen_t *addrlen)
+@@ -438,10 +553,21 @@ static int nsos_accept(void *obj, struct sockaddr *addr, socklen_t *addrlen)
  		goto close_adapt_fd;
  	}
  
@@ -498,7 +592,7 @@ index d1b7f85775e..e7366871bf9 100644
  close_adapt_fd:
  	nsi_host_close(adapt_fd);
  
-@@ -449,6 +573,7 @@ close_adapt_fd:
+@@ -451,6 +577,7 @@ close_adapt_fd:
  static ssize_t nsos_sendto(void *obj, const void *buf, size_t len, int flags,
  			   const struct sockaddr *addr, socklen_t addrlen)
  {
@@ -506,7 +600,7 @@ index d1b7f85775e..e7366871bf9 100644
  	struct nsos_mid_sockaddr_storage addr_storage_mid;
  	struct nsos_mid_sockaddr *addr_mid = (struct nsos_mid_sockaddr *)&addr_storage_mid;
  	size_t addrlen_mid = sizeof(addr_storage_mid);
-@@ -467,7 +592,7 @@ static ssize_t nsos_sendto(void *obj, const void *buf, size_t len, int flags,
+@@ -469,7 +596,7 @@ static ssize_t nsos_sendto(void *obj, const void *buf, size_t len, int flags,
  		goto return_ret;
  	}
  
@@ -515,7 +609,7 @@ index d1b7f85775e..e7366871bf9 100644
  				addr_mid, addrlen_mid);
  
  return_ret:
-@@ -488,6 +613,7 @@ static ssize_t nsos_sendmsg(void *obj, const struct msghdr *msg, int flags)
+@@ -490,6 +617,7 @@ static ssize_t nsos_sendmsg(void *obj, const struct msghdr *msg, int flags)
  static ssize_t nsos_recvfrom(void *obj, void *buf, size_t len, int flags,
  			     struct sockaddr *addr, socklen_t *addrlen)
  {
@@ -523,7 +617,7 @@ index d1b7f85775e..e7366871bf9 100644
  	struct nsos_mid_sockaddr_storage addr_storage_mid;
  	struct nsos_mid_sockaddr *addr_mid = (struct nsos_mid_sockaddr *)&addr_storage_mid;
  	size_t addrlen_mid = sizeof(addr_storage_mid);
-@@ -501,7 +627,7 @@ static ssize_t nsos_recvfrom(void *obj, void *buf, size_t len, int flags,
+@@ -503,7 +631,7 @@ static ssize_t nsos_recvfrom(void *obj, void *buf, size_t len, int flags,
  
  	flags_mid = ret;
  
@@ -532,17 +626,17 @@ index d1b7f85775e..e7366871bf9 100644
  				  addr_mid, &addrlen_mid);
  	if (ret < 0) {
  		goto return_ret;
-@@ -686,10 +812,25 @@ static const struct socket_dns_offload nsos_dns_ops = {
+@@ -699,10 +827,25 @@ static const struct socket_dns_offload nsos_dns_ops = {
  	.freeaddrinfo = nsos_freeaddrinfo,
  };
  
 +static void nsos_isr(const void *obj)
 +{
-+	struct nsos_mid_pollfd *pollfd;
++	struct nsos_socket *sock;
 +
-+	SYS_DLIST_FOR_EACH_CONTAINER(&nsos_sockets, pollfd, zephyr_node) {
-+		if (pollfd->revents) {
-+			pollfd->cb(pollfd);
++	SYS_DLIST_FOR_EACH_CONTAINER(&nsos_sockets, sock, node) {
++		if (sock->pollfd.revents) {
++			sock->pollfd.cb(&sock->pollfd);
 +		}
 +	}
 +}
@@ -558,18 +652,6 @@ index d1b7f85775e..e7366871bf9 100644
  	return 0;
  }
  
-diff --git a/scripts/native_simulator/native/src/include/nsi_cpu0_interrupts.h b/scripts/native_simulator/native/src/include/nsi_cpu0_interrupts.h
-index be2247d1701..1ef9e9e8118 100644
---- a/scripts/native_simulator/native/src/include/nsi_cpu0_interrupts.h
-+++ b/scripts/native_simulator/native/src/include/nsi_cpu0_interrupts.h
-@@ -9,6 +9,7 @@
- #define TIMER_TICK_IRQ 0
- #define OFFLOAD_SW_IRQ 1
- #define COUNTER_EVENT_IRQ 2
-+#define NSOS_IRQ 3
- 
- /*
-  * This interrupt will awake the CPU if IRQs are not locked,
 -- 
-2.43.2
+2.45.2
 

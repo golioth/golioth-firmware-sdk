@@ -1,4 +1,4 @@
-From afbdf15b2fd48a232e8267934be2572cf8384327 Mon Sep 17 00:00:00 2001
+From 9ec6fce3a17a7663ce6923b9a8316bfcb40130bf Mon Sep 17 00:00:00 2001
 From: Marcin Niestroj <m.niestroj@emb.dev>
 Date: Sat, 11 Nov 2023 16:01:37 +0100
 Subject: [PATCH] samples: http_get: move 'not CONFIG_NATIVE_LIBC' filter to
@@ -36,5 +36,5 @@ index 999c7ba97d6..2de78ce0bee 100644
        - cc3220sf_launchxl
        - cc3235sf_launchxl
 -- 
-2.43.2
+2.45.2
 

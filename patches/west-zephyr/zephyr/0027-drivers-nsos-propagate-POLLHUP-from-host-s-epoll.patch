@@ -1,0 +1,35 @@
+From 5722c260864c6e85feec3b6d180d754f363f09e4 Mon Sep 17 00:00:00 2001
+From: Marcin Niestroj <m.niestroj@emb.dev>
+Date: Thu, 9 May 2024 13:08:46 +0200
+Subject: [PATCH] drivers: nsos: propagate POLLHUP from host's epoll()
+
+This flag is set in case socket was closed, so propagate it as well.
+
+Signed-off-by: Marcin Niestroj <m.niestroj@emb.dev>
+---
+ drivers/net/nsos_adapt.c | 2 ++
+ 1 file changed, 2 insertions(+)
+
+diff --git a/drivers/net/nsos_adapt.c b/drivers/net/nsos_adapt.c
+index a9b5fb1b33f..af9acd1e40e 100644
+--- a/drivers/net/nsos_adapt.c
++++ b/drivers/net/nsos_adapt.c
+@@ -752,6 +752,7 @@ static int nsos_poll_to_epoll_events(int events_from)
+ 	MAP_POLL_EPOLL(POLLIN, EPOLLIN);
+ 	MAP_POLL_EPOLL(POLLOUT, EPOLLOUT);
+ 	MAP_POLL_EPOLL(POLLERR, EPOLLERR);
++	MAP_POLL_EPOLL(POLLHUP, EPOLLHUP);
+ 
+ 	return events_to;
+ }
+@@ -763,6 +764,7 @@ static int nsos_epoll_to_poll_events(int events_from)
+ 	MAP_POLL_EPOLL(EPOLLIN, POLLIN);
+ 	MAP_POLL_EPOLL(EPOLLOUT, POLLOUT);
+ 	MAP_POLL_EPOLL(EPOLLERR, POLLERR);
++	MAP_POLL_EPOLL(EPOLLHUP, POLLHUP);
+ 
+ 	return events_to;
+ }
+-- 
+2.45.2
+

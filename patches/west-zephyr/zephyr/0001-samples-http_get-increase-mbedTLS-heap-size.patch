@@ -1,4 +1,4 @@
-From f58f3b1d71adf1686bda60e15cececa696154d46 Mon Sep 17 00:00:00 2001
+From 0a4fd4cc92783763d2677943b9dfb151d73b259d Mon Sep 17 00:00:00 2001
 From: Marcin Niestroj <m.niestroj@emb.dev>
 Date: Sat, 11 Nov 2023 16:28:23 +0100
 Subject: [PATCH] samples: http_get: increase mbedTLS heap size
@@ -29,5 +29,5 @@ index 940d7f018cf..3dd9096519f 100644
  
  CONFIG_NET_SOCKETS_SOCKOPT_TLS=y
 -- 
-2.43.2
+2.45.2
 

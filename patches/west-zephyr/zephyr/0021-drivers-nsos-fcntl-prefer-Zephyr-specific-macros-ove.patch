@@ -1,0 +1,36 @@
+From bd246d676753e6f15dec510561876715a31ec967 Mon Sep 17 00:00:00 2001
+From: Marcin Niestroj <m.niestroj@emb.dev>
+Date: Thu, 9 May 2024 13:18:20 +0200
+Subject: [PATCH] drivers: nsos: fcntl: prefer Zephyr-specific macros over libc
+
+Definitions of fcntl flags are different between native libc and Zephyr. In
+order to correctly map those values to the host, include Zephyr's fcntl.h
+header, instead of the one bundled with libc.
+
+Signed-off-by: Marcin Niestroj <m.niestroj@emb.dev>
+---
+ drivers/net/nsos_fcntl.c | 7 +++++++
+ 1 file changed, 7 insertions(+)
+
+diff --git a/drivers/net/nsos_fcntl.c b/drivers/net/nsos_fcntl.c
+index be49d3ec63e..ab4d22ce51a 100644
+--- a/drivers/net/nsos_fcntl.c
++++ b/drivers/net/nsos_fcntl.c
+@@ -16,7 +16,14 @@
+  * symbols.
+  */
+ 
++/*
++ * When building for Zephyr, use Zephyr specific fcntl definitions.
++ */
++#ifdef __ZEPHYR__
++#include <zephyr/posix/fcntl.h>
++#else
+ #include <fcntl.h>
++#endif
+ 
+ #include "nsos_errno.h"
+ #include "nsos_fcntl.h"
+-- 
+2.45.2
+

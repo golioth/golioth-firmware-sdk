@@ -1,0 +1,31 @@
+From 7a15ba62364ee45c16ad6e5b0bb9a6975f6739d2 Mon Sep 17 00:00:00 2001
+From: Marcin Niestroj <m.niestroj@emb.dev>
+Date: Mon, 20 May 2024 13:48:08 +0200
+Subject: [PATCH] drivers: nsos: fix ENOMEM return from ZFD_IOCTL_POLL_PREPARE
+
+ioctl() API expects error codes to be returned as negative value directly,
+instead of using 'errno'. Fix ZFD_IOCTL_POLL_PREPARE handling to respect
+that.
+
+Signed-off-by: Marcin Niestroj <m.niestroj@emb.dev>
+---
+ drivers/net/nsos_sockets.c | 3 +--
+ 1 file changed, 1 insertion(+), 2 deletions(-)
+
+diff --git a/drivers/net/nsos_sockets.c b/drivers/net/nsos_sockets.c
+index 7050c962a14..1c7df2af830 100644
+--- a/drivers/net/nsos_sockets.c
++++ b/drivers/net/nsos_sockets.c
+@@ -265,8 +265,7 @@ static int nsos_poll_prepare(struct nsos_socket *sock, struct zsock_pollfd *pfd,
+ 	sock->pollfd.cb = pollcb;
+ 
+ 	if (*pev == pev_end) {
+-		errno = ENOMEM;
+-		return -1;
++		return -ENOMEM;
+ 	}
+ 
+ 	k_poll_signal_init(&sock->poll);
+-- 
+2.45.2
+

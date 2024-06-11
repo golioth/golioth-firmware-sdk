@@ -1,0 +1,29 @@
+From afe98d63c78a882f54c165e1b991dea392ef1839 Mon Sep 17 00:00:00 2001
+From: Marcin Niestroj <m.niestroj@emb.dev>
+Date: Tue, 7 May 2024 14:55:40 +0200
+Subject: [PATCH] drivers: nsos: fix nsos_sendmsg() error code
+
+There is a goto statement with conversion using errno_from_nsos_mid(). Use
+NSOS_MID_ERRNO instead of ERRNO to return proper error code.
+
+Signed-off-by: Marcin Niestroj <m.niestroj@emb.dev>
+---
+ drivers/net/nsos_sockets.c | 2 +-
+ 1 file changed, 1 insertion(+), 1 deletion(-)
+
+diff --git a/drivers/net/nsos_sockets.c b/drivers/net/nsos_sockets.c
+index 54b1af8b246..d8382df4bc7 100644
+--- a/drivers/net/nsos_sockets.c
++++ b/drivers/net/nsos_sockets.c
+@@ -708,7 +708,7 @@ static ssize_t nsos_sendmsg(void *obj, const struct msghdr *msg, int flags)
+ 
+ 	msg_iov = k_calloc(msg->msg_iovlen, sizeof(*msg_iov));
+ 	if (!msg_iov) {
+-		ret = -ENOMEM;
++		ret = -NSOS_MID_ENOMEM;
+ 		goto return_ret;
+ 	}
+ 
+-- 
+2.45.2
+

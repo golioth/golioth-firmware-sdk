@@ -1,0 +1,31 @@
+From 13765563b96211fa20c463ac3e892d9c664b48a6 Mon Sep 17 00:00:00 2001
+From: Marcin Niestroj <m.niestroj@emb.dev>
+Date: Tue, 7 May 2024 15:41:19 +0200
+Subject: [PATCH] drivers: nsos: handle sendto() blocking call
+
+Use poll(), similar to accept() and recvfrom() APIs.
+
+Signed-off-by: Marcin Niestroj <m.niestroj@emb.dev>
+---
+ drivers/net/nsos_sockets.c | 5 +++++
+ 1 file changed, 5 insertions(+)
+
+diff --git a/drivers/net/nsos_sockets.c b/drivers/net/nsos_sockets.c
+index 910472ee715..17e41957980 100644
+--- a/drivers/net/nsos_sockets.c
++++ b/drivers/net/nsos_sockets.c
+@@ -702,6 +702,11 @@ static ssize_t nsos_sendto(void *obj, const void *buf, size_t len, int flags,
+ 		goto return_ret;
+ 	}
+ 
++	ret = nsos_poll_if_blocking(sock, ZSOCK_POLLOUT, K_FOREVER, flags);
++	if (ret < 0) {
++		goto return_ret;
++	}
++
+ 	ret = nsos_adapt_sendto(sock->poll.mid.fd, buf, len, flags_mid,
+ 				addr_mid, addrlen_mid);
+ 
+-- 
+2.45.2
+

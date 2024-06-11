@@ -1,4 +1,4 @@
-From 009ec32c0a79b9d77ff0c2d25b4ef7d5ff8e1d09 Mon Sep 17 00:00:00 2001
+From d3ac7a0c3be7cb4ad2265dae423f73b6656e5be5 Mon Sep 17 00:00:00 2001
 From: Marcin Niestroj <m.niestroj@emb.dev>
 Date: Fri, 23 Feb 2024 14:25:10 +0100
 Subject: [PATCH] samples: net: echo_server: add config for native_sim
@@ -42,5 +42,5 @@ index c2ff08fa204..427442b3cff 100644
 +    extra_args:
 +      - OVERLAY_CONFIG="overlay-nsos.conf"
 -- 
-2.43.2
+2.45.2
 

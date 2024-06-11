@@ -1,4 +1,4 @@
-From 9e9f8d288e4381ea1afef514da7ba116a1399b39 Mon Sep 17 00:00:00 2001
+From c87f2ea6d86061ebc60b81c1f4aadaa2248c4fd8 Mon Sep 17 00:00:00 2001
 From: Marcin Niestroj <m.niestroj@emb.dev>
 Date: Fri, 23 Feb 2024 14:58:54 +0100
 Subject: [PATCH] doc: networking: document native_sim with offloaded sockets
@@ -144,5 +144,5 @@ index 995e7dc0f80..1823c6ed0c1 100644
  
  * USB device networking.
 -- 
-2.43.2
+2.45.2
 
