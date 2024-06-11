@@ -1,4 +1,4 @@
-From c70802a2aa719a449d583503a238eb5e321a2e00 Mon Sep 17 00:00:00 2001
+From 003045dfaef5207c9230dc9de3154a650eb9dab3 Mon Sep 17 00:00:00 2001
 From: Marcin Niestroj <m.niestroj@emb.dev>
 Date: Tue, 2 Apr 2024 12:50:38 +0200
 Subject: [PATCH] twister: pytest: escape expected command regex
@@ -30,5 +30,5 @@ index bf8b70cea91..7782617538c 100644
          self._device.write(command_ext.encode())
          lines: list[str] = []
 -- 
-2.44.0
+2.45.2
 

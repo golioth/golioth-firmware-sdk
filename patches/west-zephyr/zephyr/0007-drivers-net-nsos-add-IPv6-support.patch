@@ -1,4 +1,4 @@
-From abcad9ee096fb2c13898dc56d11c729da8ceee46 Mon Sep 17 00:00:00 2001
+From 2d9718665d024402615aca11e048277159fc07fe Mon Sep 17 00:00:00 2001
 From: Marcin Niestroj <m.niestroj@emb.dev>
 Date: Thu, 22 Feb 2024 15:01:18 +0100
 Subject: [PATCH] drivers: net: nsos: add IPv6 support
@@ -13,10 +13,10 @@ Signed-off-by: Marcin Niestroj <m.niestroj@emb.dev>
  3 files changed, 82 insertions(+), 1 deletion(-)
 
 diff --git a/drivers/net/nsos.h b/drivers/net/nsos.h
-index 3f8f09a6a8d..97f8ec76257 100644
+index 1c19fc99936..c36e54551ab 100644
 --- a/drivers/net/nsos.h
 +++ b/drivers/net/nsos.h
-@@ -14,10 +14,12 @@
+@@ -13,10 +13,12 @@
  /* Protocol families. */
  #define NSOS_MID_PF_UNSPEC       0          /**< Unspecified protocol family.  */
  #define NSOS_MID_PF_INET         1          /**< IP protocol family version 4. */
@@ -29,7 +29,7 @@ index 3f8f09a6a8d..97f8ec76257 100644
  
  /** Protocol numbers from IANA/BSD */
  enum nsos_mid_net_ip_protocol {
-@@ -58,7 +60,6 @@ struct nsos_mid_sockaddr_in {
+@@ -57,7 +59,6 @@ struct nsos_mid_sockaddr_in {
  struct nsos_mid_sockaddr_in6 {
  	uint16_t sin6_family;    /* AF_INET6 */
  	uint16_t sin6_port;      /* Port number */
@@ -38,7 +38,7 @@ index 3f8f09a6a8d..97f8ec76257 100644
  	uint32_t sin6_scope_id;  /* Set of interfaces for a scope */
  };
 diff --git a/drivers/net/nsos_adapt.c b/drivers/net/nsos_adapt.c
-index 4dd193c7759..39b7a5b3cc8 100644
+index 348866fba78..f526e6595c5 100644
 --- a/drivers/net/nsos_adapt.c
 +++ b/drivers/net/nsos_adapt.c
 @@ -46,6 +46,9 @@ static int socket_family_from_nsos_mid(int family_mid, int *family)
@@ -109,12 +109,12 @@ index 4dd193c7759..39b7a5b3cc8 100644
 +	}
  	}
  
- 	return -NSOS_MID_EINVAL;
+ 	nsi_print_warning("%s: socket family %d not supported\n", __func__, addr->sa_family);
 diff --git a/drivers/net/nsos_sockets.c b/drivers/net/nsos_sockets.c
-index 1ee607be6ee..8ae9e487b59 100644
+index fd6c028314c..89257072bd6 100644
 --- a/drivers/net/nsos_sockets.c
 +++ b/drivers/net/nsos_sockets.c
-@@ -41,6 +41,9 @@ static int socket_family_to_nsos_mid(int family, int *family_mid)
+@@ -42,6 +42,9 @@ static int socket_family_to_nsos_mid(int family, int *family_mid)
  	case AF_INET:
  		*family_mid = NSOS_MID_AF_INET;
  		break;
@@ -124,7 +124,7 @@ index 1ee607be6ee..8ae9e487b59 100644
  	default:
  		return -NSOS_MID_EAFNOSUPPORT;
  	}
-@@ -257,6 +260,26 @@ static int sockaddr_to_nsos_mid(const struct sockaddr *addr, socklen_t *addrlen,
+@@ -258,6 +261,26 @@ static int sockaddr_to_nsos_mid(const struct sockaddr *addr, socklen_t *addrlen,
  
  		return 0;
  	}
@@ -151,7 +151,7 @@ index 1ee607be6ee..8ae9e487b59 100644
  	}
  
  	return -NSOS_MID_EINVAL;
-@@ -284,6 +307,22 @@ static int sockaddr_from_nsos_mid(struct sockaddr *addr, socklen_t *addrlen,
+@@ -285,6 +308,22 @@ static int sockaddr_from_nsos_mid(struct sockaddr *addr, socklen_t *addrlen,
  
  		return 0;
  	}
@@ -175,5 +175,5 @@ index 1ee607be6ee..8ae9e487b59 100644
  
  	return -NSOS_MID_EINVAL;
 -- 
-2.43.2
+2.45.2
 

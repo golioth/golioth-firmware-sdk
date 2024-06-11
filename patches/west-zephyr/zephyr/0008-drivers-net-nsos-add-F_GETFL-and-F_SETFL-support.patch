@@ -1,4 +1,4 @@
-From 32b93328dcb142a2f2ab5b5399fb4b92275ea3dc Mon Sep 17 00:00:00 2001
+From a52823d9f4d9f4824ffba6c26c7f81a66d4cdf7e Mon Sep 17 00:00:00 2001
 From: Marcin Niestroj <m.niestroj@emb.dev>
 Date: Thu, 22 Feb 2024 15:01:05 +0100
 Subject: [PATCH] drivers: net: nsos: add F_GETFL and F_SETFL support
@@ -7,36 +7,37 @@ This allows to use Zephyr TLS subsystem with Native Sim offloaded sockets.
 
 Signed-off-by: Marcin Niestroj <m.niestroj@emb.dev>
 ---
- drivers/net/CMakeLists.txt |  2 ++
+ drivers/net/CMakeLists.txt |  2 +
  drivers/net/nsos.h         |  3 ++
- drivers/net/nsos_adapt.c   | 23 ++++++++++++
- drivers/net/nsos_fcntl.c   | 72 ++++++++++++++++++++++++++++++++++++++
- drivers/net/nsos_fcntl.h   | 22 ++++++++++++
- drivers/net/nsos_sockets.c | 23 ++++++++++++
- 6 files changed, 145 insertions(+)
+ drivers/net/nsos_adapt.c   | 23 +++++++++++
+ drivers/net/nsos_fcntl.c   | 84 ++++++++++++++++++++++++++++++++++++++
+ drivers/net/nsos_fcntl.h   | 22 ++++++++++
+ drivers/net/nsos_sockets.c | 24 +++++++++++
+ 6 files changed, 158 insertions(+)
  create mode 100644 drivers/net/nsos_fcntl.c
  create mode 100644 drivers/net/nsos_fcntl.h
 
 diff --git a/drivers/net/CMakeLists.txt b/drivers/net/CMakeLists.txt
-index 10dae7521ca..6508490f926 100644
+index a9f9bb38293..8516d4472ef 100644
 --- a/drivers/net/CMakeLists.txt
 +++ b/drivers/net/CMakeLists.txt
-@@ -16,8 +16,10 @@ if(CONFIG_NET_NATIVE_OFFLOADED_SOCKETS)
+@@ -15,9 +15,11 @@ if(CONFIG_NET_NATIVE_OFFLOADED_SOCKETS)
+     ${ZEPHYR_BASE}/subsys/net/lib/sockets
    )
-   zephyr_library_sources(nsos_dns.c)
    zephyr_library_sources(nsos_errno.c)
 +  zephyr_library_sources(nsos_fcntl.c)
+   zephyr_library_sources(nsos_netdb.c)
    zephyr_library_sources(nsos_sockets.c)
    target_sources(native_simulator INTERFACE nsos_adapt.c)
-   target_sources(native_simulator INTERFACE nsos_dns.c)
    target_sources(native_simulator INTERFACE nsos_errno.c)
 +  target_sources(native_simulator INTERFACE nsos_fcntl.c)
+   target_sources(native_simulator INTERFACE nsos_netdb.c)
  endif()
 diff --git a/drivers/net/nsos.h b/drivers/net/nsos.h
-index 97f8ec76257..9af667fb311 100644
+index c36e54551ab..d9ac86c910a 100644
 --- a/drivers/net/nsos.h
 +++ b/drivers/net/nsos.h
-@@ -115,6 +115,9 @@ int nsos_adapt_recvfrom(int fd, void *buf, size_t len, int flags,
+@@ -110,6 +110,9 @@ int nsos_adapt_recvfrom(int fd, void *buf, size_t len, int flags,
  			struct nsos_mid_sockaddr *addr, size_t *addrlen);
  
  
@@ -47,7 +48,7 @@ index 97f8ec76257..9af667fb311 100644
  			   const struct nsos_mid_addrinfo *hints,
  			   struct nsos_mid_addrinfo **res,
 diff --git a/drivers/net/nsos_adapt.c b/drivers/net/nsos_adapt.c
-index 39b7a5b3cc8..d97b99e5de9 100644
+index f526e6595c5..fe7f9ba47ac 100644
 --- a/drivers/net/nsos_adapt.c
 +++ b/drivers/net/nsos_adapt.c
 @@ -11,6 +11,7 @@
@@ -58,15 +59,15 @@ index 39b7a5b3cc8..d97b99e5de9 100644
  #include <netdb.h>
  #include <netinet/in.h>
  #include <poll.h>
-@@ -22,6 +23,7 @@
+@@ -21,6 +22,7 @@
+ 
  #include "nsos.h"
- #include "nsos_dns.h"
  #include "nsos_errno.h"
 +#include "nsos_fcntl.h"
+ #include "nsos_netdb.h"
  
  #include "nsi_tracing.h"
- 
-@@ -572,3 +574,24 @@ void nsos_adapt_freeaddrinfo(struct nsos_mid_addrinfo *res_mid)
+@@ -596,3 +598,24 @@ void nsos_adapt_freeaddrinfo(struct nsos_mid_addrinfo *res_mid)
  	freeaddrinfo(wrap->addrinfo);
  	free(wrap);
  }
@@ -86,21 +87,33 @@ index 39b7a5b3cc8..d97b99e5de9 100644
 +
 +	ret = fcntl(fd, F_SETFL, fl_from_nsos_mid(flags));
 +	if (ret < 0) {
-+		return -errno;
++		return -errno_to_nsos_mid(errno);
 +	}
 +
 +	return 0;
 +}
 diff --git a/drivers/net/nsos_fcntl.c b/drivers/net/nsos_fcntl.c
 new file mode 100644
-index 00000000000..6cb02d03a6b
+index 00000000000..be49d3ec63e
 --- /dev/null
 +++ b/drivers/net/nsos_fcntl.c
-@@ -0,0 +1,72 @@
+@@ -0,0 +1,84 @@
 +/**
 + * Copyright (c) 2023-2024 Marcin Niestroj
 + *
 + * SPDX-License-Identifier: Apache-2.0
++ */
++
++/**
++ * @file
++ *
++ * fcntl.h related code common to Zephyr (top: nsos_sockets.c) and Linux
++ * (bottom: nsos_adapt.c).
++ *
++ * It is needed by both sides to share the same macro definitions/values
++ * (prefixed with NSOS_MID_), which is not possible to achieve with two separate
++ * standard libc libraries, since they use different values for the same
++ * symbols.
 + */
 +
 +#include <fcntl.h>
@@ -198,10 +211,10 @@ index 00000000000..3cab88896f7
 +
 +#endif /* __DRIVERS_NET_NSOS_FCNTL_H__ */
 diff --git a/drivers/net/nsos_sockets.c b/drivers/net/nsos_sockets.c
-index 8ae9e487b59..d1b7f85775e 100644
+index 89257072bd6..abb4c1a36db 100644
 --- a/drivers/net/nsos_sockets.c
 +++ b/drivers/net/nsos_sockets.c
-@@ -17,12 +17,14 @@
+@@ -18,11 +18,13 @@
  #include <zephyr/net/net_ip.h>
  #include <zephyr/net/offloaded_netdev.h>
  #include <zephyr/net/socket_offload.h>
@@ -210,13 +223,12 @@ index 8ae9e487b59..d1b7f85775e 100644
  
  #include "sockets_internal.h"
  #include "nsos.h"
- #include "nsos_dns.h"
  #include "nsos_errno.h"
 +#include "nsos_fcntl.h"
+ #include "nsos_netdb.h"
  
  #include "nsi_host_trampolines.h"
- 
-@@ -226,6 +228,27 @@ static int nsos_ioctl(void *obj, unsigned int request, va_list args)
+@@ -227,6 +229,28 @@ static int nsos_ioctl(void *obj, unsigned int request, va_list args)
  
  	case ZFD_IOCTL_POLL_OFFLOAD:
  		return -EOPNOTSUPP;
@@ -235,15 +247,16 @@ index 8ae9e487b59..d1b7f85775e 100644
 +
 +		ret = fl_to_nsos_mid_strict(flags);
 +		if (ret < 0) {
-+			errno = errno_from_nsos_mid(-ret);
-+			return -1;
++			return -errno_from_nsos_mid(-ret);
 +		}
 +
-+		return nsos_adapt_fcntl_setfl(OBJ_TO_FD(obj), flags);
++		ret = nsos_adapt_fcntl_setfl(OBJ_TO_FD(obj), flags);
++
++		return -errno_from_nsos_mid(-ret);
 +	}
  	}
  
  	return -EINVAL;
 -- 
-2.43.2
+2.45.2
 

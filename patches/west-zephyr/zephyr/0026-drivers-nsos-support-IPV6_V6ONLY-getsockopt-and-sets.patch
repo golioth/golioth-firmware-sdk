@@ -1,0 +1,121 @@
+From cea8fcb05e00aa9ba95cf39204744bf1ee3fda4c Mon Sep 17 00:00:00 2001
+From: Marcin Niestroj <m.niestroj@emb.dev>
+Date: Mon, 6 May 2024 09:53:13 +0200
+Subject: [PATCH] drivers: nsos: support IPV6_V6ONLY getsockopt() and
+ setsockopt()
+
+Handle IPV6_V6ONLY option in getsockopt() and setsockopt() APIs.
+
+Signed-off-by: Marcin Niestroj <m.niestroj@emb.dev>
+---
+ drivers/net/nsos_adapt.c   | 14 ++++++++++++++
+ drivers/net/nsos_socket.h  | 28 ++++++++++++++++++++++++++++
+ drivers/net/nsos_sockets.c | 16 ++++++++++++++++
+ 3 files changed, 58 insertions(+)
+
+diff --git a/drivers/net/nsos_adapt.c b/drivers/net/nsos_adapt.c
+index 9e1a3dd062b..a9b5fb1b33f 100644
+--- a/drivers/net/nsos_adapt.c
++++ b/drivers/net/nsos_adapt.c
+@@ -641,6 +641,13 @@ int nsos_adapt_getsockopt(int fd, int nsos_mid_level, int nsos_mid_optname,
+ 			return nsos_adapt_getsockopt_int(fd, IPPROTO_TCP, TCP_KEEPCNT,
+ 							 nsos_mid_optval, nsos_mid_optlen);
+ 		}
++
++	case NSOS_MID_IPPROTO_IPV6:
++		switch (nsos_mid_optname) {
++		case NSOS_MID_IPV6_V6ONLY:
++			return nsos_adapt_getsockopt_int(fd, IPPROTO_IPV6, IPV6_V6ONLY,
++							 nsos_mid_optval, nsos_mid_optlen);
++		}
+ 	}
+ 
+ 	return -NSOS_MID_EOPNOTSUPP;
+@@ -720,6 +727,13 @@ int nsos_adapt_setsockopt(int fd, int nsos_mid_level, int nsos_mid_optname,
+ 			return nsos_adapt_setsockopt_int(fd, IPPROTO_TCP, TCP_KEEPCNT,
+ 							 nsos_mid_optval, nsos_mid_optlen);
+ 		}
++
++	case NSOS_MID_IPPROTO_IPV6:
++		switch (nsos_mid_optname) {
++		case NSOS_MID_IPV6_V6ONLY:
++			return nsos_adapt_setsockopt_int(fd, IPPROTO_IPV6, IPV6_V6ONLY,
++							 nsos_mid_optval, nsos_mid_optlen);
++		}
+ 	}
+ 
+ 	return -NSOS_MID_EOPNOTSUPP;
+diff --git a/drivers/net/nsos_socket.h b/drivers/net/nsos_socket.h
+index f63b8b30049..66f54130d17 100644
+--- a/drivers/net/nsos_socket.h
++++ b/drivers/net/nsos_socket.h
+@@ -103,4 +103,32 @@ struct nsos_mid_timeval {
+ 
+ /** @} */
+ 
++/**
++ * @name IPv6 level options (NSOS_MID_IPPROTO_IPV6)
++ * @{
++ */
++/* Socket options for NSOS_MID_IPPROTO_IPV6 level */
++/** Set the unicast hop limit for the socket. */
++#define NSOS_MID_IPV6_UNICAST_HOPS	16
++
++/** Set the multicast hop limit for the socket. */
++#define NSOS_MID_IPV6_MULTICAST_HOPS 18
++
++/** Join IPv6 multicast group. */
++#define NSOS_MID_IPV6_ADD_MEMBERSHIP 20
++
++/** Leave IPv6 multicast group. */
++#define NSOS_MID_IPV6_DROP_MEMBERSHIP 21
++
++/** Don't support IPv4 access */
++#define NSOS_MID_IPV6_V6ONLY 26
++
++/** Pass an IPV6_RECVPKTINFO ancillary message that contains a
++ *  in6_pktinfo structure that supplies some information about the
++ *  incoming packet. See RFC 3542.
++ */
++#define NSOS_MID_IPV6_RECVPKTINFO 49
++
++/** @} */
++
+ #endif /* __DRIVERS_NET_NSOS_SOCKET_H__ */
+diff --git a/drivers/net/nsos_sockets.c b/drivers/net/nsos_sockets.c
+index 40cb6a62f90..54b1af8b246 100644
+--- a/drivers/net/nsos_sockets.c
++++ b/drivers/net/nsos_sockets.c
+@@ -1044,6 +1044,14 @@ static int nsos_getsockopt(void *obj, int level, int optname,
+ 						   NSOS_MID_IPPROTO_TCP, NSOS_MID_TCP_KEEPCNT,
+ 						   optval, optlen);
+ 		}
++
++	case IPPROTO_IPV6:
++		switch (optname) {
++		case IPV6_V6ONLY:
++			return nsos_getsockopt_int(sock,
++						   NSOS_MID_IPPROTO_IPV6, NSOS_MID_IPV6_V6ONLY,
++						   optval, optlen);
++		}
+ 	}
+ 
+ 	errno = EOPNOTSUPP;
+@@ -1173,6 +1181,14 @@ static int nsos_setsockopt(void *obj, int level, int optname,
+ 						   NSOS_MID_IPPROTO_TCP, NSOS_MID_TCP_KEEPCNT,
+ 						   optval, optlen);
+ 		}
++
++	case IPPROTO_IPV6:
++		switch (optname) {
++		case IPV6_V6ONLY:
++			return nsos_setsockopt_int(sock,
++						   NSOS_MID_IPPROTO_IPV6, NSOS_MID_IPV6_V6ONLY,
++						   optval, optlen);
++		}
+ 	}
+ 
+ 	errno = EOPNOTSUPP;
+-- 
+2.45.2
+

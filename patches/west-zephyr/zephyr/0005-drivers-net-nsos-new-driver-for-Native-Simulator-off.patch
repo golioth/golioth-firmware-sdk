@@ -1,4 +1,4 @@
-From 96c8785c9bbe0ea038ed6405769a8a01357cf80f Mon Sep 17 00:00:00 2001
+From a170e9857293ae5846522ad274656eb482290635 Mon Sep 17 00:00:00 2001
 From: Marcin Niestroj <m.niestroj@emb.dev>
 Date: Fri, 10 Nov 2023 15:46:04 +0100
 Subject: [PATCH] drivers: net: nsos: new driver for Native Simulator offloaded
@@ -25,12 +25,12 @@ Signed-off-by: Marcin Niestroj <m.niestroj@emb.dev>
 ---
  drivers/net/CMakeLists.txt |  10 +
  drivers/net/Kconfig        |  16 ++
- drivers/net/nsos.h         | 101 +++++++
- drivers/net/nsos_adapt.c   | 323 +++++++++++++++++++++++
+ drivers/net/nsos.h         | 100 +++++++
+ drivers/net/nsos_adapt.c   | 333 +++++++++++++++++++++++
  drivers/net/nsos_errno.c   | 125 +++++++++
  drivers/net/nsos_errno.h   |  95 +++++++
- drivers/net/nsos_sockets.c | 525 +++++++++++++++++++++++++++++++++++++
- 7 files changed, 1195 insertions(+)
+ drivers/net/nsos_sockets.c | 532 +++++++++++++++++++++++++++++++++++++
+ 7 files changed, 1211 insertions(+)
  create mode 100644 drivers/net/nsos.h
  create mode 100644 drivers/net/nsos_adapt.c
  create mode 100644 drivers/net/nsos_errno.c
@@ -56,7 +56,7 @@ index 0b431455a2a..d839b9690c3 100644
 +  target_sources(native_simulator INTERFACE nsos_errno.c)
 +endif()
 diff --git a/drivers/net/Kconfig b/drivers/net/Kconfig
-index c83f0f42a08..24fe7b44b59 100644
+index c83f0f42a08..77513d340a0 100644
 --- a/drivers/net/Kconfig
 +++ b/drivers/net/Kconfig
 @@ -225,4 +225,20 @@ config NET_CANBUS_INIT_PRIORITY
@@ -76,16 +76,16 @@ index c83f0f42a08..24fe7b44b59 100644
 +	  Offloaded sockets for Native Simulator utilize host BSD sockets API (like socket(),
 +	  connect(), send(), recvfrom(), etc.) in order to provide networking capability.
 +
-+	  Usage of this driver (as compared to others) is possible without any additional setup on
-+	  host side, which is its main advantage.
++	  This driver main advantage is that it is possible to use this driver without any
++	  additional setup on the host side, unlike with the native TAP Ethernet driver.
 +
  endif # NET_DRIVERS
 diff --git a/drivers/net/nsos.h b/drivers/net/nsos.h
 new file mode 100644
-index 00000000000..238a8429df9
+index 00000000000..13a6b8f8826
 --- /dev/null
 +++ b/drivers/net/nsos.h
-@@ -0,0 +1,101 @@
+@@ -0,0 +1,100 @@
 +/**
 + * Copyright (c) 2023-2024 Marcin Niestroj
 + *
@@ -97,7 +97,6 @@ index 00000000000..238a8429df9
 +
 +#include <stddef.h>
 +#include <stdint.h>
-+#include <sys/types.h>
 +
 +/* Protocol families. */
 +#define NSOS_MID_PF_UNSPEC       0          /**< Unspecified protocol family.  */
@@ -189,10 +188,10 @@ index 00000000000..238a8429df9
 +#endif /* __DRIVERS_NET_NSOS_H__ */
 diff --git a/drivers/net/nsos_adapt.c b/drivers/net/nsos_adapt.c
 new file mode 100644
-index 00000000000..bdcede54b47
+index 00000000000..37dfe9b2368
 --- /dev/null
 +++ b/drivers/net/nsos_adapt.c
-@@ -0,0 +1,323 @@
+@@ -0,0 +1,333 @@
 +/**
 + * Copyright (c) 2023-2024 Marcin Niestroj
 + *
@@ -348,7 +347,7 @@ index 00000000000..bdcede54b47
 +static int sockaddr_from_nsos_mid(struct sockaddr **addr, socklen_t *addrlen,
 +				  const struct nsos_mid_sockaddr *addr_mid, size_t addrlen_mid)
 +{
-+	if (!addr_mid) {
++	if (!addr_mid || addrlen_mid == 0) {
 +		*addr = NULL;
 +		*addrlen = 0;
 +
@@ -377,7 +376,7 @@ index 00000000000..bdcede54b47
 +static int sockaddr_to_nsos_mid(const struct sockaddr *addr, socklen_t addrlen,
 +				struct nsos_mid_sockaddr *addr_mid, size_t *addrlen_mid)
 +{
-+	if (!addr) {
++	if (!addr || addrlen == 0) {
 +		*addrlen_mid = 0;
 +
 +		return 0;
@@ -402,6 +401,8 @@ index 00000000000..bdcede54b47
 +		return 0;
 +	}
 +	}
++
++	nsi_print_warning("%s: socket family %d not supported\n", __func__, addr->sa_family);
 +
 +	return -NSOS_MID_EINVAL;
 +}
@@ -464,13 +465,17 @@ index 00000000000..bdcede54b47
 +	struct sockaddr *addr = (struct sockaddr *)&addr_storage;
 +	socklen_t addrlen = sizeof(addr_storage);
 +	int ret;
++	int err;
 +
 +	ret = accept(fd, addr, &addrlen);
 +	if (ret < 0) {
 +		return -errno_to_nsos_mid(errno);
 +	}
 +
-+	sockaddr_to_nsos_mid(addr, addrlen, addr_mid, addrlen_mid);
++	err = sockaddr_to_nsos_mid(addr, addrlen, addr_mid, addrlen_mid);
++	if (err) {
++		return err;
++	}
 +
 +	return ret;
 +}
@@ -505,6 +510,7 @@ index 00000000000..bdcede54b47
 +	struct sockaddr *addr = (struct sockaddr *)&addr_storage;
 +	socklen_t addrlen = sizeof(addr_storage);
 +	int ret;
++	int err;
 +
 +	ret = recvfrom(fd, buf, len, socket_flags_from_nsos_mid(flags),
 +		       addr, &addrlen);
@@ -512,7 +518,10 @@ index 00000000000..bdcede54b47
 +		return -errno_to_nsos_mid(errno);
 +	}
 +
-+	sockaddr_to_nsos_mid(addr, addrlen, addr_mid, addrlen_mid);
++	err = sockaddr_to_nsos_mid(addr, addrlen, addr_mid, addrlen_mid);
++	if (err) {
++		return err;
++	}
 +
 +	return ret;
 +}
@@ -750,10 +759,10 @@ index 00000000000..8e9b6214671
 +#endif /* __DRIVERS_NET_NSOS_ERRNO_H__ */
 diff --git a/drivers/net/nsos_sockets.c b/drivers/net/nsos_sockets.c
 new file mode 100644
-index 00000000000..710d7232a4e
+index 00000000000..4d3ea153ba1
 --- /dev/null
 +++ b/drivers/net/nsos_sockets.c
-@@ -0,0 +1,525 @@
+@@ -0,0 +1,532 @@
 +/**
 + * Copyright (c) 2023-2024 Marcin Niestroj
 + *
@@ -1208,6 +1217,12 @@ index 00000000000..710d7232a4e
 +	return ret;
 +}
 +
++static ssize_t nsos_recvmsg(void *obj, struct msghdr *msg, int flags)
++{
++	errno = ENOTSUP;
++	return -1;
++}
++
 +static const struct socket_op_vtable nsos_socket_fd_op_vtable = {
 +	.fd_vtable = {
 +		.read = nsos_read,
@@ -1222,6 +1237,7 @@ index 00000000000..710d7232a4e
 +	.sendto = nsos_sendto,
 +	.sendmsg = nsos_sendmsg,
 +	.recvfrom = nsos_recvfrom,
++	.recvmsg = nsos_recvmsg,
 +};
 +
 +static bool nsos_is_supported(int family, int type, int proto)
@@ -1280,5 +1296,5 @@ index 00000000000..710d7232a4e
 +			NULL, NULL,
 +			0, &nsos_iface_offload_api, NET_ETH_MTU);
 -- 
-2.43.2
+2.45.2
 
