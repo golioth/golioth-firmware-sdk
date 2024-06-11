@@ -566,7 +566,7 @@ static void golioth_coap_post_block(golioth_coap_request_msg_t *req,
     }
 
     golioth_coap_add_path(req_pdu, req->path_prefix, req->path);
-    golioth_coap_add_content_type(req_pdu, req->post.content_type);
+    golioth_coap_add_content_type(req_pdu, req->post_block.content_type);
     golioth_coap_add_block1(req_pdu,
                             req->post_block.block_index,
                             CONFIG_GOLIOTH_BLOCKWISE_UPLOAD_BLOCK_SIZE,
