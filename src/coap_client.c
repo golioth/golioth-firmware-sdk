@@ -223,7 +223,7 @@ static enum golioth_status golioth_coap_client_set_internal(struct golioth_clien
          *       the mbox is full, so coap_client writes a log, which the
          *       logging thread attempts to send to the cloud, and so on.
          */
-        if (payload_size > 0)
+        if (request_payload)
         {
             golioth_sys_free(request_payload);
         }
