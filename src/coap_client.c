@@ -82,7 +82,6 @@ enum golioth_status golioth_coap_client_empty(struct golioth_client *client,
         {
             golioth_event_group_destroy(request_msg.request_complete_event);
             golioth_sys_sem_destroy(request_msg.request_complete_ack_sem);
-            request_msg.status = NULL;
         }
         return GOLIOTH_ERR_QUEUE_FULL;
     }
@@ -232,7 +231,6 @@ static enum golioth_status golioth_coap_client_set_internal(struct golioth_clien
         {
             golioth_event_group_destroy(request_msg.request_complete_event);
             golioth_sys_sem_destroy(request_msg.request_complete_ack_sem);
-            request_msg.status = NULL;
         }
         return GOLIOTH_ERR_QUEUE_FULL;
     }
@@ -398,7 +396,6 @@ enum golioth_status golioth_coap_client_delete(struct golioth_client *client,
         {
             golioth_event_group_destroy(request_msg.request_complete_event);
             golioth_sys_sem_destroy(request_msg.request_complete_ack_sem);
-            request_msg.status = NULL;
         }
         return GOLIOTH_ERR_QUEUE_FULL;
     }
@@ -506,7 +503,6 @@ static enum golioth_status golioth_coap_client_get_internal(struct golioth_clien
         {
             golioth_event_group_destroy(request_msg.request_complete_event);
             golioth_sys_sem_destroy(request_msg.request_complete_ack_sem);
-            request_msg.status = NULL;
         }
         return GOLIOTH_ERR_QUEUE_FULL;
     }
