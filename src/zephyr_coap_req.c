@@ -173,7 +173,7 @@ static int golioth_coap_req_reply_handler(struct golioth_coap_req *req,
 
         (void) req->cb(&rsp);
 
-        LOG_INF("cancel and free req: %p", req);
+        LOG_DBG("cancel and free req: %p", req);
 
         goto cancel_and_free;
     }
