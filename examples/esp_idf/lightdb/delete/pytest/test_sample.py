@@ -10,12 +10,21 @@ LOGGER = logging.getLogger(__name__)
 
 pytestmark = pytest.mark.anyio
 
+async def counter_set_and_verify(device, counter_desired: int):
+    for _ in range(3):
+        await device.lightdb.set("counter", counter_desired)
+        counter_reported = await device.lightdb.get("counter")
+        if counter_reported == counter_desired:
+            break
+
+        await trio.sleep(1)
+
+    assert counter_reported == counter_desired
+
 async def test_lightdb_delete(board, device):
     # Set counter in lightdb state
 
-    await device.lightdb.set("counter", 34)
-    counter = await device.lightdb.get("counter")
-    assert counter == 34
+    await counter_set_and_verify(device, 34)
 
     await trio.sleep(2)
 
@@ -34,9 +43,7 @@ async def test_lightdb_delete(board, device):
 
     # Set and verify counter
 
-    await device.lightdb.set("counter", 62)
-    counter = await device.lightdb.get("counter")
-    assert counter == 62
+    await counter_set_and_verify(device, 62)
 
     # Verify lightdb delete (sync)
 
