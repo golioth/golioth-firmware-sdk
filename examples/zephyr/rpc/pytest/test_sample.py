@@ -28,7 +28,7 @@ async def test_logging(shell, device, wifi_ssid, wifi_psk):
 
     # Wait for device to reboot and connect
 
-    shell._device.readlines_until(regex=".*rpc_sample: Golioth client connected", timeout=90.0)
+    shell._device.readlines_until(regex=".*RPC observation established", timeout=90.0)
 
     # Test successful RPC
 
