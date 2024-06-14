@@ -32,6 +32,11 @@ async def test_lightdb_set(board, device):
         pattern = re.compile(fr"Setting counter to {i}")
         board.wait_for_regex_in_line(pattern, timeout_s=30.0)
         board.wait_for_regex_in_line('Counter successfully set', timeout_s=5.0)
-        await trio.sleep(1)
-        counter = await device.lightdb.get("counter")
+
+        for _ in range(3):
+            counter = await device.lightdb.get("counter")
+            if counter == i:
+                break
+            await trio.sleep(1)
+
         assert counter == i
