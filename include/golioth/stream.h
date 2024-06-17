@@ -64,4 +64,37 @@ enum golioth_status golioth_stream_set_sync(struct golioth_client *client,
                                             size_t buf_len,
                                             int32_t timeout_s);
 
+/// Read block callback
+///
+/// This callback will be called by the golioth client each time it needs to
+/// fill a block.
+///
+/// @param block_idx The index of the block to fill
+/// @param block_buffer The buffer that this callabck should fill
+/// @param block_size (in/out) Contains the maximum size of block_buffer, and
+///        should be set to the size of data actually placed in block_buffer
+/// @param is_last (out) Set this to true if this is the last block to transfer
+/// @param arg A user provided argument
+typedef enum golioth_status (*stream_read_block_cb)(uint32_t block_idx,
+                                                    uint8_t *block_buffer,
+                                                    size_t *block_size,
+                                                    bool *is_last,
+                                                    void *arg);
+
+/// Set an object in stream at a particular path synchronously
+///
+/// This function will block until the whole transfer is complete, or
+/// errors out.
+///
+/// @param client The client handle from @ref golioth_client_create
+/// @param path The path in stream to set (e.g. "my_obj")
+/// @param content_type The content type of the object (e.g. JSON or CBOR)
+/// @param cb A callback that will be used to fill each block in the transfer
+/// @param arg An optional user provided argument that will be passed to cb
+enum golioth_status golioth_stream_set_blockwise_sync(struct golioth_client *client,
+                                                      const char *path,
+                                                      enum golioth_content_type content_type,
+                                                      stream_read_block_cb cb,
+                                                      void *arg);
+
 /// @}
