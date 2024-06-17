@@ -5,6 +5,7 @@
  */
 #include <golioth/stream.h>
 #include "coap_client.h"
+#include "coap_blockwise.h"
 
 #if defined(CONFIG_GOLIOTH_STREAM)
 
@@ -48,5 +49,15 @@ enum golioth_status golioth_stream_set_sync(struct golioth_client *client,
                                    true,
                                    timeout_s);
 }
+
+enum golioth_status golioth_stream_set_blockwise_sync(struct golioth_client *client,
+                                                      const char *path,
+                                                      enum golioth_content_type content_type,
+                                                      stream_read_block_cb cb,
+                                                      void *arg)
+{
+    return golioth_blockwise_post(client, GOLIOTH_STREAM_PATH_PREFIX, path, content_type, cb, arg);
+}
+
 
 #endif  // CONFIG_GOLIOTH_STREAM
