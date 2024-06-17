@@ -137,7 +137,7 @@ static enum golioth_status process_blockwise_uploads(struct golioth_client *clie
                                                      struct blockwise_transfer *ctx)
 {
     enum golioth_status status = GOLIOTH_ERR_FAIL;
-    ctx->block_size = 0;
+    ctx->block_size = CONFIG_GOLIOTH_BLOCKWISE_UPLOAD_BLOCK_SIZE;
     call_read_block_callback(ctx);
     if (ctx->block_size)
     {
