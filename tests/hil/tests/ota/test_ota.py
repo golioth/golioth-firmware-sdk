@@ -1,6 +1,5 @@
-import os
 import pytest
-import time
+import trio
 
 UPDATE_PACKAGE = 'main'
 DUMMY_VER_OLDER = '1.2.2'
@@ -179,6 +178,9 @@ async def test_reason_and_state(board, device, project, releases):
 
     for i, r in enumerate(golioth_ota_reason):
         board.wait_for_regex_in_line("OTA status reported successfully", timeout_s=20)
+
+        # Wait for state update to propagate
+        await trio.sleep(2)
 
         await device.refresh()
 
