@@ -79,9 +79,9 @@ each of the samples is also continously verified on target.
 | ESP32-S3-DevKitC-1   | ESP-IDF (v5.3.0)         |
 | ESP32-C3-DevKitM-1   | ESP-IDF (v5.3.0)         |
 | ESP32-DevKitC-WROVER | ESP-IDF (v5.3.0)         |
-| ESP32-DevKitC-WROVER | Zephyr (v3.6.0)          |
-| nRF52840 DK + ESP32  | Zephyr (v3.6.0)          |
-| MIMXRT1024-EVK       | Zephyr (v3.6.0)          |
-| RAK5010              | Zephyr (v3.6.0)          |
-| nRF9160 DK           | nRF Connect SDK (v2.5.2) |
+| ESP32-DevKitC-WROVER | Zephyr (v3.7.0)          |
+| nRF52840 DK + ESP32  | Zephyr (v3.7.0)          |
+| MIMXRT1024-EVK       | Zephyr (v3.7.0)          |
+| RAK5010              | Zephyr (v3.7.0)          |
+| nRF9160 DK           | nRF Connect SDK (v2.7.0) |
 | CY8CPROTO-062-4343W  | ModusToolbox (3.0.0)     |

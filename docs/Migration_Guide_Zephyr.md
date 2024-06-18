@@ -606,7 +606,6 @@ should be increased in tandem to meet your application's needs:
 
 ```config
 # Default FD settings
-CONFIG_EVENTFD_MAX=6
-CONFIG_POSIX_MAX_FDS=16
+CONFIG_ZVFS_EVENTFD_MAX=6
+CONFIG_ZVFS_OPEN_MAX=16
 ```
-
