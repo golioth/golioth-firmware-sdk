@@ -1,7 +1,7 @@
 manifest:
   projects:
     - name: nrf
-      revision: v2.5.2
+      revision: c101ba27fd960bb5f77d588b70de10d1bc8354b8
       url: http://github.com/nrfconnect/sdk-nrf
       import: true
 

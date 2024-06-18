@@ -60,7 +60,7 @@ On your host computer open a terminal window, locate the source code of
 this sample application (i.e., `examples/zephyr/certificate_provisioning`) and type:
 
 ```console
-$ west build -b nrf52840dk_nrf52840 examples/zephyr/certificate_provisioning
+$ west build -b nrf52840dk/nrf52840 examples/zephyr/certificate_provisioning
 $ west flash
 ```
 
@@ -70,7 +70,7 @@ On your host computer open a terminal window, locate the source code of
 this sample application (i.e., `examples/zephyr/certificate_provisioning`) and type:
 
 ```console
-$ west build -b nrf9160dk_nrf9160_ns examples/zephyr/certificate_provisioning
+$ west build -b nrf9160dk/nrf9160/ns examples/zephyr/certificate_provisioning
 $ west flash
 ```
 
@@ -80,7 +80,7 @@ On your host computer open a terminal window. From the
 `golioth-firmware-sdk` folder, type:
 
 ```console
-$ west build -b rak5010_nrf52840 examples/zephyr/certificate_provisioning
+$ west build -b rak5010/nrf52840 examples/zephyr/certificate_provisioning
 $ west flash
 ```
 

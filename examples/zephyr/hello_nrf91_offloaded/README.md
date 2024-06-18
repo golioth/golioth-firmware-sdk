@@ -17,7 +17,7 @@ On your host computer open a terminal window, locate the source code of
 this sample application (i.e., `examples/zephyr/hello_nrf91_offloaded`) and type:
 
 ```console
-$ west build -b nrf9160dk_nrf9160_ns examples/zephyr/hello_nrf91_offloaded
+$ west build -b nrf9160dk/nrf9160/ns examples/zephyr/hello_nrf91_offloaded
 $ west flash
 ```
 

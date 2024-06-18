@@ -15,7 +15,7 @@ For example, to compile the connection HIL test for the nRF52840-DK from the
 root of the SDK repository:
 
 ```sh
-west build -p -b nrf52840dk_nrf52840 tests/hil/platform/zephyr -- -DGOLIOTH_HIL_TEST=connection
+west build -p -b nrf52840dk/nrf52840 tests/hil/platform/zephyr -- -DGOLIOTH_HIL_TEST=connection
 ```
 
 ## Example of running Zephyr RPC test locally on nRF52840dk
@@ -27,7 +27,7 @@ cd modules/lib/golioth-firmware-sdk
 pip install tests/hil/scripts/pytest-hil/
 
 # Build
-west build -p -b nrf52840dk_nrf52840 tests/hil/platform/zephyr -- -DGOLIOTH_HIL_TEST=rpc
+west build -p -b nrf52840dk/nrf52840 tests/hil/platform/zephyr -- -DGOLIOTH_HIL_TEST=rpc
 
 # Run test
 pytest --rootdir . tests/hil/tests/rpc         \
