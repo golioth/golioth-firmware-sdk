@@ -10,10 +10,10 @@ tests:
     timeout: 600
     extra_args: EXTRA_CONF_FILE="../common/runtime_settings.conf"
     platform_allow: >
-      esp32_devkitc_wrover
+      esp32_devkitc_wrover/esp32/procpu
       mimxrt1024_evk
-      nrf52840dk_nrf52840
-      rak5010_nrf52840
+      nrf52840dk/nrf52840
+      rak5010/nrf52840
   sample.golioth.fw_update:
     harness: pytest
     timeout: 720
@@ -23,4 +23,4 @@ tests:
       - CONFIG_SHELL_DEFAULT_TERMINAL_WIDTH=100
       - CONFIG_GOLIOTH_SAMPLE_NRF91_RESET_LOOP_OVERRIDE=y
     platform_allow: >
-      nrf9160dk_nrf9160_ns
+      nrf9160dk/nrf9160/ns

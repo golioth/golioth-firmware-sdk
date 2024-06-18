@@ -125,7 +125,7 @@ On your host computer open a terminal window, locate the source code of this
 sample application (i.e., `examples/zephyr/hello`) and type:
 
 ```console
-$ west build -b esp32_devkitc_wrover examples/zephyr/hello
+$ west build -b esp32_devkitc_wrover/esp32/procpu examples/zephyr/hello
 $ west flash
 ```
 
@@ -172,7 +172,7 @@ On your host computer open a terminal window, locate the source code of
 this sample application (i.e., `examples/zephyr/hello`) and type:
 
 ```console
-$ west build -b nrf52840dk_nrf52840 examples/zephyr/hello
+$ west build -b nrf52840dk/nrf52840 examples/zephyr/hello
 $ west flash
 ```
 
@@ -182,7 +182,7 @@ On your host computer open a terminal window, locate the source code of
 this sample application (i.e., `examples/zephyr/hello`) and type:
 
 ```console
-$ west build -b nrf9160dk_nrf9160_ns examples/zephyr/hello
+$ west build -b nrf9160dk/nrf9160/ns examples/zephyr/hello
 $ west flash
 ```
 
@@ -192,7 +192,7 @@ On your host computer open a terminal window. From the
 `golioth-firmware-sdk` folder, type:
 
 ```console
-$ west build -b rak5010_nrf52840 examples/zephyr/hello
+$ west build -b rak5010/nrf52840 examples/zephyr/hello
 $ west flash
 ```
 

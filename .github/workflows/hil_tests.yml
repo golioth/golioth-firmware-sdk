@@ -40,7 +40,7 @@ jobs:
       matrix:
         include:
           - hil_board: esp32_devkitc_wrover
-            west_board: esp32_devkitc_wrover
+            west_board: esp32_devkitc_wrover/esp32/procpu
             manifest: .ci-west-zephyr.yml
             binary_name: merged.bin
             binary_blob: hal_espressif
@@ -49,11 +49,11 @@ jobs:
             manifest: .ci-west-zephyr.yml
             binary_name: zephyr.hex
           - hil_board: nrf52840dk
-            west_board: nrf52840dk_nrf52840
+            west_board: nrf52840dk/nrf52840
             manifest: .ci-west-zephyr.yml
             binary_name: zephyr.hex
           - hil_board: nrf9160dk
-            west_board: nrf9160dk_nrf9160_ns
+            west_board: nrf9160dk/nrf9160/ns
             manifest: .ci-west-ncs.yml
             binary_name: merged.hex
     uses: ./.github/workflows/hil_test_zephyr.yml
@@ -75,7 +75,7 @@ jobs:
         include:
           - hil_board: esp32s3_devkitc
             idf_target: esp32s3
-          - hil_board: esp32_devkitc_wrover
+          - hil_board: esp32_devkitc_wrover/esp32/procpu
             idf_target: esp32
           - hil_board: esp32c3_devkitm
             idf_target: esp32c3
@@ -102,7 +102,7 @@ jobs:
       matrix:
         include:
           - hil_board: esp32_devkitc_wrover
-            west_board: esp32_devkitc_wrover
+            west_board: esp32_devkitc_wrover/esp32/procpu
             manifest: .ci-west-zephyr.yml
             binary_blob: hal_espressif
             run_tests: false
@@ -113,17 +113,17 @@ jobs:
             run_tests: true
 
           - hil_board: nrf52840dk
-            west_board: nrf52840dk_nrf52840
+            west_board: nrf52840dk/nrf52840
             manifest: .ci-west-zephyr.yml
             run_tests: true
 
           - hil_board: nrf9160dk
-            west_board: nrf9160dk_nrf9160_ns
+            west_board: nrf9160dk/nrf9160/ns
             manifest: .ci-west-ncs.yml
             run_tests: true
 
           - hil_board: rak5010_nrf52840
-            west_board: rak5010_nrf52840
+            west_board: rak5010/nrf52840
             manifest: .ci-west-zephyr.yml
             run_tests: false
 
@@ -155,7 +155,7 @@ jobs:
       matrix:
         include:
           - west_board: native_sim
-          - west_board: native_sim_64
+          - west_board: native_sim/native/64
     steps:
       - name: Checkout repository and submodules
         uses: actions/checkout@v4
@@ -197,7 +197,7 @@ jobs:
         uses: actions/upload-artifact@v4
         if: ${{ always() }}
         with:
-          name: twister-run-artifacts-${{ matrix.west_board }}
+          name: twister-run-artifacts-${{ matrix.hil_board }}
           path: |
             reports/*
             twister-out/**/*.log
@@ -212,7 +212,7 @@ jobs:
         include:
           - hil_board: esp32s3_devkitc
             idf_target: esp32s3
-          - hil_board: esp32_devkitc_wrover
+          - hil_board: esp32_devkitc_wrover/esp32/procpu
             idf_target: esp32
           - hil_board: esp32c3_devkitm
             idf_target: esp32c3
