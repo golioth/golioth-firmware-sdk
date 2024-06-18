@@ -5,13 +5,13 @@ common:
 tests:
   sample.golioth.basics:
     platform_allow: >
-      esp32_devkitc_wrover
+      esp32_devkitc_wrover/esp32/procpu
       mimxrt1024_evk
-      nrf52840dk_nrf52840
-      nrf9160dk_nrf9160_ns
-      rak5010_nrf52840
+      nrf52840dk/nrf52840
+      nrf9160dk/nrf9160/ns
+      rak5010/nrf52840
       qemu_x86
   sample.golioth.basics.sysbuild:
     sysbuild: true
     platform_allow: >
-      nrf52840dk_nrf52840
+      nrf52840dk/nrf52840
