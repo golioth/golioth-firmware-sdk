@@ -16,6 +16,7 @@ struct blockwise_transfer
     enum golioth_content_type content_type;
     golioth_sys_sem_t sem;
     uint32_t block_idx;
+    /* Negotiated block size */
     size_t block_size;
     const char *path_prefix;
     const char *path;
@@ -58,7 +59,7 @@ static void blockwise_upload_init(struct blockwise_transfer *ctx,
     ctx->path_prefix = path_prefix;
     ctx->path = path;
     ctx->content_type = content_type;
-    ctx->block_size = 0;
+    ctx->block_size = CONFIG_GOLIOTH_BLOCKWISE_UPLOAD_BLOCK_SIZE;
     ctx->block_idx = 0;
     ctx->block_buffer = data_buf;
     ctx->callback_arg = callback_arg;
@@ -80,24 +81,27 @@ static void on_block_sent(struct golioth_client *client,
 
 // Function to call the application's read block callback after a successful
 // blockwise upload
-static void call_read_block_callback(struct blockwise_transfer *ctx)
+static int call_read_block_callback(struct blockwise_transfer *ctx)
 {
+    size_t block_size = ctx->block_size;
     int err = ctx->callback.read_cb(ctx->block_idx,
                                     ctx->block_buffer,
-                                    &ctx->block_size,
+                                    &block_size,
                                     &ctx->is_last,
                                     ctx->callback_arg);
     if (err != GOLIOTH_OK)
     {
-        // TODO: handle application callback error
+        return -err;
     }
+    return block_size;
 }
 
 // Function to upload a single block
 static enum golioth_status upload_single_block(struct golioth_client *client,
-                                               struct blockwise_transfer *ctx)
+                                               struct blockwise_transfer *ctx,
+                                               size_t block_size)
 {
-    assert(ctx->block_size > 0 && ctx->block_size <= CONFIG_GOLIOTH_BLOCKWISE_UPLOAD_BLOCK_SIZE);
+    assert(block_size > 0 && block_size <= ctx->block_size);
 
     struct post_block_ctx arg = {
         .status = GOLIOTH_ERR_FAIL,
@@ -111,7 +115,7 @@ static enum golioth_status upload_single_block(struct golioth_client *client,
                                                             ctx->content_type,
                                                             ctx->block_idx,
                                                             ctx->block_buffer,
-                                                            ctx->block_size,
+                                                            block_size,
                                                             on_block_sent,
                                                             &arg,
                                                             false,
@@ -137,11 +141,14 @@ static enum golioth_status process_blockwise_uploads(struct golioth_client *clie
                                                      struct blockwise_transfer *ctx)
 {
     enum golioth_status status = GOLIOTH_ERR_FAIL;
-    ctx->block_size = CONFIG_GOLIOTH_BLOCKWISE_UPLOAD_BLOCK_SIZE;
-    call_read_block_callback(ctx);
-    if (ctx->block_size)
+    int ret = call_read_block_callback(ctx);
+    if (ret < 0)
     {
-        status = upload_single_block(client, ctx);
+        status = -ret;
+    }
+    else
+    {
+        status = upload_single_block(client, ctx, (size_t) ret);
         if (status == GOLIOTH_OK)
         {
             ctx->block_idx++;
@@ -229,7 +236,7 @@ static void blockwise_download_init(struct blockwise_transfer *ctx,
     ctx->path_prefix = path_prefix;
     ctx->path = path;
     ctx->content_type = content_type;
-    ctx->block_size = 0;
+    ctx->block_size = CONFIG_GOLIOTH_BLOCKWISE_UPLOAD_BLOCK_SIZE;
     ctx->block_idx = 0;
     ctx->block_buffer = data_buf;
     ctx->callback_arg = callback_arg;
@@ -238,11 +245,11 @@ static void blockwise_download_init(struct blockwise_transfer *ctx,
 
 // Function to call the application's write block callback after a successful
 // blockwise download
-static void call_write_block_callback(struct blockwise_transfer *ctx)
+static void call_write_block_callback(struct blockwise_transfer *ctx, size_t rcvd_bytes)
 {
     if (ctx->callback.write_cb(ctx->block_idx,
                                ctx->block_buffer,
-                               ctx->block_size,
+                               rcvd_bytes,
                                ctx->is_last,
                                ctx->callback_arg)
         != GOLIOTH_OK)
@@ -278,7 +285,8 @@ static void on_block_rcvd(struct golioth_client *client,
 
 // Function to download a single block
 static enum golioth_status download_single_block(struct golioth_client *client,
-                                                 struct blockwise_transfer *ctx)
+                                                 struct blockwise_transfer *ctx,
+                                                 size_t *rcvd_bytes)
 {
     struct get_block_ctx arg = {
         .is_last = false,
@@ -305,7 +313,7 @@ static enum golioth_status download_single_block(struct golioth_client *client,
 
         // TODO: These don't need to be stored in the ctx struct
         ctx->is_last = arg.is_last;
-        ctx->block_size = arg.rcvd_bytes;
+        *rcvd_bytes = arg.rcvd_bytes;
     }
 
     return err;
@@ -322,10 +330,11 @@ static enum golioth_status handle_download_error()
 static enum golioth_status process_blockwise_downloads(struct golioth_client *client,
                                                        struct blockwise_transfer *ctx)
 {
-    enum golioth_status status = download_single_block(client, ctx);
+    size_t rcvd_bytes = 0;
+    enum golioth_status status = download_single_block(client, ctx, &rcvd_bytes);
     if (status == GOLIOTH_OK)
     {
-        call_write_block_callback(ctx);
+        call_write_block_callback(ctx, rcvd_bytes);
     }
     else
     {
