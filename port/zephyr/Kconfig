@@ -7,7 +7,8 @@ module-str = Golioth
 menuconfig GOLIOTH_FIRMWARE_SDK
 	bool "Golioth Firmware SDK"
 	select COAP
-	select EVENTFD
+	select ZVFS_EVENTFD if !ZEPHYR_NRF_MODULE
+	select EVENTFD if ZEPHYR_NRF_MODULE
 	select REBOOT if BOOTLOADER_MCUBOOT
 	select REQUIRES_FULL_LIBC
 	select MBEDTLS
@@ -63,6 +64,9 @@ config GOLIOTH_AUTH_CERT_MBEDTLS_DEPS
 	# may cause incompatibility with Golioth servers, now or in the future.
 	imply MBEDTLS_ECP_DP_SECP256R1_ENABLED
 	imply MBEDTLS_ECP_DP_SECP384R1_ENABLED
+	# Hashes
+	imply MBEDTLS_SHA256
+	imply MBEDTLS_SHA384
 	# Select at least one server supported cipher
 	imply MBEDTLS_CIPHER_GCM_ENABLED if (MBEDTLS_BUILTIN && !MBEDTLS_CIPHER_CCM_ENABLED)
 	select MBEDTLS_GCM_C if (NRF_SECURITY && !MBEDTLS_CCM_C)
