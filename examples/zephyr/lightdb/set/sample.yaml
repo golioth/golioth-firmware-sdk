@@ -15,11 +15,11 @@ tests:
       - arch:posix:CONFIG_NATIVE_UART_0_ON_STDINOUT=y
       - arch:posix:CONFIG_LOG_BACKEND_NATIVE_POSIX=n
     platform_allow: >
-      esp32_devkitc_wrover
+      esp32_devkitc_wrover/esp32/procpu
       mimxrt1024_evk
       native_sim
-      native_sim_64
-      nrf52840dk_nrf52840
-      nrf9160dk_nrf9160_ns
-      rak5010_nrf52840
+      native_sim/native/64
+      nrf52840dk/nrf52840
+      nrf9160dk/nrf9160/ns
+      rak5010/nrf52840
       qemu_x86

@@ -16,13 +16,15 @@ config DNS_SERVER1
 
 endif # DNS_RESOLVER
 
-if EVENTFD
-
-config EVENTFD_MAX
+configdefault ZVFS_EVENTFD_MAX
+	int
 	default 14 if GOLIOTH_FW_UPDATE
 	default 7
 
-endif # EVENTFD
+configdefault EVENTFD_MAX
+	int
+	default 14 if GOLIOTH_FW_UPDATE
+	default 7
 
 if LOG_BACKEND_GOLIOTH
 
@@ -43,6 +45,10 @@ config MBEDTLS_HEAP_SIZE
 	default 10240
 
 endif # MBEDTLS_ENABLE_HEAP
+
+configdefault NET_SOCKETS_DTLS_MAX_FRAGMENT_LENGTH
+	default 4096 if GOLIOTH_AUTH_METHOD_CERT
+	default 2048
 
 if MBEDTLS_BUILTIN
 
@@ -104,7 +110,13 @@ config NET_BUF_TX_COUNT
 config MAIN_STACK_SIZE
 	default 4096
 
-config POSIX_MAX_FDS
+configdefault ZVFS_OPEN_MAX
+	int
+	default 23 if GOLIOTH_FW_UPDATE
+	default 16
+
+configdefault POSIX_MAX_FDS
+	int
 	default 23 if GOLIOTH_FW_UPDATE
 	default 16
 

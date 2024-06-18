@@ -114,7 +114,7 @@ On your host computer open a terminal window, locate the source code of
 this sample application (i.e., `examples/zephyr/fw_update`) and type:
 
 ```console
-$ west build -b esp32_devkitc_wrover --sysbuild examples/zephyr/fw_update
+$ west build -b esp32_devkitc_wrover/esp32/procpu --sysbuild examples/zephyr/fw_update
 $ west flash
 ```
 
@@ -161,7 +161,7 @@ On your host computer open a terminal window, locate the source code of
 this sample application (i.e., `examples/zephyr/fw_update`) and type:
 
 ```console
-$ west build -b nrf52840dk_nrf52840 --sysbuild examples/zephyr/fw_update
+$ west build -b nrf52840dk/nrf52840 --sysbuild examples/zephyr/fw_update
 $ west flash
 ```
 
@@ -171,7 +171,7 @@ On your host computer open a terminal window, locate the source code of
 this sample application (i.e., `examples/zephyr/hello`) and type:
 
 ```console
-$ west build -b nrf9160dk_nrf9160_ns examples/zephyr/fw_update
+$ west build -b nrf9160dk/nrf9160/ns examples/zephyr/fw_update
 $ west flash
 ```
 
@@ -181,7 +181,7 @@ On your host computer open a terminal window. From the
 `golioth-firmware-sdk` folder, type:
 
 ```console
-$ west build -b rak5010_nrf52840 --sysbuild examples/zephyr/fw_update
+$ west build -b rak5010/nrf52840 --sysbuild examples/zephyr/fw_update
 $ west flash
 ```
 
@@ -217,14 +217,14 @@ Build the firmware update but do not flash it to the device. The binary
 update file will be uploaded to Golioth for the OTA update.
 
 ```console
-# For esp32_devkitc_wrover
-$ west build -b esp32_devkitc_wrover --sysbuild examples/zephyr/fw_update
+# For esp32_devkitc_wrover/esp32/procpu
+$ west build -b esp32_devkitc_wrover/esp32/procpu --sysbuild examples/zephyr/fw_update
 
 # For nRF52840dk (Zephyr):
-$ west build -b nrf52840dk_nrf52840 --sysbuild examples/zephyr/fw_update
+$ west build -b nrf52840dk/nrf52840 --sysbuild examples/zephyr/fw_update
 
 # For nRF9160dk (NCS):
-$ west build -b nrf9160dk_nrf9160_ns examples/zephyr/fw_update
+$ west build -b nrf9160dk/nrf9160/ns examples/zephyr/fw_update
 ```
 
 ### Start FW Update using `goliothctl`
