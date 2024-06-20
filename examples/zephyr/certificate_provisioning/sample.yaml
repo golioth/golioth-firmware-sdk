@@ -2,20 +2,26 @@ sample:
   description: Provision certificates onto a device
   name: certificate_provisioning
 common:
-  tags: golioth socket goliothd
+  tags:
+    - golioth
+    - socket
+    - goliothd
 tests:
   sample.golioth.certificate_provisioning:
     harness: pytest
-    tags: golioth socket goliothd
+    tags:
+      - golioth
+      - socket
+      - goliothd
     timeout: 180
     extra_configs:
       - CONFIG_GOLIOTH_SAMPLE_NRF91_RESET_LOOP_OVERRIDE=y
-    platform_allow: >
-      mimxrt1024_evk
-      nrf9160dk/nrf9160/ns
-      rak5010/nrf52840
+    platform_allow:
+      - mimxrt1024_evk
+      - nrf9160dk/nrf9160/ns
+      - rak5010/nrf52840
   sample.golioth.certificate_provisioning.buildonly:
     build_only: true
-    platform_allow: >
-      esp32_devkitc_wrover/esp32/procpu
-      nrf52840dk/nrf52840
+    platform_allow:
+      - esp32_devkitc_wrover/esp32/procpu
+      - nrf52840dk/nrf52840

@@ -2,18 +2,21 @@ sample:
   description: Golioth OTA FW Update Sample
   name: fw_update
 common:
-  tags: golioth socket goliothd
+  tags:
+    - golioth
+    - socket
+    - goliothd
 tests:
   sample.golioth.fw_update.sysbuild:
     harness: pytest
     sysbuild: true
     timeout: 600
     extra_args: EXTRA_CONF_FILE="../common/runtime_settings.conf"
-    platform_allow: >
-      esp32_devkitc_wrover/esp32/procpu
-      mimxrt1024_evk
-      nrf52840dk/nrf52840
-      rak5010/nrf52840
+    platform_allow:
+      - esp32_devkitc_wrover/esp32/procpu
+      - mimxrt1024_evk
+      - nrf52840dk/nrf52840
+      - rak5010/nrf52840
   sample.golioth.fw_update:
     harness: pytest
     timeout: 720
