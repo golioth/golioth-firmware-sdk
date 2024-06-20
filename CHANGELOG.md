@@ -4,6 +4,46 @@ All notable changes to this project will be documented in this file.
 The format is based on [Keep a Changelog](https://keepachangelog.com/en/1.0.0/),
 and this project adheres to [Semantic Versioning](https://semver.org/spec/v2.0.0.html).
 
+## [0.14.0] 2024-06-21
+
+### Highlights:
+
+- Added blockwise uploads for streaming data to Pipelines
+- Improved efficiency of blockwise operations
+- Reduced log verbosity
+
+### Added:
+
+- A new `golioth_stream_set_blockwise_sync()` API for uploading
+  larger payloads to Pipelines. This is useful when the size of your
+  payload exceeds the MTU of your underlying transport (typically 1024
+  bytes).
+- native_sim Zephyr target is now tested in CI
+
+### Changed:
+
+- CoAP retransmissions are no longer reported individually. Instead, a
+  count of the number of retransmissions in the last 10 seconds is
+  reported. This reduces the chattiness of CoAP client logs.
+- Blockwise transfers make more efficient use of semaphores and
+  allocations, reducing CPU overhead, overall memory usage, and
+  heap fragmentation.
+- Blockwise upload user callbacks are now passed the size of the block,
+  and should no longer rely on a hardcoded block size.
+- Reduced log levels of some messages from INFO to DEBUG.
+
+### Fixed:
+
+- Gracefully handle allocation errors during synchronous operations.
+- Honor content-type in blockwise uploads
+- Small typo in Kconfig help
+
+### Removed
+
+- Removed BLE provisioning service from Golioth ESP-IDF examples. Users
+  are free to copy this utility into their own repos and use it if they
+  desire. This code is offered as-is and without warranty.
+
 ## [0.13.1] 2024-05-31
 
 ### Fixed:
