@@ -3,7 +3,11 @@ sample:
   name: lightdb-delete
 common:
   harness: pytest
-  tags: golioth lightdb socket goliothd
+  tags:
+    - golioth
+    - lightdb
+    - socket
+    - goliothd
 tests:
   sample.golioth.lightdb_delete:
     timeout: 180
@@ -14,12 +18,12 @@ tests:
       - CONFIG_GOLIOTH_SAMPLE_NRF91_RESET_LOOP_OVERRIDE=y
       - arch:posix:CONFIG_NATIVE_UART_0_ON_STDINOUT=y
       - arch:posix:CONFIG_LOG_BACKEND_NATIVE_POSIX=n
-    platform_allow: >
-      esp32_devkitc_wrover/esp32/procpu
-      mimxrt1024_evk
-      native_sim
-      native_sim/native/64
-      nrf52840dk/nrf52840
-      nrf9160dk/nrf9160/ns
-      rak5010/nrf52840
-      qemu_x86
+    platform_allow:
+      - esp32_devkitc_wrover/esp32/procpu
+      - mimxrt1024_evk
+      - native_sim
+      - native_sim/native/64
+      - nrf52840dk/nrf52840
+      - nrf9160dk/nrf9160/ns
+      - rak5010/nrf52840
+      - qemu_x86
