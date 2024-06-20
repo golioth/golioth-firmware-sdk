@@ -63,10 +63,9 @@ static enum golioth_status golioth_log_internal(struct golioth_client *client,
         goto cleanup;
     }
 
-    ok = zcbor_tstr_put_lit(zse, "level")
-        && zcbor_tstr_put_term_compat(zse, _level_to_str[level], 5)
-        && zcbor_tstr_put_lit(zse, "module") && zcbor_tstr_put_term_compat(zse, tag, SIZE_MAX)
-        && zcbor_tstr_put_lit(zse, "msg") && zcbor_tstr_put_term_compat(zse, log_message, SIZE_MAX);
+    ok = zcbor_tstr_put_lit(zse, "level") && zcbor_tstr_put_term(zse, _level_to_str[level], 5)
+        && zcbor_tstr_put_lit(zse, "module") && zcbor_tstr_put_term(zse, tag, SIZE_MAX)
+        && zcbor_tstr_put_lit(zse, "msg") && zcbor_tstr_put_term(zse, log_message, SIZE_MAX);
     if (!ok)
     {
         goto cleanup;
