@@ -7,42 +7,6 @@
 #include <zcbor_decode.h>
 #include <zcbor_encode.h>
 
-#if defined(ZCBOR_VERSION_MAJOR) && defined(ZCBOR_VERSION_MINOR) && ZCBOR_VERSION_MAJOR == 0 \
-    && ZCBOR_VERSION_MINOR < 8
-
-/** Extract the major type, i.e. the first 3 bits of the header byte. */
-#define ZCBOR_MAJOR_TYPE(header_byte) ((zcbor_major_type_t) (((header_byte) >> 5) & 0x7))
-
-#define ZCBOR_STATE_D_COMPAT(name, num_backups, payload, payload_size, elem_count, n_flags) \
-    ZCBOR_STATE_D(name, num_backups, payload, payload_size, elem_count)
-
-static inline bool zcbor_is_indefinite_length_array(zcbor_state_t *state)
-{
-    return state->indefinite_length_array;
-}
-
-static inline bool zcbor_tstr_put_term_compat(zcbor_state_t *state, char const *str, size_t maxlen)
-{
-    return zcbor_tstr_put_term(state, str);
-}
-
-#else /* zcbor <0.8.0 */
-
-#define ZCBOR_STATE_D_COMPAT(name, num_backups, payload, payload_size, elem_count, n_flags) \
-    ZCBOR_STATE_D(name, num_backups, payload, payload_size, elem_count, n_flags)
-
-static inline bool zcbor_is_indefinite_length_array(zcbor_state_t *state)
-{
-    return state->decode_state.indefinite_length_array;
-}
-
-static inline bool zcbor_tstr_put_term_compat(zcbor_state_t *state, char const *str, size_t maxlen)
-{
-    return zcbor_tstr_put_term(state, str, maxlen);
-}
-
-#endif /* zcbor <0.8.0 */
-
 enum
 {
     ZCBOR_MAP_KEY_TYPE_U32,
@@ -74,7 +38,7 @@ struct zcbor_map_entry
  */
 static inline bool zcbor_list_or_map_end(zcbor_state_t *state)
 {
-    if (zcbor_is_indefinite_length_array(state))
+    if (state->decode_state.indefinite_length_array)
     {
         return *state->payload == 0xff;
     }
