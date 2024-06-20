@@ -112,8 +112,3 @@ if(CONFIG_ZCBOR)
   zephyr_compile_definitions(ZCBOR_VERSION_MINOR=${zcbor_version_minor})
   zephyr_compile_definitions(ZCBOR_VARIANCE)
 endif()
-
-# Zephyr renamed rand32.h to random.h, but NCS hasn't picked up this change yet.
-if(NOT EXISTS ${ZEPHYR_BASE}/include/zephyr/random/random.h)
-  zephyr_include_directories(include_random)
-endif()
