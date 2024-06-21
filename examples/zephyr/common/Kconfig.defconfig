@@ -19,15 +19,9 @@ endif # DNS_RESOLVER
 if EVENTFD
 
 config EVENTFD_MAX
-    depends on !GOLIOTH_FW_UPDATE
+	default 14 if GOLIOTH_FW_UPDATE
 	default 7
 
-if GOLIOTH_FW_UPDATE
-
-config EVENTFD_MAX
-	default 14
-
-endif # GOLIOTH_FW_UPDATE
 endif # EVENTFD
 
 if LOG_BACKEND_GOLIOTH
