@@ -44,7 +44,6 @@ enum
     FLAG_STOP_CLIENT,
 };
 
-#define PING_INTERVAL (CONFIG_GOLIOTH_COAP_CLIENT_PING_INTERVAL_SEC * 1000)
 #define RECV_TIMEOUT (CONFIG_GOLIOTH_COAP_CLIENT_RX_TIMEOUT_SEC * 1000)
 
 enum pollfd_type
@@ -311,6 +310,14 @@ static int golioth_coap_cb(struct golioth_req_rsp *rsp)
             }
             /* There is no synchronous version of observe request */
             return 0;
+    }
+
+    if (CONFIG_GOLIOTH_COAP_KEEPALIVE_INTERVAL_S > 0)
+    {
+        if (!golioth_sys_timer_reset(client->keepalive_timer))
+        {
+            LOG_WRN("Failed to reset keepalive timer");
+        }
     }
 
     if (req->request_complete_event)
@@ -781,6 +788,11 @@ static void on_keepalive(golioth_sys_timer_t timer, void *arg)
     {
         golioth_coap_client_empty(client, false, GOLIOTH_SYS_WAIT_FOREVER);
     }
+
+    if (!golioth_sys_timer_reset(client->keepalive_timer))
+    {
+        LOG_WRN("Failed to reset keepalive timer");
+    }
 }
 
 bool golioth_client_is_running(struct golioth_client *client)
@@ -1073,29 +1085,6 @@ int golioth_send_coap(struct golioth_client *client, struct coap_packet *packet)
     return golioth_send(client, packet->data, packet->offset, 0);
 }
 
-static int golioth_ping(struct golioth_client *client)
-{
-    struct coap_packet packet;
-    uint8_t buffer[GOLIOTH_EMPTY_PACKET_LEN];
-    int err;
-
-    err = coap_packet_init(&packet,
-                           buffer,
-                           sizeof(buffer),
-                           COAP_VERSION_1,
-                           COAP_TYPE_CON,
-                           0,
-                           NULL,
-                           COAP_CODE_EMPTY,
-                           coap_next_id());
-    if (err)
-    {
-        return err;
-    }
-
-    return golioth_send_coap(client, &packet);
-}
-
 static int golioth_ack_packet(struct golioth_client *client, struct coap_packet *rx)
 {
     struct coap_packet tx;
@@ -1214,7 +1203,6 @@ static void golioth_coap_client_thread(void *arg)
     bool event_occurred;
     int timeout;
     int64_t recv_expiry = 0;
-    int64_t ping_expiry = 0;
     int64_t golioth_timeout;
     eventfd_t eventfd_value;
     int err;
@@ -1257,7 +1245,6 @@ static void golioth_coap_client_thread(void *arg)
         }
 
         recv_expiry = k_uptime_get() + RECV_TIMEOUT;
-        ping_expiry = k_uptime_get() + PING_INTERVAL;
 
         // Enqueue an asynchronous EMPTY request immediately.
         //
@@ -1279,8 +1266,7 @@ static void golioth_coap_client_thread(void *arg)
 
             golioth_poll_prepare(client, k_uptime_get(), NULL, &golioth_timeout);
 
-            timeout = MIN(recv_expiry, ping_expiry) - k_uptime_get();
-            timeout = MIN(timeout, golioth_timeout);
+            timeout = MIN(recv_expiry - k_uptime_get(), golioth_timeout);
 
             if (timeout < 0)
             {
@@ -1333,20 +1319,11 @@ static void golioth_coap_client_thread(void *arg)
 
                     break;
                 }
-
-                if (ping_expiry <= k_uptime_get())
-                {
-                    LOG_DBG("Sending PING");
-                    (void) golioth_ping(client);
-
-                    ping_expiry = k_uptime_get() + PING_INTERVAL;
-                }
             }
 
             if (fds[POLLFD_SOCKET].revents)
             {
                 recv_expiry = k_uptime_get() + RECV_TIMEOUT;
-                ping_expiry = k_uptime_get() + PING_INTERVAL;
 
                 err = golioth_process_rx(client);
                 if (err)

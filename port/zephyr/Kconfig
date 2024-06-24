@@ -153,13 +153,6 @@ menu "CoAP"
 
 source "${ZEPHYR_GOLIOTH_FIRMWARE_SDK_MODULE_DIR}/src/Kconfig.coap"
 
-config GOLIOTH_COAP_CLIENT_PING_INTERVAL_SEC
-	int "Ping interval (seconds)"
-	default 9
-	help
-	  Periodic interval between consecutive ping messages being sent to
-	  Golioth.
-
 config GOLIOTH_COAP_CLIENT_RX_TIMEOUT_SEC
 	int "Receive timeout (seconds)"
 	default 30
