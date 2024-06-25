@@ -922,14 +922,6 @@ static int golioth_connect_sockaddr(struct golioth_client *client,
 
     client->sock = sock;
 
-    /* Send empty packet to start TLS handshake */
-    err = golioth_send_coap_empty(client);
-    if (err)
-    {
-        LOG_ERR("Failed to send empty CoAP message: %d", err);
-        client->sock = -1;
-    }
-
 close_sock:
     if (err)
     {
