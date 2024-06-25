@@ -54,10 +54,6 @@ on:
         required: false
         type: boolean
         default: true
-      extra_cmake_args:
-        required: false
-        type: string
-        default: ""
       extra_twister_args:
         required: false
         type: string
@@ -115,17 +111,12 @@ jobs:
       run: |
         export EXTRA_BUILD_ARGS=-x=CONFIG_GOLIOTH_COAP_HOST_URI=\"${{ inputs.coap_gateway_url }}\"
 
-        if [[ -n "${{ inputs.extra_cmake_args }}" == false ]]; then
-          EXTRA_CMAKE_ARGS='-x="${{ inputs.extra_cmake_args }}"'
-        fi
-
         zephyr/scripts/twister                                                \
               --platform ${{ inputs.west_board }}                             \
               -T modules/lib/golioth-firmware-sdk/examples/zephyr/logging     \
               --prep-artifacts-for-testing                                    \
               --package-artifacts test_artifacts_${{ inputs.hil_board }}.tar  \
-              $EXTRA_BUILD_ARGS                                               \
-              $EXTRA_CMAKE_ARGS
+              $EXTRA_BUILD_ARGS
 
     - name: Save artifacts
       uses: actions/upload-artifact@v4
@@ -155,7 +146,7 @@ jobs:
           path: modules/lib/golioth-firmware-sdk
       - name: Init and update west
         run: |
-          rm -rf zephyr
+          rm -rf zephyr twister
 
           mkdir -p .west
           cat <<EOF > .west/config
@@ -169,7 +160,7 @@ jobs:
           west update -o=--depth=1 -n
           git config --global user.email user@git-scm.com
           git config --global user.name "Git User"
-          west patch
+          #west patch
 
           pip3 install -r zephyr/scripts/requirements-base.txt
           pip3 install -r zephyr/scripts/requirements-build-test.txt
@@ -199,7 +190,7 @@ jobs:
           SNR_VAR=CI_${hil_board^^}_SNR
           EXTRA_WEST_FLASH_ARGS='--west-flash="--skip-rebuild,--dev-id=${!SNR_VAR}"'
           if [[ ${{ inputs.use_dev_id }} == false ]]; then
-            EXTRA_WEST_FLASH_ARGS='--west-flash="--skip-rebuild"'
+            EXTRA_WEST_FLASH_ARGS='--west-flash=--gdb=/usr/bin/gdb --west-runner blackmagicprobe'
           fi
           zephyr/scripts/twister                                                                  \
                 -p ${{ inputs.west_board }}                                                       \
