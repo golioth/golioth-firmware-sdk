@@ -1,0 +1,84 @@
+From 992fb3c5fefa036ce3682a3e94523d21742c2d2c Mon Sep 17 00:00:00 2001
+From: Keith Packard <keithp@keithp.com>
+Date: Fri, 21 Jun 2024 10:17:33 -0700
+Subject: [PATCH] tests/kernel: Add test for constructors in C
+
+Make sure constructors are run even when not using C++.
+
+Signed-off-by: Keith Packard <keithp@keithp.com>
+Signed-off-by: Alberto Escolar Piedras <alberto.escolar.piedras@nordicsemi.no>
+---
+ tests/kernel/common/CMakeLists.txt    |  6 ++++
+ tests/kernel/common/src/constructor.c | 43 +++++++++++++++++++++++++++
+ 2 files changed, 49 insertions(+)
+ create mode 100644 tests/kernel/common/src/constructor.c
+
+diff --git a/tests/kernel/common/CMakeLists.txt b/tests/kernel/common/CMakeLists.txt
+index 0c62aab76aa..83d56641916 100644
+--- a/tests/kernel/common/CMakeLists.txt
++++ b/tests/kernel/common/CMakeLists.txt
+@@ -22,6 +22,12 @@ target_sources(app PRIVATE
+ 	src/pow2.c
+   )
+ 
++target_sources_ifdef(
++	CONFIG_STATIC_INIT_GNU
++	app PRIVATE
++	src/constructor.c
++)
++
+ target_sources_ifdef(
+ 	CONFIG_IRQ_OFFLOAD
+ 	app PRIVATE
+diff --git a/tests/kernel/common/src/constructor.c b/tests/kernel/common/src/constructor.c
+new file mode 100644
+index 00000000000..75f866df0f0
+--- /dev/null
++++ b/tests/kernel/common/src/constructor.c
+@@ -0,0 +1,43 @@
++/*
++ * Copyright (c) 2024 Keith Packard
++ *
++ * SPDX-License-Identifier: Apache-2.0
++ */
++
++#include <zephyr/kernel.h>
++#include <errno.h>
++#include <zephyr/tc_util.h>
++#include <zephyr/ztest.h>
++/**
++ * @addtogroup kernel_common_tests
++ * @{
++ */
++
++/**
++ * @brief Test if constructors work
++ *
++ */
++
++static int constructor_value;
++
++#define CONSTRUCTOR_VALUE	1
++
++void
++__attribute__((__constructor__))
++__constructor_init(void)
++{
++	constructor_value = CONSTRUCTOR_VALUE;
++}
++
++ZTEST(constructor, test_constructor)
++{
++	zassert_equal(constructor_value, CONSTRUCTOR_VALUE,
++		      "constructor test failed: constructor not called");
++}
++
++extern void *common_setup(void);
++ZTEST_SUITE(constructor, NULL, common_setup, NULL, NULL, NULL);
++
++/**
++ * @}
++ */
+-- 
+2.45.2
+

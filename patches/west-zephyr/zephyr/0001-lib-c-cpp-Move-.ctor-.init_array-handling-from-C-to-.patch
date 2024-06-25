@@ -1,0 +1,573 @@
+From 5a01c3e8aa13db6396b7b2903c363f047267953d Mon Sep 17 00:00:00 2001
+From: Alberto Escolar Piedras <alberto.escolar.piedras@nordicsemi.no>
+Date: Fri, 21 Jun 2024 13:18:55 +0200
+Subject: [PATCH] lib c/cpp: Move .ctor .init_array handling from C++ to kernel
+
+* Move ctors and init_array from the CPP library
+  to the kernel library, as this is common for both C
+  and C++ and it is the kernel who is running it.
+* Rename the hidden kconfig option CPP_STATIC_INIT_GNU
+  STATIC_INIT_GNU instead.
+* If STATIC_INIT_GNU is not selected verify there is
+  constructors left behind.
+* Rename common-rom-cpp.ld to common-rom-init.ld
+* Rename z_cpp_init_static to z_init_static,
+  and have the kernel always call it.
+
+Signed-off-by: Alberto Escolar Piedras <alberto.escolar.piedras@nordicsemi.no>
+Signed-off-by: Keith Packard <keithp@keithp.com>
+---
+ include/zephyr/arch/arc/v2/linker.ld          |  8 +-
+ include/zephyr/linker/common-rom.ld           |  2 +-
+ .../{common-rom-cpp.ld => common-rom-init.ld} | 16 +++-
+ kernel/CMakeLists.txt                         |  1 +
+ kernel/Kconfig                                | 23 +++++
+ kernel/init.c                                 |  6 +-
+ kernel/init_static.c                          | 87 +++++++++++++++++++
+ lib/cpp/Kconfig                               | 10 +--
+ lib/cpp/abi/CMakeLists.txt                    |  6 +-
+ lib/cpp/abi/cpp_ctors.c                       | 43 ---------
+ lib/cpp/abi/cpp_init.c                        | 31 -------
+ lib/cpp/abi/cpp_init_array.c                  | 27 ------
+ soc/espressif/esp32/default.ld                |  2 +-
+ soc/espressif/esp32/default_appcpu.ld         |  2 +-
+ soc/espressif/esp32c3/default.ld              |  2 +-
+ soc/espressif/esp32c3/mcuboot.ld              |  2 +-
+ soc/espressif/esp32c6/default.ld              |  2 +-
+ soc/espressif/esp32c6/mcuboot.ld              |  2 +-
+ soc/espressif/esp32s2/default.ld              |  2 +-
+ soc/espressif/esp32s2/mcuboot.ld              |  2 +-
+ soc/espressif/esp32s3/default.ld              |  2 +-
+ soc/espressif/esp32s3/default_appcpu.ld       |  2 +-
+ 22 files changed, 149 insertions(+), 131 deletions(-)
+ rename include/zephyr/linker/common-rom/{common-rom-cpp.ld => common-rom-init.ld} (81%)
+ create mode 100644 kernel/init_static.c
+ delete mode 100644 lib/cpp/abi/cpp_ctors.c
+ delete mode 100644 lib/cpp/abi/cpp_init.c
+ delete mode 100644 lib/cpp/abi/cpp_init_array.c
+
+diff --git a/include/zephyr/arch/arc/v2/linker.ld b/include/zephyr/arch/arc/v2/linker.ld
+index c65aa5a6484..ecf6cfee8bc 100644
+--- a/include/zephyr/arch/arc/v2/linker.ld
++++ b/include/zephyr/arch/arc/v2/linker.ld
+@@ -138,12 +138,12 @@ SECTIONS {
+ #include <snippets-rodata.ld>
+ #include <zephyr/linker/kobject-rom.ld>
+ 
+-#if defined(CONFIG_CPP) && !defined(CONFIG_CPP_STATIC_INIT_GNU) && defined(__MWDT_LINKER_CMD__)
++#if defined(CONFIG_CPP) && !defined(CONFIG_STATIC_INIT_GNU) && defined(__MWDT_LINKER_CMD__)
+ 		. = ALIGN(4);
+ 		_fctors = .;
+ 		KEEP(*(.ctors*))
+ 		_ectors = .;
+-#endif /* CONFIG_CPP && !CONFIG_CPP_STATIC_INIT_GNU && __MWDT_LINKER_CMD__ */
++#endif /* CONFIG_CPP && !CONFIG_STATIC_INIT_GNU && __MWDT_LINKER_CMD__ */
+ 
+ /* This extra MPU alignment of RAMABLE_REGION is only required if we put ROMABLE_REGION and
+  * RAMABLE_REGION into the same (continuous) memory - otherwise we can get beginning of the
+@@ -307,11 +307,11 @@ SECTIONS {
+ #endif
+ 
+ 	/DISCARD/ : {
+-#if defined(CONFIG_CPP) && !defined(CONFIG_CPP_STATIC_INIT_GNU) && defined(__MWDT_LINKER_CMD__)
++#if defined(CONFIG_CPP) && !defined(CONFIG_STATIC_INIT_GNU) && defined(__MWDT_LINKER_CMD__)
+ 		*(.dtors*)
+ 		*(.fini*)
+ 		*(.eh_frame*)
+-#endif /* CONFIG_CPP && !CONFIG_CPP_STATIC_INIT_GNU && __MWDT_LINKER_CMD__ */
++#endif /* CONFIG_CPP && !CONFIG_STATIC_INIT_GNU && __MWDT_LINKER_CMD__ */
+ 		*(.note.GNU-stack)
+ 		*(.got.plt)
+ 		*(.igot.plt)
+diff --git a/include/zephyr/linker/common-rom.ld b/include/zephyr/linker/common-rom.ld
+index 7653c1843d1..409c3e8b8f3 100644
+--- a/include/zephyr/linker/common-rom.ld
++++ b/include/zephyr/linker/common-rom.ld
+@@ -4,7 +4,7 @@
+ 
+ #include <zephyr/linker/common-rom/common-rom-ztest.ld>
+ 
+-#include <zephyr/linker/common-rom/common-rom-cpp.ld>
++#include <zephyr/linker/common-rom/common-rom-init.ld>
+ 
+ #include <zephyr/linker/common-rom/common-rom-net.ld>
+ 
+diff --git a/include/zephyr/linker/common-rom/common-rom-cpp.ld b/include/zephyr/linker/common-rom/common-rom-init.ld
+similarity index 81%
+rename from include/zephyr/linker/common-rom/common-rom-cpp.ld
+rename to include/zephyr/linker/common-rom/common-rom-init.ld
+index b5aaa31c79b..e24c87df3e5 100644
+--- a/include/zephyr/linker/common-rom/common-rom-cpp.ld
++++ b/include/zephyr/linker/common-rom/common-rom-init.ld
+@@ -1,6 +1,6 @@
+ /* SPDX-License-Identifier: Apache-2.0 */
+ 
+-#ifdef CONFIG_CPP_STATIC_INIT_GNU
++#ifdef CONFIG_STATIC_INIT_GNU
+ 	SECTION_PROLOGUE(_CTOR_SECTION_NAME,,)
+ 	{
+ 		/*
+@@ -59,4 +59,18 @@
+ 		KEEP(*(SORT_BY_NAME(".init_array*")))
+ 		__zephyr_init_array_end = .;
+ 	} GROUP_ROM_LINK_IN(RAMABLE_REGION, ROMABLE_REGION)
++
++#elif defined(CONFIG_TOOLCHAIN_SUPPORTS_STATIC_INIT_GNU)
++	/*
++	 * If the code to invoke constructors is not enabled,
++	 * make sure there aren't any in the application
++	 */
++	SECTION_PROLOGUE(init_array,,)
++	{
++		KEEP(*(SORT_BY_NAME(".ctors*")))
++		KEEP(*(SORT_BY_NAME(".init_array*")))
++	} GROUP_ROM_LINK_IN(RAMABLE_REGION, ROMABLE_REGION)
++
++	ASSERT (SIZEOF(init_array) == 0,
++		"GNU-style constructors required but STATIC_INIT_GNU not enabled")
+ #endif
+diff --git a/kernel/CMakeLists.txt b/kernel/CMakeLists.txt
+index 17e52682a25..8477508b98a 100644
+--- a/kernel/CMakeLists.txt
++++ b/kernel/CMakeLists.txt
+@@ -55,6 +55,7 @@ list(APPEND kernel_files
+   errno.c
+   fatal.c
+   init.c
++  init_static.c
+   kheap.c
+   mem_slab.c
+   float.c
+diff --git a/kernel/Kconfig b/kernel/Kconfig
+index 57c8b299759..94fe8619bb1 100644
+--- a/kernel/Kconfig
++++ b/kernel/Kconfig
+@@ -983,6 +983,29 @@ config KERNEL_WHOLE_ARCHIVE
+ 	  This option forces every object file in the libkernel.a archive
+ 	  to be included, rather than searching the archive for required object files.
+ 
++config TOOLCHAIN_SUPPORTS_STATIC_INIT_GNU
++	# As of today only ARC MWDT toolchain doesn't support GNU-compatible
++	# initialization of static objects, new toolchains can be added
++	# here if required.
++	def_bool "$(ZEPHYR_TOOLCHAIN_VARIANT)" != "arcmwdt"
++
++config STATIC_INIT_GNU
++	bool "Support GNU-compatible initializers and constructors"
++	default y if CPP || NATIVE_BUILD || COVERAGE
++	depends on TOOLCHAIN_SUPPORTS_STATIC_INIT_GNU
++	depends on !CMAKE_LINKER_GENERATOR
++	help
++	  GNU-compatible initialization of static objects. This is required for
++	  C++ constructor support as well as for initializer functions as
++	  defined by GNU-compatible toolchains. This increases the size
++	  of Zephyr binaries by around 100 bytes. If you know your
++	  application doesn't need any initializers, you can disable this
++	  option.
++	  The ARC MWDT toolchain, does not support or use this setting,
++	  and has instead separate C++ constructor initialization code.
++	  Note the option CMAKE_LINKER_GENERATOR does not yet support this feature
++	  or CPP.
++
+ endmenu
+ 
+ rsource "Kconfig.device"
+diff --git a/kernel/init.c b/kernel/init.c
+index 407ea46db6f..8b7d62b8671 100644
+--- a/kernel/init.c
++++ b/kernel/init.c
+@@ -433,10 +433,8 @@ static void bg_thread_main(void *unused1, void *unused2, void *unused3)
+ #endif /* CONFIG_STACK_POINTER_RANDOM */
+ 	boot_banner();
+ 
+-#if defined(CONFIG_CPP)
+-	void z_cpp_init_static(void);
+-	z_cpp_init_static();
+-#endif /* CONFIG_CPP */
++	void z_init_static(void);
++	z_init_static();
+ 
+ 	/* Final init level before app starts */
+ 	z_sys_init_run_level(INIT_LEVEL_APPLICATION);
+diff --git a/kernel/init_static.c b/kernel/init_static.c
+new file mode 100644
+index 00000000000..442757a73a6
+--- /dev/null
++++ b/kernel/init_static.c
+@@ -0,0 +1,87 @@
++/*
++ * Copyright (c) 2012-2015 Wind River Systems, Inc.
++ * Copyright (c) 2021 Synopsys, Inc.
++ *
++ * SPDX-License-Identifier: Apache-2.0
++ */
++
++void __do_global_ctors_aux(void);
++void __do_init_array_aux(void);
++
++void z_init_static(void)
++{
++#if defined(CONFIG_STATIC_INIT_GNU)
++	__do_global_ctors_aux();
++	__do_init_array_aux();
++#elif defined(__CCAC__) /* ARC MWDT */
++	__do_global_ctors_aux();
++#endif
++}
++
++/**
++ * @section - Constructor module
++ * @brief
++ * The ctors section contains a list of function pointers that execute both the C++ constructors of
++ * static global objects, as well as either C or C++ initializer functions (declared with the
++ * attribute constructor). These must be executed before the application's main() routine.
++ *
++ * NOTE: Not all compilers put those function pointers into the ctors section;
++ * some put them into the init_array section instead.
++ */
++
++#ifdef CONFIG_STATIC_INIT_GNU
++
++/* What a constructor function pointer looks like */
++
++typedef void (*CtorFuncPtr)(void);
++
++/* Constructor function pointer list is generated by the linker script. */
++
++extern CtorFuncPtr __ZEPHYR_CTOR_LIST__[];
++extern CtorFuncPtr __ZEPHYR_CTOR_END__[];
++
++/**
++ *
++ * @brief Invoke all C++ style global object constructors
++ *
++ * This routine is invoked by the kernel prior to the execution of the
++ * application's main().
++ */
++void __do_global_ctors_aux(void)
++{
++	unsigned int nCtors;
++
++	nCtors = (unsigned long)__ZEPHYR_CTOR_LIST__[0];
++
++	while (nCtors >= 1U) {
++		__ZEPHYR_CTOR_LIST__[nCtors--]();
++	}
++}
++
++#endif
++
++/*
++ * @section
++ * @brief Execute initialization routines referenced in .init_array section
++ */
++
++#ifdef CONFIG_STATIC_INIT_GNU
++
++typedef void (*func_ptr)(void);
++
++extern func_ptr __zephyr_init_array_start[];
++extern func_ptr __zephyr_init_array_end[];
++
++/**
++ * @brief Execute initialization routines referenced in .init_array section
++ */
++void __do_init_array_aux(void)
++{
++	for (func_ptr *func = __zephyr_init_array_start;
++		func < __zephyr_init_array_end;
++		func++) {
++		(*func)();
++	}
++}
++
++#endif
+diff --git a/lib/cpp/Kconfig b/lib/cpp/Kconfig
+index d03ba5c973c..1b0f8ee6396 100644
+--- a/lib/cpp/Kconfig
++++ b/lib/cpp/Kconfig
+@@ -144,12 +144,12 @@ config CPP_RTTI
+ endif # !MINIMAL_LIBCPP
+ 
+ config CPP_STATIC_INIT_GNU
+-	# As of today only ARC MWDT toolchain doesn't support GNU-compatible
+-	# initialization of CPP static objects, new toolchains can be added
+-	# here if required.
+-	def_bool "$(ZEPHYR_TOOLCHAIN_VARIANT)" != "arcmwdt"
++	bool
++	select STATIC_INIT_GNU
++	select DEPRECATED
+ 	help
+-	  GNU-compatible initialization of CPP static objects
++	  GNU-compatible initialization of CPP static objects.
++	  This option is deprecated in favour of STATIC_INIT_GNU
+ 
+ endif # CPP
+ 
+diff --git a/lib/cpp/abi/CMakeLists.txt b/lib/cpp/abi/CMakeLists.txt
+index 71ce43ae94a..40a710dd06e 100644
+--- a/lib/cpp/abi/CMakeLists.txt
++++ b/lib/cpp/abi/CMakeLists.txt
+@@ -1,9 +1,5 @@
+ # SPDX-License-Identifier: Apache-2.0
+ 
+-zephyr_sources(cpp_init.c)
+-
+-zephyr_sources_ifdef(CONFIG_CPP_STATIC_INIT_GNU
+-  cpp_init_array.c
+-  cpp_ctors.c
++zephyr_sources_ifdef(CONFIG_STATIC_INIT_GNU
+   cpp_dtors.c
+ )
+diff --git a/lib/cpp/abi/cpp_ctors.c b/lib/cpp/abi/cpp_ctors.c
+deleted file mode 100644
+index 5b9fec84ce3..00000000000
+--- a/lib/cpp/abi/cpp_ctors.c
++++ /dev/null
+@@ -1,43 +0,0 @@
+-/*
+- * Copyright (c) 2012-2014 Wind River Systems, Inc.
+- *
+- * SPDX-License-Identifier: Apache-2.0
+- */
+-
+-/**
+- * @file - Constructor module
+- * @brief
+- * The ctors section contains a list of function pointers that execute the
+- * C++ constructors of static global objects. These must be executed before
+- * the application's main() routine.
+- *
+- * NOTE: Not all compilers put those function pointers into the ctors section;
+- * some put them into the init_array section instead.
+- */
+-
+-/* What a constructor function pointer looks like */
+-
+-typedef void (*CtorFuncPtr)(void);
+-
+-/* Constructor function pointer list is generated by the linker script. */
+-
+-extern CtorFuncPtr __ZEPHYR_CTOR_LIST__[];
+-extern CtorFuncPtr __ZEPHYR_CTOR_END__[];
+-
+-/**
+- *
+- * @brief Invoke all C++ style global object constructors
+- *
+- * This routine is invoked by the kernel prior to the execution of the
+- * application's main().
+- */
+-void __do_global_ctors_aux(void)
+-{
+-	unsigned int nCtors;
+-
+-	nCtors = (unsigned long)__ZEPHYR_CTOR_LIST__[0];
+-
+-	while (nCtors >= 1U) {
+-		__ZEPHYR_CTOR_LIST__[nCtors--]();
+-	}
+-}
+diff --git a/lib/cpp/abi/cpp_init.c b/lib/cpp/abi/cpp_init.c
+deleted file mode 100644
+index c0358b1eaaa..00000000000
+--- a/lib/cpp/abi/cpp_init.c
++++ /dev/null
+@@ -1,31 +0,0 @@
+-/*
+- * Copyright (c) 2021 Synopsys, Inc.
+- *
+- * SPDX-License-Identifier: Apache-2.0
+- *
+- * Author: Evgeniy Paltsev
+- */
+-
+-#ifdef CONFIG_CPP_STATIC_INIT_GNU
+-
+-void __do_global_ctors_aux(void);
+-void __do_init_array_aux(void);
+-
+-void z_cpp_init_static(void)
+-{
+-	__do_global_ctors_aux();
+-	__do_init_array_aux();
+-}
+-
+-#else
+-
+-#ifdef __CCAC__
+-void __do_global_ctors_aux(void);
+-
+-void z_cpp_init_static(void)
+-{
+-	__do_global_ctors_aux();
+-}
+-#endif /* __CCAC__ */
+-
+-#endif /* CONFIG_CPP_STATIC_INIT_GNU */
+diff --git a/lib/cpp/abi/cpp_init_array.c b/lib/cpp/abi/cpp_init_array.c
+deleted file mode 100644
+index aca263c46e3..00000000000
+--- a/lib/cpp/abi/cpp_init_array.c
++++ /dev/null
+@@ -1,27 +0,0 @@
+-/*
+- * Copyright (c) 2015 Wind River Systems, Inc.
+- *
+- * SPDX-License-Identifier: Apache-2.0
+- */
+-
+-/*
+- * @file
+- * @brief Execute initialization routines referenced in .init_array section
+- */
+-
+-typedef void (*func_ptr)(void);
+-
+-extern func_ptr __zephyr_init_array_start[];
+-extern func_ptr __zephyr_init_array_end[];
+-
+-/**
+- * @brief Execute initialization routines referenced in .init_array section
+- */
+-void __do_init_array_aux(void)
+-{
+-	for (func_ptr *func = __zephyr_init_array_start;
+-		func < __zephyr_init_array_end;
+-		func++) {
+-		(*func)();
+-	}
+-}
+diff --git a/soc/espressif/esp32/default.ld b/soc/espressif/esp32/default.ld
+index 7c2892f1e54..81efab8e1a2 100644
+--- a/soc/espressif/esp32/default.ld
++++ b/soc/espressif/esp32/default.ld
+@@ -805,7 +805,7 @@ SECTIONS
+     . = ALIGN(4);
+   } GROUP_DATA_LINK_IN(RODATA_REGION, ROMABLE_REGION)
+ 
+-  #include <zephyr/linker/common-rom/common-rom-cpp.ld>
++  #include <zephyr/linker/common-rom/common-rom-init.ld>
+   #include <zephyr/linker/common-rom/common-rom-kernel-devices.ld>
+   #include <zephyr/linker/common-rom/common-rom-ztest.ld>
+   #include <zephyr/linker/common-rom/common-rom-net.ld>
+diff --git a/soc/espressif/esp32/default_appcpu.ld b/soc/espressif/esp32/default_appcpu.ld
+index 57a35c47450..2fd38f3909e 100644
+--- a/soc/espressif/esp32/default_appcpu.ld
++++ b/soc/espressif/esp32/default_appcpu.ld
+@@ -209,7 +209,7 @@ SECTIONS
+     . = ALIGN(4);
+   } GROUP_DATA_LINK_IN(RODATA_REGION, ROMABLE_DATA_REGION)
+ 
+-  #include <zephyr/linker/common-rom/common-rom-cpp.ld>
++  #include <zephyr/linker/common-rom/common-rom-init.ld>
+   #include <zephyr/linker/common-rom/common-rom-kernel-devices.ld>
+   #include <zephyr/linker/common-rom/common-rom-ztest.ld>
+   #include <zephyr/linker/common-rom/common-rom-net.ld>
+diff --git a/soc/espressif/esp32c3/default.ld b/soc/espressif/esp32c3/default.ld
+index 45d28240691..578b22fe794 100644
+--- a/soc/espressif/esp32c3/default.ld
++++ b/soc/espressif/esp32c3/default.ld
+@@ -771,7 +771,7 @@ SECTIONS
+   } GROUP_DATA_LINK_IN(RODATA_REGION, ROMABLE_REGION)
+ 
+   #include <zephyr/linker/cplusplus-rom.ld>
+-  #include <zephyr/linker/common-rom/common-rom-cpp.ld>
++  #include <zephyr/linker/common-rom/common-rom-init.ld>
+   #include <zephyr/linker/common-rom/common-rom-kernel-devices.ld>
+   #include <zephyr/linker/common-rom/common-rom-ztest.ld>
+   #include <zephyr/linker/common-rom/common-rom-net.ld>
+diff --git a/soc/espressif/esp32c3/mcuboot.ld b/soc/espressif/esp32c3/mcuboot.ld
+index dfb6c74e330..4d20238bdbc 100644
+--- a/soc/espressif/esp32c3/mcuboot.ld
++++ b/soc/espressif/esp32c3/mcuboot.ld
+@@ -225,7 +225,7 @@ SECTIONS
+     . = ALIGN(4);
+   } > dram_seg
+ 
+-  #include <zephyr/linker/common-rom/common-rom-cpp.ld>
++  #include <zephyr/linker/common-rom/common-rom-init.ld>
+   #include <zephyr/linker/common-rom/common-rom-kernel-devices.ld>
+   #include <zephyr/linker/common-rom/common-rom-debug.ld>
+   #include <zephyr/linker/common-rom/common-rom-misc.ld>
+diff --git a/soc/espressif/esp32c6/default.ld b/soc/espressif/esp32c6/default.ld
+index e932ca84c41..748c50d7d43 100644
+--- a/soc/espressif/esp32c6/default.ld
++++ b/soc/espressif/esp32c6/default.ld
+@@ -771,7 +771,7 @@ SECTIONS
+   } GROUP_DATA_LINK_IN(CACHED_REGION, ROMABLE_REGION)
+ 
+   #include <zephyr/linker/cplusplus-rom.ld>
+-  #include <zephyr/linker/common-rom/common-rom-cpp.ld>
++  #include <zephyr/linker/common-rom/common-rom-init.ld>
+   #include <zephyr/linker/common-rom/common-rom-kernel-devices.ld>
+   #include <zephyr/linker/common-rom/common-rom-ztest.ld>
+   #include <zephyr/linker/common-rom/common-rom-net.ld>
+diff --git a/soc/espressif/esp32c6/mcuboot.ld b/soc/espressif/esp32c6/mcuboot.ld
+index 642ad365a37..a96d80471ac 100644
+--- a/soc/espressif/esp32c6/mcuboot.ld
++++ b/soc/espressif/esp32c6/mcuboot.ld
+@@ -219,7 +219,7 @@ SECTIONS
+     . = ALIGN(4);
+   } > dram_seg
+ 
+-  #include <zephyr/linker/common-rom/common-rom-cpp.ld>
++  #include <zephyr/linker/common-rom/common-rom-init.ld>
+   #include <zephyr/linker/common-rom/common-rom-kernel-devices.ld>
+   #include <zephyr/linker/common-rom/common-rom-debug.ld>
+   #include <zephyr/linker/common-rom/common-rom-misc.ld>
+diff --git a/soc/espressif/esp32s2/default.ld b/soc/espressif/esp32s2/default.ld
+index a59836e965a..6ba2e744a77 100644
+--- a/soc/espressif/esp32s2/default.ld
++++ b/soc/espressif/esp32s2/default.ld
+@@ -908,7 +908,7 @@ SECTIONS
+   } GROUP_DATA_LINK_IN(RODATA_REGION, ROMABLE_REGION)
+ 
+   #include <zephyr/linker/cplusplus-rom.ld>
+-  #include <zephyr/linker/common-rom/common-rom-cpp.ld>
++  #include <zephyr/linker/common-rom/common-rom-init.ld>
+   #include <zephyr/linker/common-rom/common-rom-kernel-devices.ld>
+   #include <zephyr/linker/common-rom/common-rom-ztest.ld>
+   #include <zephyr/linker/common-rom/common-rom-net.ld>
+diff --git a/soc/espressif/esp32s2/mcuboot.ld b/soc/espressif/esp32s2/mcuboot.ld
+index 5c1cd1174c0..092c3a5ae1f 100644
+--- a/soc/espressif/esp32s2/mcuboot.ld
++++ b/soc/espressif/esp32s2/mcuboot.ld
+@@ -199,7 +199,7 @@ SECTIONS
+     . = ALIGN(4);
+   } > dram_seg
+ 
+-  #include <zephyr/linker/common-rom/common-rom-cpp.ld>
++  #include <zephyr/linker/common-rom/common-rom-init.ld>
+   #include <zephyr/linker/common-rom/common-rom-kernel-devices.ld>
+   #include <zephyr/linker/common-rom/common-rom-debug.ld>
+   #include <zephyr/linker/common-rom/common-rom-misc.ld>
+diff --git a/soc/espressif/esp32s3/default.ld b/soc/espressif/esp32s3/default.ld
+index cfe44f010f7..51598e89c04 100644
+--- a/soc/espressif/esp32s3/default.ld
++++ b/soc/espressif/esp32s3/default.ld
+@@ -843,7 +843,7 @@ SECTIONS
+   } GROUP_DATA_LINK_IN(RODATA_REGION, ROMABLE_REGION)
+ 
+   #include <zephyr/linker/cplusplus-rom.ld>
+-  #include <zephyr/linker/common-rom/common-rom-cpp.ld>
++  #include <zephyr/linker/common-rom/common-rom-init.ld>
+   #include <zephyr/linker/common-rom/common-rom-kernel-devices.ld>
+   #include <zephyr/linker/common-rom/common-rom-ztest.ld>
+   #include <zephyr/linker/common-rom/common-rom-net.ld>
+diff --git a/soc/espressif/esp32s3/default_appcpu.ld b/soc/espressif/esp32s3/default_appcpu.ld
+index efc684161b5..bfdaefac078 100644
+--- a/soc/espressif/esp32s3/default_appcpu.ld
++++ b/soc/espressif/esp32s3/default_appcpu.ld
+@@ -185,7 +185,7 @@ SECTIONS
+   #pragma push_macro("GROUP_ROM_LINK_IN")
+   #undef GROUP_ROM_LINK_IN
+   #define GROUP_ROM_LINK_IN(vregion, lregion) > RAMABLE_REGION AT > lregion
+-  #include <zephyr/linker/common-rom/common-rom-cpp.ld>
++  #include <zephyr/linker/common-rom/common-rom-init.ld>
+   #include <zephyr/linker/common-rom/common-rom-kernel-devices.ld>
+   #include <zephyr/linker/common-rom/common-rom-ztest.ld>
+   #include <zephyr/linker/common-rom/common-rom-net.ld>
+-- 
+2.45.2
+
