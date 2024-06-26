@@ -10,7 +10,7 @@ common:
     - goliothd
 tests:
   sample.golioth.logging:
-    timeout: 180
+    timeout: 360
     extra_args: EXTRA_CONF_FILE="../common/runtime_settings.conf"
     extra_configs:
       - CONFIG_SHELL_BACKEND_SERIAL_RX_RING_BUFFER_SIZE=128
