@@ -125,7 +125,8 @@ jobs:
           - hil_board: rak5010_nrf52840
             west_board: rak5010_nrf52840
             manifest: .ci-west-zephyr.yml
-            run_tests: false
+            run_tests: true
+            extra_twister_args: '--flash-before --west-flash=--gdb=/usr/bin/gdb --west-runner blackmagicprobe'
 
           - hil_board: qemu_x86
             west_board: qemu_x86
@@ -138,6 +139,7 @@ jobs:
       manifest: ${{ matrix.manifest }}
       binary_blob: ${{ matrix.binary_blob }}
       run_tests: ${{ matrix.run_tests }}
+      extra_twister_args: ${{ matrix.extra_twister_args }}
       api-url: ${{ inputs.api-url }}
       api-key-id: ${{ inputs.api-key-id }}
       coap_gateway_url: ${{ inputs.coap_gateway_url }}

@@ -19,6 +19,10 @@ on:
         required: false
         type: boolean
         default: true
+      extra_twister_args:
+        required: false
+        type: string
+        default: '--west-flash="--skip-rebuild,--dev-id=${!SNR_VAR}"'
       api-url:
         required: true
         type: string
@@ -46,6 +50,10 @@ on:
         required: false
         type: boolean
         default: true
+      extra_twister_args:
+        required: false
+        type: string
+        default: '--west-flash="--skip-rebuild,--dev-id=${!SNR_VAR}"'
       api-url:
         required: true
         type: string
@@ -185,7 +193,7 @@ jobs:
                 --device-testing                                                                  \
                 --device-serial ${!PORT_VAR}                                                      \
                 --test-only                                                                       \
-                --west-flash="--skip-rebuild,--dev-id=${!SNR_VAR}"                                \
+                ${{ inputs.extra_twister_args }}                                                  \
                 --pytest-args="--api-url=${{ inputs.api-url }}"                                   \
                 --pytest-args="--api-key=${{ secrets[inputs.api-key-id] }}"                       \
                 --pytest-args="--wifi-ssid=${{ secrets[format('{0}_WIFI_SSID', runner.name)] }}"  \
@@ -232,6 +240,17 @@ jobs:
 
           elif [[ "${hil_board}" == "mimxrt1024_evk" ]]; then
             JLinkExe -nogui 1 -if swd -speed auto -device MIMXRT1024XXX5A -CommanderScript erase_mimxrt1024_evk.jlink -SelectEmuBySN ${!SNR_VAR}
+
+          elif [[ "${hil_board}" == "rak5010_nrf52840" ]]; then
+            gdb \
+            -ex "set confirm off" \
+            -ex "target extended-remote "${BLACKMAGIC_PORT} \
+            -ex "monitor swdp_scan" \
+            -ex "attach 1" \
+            -ex "monitor erase_mass" \
+            -ex "kill" \
+            -ex "quit" \
+            -silent
 
           fi
       - name: Power Off USB Hub
