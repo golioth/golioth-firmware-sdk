@@ -16,6 +16,9 @@ LOG_TAG_DEFINE(test_ota);
 static golioth_sys_sem_t connected_sem;
 static golioth_sys_sem_t reason_test_sem;
 static golioth_sys_sem_t block_test_sem;
+static golioth_sys_sem_t restart_test_sem;
+
+static bool client_has_been_restarted = false;
 
 #define GOLIOTH_OTA_REASON_CNT 10
 #define GOLIOTH_OTA_STATE_CNT 4
@@ -24,6 +27,7 @@ static golioth_sys_sem_t block_test_sem;
 #define DUMMY_VER_SAME "1.2.3"
 #define DUMMY_VER_UPDATE "1.2.4"
 #define DUMMY_VER_EXTRA "1.2.5"
+#define DUMMY_VER_RESTART "1.2.6"
 
 static uint8_t callback_arg = 17;
 static uint8_t block_buf[GOLIOTH_OTA_BLOCKSIZE];
@@ -168,6 +172,24 @@ static void test_block_ops(void)
     }
 }
 
+static void test_restart(void)
+{
+
+    if (!client_has_been_restarted)
+    {
+        golioth_client_stop(client);
+        golioth_sys_msleep(3000);
+        GLTH_LOGI(TAG, "Restarting Client");
+        client_has_been_restarted = true;
+        golioth_client_start(client);
+    }
+    else
+    {
+        GLTH_LOGI(TAG, "Restart successful");
+        client_has_been_restarted = false;
+    }
+}
+
 static void on_manifest(struct golioth_client *client,
                         const struct golioth_response *response,
                         const char *path,
@@ -225,6 +247,10 @@ static void on_manifest(struct golioth_client *client,
         {
             golioth_sys_sem_give(reason_test_sem);
         }
+        else if (strcmp(main->version, DUMMY_VER_RESTART) == 0)
+        {
+            golioth_sys_sem_give(restart_test_sem);
+        }
     }
 }
 
@@ -243,6 +269,7 @@ void hil_test_entry(const struct golioth_client_config *config)
     connected_sem = golioth_sys_sem_create(1, 0);
     reason_test_sem = golioth_sys_sem_create(1, 0);
     block_test_sem = golioth_sys_sem_create(1, 0);
+    restart_test_sem = golioth_sys_sem_create(1, 0);
 
     golioth_debug_set_cloud_log_enabled(false);
 
@@ -262,6 +289,10 @@ void hil_test_entry(const struct golioth_client_config *config)
         if (golioth_sys_sem_take(block_test_sem, 0))
         {
             test_block_ops();
+        }
+        if (golioth_sys_sem_take(restart_test_sem, 0))
+        {
+            test_restart();
         }
 
         golioth_sys_msleep(100);
