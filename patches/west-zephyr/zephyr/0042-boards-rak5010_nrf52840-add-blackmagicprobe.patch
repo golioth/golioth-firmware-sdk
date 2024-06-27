@@ -1,0 +1,24 @@
+From 8739b49c1392e6dbed8b31330d6eef5167e40b78 Mon Sep 17 00:00:00 2001
+From: Mike Szczys <szczys@hotmail.com>
+Date: Thu, 27 Jun 2024 09:05:09 -0500
+Subject: [PATCH] boards: rak5010_nrf52840: add blackmagicprobe
+
+Add blackmagicprobe as a supported runner for rak5010_nrf52840.
+
+Signed-off-by: Mike Szczys <szczys@hotmail.com>
+---
+ boards/arm/rak5010_nrf52840/board.cmake | 1 +
+ 1 file changed, 1 insertion(+)
+
+diff --git a/boards/arm/rak5010_nrf52840/board.cmake b/boards/arm/rak5010_nrf52840/board.cmake
+index 1bf111421e2..d91b58c847d 100644
+--- a/boards/arm/rak5010_nrf52840/board.cmake
++++ b/boards/arm/rak5010_nrf52840/board.cmake
+@@ -7,3 +7,4 @@ include(${ZEPHYR_BASE}/boards/common/nrfjprog.board.cmake)
+ include(${ZEPHYR_BASE}/boards/common/jlink.board.cmake)
+ include(${ZEPHYR_BASE}/boards/common/pyocd.board.cmake)
+ include(${ZEPHYR_BASE}/boards/common/openocd-nrf5.board.cmake)
++include(${ZEPHYR_BASE}/boards/common/blackmagicprobe.board.cmake)
+-- 
+2.34.1
+
