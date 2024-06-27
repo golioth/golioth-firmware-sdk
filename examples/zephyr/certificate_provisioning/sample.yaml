@@ -13,9 +13,9 @@ tests:
     platform_allow: >
       mimxrt1024_evk
       nrf9160dk_nrf9160_ns
-      rak5010_nrf52840
   sample.golioth.certificate_provisioning.buildonly:
     build_only: true
     platform_allow: >
       esp32_devkitc_wrover
       nrf52840dk_nrf52840
+      rak5010_nrf52840
