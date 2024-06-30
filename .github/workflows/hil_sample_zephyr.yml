@@ -240,6 +240,17 @@ jobs:
           elif [[ "${hil_board}" == "mimxrt1024_evk" ]]; then
             JLinkExe -nogui 1 -if swd -speed auto -device MIMXRT1024XXX5A -CommanderScript erase_mimxrt1024_evk.jlink -SelectEmuBySN ${!SNR_VAR}
 
+          elif [[ "${hil_board}" == "rak5010" ]]; then
+            gdb \
+            -ex "set confirm off" \
+            -ex "target extended-remote "${CI_BLACKMAGICPROBE_PORT} \
+            -ex "monitor swdp_scan" \
+            -ex "attach 1" \
+            -ex "monitor erase_mass" \
+            -ex "kill" \
+            -ex "quit" \
+            -silent
+
           fi
       - name: Power Off USB Hub
         if: always()
