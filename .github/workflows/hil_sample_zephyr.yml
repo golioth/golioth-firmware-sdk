@@ -53,7 +53,6 @@ on:
       extra_twister_args:
         required: false
         type: string
-        default: '--west-flash="--skip-rebuild,--dev-id=${!SNR_VAR}"'
       api-url:
         required: true
         type: string
