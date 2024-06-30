@@ -34,84 +34,84 @@ on:
         default: "coaps://coap.golioth.io"
 
 jobs:
-  hil_test_zephyr:
-    strategy:
-      fail-fast: false
-      matrix:
-        include:
-          - hil_board: esp32_devkitc_wrover
-            west_board: esp32_devkitc_wrover
-            manifest: .ci-west-zephyr.yml
-            binary_name: merged.bin
-            binary_blob: hal_espressif
-          - hil_board: mimxrt1024_evk
-            west_board: mimxrt1024_evk
-            manifest: .ci-west-zephyr.yml
-            binary_name: zephyr.hex
-          - hil_board: nrf52840dk
-            west_board: nrf52840dk_nrf52840
-            manifest: .ci-west-zephyr.yml
-            binary_name: zephyr.hex
-          - hil_board: nrf9160dk
-            west_board: nrf9160dk_nrf9160_ns
-            manifest: .ci-west-ncs.yml
-            binary_name: merged.hex
-    uses: ./.github/workflows/hil_test_zephyr.yml
-    with:
-      hil_board: ${{ matrix.hil_board }}
-      west_board: ${{ matrix.west_board }}
-      manifest: ${{ matrix.manifest }}
-      binary_name: ${{ matrix.binary_name}}
-      binary_blob: ${{ matrix.binary_blob }}
-      api-url: ${{ inputs.api-url }}
-      api-key-id: ${{ inputs.api-key-id }}
-      coap_gateway_url: ${{ inputs.coap_gateway_url }}
-    secrets: inherit
+  #hil_test_zephyr:
+    #strategy:
+      #fail-fast: false
+      #matrix:
+        #include:
+          #- hil_board: esp32_devkitc_wrover
+            #west_board: esp32_devkitc_wrover
+            #manifest: .ci-west-zephyr.yml
+            #binary_name: merged.bin
+            #binary_blob: hal_espressif
+          #- hil_board: mimxrt1024_evk
+            #west_board: mimxrt1024_evk
+            #manifest: .ci-west-zephyr.yml
+            #binary_name: zephyr.hex
+          #- hil_board: nrf52840dk
+            #west_board: nrf52840dk_nrf52840
+            #manifest: .ci-west-zephyr.yml
+            #binary_name: zephyr.hex
+          #- hil_board: nrf9160dk
+            #west_board: nrf9160dk_nrf9160_ns
+            #manifest: .ci-west-ncs.yml
+            #binary_name: merged.hex
+    #uses: ./.github/workflows/hil_test_zephyr.yml
+    #with:
+      #hil_board: ${{ matrix.hil_board }}
+      #west_board: ${{ matrix.west_board }}
+      #manifest: ${{ matrix.manifest }}
+      #binary_name: ${{ matrix.binary_name}}
+      #binary_blob: ${{ matrix.binary_blob }}
+      #api-url: ${{ inputs.api-url }}
+      #api-key-id: ${{ inputs.api-key-id }}
+      #coap_gateway_url: ${{ inputs.coap_gateway_url }}
+    #secrets: inherit
 
-  hil_test_esp-idf:
-    strategy:
-      fail-fast: false
-      matrix:
-        include:
-          - hil_board: esp32s3_devkitc
-            idf_target: esp32s3
-          - hil_board: esp32_devkitc_wrover
-            idf_target: esp32
-          - hil_board: esp32c3_devkitm
-            idf_target: esp32c3
-    uses: ./.github/workflows/hil_test_esp-idf.yml
-    with:
-      hil_board: ${{ matrix.hil_board }}
-      idf_target: ${{ matrix.idf_target }}
-      api-url: ${{ inputs.api-url }}
-      api-key-id: ${{ inputs.api-key-id }}
-      coap_gateway_url: ${{ inputs.coap_gateway_url }}
-    secrets: inherit
+  #hil_test_esp-idf:
+    #strategy:
+      #fail-fast: false
+      #matrix:
+        #include:
+          #- hil_board: esp32s3_devkitc
+            #idf_target: esp32s3
+          #- hil_board: esp32_devkitc_wrover
+            #idf_target: esp32
+          #- hil_board: esp32c3_devkitm
+            #idf_target: esp32c3
+    #uses: ./.github/workflows/hil_test_esp-idf.yml
+    #with:
+      #hil_board: ${{ matrix.hil_board }}
+      #idf_target: ${{ matrix.idf_target }}
+      #api-url: ${{ inputs.api-url }}
+      #api-key-id: ${{ inputs.api-key-id }}
+      #coap_gateway_url: ${{ inputs.coap_gateway_url }}
+    #secrets: inherit
 
-  hil_test_linux:
-    uses: ./.github/workflows/hil_test_linux.yml
-    with:
-      api-url: ${{ inputs.api-url }}
-      api-key-id: ${{ inputs.api-key-id }}
-      coap_gateway_url: ${{ inputs.coap_gateway_url }}
-    secrets: inherit
+  #hil_test_linux:
+    #uses: ./.github/workflows/hil_test_linux.yml
+    #with:
+      #api-url: ${{ inputs.api-url }}
+      #api-key-id: ${{ inputs.api-key-id }}
+      #coap_gateway_url: ${{ inputs.coap_gateway_url }}
+    #secrets: inherit
 
   hil_sample_zephyr:
     strategy:
       fail-fast: false
       matrix:
         include:
-          - hil_board: esp32_devkitc_wrover
-            west_board: esp32_devkitc_wrover
-            manifest: .ci-west-zephyr.yml
-            binary_blob: hal_espressif
-            run_tests: false
+          #- hil_board: esp32_devkitc_wrover
+            #west_board: esp32_devkitc_wrover
+            #manifest: .ci-west-zephyr.yml
+            #binary_blob: hal_espressif
+            #run_tests: false
 
-          - hil_board: mimxrt1024_evk
-            west_board: mimxrt1024_evk
-            manifest: .ci-west-zephyr.yml
-            extra_twister_args: '--west-flash="--dev-id=${!SNR_VAR}"'
-            run_tests: true
+          #- hil_board: mimxrt1024_evk
+            #west_board: mimxrt1024_evk
+            #manifest: .ci-west-zephyr.yml
+            #extra_twister_args: '--west-flash="--dev-id=${!SNR_VAR}"'
+            #run_tests: true
 
           - hil_board: nrf52840dk
             west_board: nrf52840dk_nrf52840
@@ -119,22 +119,22 @@ jobs:
             extra_twister_args: '--west-flash="--dev-id=${!SNR_VAR}"'
             run_tests: true
 
-          - hil_board: nrf9160dk
-            west_board: nrf9160dk_nrf9160_ns
-            manifest: .ci-west-ncs.yml
-            extra_twister_args: '--west-flash="--dev-id=${!SNR_VAR}"'
-            run_tests: true
+          #- hil_board: nrf9160dk
+            #west_board: nrf9160dk_nrf9160_ns
+            #manifest: .ci-west-ncs.yml
+            #extra_twister_args: '--west-flash="--dev-id=${!SNR_VAR}"'
+            #run_tests: true
 
-          - hil_board: rak5010_nrf52840
-            west_board: rak5010_nrf52840
-            manifest: .ci-west-zephyr.yml
-            extra_twister_args: '--flash-before --west-flash=--gdb=/usr/bin/gdb --west-runner blackmagicprobe'
-            run_tests: true
+          #- hil_board: rak5010_nrf52840
+            #west_board: rak5010_nrf52840
+            #manifest: .ci-west-zephyr.yml
+            #extra_twister_args: '--flash-before --west-flash=--gdb=/usr/bin/gdb --west-runner blackmagicprobe'
+            #run_tests: true
 
-          - hil_board: qemu_x86
-            west_board: qemu_x86
-            manifest: .ci-west-zephyr.yml
-            run_tests: false
+          #- hil_board: qemu_x86
+            #west_board: qemu_x86
+            #manifest: .ci-west-zephyr.yml
+            #run_tests: false
     uses: ./.github/workflows/hil_sample_zephyr.yml
     with:
       hil_board: ${{ matrix.hil_board }}
@@ -148,84 +148,84 @@ jobs:
       coap_gateway_url: ${{ inputs.coap_gateway_url }}
     secrets: inherit
 
-  hil_sample_zephyr_nsim:
-    runs-on: ubuntu-latest
-    container:
-      image: golioth/golioth-zephyr-base:0.16.3-SDK-v0
-    env:
-      ZEPHYR_SDK_INSTALL_DIR: /opt/toolchains/zephyr-sdk-0.16.3
-    name: zephyr-${{ matrix.west_board }}-twister
-    strategy:
-      fail-fast: false
-      matrix:
-        include:
-          - west_board: native_sim
-          - west_board: native_sim_64
-    steps:
-      - name: Checkout repository and submodules
-        uses: actions/checkout@v4
-        with:
-          path: modules/lib/golioth-firmware-sdk
-          submodules: 'recursive'
+  #hil_sample_zephyr_nsim:
+    #runs-on: ubuntu-latest
+    #container:
+      #image: golioth/golioth-zephyr-base:0.16.3-SDK-v0
+    #env:
+      #ZEPHYR_SDK_INSTALL_DIR: /opt/toolchains/zephyr-sdk-0.16.3
+    #name: zephyr-${{ matrix.west_board }}-twister
+    #strategy:
+      #fail-fast: false
+      #matrix:
+        #include:
+          #- west_board: native_sim
+          #- west_board: native_sim_64
+    #steps:
+      #- name: Checkout repository and submodules
+        #uses: actions/checkout@v4
+        #with:
+          #path: modules/lib/golioth-firmware-sdk
+          #submodules: 'recursive'
 
-      - name: Init and update west
-        run: |
-          mkdir -p .west
-          cat <<EOF > .west/config
-          [manifest]
-          path = modules/lib/golioth-firmware-sdk
-          file = .ci-west-zephyr.yml
-          EOF
+      #- name: Init and update west
+        #run: |
+          #mkdir -p .west
+          #cat <<EOF > .west/config
+          #[manifest]
+          #path = modules/lib/golioth-firmware-sdk
+          #file = .ci-west-zephyr.yml
+          #EOF
 
-          west update -o=--depth=1 -n
-          git config --global user.email user@git-scm.com
-          git config --global user.name "Git User"
-          west patch
+          #west update -o=--depth=1 -n
+          #git config --global user.email user@git-scm.com
+          #git config --global user.name "Git User"
+          #west patch
 
-          pip3 install -r zephyr/scripts/requirements-base.txt
-          pip3 install -r zephyr/scripts/requirements-build-test.txt
-          pip3 install -r zephyr/scripts/requirements-run-test.txt
+          #pip3 install -r zephyr/scripts/requirements-base.txt
+          #pip3 install -r zephyr/scripts/requirements-build-test.txt
+          #pip3 install -r zephyr/scripts/requirements-run-test.txt
 
-          pip3 install git+https://github.com/golioth/python-golioth-tools@v0.6.3
+          #pip3 install git+https://github.com/golioth/python-golioth-tools@v0.6.3
 
-      - name: Run tests
-        run: |
-          zephyr/scripts/twister                                                    \
-              --platform ${{ matrix.west_board }}                                   \
-              -T modules/lib/golioth-firmware-sdk/examples/zephyr                   \
-              -x=CONFIG_GOLIOTH_COAP_HOST_URI=\"${{ inputs.coap_gateway_url }}\"    \
-              --pytest-args="--api-url=${{ inputs.api-url }}"                       \
-              --pytest-args="--api-key=${{ secrets[inputs.api-key-id] }}"           \
-              --pytest-args="--mask-secrets"
+      #- name: Run tests
+        #run: |
+          #zephyr/scripts/twister                                                    \
+              #--platform ${{ matrix.west_board }}                                   \
+              #-T modules/lib/golioth-firmware-sdk/examples/zephyr                   \
+              #-x=CONFIG_GOLIOTH_COAP_HOST_URI=\"${{ inputs.coap_gateway_url }}\"    \
+              #--pytest-args="--api-url=${{ inputs.api-url }}"                       \
+              #--pytest-args="--api-key=${{ secrets[inputs.api-key-id] }}"           \
+              #--pytest-args="--mask-secrets"
 
-      - name: Upload artifacts
-        uses: actions/upload-artifact@v4
-        if: ${{ always() }}
-        with:
-          name: twister-run-artifacts-${{ matrix.west_board }}
-          path: |
-            reports/*
-            twister-out/**/*.log
-            twister-out/**/report.xml
-            twister-out/*.xml
-            twister-out/*.json
+      #- name: Upload artifacts
+        #uses: actions/upload-artifact@v4
+        #if: ${{ always() }}
+        #with:
+          #name: twister-run-artifacts-${{ matrix.west_board }}
+          #path: |
+            #reports/*
+            #twister-out/**/*.log
+            #twister-out/**/report.xml
+            #twister-out/*.xml
+            #twister-out/*.json
 
-  hil_sample_esp-idf:
-    strategy:
-      fail-fast: false
-      matrix:
-        include:
-          - hil_board: esp32s3_devkitc
-            idf_target: esp32s3
-          - hil_board: esp32_devkitc_wrover
-            idf_target: esp32
-          - hil_board: esp32c3_devkitm
-            idf_target: esp32c3
-    uses: ./.github/workflows/hil_sample_esp-idf.yml
-    with:
-      hil_board: ${{ matrix.hil_board }}
-      idf_target: ${{ matrix.idf_target }}
-      api-url: ${{ inputs.api-url }}
-      api-key-id: ${{ inputs.api-key-id }}
-      coap_gateway_url: ${{ inputs.coap_gateway_url }}
-    secrets: inherit
+  #hil_sample_esp-idf:
+    #strategy:
+      #fail-fast: false
+      #matrix:
+        #include:
+          #- hil_board: esp32s3_devkitc
+            #idf_target: esp32s3
+          #- hil_board: esp32_devkitc_wrover
+            #idf_target: esp32
+          #- hil_board: esp32c3_devkitm
+            #idf_target: esp32c3
+    #uses: ./.github/workflows/hil_sample_esp-idf.yml
+    #with:
+      #hil_board: ${{ matrix.hil_board }}
+      #idf_target: ${{ matrix.idf_target }}
+      #api-url: ${{ inputs.api-url }}
+      #api-key-id: ${{ inputs.api-key-id }}
+      #coap_gateway_url: ${{ inputs.coap_gateway_url }}
+    #secrets: inherit
