@@ -125,10 +125,11 @@ jobs:
             extra_twister_args: '--west-flash="--dev-id=${!SNR_VAR}"'
             run_tests: true
 
-          - hil_board: rak5010_nrf52840
+          - hil_board: rak5010
             west_board: rak5010_nrf52840
             manifest: .ci-west-zephyr.yml
-            run_tests: false
+            extra_twister_args: '--flash-before --west-flash=--gdb=/usr/bin/gdb --west-runner blackmagicprobe'
+            run_tests: true
 
           - hil_board: qemu_x86
             west_board: qemu_x86
