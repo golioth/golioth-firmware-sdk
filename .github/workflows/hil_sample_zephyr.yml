@@ -197,7 +197,8 @@ jobs:
                 --pytest-args="--api-key=${{ secrets[inputs.api-key-id] }}"                       \
                 --pytest-args="--wifi-ssid=${{ secrets[format('{0}_WIFI_SSID', runner.name)] }}"  \
                 --pytest-args="--wifi-psk=${{ secrets[format('{0}_WIFI_PSK', runner.name)] }}"    \
-                --pytest-args="--mask-secrets"
+                --pytest-args="--mask-secrets"                                                    \
+                -v
       - name: Upload artifacts
         uses: actions/upload-artifact@v4
         if: ${{ always() }}
