@@ -110,16 +110,19 @@ jobs:
           - hil_board: mimxrt1024_evk
             west_board: mimxrt1024_evk
             manifest: .ci-west-zephyr.yml
+            extra_twister_args: '--west-flash="--dev-id=${!SNR_VAR}"'
             run_tests: true
 
           - hil_board: nrf52840dk
             west_board: nrf52840dk_nrf52840
             manifest: .ci-west-zephyr.yml
+            extra_twister_args: '--west-flash="--dev-id=${!SNR_VAR}"'
             run_tests: true
 
           - hil_board: nrf9160dk
             west_board: nrf9160dk_nrf9160_ns
             manifest: .ci-west-ncs.yml
+            extra_twister_args: '--west-flash="--dev-id=${!SNR_VAR}"'
             run_tests: true
 
           - hil_board: rak5010_nrf52840
@@ -138,6 +141,7 @@ jobs:
       manifest: ${{ matrix.manifest }}
       binary_blob: ${{ matrix.binary_blob }}
       run_tests: ${{ matrix.run_tests }}
+      extra_twister_args: ${{ matrix.extra_twister_args }}
       api-url: ${{ inputs.api-url }}
       api-key-id: ${{ inputs.api-key-id }}
       coap_gateway_url: ${{ inputs.coap_gateway_url }}

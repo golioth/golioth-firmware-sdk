@@ -19,6 +19,10 @@ on:
         required: false
         type: boolean
         default: true
+      extra_twister_args:
+        required: false
+        type: string
+        default: '--west-flash="--dev-id=${!SNR_VAR}"'
       api-url:
         required: true
         type: string
@@ -46,6 +50,9 @@ on:
         required: false
         type: boolean
         default: true
+      extra_twister_args:
+        required: false
+        type: string
       api-url:
         required: true
         type: string
@@ -185,7 +192,7 @@ jobs:
                 --device-testing                                                                  \
                 --device-serial ${!PORT_VAR}                                                      \
                 --test-only                                                                       \
-                --west-flash="--skip-rebuild,--dev-id=${!SNR_VAR}"                                \
+                ${{ inputs.extra_twister_args }}                                                  \
                 --pytest-args="--api-url=${{ inputs.api-url }}"                                   \
                 --pytest-args="--api-key=${{ secrets[inputs.api-key-id] }}"                       \
                 --pytest-args="--wifi-ssid=${{ secrets[format('{0}_WIFI_SSID', runner.name)] }}"  \
