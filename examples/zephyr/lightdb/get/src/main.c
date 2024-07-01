@@ -115,7 +115,7 @@ static void counter_get_cbor_handler(struct golioth_client *client,
         return;
     }
 
-    ZCBOR_STATE_D_COMPAT(zsd, 1, payload, payload_size, 1, 0);
+    ZCBOR_STATE_D(zsd, 1, payload, payload_size, 1, 0);
     int64_t counter;
     struct zcbor_map_entry map_entry =
         ZCBOR_TSTR_LIT_MAP_ENTRY("counter", zcbor_map_int64_decode, &counter);
