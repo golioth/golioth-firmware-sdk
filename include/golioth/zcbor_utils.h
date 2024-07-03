@@ -4,6 +4,11 @@
  * SPDX-License-Identifier: Apache-2.0
  */
 
+#ifdef __cplusplus
+extern "C"
+{
+#endif
+
 #include <zcbor_decode.h>
 #include <zcbor_encode.h>
 
@@ -159,3 +164,7 @@ int zcbor_map_decode(zcbor_state_t *zsd, struct zcbor_map_entry *entries, size_t
             },                                                                \
         .decode = _decode, .value = _value,                                   \
     }
+
+#ifdef __cplusplus
+}
+#endif

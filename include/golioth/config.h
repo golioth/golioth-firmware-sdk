@@ -3,6 +3,12 @@
  *
  * SPDX-License-Identifier: Apache-2.0
  */
+
+#ifdef __cplusplus
+extern "C"
+{
+#endif
+
 #pragma once
 
 // This file defines default configuration values.
@@ -119,4 +125,8 @@
 
 #ifndef GOLIOTH_OVERRIDE_LIBCOAP_LOG_HANDLER
 #define GOLIOTH_OVERRIDE_LIBCOAP_LOG_HANDLER 1
+#endif
+
+#ifdef __cplusplus
+}
 #endif

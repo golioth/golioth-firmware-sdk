@@ -3,6 +3,12 @@
  *
  * SPDX-License-Identifier: Apache-2.0
  */
+
+#ifdef __cplusplus
+extern "C"
+{
+#endif
+
 #pragma once
 
 #include <golioth/config.h>
@@ -43,3 +49,7 @@ void golioth_debug_printf(uint64_t tstamp_ms,
                           const char *tag,
                           const char *format,
                           ...);
+
+#ifdef __cplusplus
+}
+#endif

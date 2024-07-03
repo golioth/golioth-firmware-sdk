@@ -3,6 +3,12 @@
  *
  * SPDX-License-Identifier: Apache-2.0
  */
+
+#ifdef __cplusplus
+extern "C"
+{
+#endif
+
 #pragma once
 
 #include <golioth/golioth_status.h>
@@ -310,3 +316,7 @@ enum golioth_status golioth_lightdb_observe_async(struct golioth_client *client,
                                                   void *callback_arg);
 
 /// @}
+
+#ifdef __cplusplus
+}
+#endif

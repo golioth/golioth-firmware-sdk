@@ -3,6 +3,12 @@
  *
  * SPDX-License-Identifier: Apache-2.0
  */
+
+#ifdef __cplusplus
+extern "C"
+{
+#endif
+
 #pragma once
 
 #include <stdint.h>
@@ -195,3 +201,7 @@ void golioth_sys_client_disconnected(void *client);
 #define GLTH_LOG_BUFFER_HEXDUMP(TAG, ...)
 
 #endif /* CONFIG_GOLIOTH_DEBUG_LOG */
+
+#ifdef __cplusplus
+}
+#endif

@@ -4,6 +4,11 @@
  * SPDX-License-Identifier: Apache-2.0
  */
 
+#ifdef __cplusplus
+extern "C"
+{
+#endif
+
 #pragma once
 
 #include <stdbool.h>
@@ -49,3 +54,7 @@ bool golioth_payload_as_bool(const uint8_t *payload, size_t payload_size);
 bool golioth_payload_is_null(const uint8_t *payload, size_t payload_size);
 
 /// @}
+
+#ifdef __cplusplus
+}
+#endif
