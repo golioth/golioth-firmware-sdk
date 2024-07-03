@@ -3,6 +3,12 @@
  *
  * SPDX-License-Identifier: Apache-2.0
  */
+
+#ifdef __cplusplus
+extern "C"
+{
+#endif
+
 #pragma once
 
 /// Status code enum used throughout Golioth SDK
@@ -49,3 +55,7 @@ const char *golioth_status_to_str(enum golioth_status status);
             return status;                   \
         }                                    \
     } while (0)
+
+#ifdef __cplusplus
+}
+#endif

@@ -3,6 +3,12 @@
  *
  * SPDX-License-Identifier: Apache-2.0
  */
+
+#ifdef __cplusplus
+extern "C"
+{
+#endif
+
 #pragma once
 
 #include <stdbool.h>
@@ -286,3 +292,7 @@ void golioth_client_set_packet_loss_percent(uint8_t percent);
 golioth_sys_thread_t golioth_client_get_thread(struct golioth_client *client);
 
 /// @}
+
+#ifdef __cplusplus
+}
+#endif

@@ -3,6 +3,12 @@
  *
  * SPDX-License-Identifier: Apache-2.0
  */
+
+#ifdef __cplusplus
+extern "C"
+{
+#endif
+
 #pragma once
 
 #include <golioth/client.h>
@@ -156,3 +162,7 @@ void fw_update_end(void);
 //---------------------------------------------------------------------------
 
 /// @}
+
+#ifdef __cplusplus
+}
+#endif

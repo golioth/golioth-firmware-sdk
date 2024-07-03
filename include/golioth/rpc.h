@@ -3,6 +3,12 @@
  *
  * SPDX-License-Identifier: Apache-2.0
  */
+
+#ifdef __cplusplus
+extern "C"
+{
+#endif
+
 #pragma once
 
 #include <zcbor_decode.h>
@@ -117,3 +123,7 @@ enum golioth_status golioth_rpc_register(struct golioth_rpc *grpc,
                                          void *callback_arg);
 
 /// @}
+
+#ifdef __cplusplus
+}
+#endif
