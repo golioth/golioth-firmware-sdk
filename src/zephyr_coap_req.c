@@ -73,7 +73,7 @@ static void golioth_coap_req_cancel(struct golioth_coap_req *req)
 
 static void golioth_coap_req_cancel_and_free(struct golioth_coap_req *req)
 {
-    LOG_DBG("cancel and free req %p data %p", req, req->request.data);
+    LOG_DBG("cancel and free req %p data %p", (void *) req, (void *) req->request.data);
 
     golioth_coap_req_cancel(req);
     free(req->request.data);
@@ -173,7 +173,7 @@ static int golioth_coap_req_reply_handler(struct golioth_coap_req *req,
 
         (void) req->cb(&rsp);
 
-        LOG_DBG("cancel and free req: %p", req);
+        LOG_DBG("cancel and free req: %p", (void *) req);
 
         goto cancel_and_free;
     }
@@ -687,7 +687,7 @@ static int64_t golioth_coap_req_poll_prepare(struct golioth_coap_req *req, uint3
                 .err = -ETIMEDOUT,
             };
 
-            LOG_WRN("Packet %p (reply %p) was not replied to", req, &req->reply);
+            LOG_WRN("Packet %p (reply %p) was not replied to", (void *) req, (void *) &req->reply);
 
             (void) req->cb(&rsp);
 
@@ -702,8 +702,8 @@ static int64_t golioth_coap_req_poll_prepare(struct golioth_coap_req *req, uint3
         if (resend)
         {
             LOG_DBG("Resending request %p (reply %p) (retries %d)",
-                    req,
-                    &req->reply,
+                    (void *) req,
+                    (void *) &req->reply,
                     (int) req->pending.retries);
 
             req->client->resend_report_count++;
