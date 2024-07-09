@@ -15,8 +15,11 @@ LOG_MODULE_REGISTER(fw_update_sample, LOG_LEVEL_DBG);
 
 #include <samples/common/net_connect.h>
 
-// Current firmware version; update in prj.conf or via build argument
-static const char *_current_version = CONFIG_MCUBOOT_IMGTOOL_SIGN_VERSION;
+#include <app_version.h>
+
+// Current firmware version; update in VERSION
+static const char *_current_version =
+    STRINGIFY(APP_VERSION_MAJOR) "." STRINGIFY(APP_VERSION_MINOR) "." STRINGIFY(APP_PATCHLEVEL);
 
 static K_SEM_DEFINE(connected, 0, 1);
 
