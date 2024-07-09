@@ -28,3 +28,8 @@ tests:
     sysbuild: true
     platform_allow: >
       - rak5010_nrf52840
+  sample.golioth.fw_update.native:
+    build_only: true
+    platform_allow:
+      - native_sim
+      - native_sim/native/64
