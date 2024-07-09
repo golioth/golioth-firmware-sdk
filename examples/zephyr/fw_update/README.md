@@ -205,11 +205,12 @@ failed to read secondary area (2) header: -5
 
 ### Prepare new firmware
 
-Edit the `prj.conf` file and update the firmware version number:
+Edit the `VERSION` file and update the firmware version number:
 
 ```config
-# Firmware version used in FW update process
-CONFIG_MCUBOOT_IMGTOOL_SIGN_VERSION="1.2.4"
+VERSION_MAJOR = 1
+VERSION_MINOR = 2
+PATCHLEVEL = 4
 ```
 
 Build the firmware update but do not flash it to the device. The binary
