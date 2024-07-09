@@ -111,18 +111,35 @@ config GOLIOTH_SAMPLE_NRF91_RESET_LOOP_OVERRIDE
 
 	  WARNING: It is not recommended to activate this setting in production.
 
-config GOLIOTH_SAMPLE_PSK_SETTINGS
-       bool "Load credentials from persistent settings"
-       default y if !GOLIOTH_SAMPLE_HARDCODED_CREDENTIALS
-       depends on GOLIOTH_AUTH_METHOD_PSK
-       depends on SETTINGS
-       help
-         When selected, Golioth credentials will be loaded from settings
-         subsystem.
+config GOLIOTH_SAMPLE_SETTINGS
+	bool "Load credentials from persistent settings"
+	default y if !GOLIOTH_SAMPLE_HARDCODED_CREDENTIALS
+	depends on GOLIOTH_AUTH_METHOD_PSK
+	depends on SETTINGS
+	help
+	  When selected, Golioth credentials will be loaded from settings
+	  subsystem.
+
+if GOLIOTH_SAMPLE_SETTINGS
+
+config GOLIOTH_SAMPLE_PSK_ID_MAX_LEN
+	int "Max length of PSK ID"
+	default 64
+	help
+	  Maximum length of PSK ID, in bytes.
+
+config GOLIOTH_SAMPLE_PSK_MAX_LEN
+	int "Max length of PSK"
+	default MBEDTLS_PSK_MAX_LEN if MBEDTLS_BUILTIN
+	default 64
+	help
+	  Maximum length of PSK, in bytes.
+
+endif # GOLIOTH_SAMPLE_SETTINGS
 
 config GOLIOTH_SAMPLE_SETTINGS_AUTOLOAD
 	bool "Automatically load settings before main()"
-	default y if GOLIOTH_SAMPLE_PSK_SETTINGS
+	default y if GOLIOTH_SAMPLE_SETTINGS
 	depends on SETTINGS
 	help
 	  Load settings automatically before running main() function. Enable it,
@@ -130,7 +147,7 @@ config GOLIOTH_SAMPLE_SETTINGS_AUTOLOAD
 
 config GOLIOTH_SAMPLE_SETTINGS_SHELL
 	bool "Settings shell"
-	default y if GOLIOTH_SAMPLE_PSK_SETTINGS
+	default y if GOLIOTH_SAMPLE_SETTINGS
 	depends on SHELL
 	depends on SETTINGS
 	depends on !SETTINGS_SHELL
@@ -185,30 +202,4 @@ config GOLIOTH_SAMPLE_WIFI_PSK
 
 endif # GOLIOTH_SAMPLE_WIFI
 
-config GOLIOTH_SAMPLE_SETTINGS
-
-	bool "Load credentials from persistent settings"
-	default y
-	depends on GOLIOTH_AUTH_METHOD_PSK
-	depends on SETTINGS
-	help
-	  When selected, Golioth credentials will be loaded from settings
-	  subsystem.
-
-if GOLIOTH_SAMPLE_SETTINGS
-
-config GOLIOTH_SAMPLE_PSK_ID_MAX_LEN
-	int "Max length of PSK ID"
-	default 64
-	help
-	  Maximum length of PSK ID, in bytes.
-
-config GOLIOTH_SAMPLE_PSK_MAX_LEN
-	int "Max length of PSK"
-	default MBEDTLS_PSK_MAX_LEN if MBEDTLS_BUILTIN
-	default 64
-	help
-	  Maximum length of PSK, in bytes.
-
-endif # GOLIOTH_SAMPLE_SETTINGS
 endif # GOLIOTH_SAMPLE_COMMON
