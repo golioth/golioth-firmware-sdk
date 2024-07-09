@@ -46,7 +46,8 @@ async def fw_info():
 
 @pytest.fixture(scope="module")
 async def blueprint_id(project, west_board):
-    yield await project.blueprints.get_id(west_board)
+    bp_name = west_board.replace('/','_')
+    yield await project.blueprints.get_id(bp_name)
 
 
 @pytest.fixture(scope="module")
