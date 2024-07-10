@@ -72,15 +72,24 @@ enum golioth_status golioth_stream_set_sync(struct golioth_client *client,
 
 /// Read block callback
 ///
-/// This callback will be called by the golioth client each time it needs to
+/// This callback will be called by the Golioth client each time it needs to
 /// fill a block.
 ///
+/// When the callback runs, the buffer should be filled with `block_size` number
+/// of bytes. When the last block contains fewer bytes, set `block_size` to the
+/// actual number of bytes written. Set `is_last` to indicate all data has been
+/// written to buffer.
+///
 /// @param block_idx The index of the block to fill
-/// @param block_buffer The buffer that this callabck should fill
+/// @param block_buffer The buffer that this callback should fill
 /// @param block_size (in/out) Contains the maximum size of block_buffer, and
-///        should be set to the size of data actually placed in block_buffer
+///        should be set to the size of data actually placed in block_buffer.
+///        Value must be > 0 when this function returns GOLIOTH_OK.
 /// @param is_last (out) Set this to true if this is the last block to transfer
 /// @param arg A user provided argument
+///
+/// @retval GOLIOTH_OK Callback ran successfully
+/// @retval GOLIOTH_ERR_* Indicate error type encountered by callback
 typedef enum golioth_status (*stream_read_block_cb)(uint32_t block_idx,
                                                     uint8_t *block_buffer,
                                                     size_t *block_size,
