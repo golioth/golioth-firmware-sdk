@@ -9,7 +9,7 @@
 #include <zcbor_decode.h>
 #include <zcbor_encode.h>
 #include <golioth/ota.h>
-#include "coap_blockwise.h"
+#include <golioth/coap_blockwise.h>
 #include "coap_client.h"
 #include <golioth/golioth_debug.h>
 #include "golioth_util.h"

@@ -8,7 +8,7 @@
 #include <string.h>
 #include <assert.h>
 #include "coap_client.h"
-#include "coap_blockwise.h"
+#include <golioth/coap_blockwise.h>
 
 struct blockwise_transfer
 {

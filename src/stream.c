@@ -5,7 +5,7 @@
  */
 #include <golioth/stream.h>
 #include "coap_client.h"
-#include "coap_blockwise.h"
+#include <golioth/coap_blockwise.h>
 
 #if defined(CONFIG_GOLIOTH_STREAM)
 
