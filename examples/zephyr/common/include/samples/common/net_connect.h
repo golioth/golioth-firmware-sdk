@@ -4,6 +4,11 @@
  * SPDX-License-Identifier: Apache-2.0
  */
 
+#ifdef __cplusplus
+extern "C"
+{
+#endif
+
 #ifndef __GOLIOTH_INCLUDE_GOLIOTH_NET_CONNECT_H__
 #define __GOLIOTH_INCLUDE_GOLIOTH_NET_CONNECT_H__
 
@@ -22,3 +27,7 @@ void net_connect(void);
 /** @} */
 
 #endif /* __GOLIOTH_INCLUDE_GOLIOTH_NET_CONNECT_H__ */
+
+#ifdef __cplusplus
+}
+#endif

@@ -4,6 +4,11 @@
  * SPDX-License-Identifier: Apache-2.0
  */
 
+#ifdef __cplusplus
+extern "C"
+{
+#endif
+
 #ifndef __GOLIOTH_INCLUDE_SAMPLE_CREDENTIALS_H__
 #define __GOLIOTH_INCLUDE_SAMPLE_CREDENTIALS_H__
 
@@ -18,3 +23,7 @@
 const struct golioth_client_config *golioth_sample_credentials_get(void);
 
 #endif /* __GOLIOTH_INCLUDE_SAMPLE_CREDENTIALS_H__ */
+
+#ifdef __cplusplus
+}
+#endif
