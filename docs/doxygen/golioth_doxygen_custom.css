@@ -2,7 +2,7 @@ html {
   --primary-color: #1597ff;
   /* primary theme color. This will affect the entire websites color scheme: links, arrows, labels, ... */
   --primary-dark-color: #5760ff;
-  --primary-light-color: #f2f2f2;
+  --primary-light-color: #1597ff;
 
   /* page base colors */
   --page-background-color: #ffffff;
@@ -11,6 +11,12 @@ html {
 
   /* color for all separators on the website: hr, borders, ... */
   --separator-color: #dedede;
+
+  --page-font-size: 1.17rem;
+  --navigation-font-size: 1.08rem;
+  --toc-font-size: 1rem;
+  --code-font-size: 1.05rem; /* affects code, fragment */
+  --title-font-size: 1.38rem;
 }
 
 html.dark-mode {
