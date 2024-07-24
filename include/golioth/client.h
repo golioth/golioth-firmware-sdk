@@ -156,6 +156,20 @@ typedef void (*golioth_get_cb_fn)(struct golioth_client *client,
                                   const uint8_t *payload,
                                   size_t payload_size,
                                   void *arg);
+
+/// Callback for blockwise get requests
+///
+/// Will be called repeatedly, once for each block received from the server or on timeout (i.e.
+/// response never received). The callback function should check response->status to determine which
+/// case it is (response received or timeout).
+///
+/// @param client The client handle from the original request.
+/// @param response Response status and class/code
+/// @param path The path from the original request
+/// @param payload The application layer payload in the response packet. Can be NULL.
+/// @param payload_size The size of payload, in bytes
+/// @param is_last True if this is the final block of the get request
+/// @param arg User argument, copied from the original request. Can be NULL.
 typedef void (*golioth_get_block_cb_fn)(struct golioth_client *client,
                                         const struct golioth_response *response,
                                         const char *path,
