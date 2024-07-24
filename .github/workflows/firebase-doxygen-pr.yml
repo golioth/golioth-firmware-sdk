@@ -12,6 +12,8 @@ jobs:
           tar -xvf doxygen-1.10.0.linux.bin.tar.gz
           cd doxygen-1.10.0
           sudo make install
+      - name: Update submodule
+        run: git submodule update --init --recursive docs/doxygen/doxygen-awesome-css
       - name: Generate Doxygen
         run: |
           cd docs/doxygen
