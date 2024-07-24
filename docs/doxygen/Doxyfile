@@ -2893,6 +2893,7 @@ DISABLE_INDEX          = NO
 FULL_SIDEBAR           = NO
 HTML_EXTRA_STYLESHEET  = doxygen-awesome-css/doxygen-awesome.css \
                         doxygen-awesome-css/doxygen-awesome-sidebar-only.css \
-                        doxygen-awesome-css/doxygen-awesome-sidebar-only-darkmode-toggle.css
+                        doxygen-awesome-css/doxygen-awesome-sidebar-only-darkmode-toggle.css \
+                        golioth_doxygen_custom.css
 HTML_COLORSTYLE        = LIGHT # required with Doxygen >= 1.9.5
 HTML_EXTRA_FILES       = doxygen-awesome-css/doxygen-awesome-darkmode-toggle.js

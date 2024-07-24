@@ -1,0 +1,31 @@
+html {
+  --primary-color: #1597ff;
+  /* primary theme color. This will affect the entire websites color scheme: links, arrows, labels, ... */
+  --primary-dark-color: #5760ff;
+  --primary-light-color: #f2f2f2;
+
+  /* page base colors */
+  --page-background-color: #ffffff;
+  --page-foreground-color: #000000;
+  --page-secondary-foreground-color: #232323;
+
+  /* color for all separators on the website: hr, borders, ... */
+  --separator-color: #dedede;
+}
+
+html.dark-mode {
+  --primary-color: #ff5760;
+  /* primary theme color. This will affect the entire websites color scheme: links, arrows, labels, ... */
+  --primary-dark-color: #f8b918;
+  --primary-light-color: #ff5760;
+
+  /* page base colors */
+  --page-background-color: #353535;
+  --page-foreground-color: #ffffff;
+  --page-secondary-foreground-color: #f2f2f2;
+
+  /* color for all separators on the website: hr, borders, ... */
+  --separator-color: #232323;
+
+  --fragment-background: #232323;
+}
