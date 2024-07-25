@@ -260,7 +260,9 @@ static int components_decode(zcbor_state_t *zsd, void *value)
     ok = zcbor_list_end_decode(zsd);
     if (!ok)
     {
-        GLTH_LOGW(TAG, "Did not end CBOR list correctly");
+        /* Most likely reason for this error is that server sent multiple components but device was
+         * configured to receive fewer */
+        GLTH_LOGW(TAG, "Can't end CBOR list (check GOLIOTH_OTA_MAX_NUM_COMPONENTS)");
         return -EBADMSG;
     }
 
