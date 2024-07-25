@@ -131,10 +131,24 @@ const struct golioth_ota_component *golioth_ota_find_component(
 /// This function will enqueue a request and return immediately without
 /// waiting for a response from the server. The callback will be invoked whenever
 /// the manifest is changed on the Golioth server.
+///
+/// @param client The client handle from @ref golioth_client_create
+/// @param callback Callback function to register
+/// @param arg Optional argument, forwarded directly to the callback when invoked. Can be NULL.
 enum golioth_status golioth_ota_observe_manifest_async(struct golioth_client *client,
                                                        golioth_get_cb_fn callback,
                                                        void *arg);
 
+/// Callback for OTA download component request
+///
+/// Will be called repeatedly, once for each block received from the server.
+///
+/// @param component The @ref golioth_ota_component pointer from the original request
+/// @param block_idx The block number in sequence (starting with 0)
+/// @param block_buffer The component payload in the response packet.
+/// @param block_size The size of payload, in bytes
+/// @param is_last true if this is the final block of the request
+/// @param arg User argument, copied from the original request. Can be NULL.
 typedef enum golioth_status (*ota_component_block_write_cb)(
     const struct golioth_ota_component *component,
     uint32_t block_idx,
@@ -143,6 +157,20 @@ typedef enum golioth_status (*ota_component_block_write_cb)(
     bool is_last,
     void *arg);
 
+/// Download an OTA component synchronously.
+///
+/// This function will block until the final block of the component download is received from the
+/// server or an error is received on any block.
+///
+/// @param client The client handle from @ref golioth_client_create
+/// @param component One @ref golioth_ota_component instance present in the @ref
+/// golioth_ota_manifest
+/// @param cb Callback function to register
+/// @param arg Optional argument, forwarded directly to the callback when invoked. Can be NULL.
+///
+/// @retval GOLIOTH_OK all blocks of package were received
+/// @retval GOLIOTH_ERR_FAIL invalid client handle, path, or callback
+/// @retval GOLIOTH_ERR_MEM_ALLOC unable to allocate necessary memory
 enum golioth_status golioth_ota_download_component(struct golioth_client *client,
                                                    const struct golioth_ota_component *component,
                                                    ota_component_block_write_cb cb,
