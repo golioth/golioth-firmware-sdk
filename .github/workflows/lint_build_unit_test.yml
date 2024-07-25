@@ -89,13 +89,13 @@ jobs:
     - name: Build ESP-IDF golioth_basics project
       uses: espressif/esp-idf-ci-action@v1
       with:
-        esp_idf_version: v5.2.1
+        esp_idf_version: v5.3
         target: esp32
         path: 'examples/esp_idf/golioth_basics'
     - name: Build ESP-IDF cpp project
       uses: espressif/esp-idf-ci-action@v1
       with:
-        esp_idf_version: v5.2.1
+        esp_idf_version: v5.3
         target: esp32
         path: 'examples/esp_idf/cpp'
     - name: Create empty certs/keys required by certificate_auth project
@@ -109,7 +109,7 @@ jobs:
     - name: Build ESP-IDF certificate_auth project
       uses: espressif/esp-idf-ci-action@v1
       with:
-        esp_idf_version: v5.2.1
+        esp_idf_version: v5.3
         target: esp32
         path: 'examples/esp_idf/certificate_auth'
 

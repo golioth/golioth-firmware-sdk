@@ -76,9 +76,9 @@ each of the samples is also continously verified on target.
 
 | Board                | Platform                 |
 | ---                  | ---                      |
-| ESP32-S3-DevKitC-1   | ESP-IDF (v5.2.1)         |
-| ESP32-C3-DevKitM-1   | ESP-IDF (v5.2.1)         |
-| ESP32-DevKitC-WROVER | ESP-IDF (v5.2.1)         |
+| ESP32-S3-DevKitC-1   | ESP-IDF (v5.3.0)         |
+| ESP32-C3-DevKitM-1   | ESP-IDF (v5.3.0)         |
+| ESP32-DevKitC-WROVER | ESP-IDF (v5.3.0)         |
 | ESP32-DevKitC-WROVER | Zephyr (v3.6.0)          |
 | nRF52840 DK + ESP32  | Zephyr (v3.6.0)          |
 | MIMXRT1024-EVK       | Zephyr (v3.6.0)          |
