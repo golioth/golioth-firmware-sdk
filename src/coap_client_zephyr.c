@@ -1578,6 +1578,10 @@ void golioth_client_destroy(struct golioth_client *client)
     {
         return;
     }
+    if (client->is_running)
+    {
+        golioth_client_stop(client);
+    }
     if (client->keepalive_timer)
     {
         golioth_sys_timer_destroy(client->keepalive_timer);
