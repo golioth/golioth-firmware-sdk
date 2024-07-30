@@ -1241,6 +1241,7 @@ static void golioth_coap_client_thread(void *arg)
     cleanup:
         GLTH_LOGI(TAG, "Ending session");
 
+        golioth_sys_client_disconnected(client);
         if (client->event_callback && client->session_connected)
         {
             client->event_callback(client,
@@ -1387,6 +1388,10 @@ void golioth_client_destroy(struct golioth_client *client)
     if (!client)
     {
         return;
+    }
+    if (client->is_running)
+    {
+        golioth_client_stop(client);
     }
     if (client->keepalive_timer)
     {
