@@ -169,6 +169,15 @@ void golioth_sys_thread_destroy(golioth_sys_thread_t thread)
  * Misc
  *------------------------------------------------*/
 
-void golioth_sys_client_connected(void *client) {}
+void golioth_sys_client_connected(void *client)
+{
+    if (CONFIG_GOLIOTH_AUTO_LOG_TO_CLOUD != 0)
+    {
+        golioth_debug_set_cloud_log_enabled(true);
+    }
+}
 
-void golioth_sys_client_disconnected(void *client) {}
+void golioth_sys_client_disconnected(void *client)
+{
+    golioth_debug_set_cloud_log_enabled(false);
+}
