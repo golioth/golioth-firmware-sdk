@@ -122,7 +122,6 @@ def verify_component_values(board, info):
     assert None != board.wait_for_regex_in_line(f'component.package: {package_info}', timeout_s=2)
     assert None != board.wait_for_regex_in_line(f'component.version: {version_info}', timeout_s=2)
     assert None != board.wait_for_regex_in_line(f'component.size: {b_info["size"]}', timeout_s=2)
-    assert None != board.wait_for_regex_in_line('component.is_compressed: 0', timeout_s=2)
     assert None != board.wait_for_regex_in_line(f'component.hash: {b_info["digests"]["sha256"]["digest"]}', timeout_s=2)
     assert None != board.wait_for_regex_in_line(f'component.bootloader: {b_info["type"]}', timeout_s=2)
 

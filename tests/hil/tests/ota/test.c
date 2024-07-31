@@ -35,7 +35,6 @@ static void log_component_members(const struct golioth_ota_component *component)
     GLTH_LOGI(TAG, "component.package: %s", component->package);
     GLTH_LOGI(TAG, "component.version: %s", component->version);
     GLTH_LOGI(TAG, "component.size: %u", (unsigned int) component->size);
-    GLTH_LOGI(TAG, "component.is_compressed: %d", component->is_compressed);
     GLTH_LOGI(TAG, "component.hash: %s", component->hash);
     GLTH_LOGI(TAG, "component.uri: %s", component->uri);
     GLTH_LOGI(TAG, "component.bootloader: %s", component->bootloader);

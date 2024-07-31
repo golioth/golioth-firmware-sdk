@@ -188,8 +188,6 @@ SOURCES+=\
     $(wildcard $(GOLIOTHSDK_PATH)/port/modus_toolbox/*.c)\
     $(wildcard $(GOLIOTHSDK_PATH)/port/modus_toolbox/libcoap/*.c)\
     $(wildcard $(GOLIOTHSDK_PATH)/examples/common/*.c)\
-    $(GOLIOTHSDK_PATH)/external/heatshrink/src/heatshrink_decoder.c\
-    $(GOLIOTHSDK_PATH)/external/miniz/miniz_tinfl.c\
     $(GOLIOTHSDK_PATH)/external/bsdiff/bspatch.c\
     $(GOLIOTHSDK_PATH)/external/zcbor/src/zcbor_common.c\
     $(GOLIOTHSDK_PATH)/external/zcbor/src/zcbor_decode.c\
@@ -216,10 +214,6 @@ INCLUDES+=\
     $(GOLIOTHSDK_PATH)/include\
     $(GOLIOTHSDK_PATH)/port/modus_toolbox\
     $(GOLIOTHSDK_PATH)/port/modus_toolbox/libcoap/include\
-    $(GOLIOTHSDK_PATH)/external/heatshrink/include\
-    $(GOLIOTHSDK_PATH)/external/heatshrink/src\
-    $(GOLIOTHSDK_PATH)/external/miniz\
-    $(GOLIOTHSDK_PATH)/port/common/miniz\
     $(GOLIOTHSDK_PATH)/external/bsdiff\
     $(GOLIOTHSDK_PATH)/external/zcbor/include\
     $(GOLIOTHSDK_PATH)/examples/common

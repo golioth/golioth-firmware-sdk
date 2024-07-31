@@ -249,8 +249,6 @@ static int components_decode(zcbor_state_t *zsd, void *value)
         }
 
         component->size = component_size;
-        component->is_compressed = (CONFIG_GOLIOTH_OTA_DECOMPRESS_METHOD_HEATSHRINK
-                                    || CONFIG_GOLIOTH_OTA_DECOMPRESS_METHOD_ZLIB);
 
         manifest->num_components++;
     }
@@ -382,11 +380,6 @@ enum golioth_status golioth_ota_get_block_sync(struct golioth_client *client,
         .block_nbytes = block_nbytes,
         .is_last = is_last,
     };
-
-    // TODO - use Content-Format 10742 (application/octet-stream with heatshink encoding)
-    //        once it is supported by the cloud.
-    //
-    // Ref: https://golioth.atlassian.net/wiki/spaces/EN/pages/262275073/OTA+Compressed+Artifacts
 
     enum golioth_status status = GOLIOTH_OK;
     status = golioth_coap_client_get_block(client,
