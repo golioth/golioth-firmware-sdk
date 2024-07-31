@@ -11,7 +11,6 @@
 #include <string.h>
 #include <golioth/golioth_sys.h>
 #include <golioth/fw_update.h>
-#include "fw_block_processor.h"
 #include "golioth/ota.h"
 
 #if defined(CONFIG_GOLIOTH_FW_UPDATE)
@@ -21,12 +20,10 @@ LOG_TAG_DEFINE(golioth_fw_update);
 static struct golioth_client *_client;
 static golioth_sys_sem_t _manifest_rcvd;
 static struct golioth_ota_manifest _ota_manifest;
-static uint8_t _ota_block_buffer[GOLIOTH_OTA_BLOCKSIZE + 1];
 static const struct golioth_ota_component *_main_component;
 static golioth_fw_update_state_change_callback _state_callback;
 static void *_state_callback_arg;
 static struct golioth_fw_update_config _config;
-static fw_block_processor_ctx_t _fw_block_processor;
 
 struct fw_component_download_ctx
 {
@@ -63,31 +60,6 @@ static enum golioth_status fw_write_block_cb(const struct golioth_ota_component 
     }
 
     return status;
-}
-
-static enum golioth_status download_and_write_flash(void)
-{
-    assert(_main_component);
-
-    GLTH_LOGI(TAG, "Image size = %" PRIu32, _main_component->size);
-
-    fw_block_processor_init(&_fw_block_processor, _client, _main_component, _ota_block_buffer);
-
-    const uint64_t start_time_ms = golioth_sys_now_ms();
-
-    // Process blocks one at a time until there are no more blocks (GOLIOTH_ERR_NO_MORE_DATA),
-    // or an error occurs.
-    while (fw_block_processor_process(&_fw_block_processor) == GOLIOTH_OK)
-    {
-    }
-
-    GLTH_LOGI(TAG, "Download took %" PRIu64 " ms", golioth_sys_now_ms() - start_time_ms);
-
-    fw_block_processor_log_results(&_fw_block_processor);
-
-    fw_update_post_download();
-
-    return GOLIOTH_OK;
 }
 
 static enum golioth_status golioth_fw_update_report_state_sync(struct golioth_client *client,
