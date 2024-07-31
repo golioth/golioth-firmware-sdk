@@ -62,7 +62,7 @@ based project (e.g. Zephyr RTOS):
 # Golioth repository.
 - name: golioth
   path: modules/lib/golioth-firmware-sdk
-  revision: main
+  revision: v0.14.0
   url: https://github.com/golioth/golioth-firmware-sdk.git
   submodules: true
 ```
