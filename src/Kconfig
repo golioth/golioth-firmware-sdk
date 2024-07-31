@@ -48,32 +48,6 @@ config GOLIOTH_OTA_OBSERVATION_RETRY_MAX_DELAY_S
         backoff doubling between retry attempts. The delay value will increase until this limit is
         reached.
 
-config GOLIOTH_OTA_DECOMPRESS
-    bool "Enable decompression of OTA artifacts"
-    help
-        If enabled, will decompress downloaded OTA artifacts.
-
-        This is an experimental feature, so only enable if you know what you're doing.
-
-choice GOLIOTH_OTA_DECOMPRESS_METHOD
-    prompt "Decompression algorithm"
-    depends on GOLIOTH_OTA_DECOMPRESS
-
-config GOLIOTH_OTA_DECOMPRESS_METHOD_HEATSHRINK
-    bool "heatshrink"
-    help
-        Each OTA block downloaded will be decompressed using the heatshrink algorithm.
-
-config GOLIOTH_OTA_DECOMPRESS_METHOD_ZLIB
-    bool "zlib"
-    help
-        Each OTA block downloaded will be decompressed using the zlib algorithm.
-
-        This algorithm requires a large output buffer of size 32 KiB, which will be
-        statically allocated internally.
-
-endchoice
-
 config GOLIOTH_OTA_PATCH
     bool "Enable OTA artifact patching"
     help

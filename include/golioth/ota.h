@@ -79,8 +79,6 @@ struct golioth_ota_component
     char version[CONFIG_GOLIOTH_OTA_MAX_VERSION_LEN + 1];
     /// Size of the artifact, in bytes
     int32_t size;
-    /// True, if the component is compressed and requires decompression
-    bool is_compressed;
     /// Artifact Hash
     char hash[GOLIOTH_OTA_COMPONENT_HASH_LEN + 1];
     /// Artifact uri (e.g. "/.u/c/main@1.2.3")

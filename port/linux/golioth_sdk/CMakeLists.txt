@@ -1,8 +1,6 @@
 set(repo_root ../../..)
 set(sdk_src ${repo_root}/src)
 set(sdk_port ${repo_root}/port)
-set(heatshrink_dir ${repo_root}/external/heatshrink)
-set(miniz_dir ${repo_root}/external/miniz)
 set(bsdiff_dir ${repo_root}/external/bsdiff)
 set(zcbor_dir ${repo_root}/external/zcbor)
 
@@ -12,14 +10,6 @@ option(ENABLE_SERVER_MODE "" OFF)
 option(ENABLE_TCP "" OFF)
 option(WITH_EPOLL "" OFF)
 add_subdirectory("${repo_root}/external/libcoap" build)
-
-set(heatshrink_srcs
-    "${heatshrink_dir}/src/heatshrink_decoder.c"
-)
-
-set(miniz_srcs
-    "${miniz_dir}/miniz_tinfl.c"
-)
 
 set(bsdiff_srcs
     "${bsdiff_dir}/bspatch.c"
@@ -56,8 +46,6 @@ set(sdk_srcs
 )
 
 add_library(golioth_sdk
-    ${heatshrink_srcs}
-    ${miniz_srcs}
     ${bsdiff_srcs}
     ${zcbor_srcs}
     ${sdk_srcs}
@@ -70,11 +58,7 @@ target_include_directories(golioth_sdk
         ${sdk_port}/linux
     PRIVATE
         ${bsdiff_dir}
-        ${heatshrink_dir}/include
-        ${heatshrink_dir}/src
-        ${miniz_dir}
         ${zcbor_dir}
-        ${sdk_port}/common/miniz
 )
 target_link_libraries(golioth_sdk
     PRIVATE coap-3 pthread rt)

@@ -19,8 +19,6 @@ idf_component_register(
         "zcbor"
     PRIV_REQUIRES
         "coap"
-        "heatshrink"
-        "miniz"
         "bsdiff"
         "lwip"
         "mbedtls"
