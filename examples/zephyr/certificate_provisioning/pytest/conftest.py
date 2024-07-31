@@ -13,7 +13,7 @@ def pytest_addoption(parser):
 @pytest.fixture(scope="session")
 def device_port(request):
     if request.config.getoption("--device-port") is not None:
-        return request.config.getoption("---device-port")
+        return request.config.getoption("--device-port")
     else:
         port_key = f"CI_{os.environ['hil_board'].upper()}_PORT"
         return os.environ[port_key]
