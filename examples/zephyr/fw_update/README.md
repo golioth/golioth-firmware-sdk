@@ -263,93 +263,87 @@ seconds later it receives notification of a new firmware release
 (`1.2.4`) from Golioth which triggers the update process.
 
 ```console
-*** Booting Zephyr OS build zephyr-v3.4.0-553-g40d224022608 ***
-[00:00:00.101,074] <dbg> fw_update_sample: main: Start FW Update sample
-[00:00:00.101,104] <inf> golioth_samples: Waiting for interface to be up
-[00:00:02.248,626] <inf> wifi_esp_at: AT version: 2.4.0.0(s-4c6eb5e - ESP32 - May 20 2022 03:12:58)
-[00:00:02.251,800] <inf> wifi_esp_at: SDK version: qa-test-v4.3.3-20220423
-[00:00:02.258,209] <inf> wifi_esp_at: Bin version: 2.4.0(WROVER-32)
-[00:00:02.692,840] <inf> wifi_esp_at: ESP Wi-Fi ready
-[00:00:02.692,932] <inf> golioth_samples: Connecting to WiFi
-[00:00:02.787,139] <inf> golioth_wifi: Connected with status: 0
-Connected
-[00:00:02.787,200] <inf> golioth_wifi: Successfully connected to WiFi
-[00:00:02.787,292] <inf> golioth_mbox: Mbox created, bufsize: 1144, num_items: 10, item_size: 104
-[00:00:02.787,445] <inf> golioth_fw_update: Current firmware version: main - 1.2.3
-[00:00:03.721,893] <inf> golioth_coap_client: Start CoAP session with host: coaps://coap.golioth.io
-[00:00:03.721,954] <inf> golioth_coap_client: Session PSK-ID: devboard-one-id@ttgo-demo
-[00:00:03.722,320] <inf> golioth_coap_client: Entering CoAP I/O loop
-[00:00:05.139,770] <inf> golioth_fw_update: Waiting to receive OTA manifest
-[00:00:05.139,831] <inf> golioth_coap_client: Golioth CoAP client connected
-[00:00:05.140,045] <inf> fw_update_sample: Golioth client connected
-[00:00:05.362,274] <inf> golioth_fw_update: Received OTA manifest
-[00:00:05.362,304] <inf> golioth_fw_update: Manifest does not contain different firmware version. Nothing to do.
-[00:00:05.362,304] <inf> golioth_fw_update: Waiting to receive OTA manifest
-[00:01:28.757,141] <inf> golioth_fw_update: Received OTA manifest
-[00:01:28.757,232] <inf> golioth_fw_update: Current version = 1.2.3, Target version = 1.2.4
-[00:01:28.757,232] <inf> golioth_fw_update: State = Downloading
-[00:01:29.021,575] <inf> golioth_fw_update: Image size = 349712
-[00:01:29.021,606] <inf> fw_block_processor: Downloading block index 0 (1/342)
-[00:01:29.324,279] <inf> mcuboot_util: Swap type: none
-[00:01:29.324,310] <inf> golioth_fw_zephyr: swap type: none
-[00:01:39.122,497] <inf> fw_block_processor: Downloading block index 1 (2/342)
-[00:01:39.383,209] <inf> fw_block_processor: Downloading block index 2 (3/342)
-[00:01:39.647,644] <inf> fw_block_processor: Downloading block index 3 (4/342)
+[00:00:00.102,783] <inf> wifi_esp_at: Waiting for interface to come up
+[00:00:02.326,904] <inf> wifi_esp_at: AT version: 2.4.0.0(s-4c6eb5e - ESP32 - May 20 2022 03:12:58)
+[00:00:02.330,078] <inf> wifi_esp_at: SDK version: qa-test-v4.3.3-20220423
+[00:00:02.336,486] <inf> wifi_esp_at: Bin version: 2.4.0(WROVER-32)
+[00:00:02.771,179] <inf> wifi_esp_at: ESP Wi-Fi ready
+*** Booting Zephyr OS build v3.6.0 ***
+[00:00:02.779,083] <inf> fs_nvs: 8 Sectors of 4096 bytes
+[00:00:02.779,113] <inf> fs_nvs: alloc wra: 0, f78
+[00:00:02.779,113] <inf> fs_nvs: data wra: 0, e8
+[00:00:02.779,937] <dbg> fw_update_sample: main: Start FW Update sample
+[00:00:02.779,968] <inf> golioth_samples: Bringing up network interface
+[00:00:02.779,968] <inf> golioth_samples: Waiting to obtain IP address
+[00:00:02.780,059] <inf> golioth_wifi: Connecting to 'golioth'
+[00:00:05.923,553] <inf> golioth_mbox: Mbox created, bufsize: 1232, num_items: 10, item_size: 112
+[00:00:05.924,255] <inf> golioth_fw_update: Current firmware version: main - 1.2.3
+[00:00:06.359,771] <inf> golioth_coap_client_zephyr: Golioth CoAP client connected
+[00:00:06.359,985] <inf> fw_update_sample: Golioth client connected
+[00:00:06.360,015] <inf> golioth_coap_client_zephyr: Entering CoAP I/O loop
+[00:00:06.479,553] <inf> golioth_fw_update: Waiting to receive OTA manifest
+[00:00:06.860,839] <inf> golioth_fw_update: Received OTA manifest
+[00:00:06.860,839] <inf> golioth_fw_update: Manifest does not contain different firmware version. Nothing to do.
+[00:00:06.860,839] <inf> golioth_fw_update: Waiting to receive OTA manifest
+[00:00:45.483,612] <inf> golioth_fw_update: Received OTA manifest
+[00:00:45.483,673] <inf> golioth_fw_update: Current version = 1.2.3, Target version = 1.2.4
+[00:00:45.483,673] <inf> golioth_fw_update: State = Downloading
+[00:00:46.278,076] <inf> golioth_fw_update: Received block 0/290
+[00:00:46.278,137] <inf> mcuboot_util: Image index: 0, Swap type: none
+[00:00:46.278,167] <inf> golioth_fw_zephyr: swap type: none
+[00:00:46.552,581] <inf> golioth_fw_update: Received block 1/290
+[00:00:46.821,960] <inf> golioth_fw_update: Received block 2/290
+[00:00:47.102,203] <inf> golioth_fw_update: Received block 3/290
 
 ...
 
-[00:03:33.643,737] <inf> fw_block_processor: Downloading block index 339 (340/342)
-[00:03:33.938,903] <inf> fw_block_processor: Downloading block index 340 (341/342)
-[00:03:34.241,119] <inf> fw_block_processor: Downloading block index 341 (342/342)
-[00:03:34.505,767] <inf> golioth_fw_update: Download took 125484 ms
-[00:03:34.505,798] <inf> fw_block_processor: Block Latency Stats:
-[00:03:34.505,798] <inf> fw_block_processor:    Min: 240 ms
-[00:03:34.505,828] <inf> fw_block_processor:    Ave: %.3f ms
-[00:03:34.505,828] <inf> fw_block_processor:    Max: 3387 ms
-[00:03:34.505,828] <inf> fw_block_processor: Total bytes written: 349712
-[00:03:34.506,042] <inf> golioth_fw_update: State = Downloaded
-[00:03:34.771,270] <inf> golioth_fw_update: State = Updating
-[00:03:35.183,532] <inf> golioth_fw_update: Rebooting into new image in 5 seconds
-[00:03:36.183,593] <inf> golioth_fw_update: Rebooting into new image in 4 seconds
-[00:03:37.183,685] <inf> golioth_fw_update: Rebooting into new image in 3 seconds
-[00:03:38.183,776] <inf> golioth_fw_update: Rebooting into new image in 2 seconds
-[00:03:39.183,959] <inf> golioth_fw_update: Rebooting into new image in 1 seconds
-uart:~$ *** Booting Zephyr OS build zephyr-v3.4.0-553-g40d224022608 ***
+[00:01:55.889,648] <inf> golioth_fw_update: Received block 288/290
+[00:01:56.168,334] <inf> golioth_fw_update: Received block 289/290
+[00:01:57.032,562] <inf> golioth_fw_update: Received block 290/290
+[00:01:57.126,739] <inf> golioth_fw_update: Successfully downloaded 297884 bytes in 71455 ms
+[00:01:57.126,770] <inf> golioth_fw_update: State = Downloaded
+[00:01:57.283,966] <inf> golioth_fw_update: State = Updating
+[00:01:57.760,375] <inf> golioth_fw_update: Rebooting into new image in 5 seconds
+[00:01:58.760,498] <inf> golioth_fw_update: Rebooting into new image in 4 seconds
+[00:01:59.760,681] <inf> golioth_fw_update: Rebooting into new image in 3 seconds
+[00:02:00.760,833] <inf> golioth_fw_update: Rebooting into new image in 2 seconds
+[00:02:01.761,016] <inf> golioth_fw_update: Rebooting into new image in 1 seconds
+uart:~$ *** Booting Zephyr OS build v3.6.0 ***
 I: Starting bootloader
 I: Primary image: magic=good, swap_type=0x2, copy_done=0x1, image_ok=0x1
 I: Secondary image: magic=good, swap_type=0x2, copy_done=0x3, image_ok=0x3
 I: Boot source: none
-I: Swap type: test
+I: Image index: 0, Swap type: test
 I: Starting swap using move algorithm.
 I: Bootloader chainload address offset: 0xc000
 I: Jumping to the first image slot
 
 
-*** Booting Zephyr OS build zephyr-v3.4.0-553-g40d224022608 ***
-[00:00:00.101,104] <dbg> fw_update_sample: main: Start FW Update sample
-[00:00:00.101,135] <inf> golioth_samples: Waiting for interface to be up
-[00:00:02.246,490] <inf> wifi_esp_at: AT version: 2.4.0.0(s-4c6eb5e - ESP32 - May 20 2022 03:12:58)
-[00:00:02.249,633] <inf> wifi_esp_at: SDK version: qa-test-v4.3.3-20220423
-[00:00:02.256,072] <inf> wifi_esp_at: Bin version: 2.4.0(WROVER-32)
-[00:00:02.690,704] <inf> wifi_esp_at: ESP Wi-Fi ready
-[00:00:02.690,795] <inf> golioth_samples: Connecting to WiFi
-[00:00:02.778,930] <inf> golioth_wifi: Connected with status: 0
-Connected
-[00:00:02.778,991] <inf> golioth_wifi: Successfully connected to WiFi
-[00:00:02.779,083] <inf> golioth_mbox: Mbox created, bufsize: 1144, num_items: 10, item_size: 104
-[00:00:02.779,235] <inf> golioth_fw_update: Current firmware version: main - 1.2.4
-[00:00:02.779,357] <inf> golioth_fw_update: Waiting for golioth client to connect before cancelling rollback
-[00:00:03.843,505] <inf> golioth_coap_client: Start CoAP session with host: coaps://coap.golioth.io
-[00:00:03.843,536] <inf> golioth_coap_client: Session PSK-ID: devboard-one-id@ttgo-demo
-[00:00:03.843,933] <inf> golioth_coap_client: Entering CoAP I/O loop
-[00:00:05.226,623] <inf> golioth_coap_client: Golioth CoAP client connected
-[00:00:05.226,867] <inf> fw_update_sample: Golioth client connected
-[00:00:05.779,571] <inf> golioth_fw_update: Firmware updated successfully!
-[00:00:05.779,663] <inf> golioth_fw_update: State = Idle
-[00:00:05.939,239] <inf> golioth_fw_update: Waiting to receive OTA manifest
-[00:00:06.041,503] <inf> golioth_fw_update: Received OTA manifest
-[00:00:06.041,503] <inf> golioth_fw_update: Manifest does not contain different firmware version. Nothing to do.
-[00:00:06.041,534] <inf> golioth_fw_update: Waiting to receive OTA manifest
+[00:00:00.102,783] <inf> wifi_esp_at: Waiting for interface to come up
+[00:00:02.232,513] <inf> wifi_esp_at: AT version: 2.4.0.0(s-4c6eb5e - ESP32 - May 20 2022 03:12:58)
+[00:00:02.235,687] <inf> wifi_esp_at: SDK version: qa-test-v4.3.3-20220423
+[00:00:02.242,095] <inf> wifi_esp_at: Bin version: 2.4.0(WROVER-32)
+[00:00:02.677,001] <inf> wifi_esp_at: ESP Wi-Fi ready
+*** Booting Zephyr OS build v3.6.0 ***
+[00:00:02.684,936] <inf> fs_nvs: 8 Sectors of 4096 bytes
+[00:00:02.684,936] <inf> fs_nvs: alloc wra: 0, f78
+[00:00:02.684,936] <inf> fs_nvs: data wra: 0, e8
+[00:00:02.685,791] <dbg> fw_update_sample: main: Start FW Update sample
+[00:00:02.685,791] <inf> golioth_samples: Bringing up network interface
+[00:00:02.685,821] <inf> golioth_samples: Waiting to obtain IP address
+[00:00:02.685,882] <inf> golioth_wifi: Connecting to 'golioth'
+[00:00:05.922,149] <inf> golioth_mbox: Mbox created, bufsize: 1232, num_items: 10, item_size: 112
+[00:00:05.922,851] <inf> golioth_fw_update: Current firmware version: main - 1.2.4
+[00:00:05.923,492] <inf> golioth_fw_update: Waiting for golioth client to connect before cancelling rollback
+[00:00:06.617,523] <inf> golioth_coap_client_zephyr: Golioth CoAP client connected
+[00:00:06.617,736] <inf> fw_update_sample: Golioth client connected
+[00:00:06.617,858] <inf> golioth_coap_client_zephyr: Entering CoAP I/O loop
+[00:00:06.923,614] <inf> golioth_fw_update: Firmware updated successfully!
+[00:00:06.923,706] <inf> golioth_fw_update: State = Idle
+[00:00:07.285,919] <inf> golioth_fw_update: Waiting to receive OTA manifest
+[00:00:07.376,953] <inf> golioth_fw_update: Received OTA manifest
+[00:00:07.376,953] <inf> golioth_fw_update: Manifest does not contain different firmware version. Nothing to do.
+[00:00:07.376,953] <inf> golioth_fw_update: Waiting to receive OTA manifest
 ```
 
 After a successful update the new version number will be printed out on
