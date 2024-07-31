@@ -188,7 +188,6 @@ SOURCES+=\
     $(wildcard $(GOLIOTHSDK_PATH)/port/modus_toolbox/*.c)\
     $(wildcard $(GOLIOTHSDK_PATH)/port/modus_toolbox/libcoap/*.c)\
     $(wildcard $(GOLIOTHSDK_PATH)/examples/common/*.c)\
-    $(GOLIOTHSDK_PATH)/external/bsdiff/bspatch.c\
     $(GOLIOTHSDK_PATH)/external/zcbor/src/zcbor_common.c\
     $(GOLIOTHSDK_PATH)/external/zcbor/src/zcbor_decode.c\
     $(GOLIOTHSDK_PATH)/external/zcbor/src/zcbor_encode.c
@@ -214,7 +213,6 @@ INCLUDES+=\
     $(GOLIOTHSDK_PATH)/include\
     $(GOLIOTHSDK_PATH)/port/modus_toolbox\
     $(GOLIOTHSDK_PATH)/port/modus_toolbox/libcoap/include\
-    $(GOLIOTHSDK_PATH)/external/bsdiff\
     $(GOLIOTHSDK_PATH)/external/zcbor/include\
     $(GOLIOTHSDK_PATH)/examples/common
 

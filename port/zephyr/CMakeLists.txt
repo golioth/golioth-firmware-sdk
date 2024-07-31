@@ -54,9 +54,6 @@ zephyr_library_sources(
     ../../src/golioth_status.c
     ../../src/zcbor_utils.c
     golioth_sys_zephyr.c
-
-    # bsdiff
-    ../../external/bsdiff/bspatch.c
 )
 
 zephyr_library_sources_ifdef(CONFIG_GOLIOTH_FW_UPDATE golioth_fw_zephyr.c)

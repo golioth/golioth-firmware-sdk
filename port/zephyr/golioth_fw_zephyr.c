@@ -225,10 +225,3 @@ enum golioth_status fw_update_change_boot_image(void) {
 }
 
 void fw_update_end(void) {}
-
-enum golioth_status fw_update_read_current_image_at_offset(
-        uint8_t* buf,
-        size_t bufsize,
-        size_t offset) {
-    return GOLIOTH_ERR_NOT_IMPLEMENTED;
-}
