@@ -101,86 +101,121 @@ it receives notification of a new firmware release (`1.2.4`) from Golioth which
 triggers the update process.
 
 ```console
-I (400) main_task: Calling app_main()
-I (400) fw_update: Start FW Update sample.
-I (4730) esp_netif_handlers: sta ip: 10.0.0.202, mask: 255.255.255.0, gw: 10.0.0.1
-I (4730) example_wifi: WiFi Connected. Got IP:10.0.0.202
-W (4750) fw_update: Waiting for connection to Golioth...
-I (4780) golioth_coap_client_libcoap: Start CoAP session with host: coaps://coap.golioth.io
-I (4780) golioth_coap_client_libcoap: Session PSK-ID: 2device-id@project-id
-I (4790) libcoap: Setting PSK key
-I (4800) golioth_coap_client_libcoap: Entering CoAP I/O loop
-I (5270) golioth_coap_client_libcoap: Golioth CoAP client connected
-I (5280) fw_update: Golioth client connected
-W (5280) fw_update: Current FW Version: 1.2.3
-I (5290) golioth_fw_update: Current firmware version: main - 1.2.3
-I (5290) main_task: Returned from app_main()
-I (6610) golioth_fw_update: Waiting to receive OTA manifest
-I (6710) golioth_fw_update: Received OTA manifest
-I (6710) golioth_fw_update: Manifest does not contain different firmware version. Nothing to do.
-I (6720) golioth_fw_update: Waiting to receive OTA manifest
-I (27250) golioth_fw_update: Received OTA manifest
-I (27250) golioth_fw_update: Current version = 1.2.3, Target version = 1.2.4
-I (27260) golioth_fw_update: Current version = 1.2.3, Target version = 1.2.4
-I (27270) golioth_fw_update: State = Downloading
-I (27560) golioth_fw_update: Image size = 950464
-I (27560) fw_block_processor: Downloading block index 0 (1/929)
-I (28020) fw_update_esp_idf: Writing to partition subtype 17 at offset 0x1a0000
-I (28020) fw_update_esp_idf: Erasing flash
-I (35340) fw_block_processor: Downloading block index 1 (2/929)
-I (35490) fw_block_processor: Downloading block index 2 (3/929)
-I (35650) fw_block_processor: Downloading block index 3 (4/929)
+I (590) main_task: Started on CPU0
+I (600) main_task: Calling app_main()
+I (600) fw_update: Start FW Update sample.
+
+Type 'help' to get the list of commands.
+Use UP/DOWN arrows to navigate through command history.
+Press TAB when typing command name to auto-complete.
+I (680) wifi_init: rx ba win: 6
+I (680) wifi_init: tcpip mbox: 32
+I (680) wifi_init: udp mbox: 6
+I (680) wifi_init: tcp mbox: 6
+                                                                                                                                                                                              I (690) wifi_init: tcp tx win: 5760
+I (700) wifi_init: tcp rx win: 5760
+I (700) wifi_init: tcp mss: 1440
+I (700) wifi_init: WiFi IRAM OP enabled
+I (700) wifi_init: WiFi RX IRAM OP enabled
+esp32> I (720) phy_init: phy_version 4791,2c4672b,Dec 20 2023,16:06:06
+W (1180) wifi:[ADDBA]rx delba, code:39, delete tid:0
+W (1180) wifi:[ADDBA]rx delba, code:39, delete tid:0
+I (3200) esp_netif_handlers: sta ip: 192.168.200.7, mask: 255.255.255.0, gw: 192.168.200.1
+I (3200) example_wifi: WiFi Connected. Got IP:192.168.200.7
+I (3210) example_wifi: Connected to AP SSID: golioth
+I (3210) golioth_mbox: Mbox created, bufsize: 2520, num_items: 20, item_size: 120
+W (3220) fw_update: Waiting for connection to Golioth...
+I (3250) golioth_coap_client_libcoap: Start CoAP session with host: coaps://coap.golioth.io
+I (3250) golioth_coap_client_libcoap: Session PSK-ID: devboard-one-id@ttgo-demo
+I (3270) libcoap: Setting PSK key
+
+I (3270) golioth_coap_client_libcoap: Entering CoAP I/O loop
+I (3720) golioth_coap_client_libcoap: Golioth CoAP client connected
+I (3730) fw_update: Golioth client connected
+W (3730) fw_update: Current FW Version: 1.2.3
+I (3730) golioth_fw_update: Current firmware version: main - 1.2.3
+I (3750) main_task: Returned from app_main()
+I (4990) golioth_fw_update: Waiting to receive OTA manifest
+I (5310) golioth_fw_update: Received OTA manifest
+I (5320) golioth_fw_update: Manifest does not contain different firmware version. Nothing to do.
+I (5320) golioth_fw_update: Waiting to receive OTA manifest
+I (31160) golioth_fw_update: Received OTA manifest
+I (31160) golioth_fw_update: Current version = 1.2.3, Target version = 1.2.4
+I (31160) golioth_fw_update: State = Downloading
+I (31940) golioth_fw_update: Received block 0/921
+I (31950) fw_update_esp_idf: Writing to partition subtype 17 at offset 0x1a0000
+I (31950) fw_update_esp_idf: Erasing flash
+W (34400) golioth_coap_client_libcoap: CoAP message retransmitted
+I (36970) golioth_fw_update: Received block 1/921
+I (37480) golioth_fw_update: Received block 2/921
+I (38030) golioth_fw_update: Received block 3/921
 
 ...
 
-I (206790) fw_block_processor: Downloading block index 927 (928/929)
-I (206910) fw_block_processor: Downloading block index 928 (929/929)
-I (207030) golioth_fw_update: Download took 179470 ms
-I (207030) fw_block_processor: Block Latency Stats:
-I (207030) fw_block_processor:    Min: 100 ms
-I (207030) fw_block_processor:    Max: 1420 ms
-I (207040) fw_block_processor: Total bytes written: 950464
-I (207050) esp_image: segment 0: paddr=001a0020 vaddr=3c0b0020 size=2daa8h (187048) map
-I (207080) esp_image: segment 1: paddr=001cdad0 vaddr=3fc90a00 size=02548h (  9544)
-I (207080) esp_image: segment 2: paddr=001d0020 vaddr=42000020 size=a72b8h (684728) map
-I (207190) esp_image: segment 3: paddr=002772e0 vaddr=3fc92f48 size=00524h (  1316)
-I (207200) esp_image: segment 4: paddr=0027780c vaddr=40380000 size=10890h ( 67728)
-I (207220) golioth_fw_update: State = Downloaded
-I (207600) golioth_fw_update: State = Updating
-I (207830) fw_update_esp_idf: Setting boot partition
-I (207830) esp_image: segment 0: paddr=001a0020 vaddr=3c0b0020 size=2daa8h (187048) map
-I (207860) esp_image: segment 1: paddr=001cdad0 vaddr=3fc90a00 size=02548h (  9544)
-I (207860) esp_image: segment 2: paddr=001d0020 vaddr=42000020 size=a72b8h (684728) map
-I (207960) esp_image: segment 3: paddr=002772e0 vaddr=3fc92f48 size=00524h (  1316)
-I (207960) esp_image: segment 4: paddr=0027780c vaddr=40380000 size=10890h ( 67728)
-I (208030) golioth_fw_update: Rebooting into new image in 5 seconds
-I (209030) golioth_fw_update: Rebooting into new image in 4 seconds
-I (210030) golioth_fw_update: Rebooting into new image in 3 seconds
-I (211030) golioth_fw_update: Rebooting into new image in 2 seconds
-I (212030) golioth_fw_update: Rebooting into new image in 1 seconds
-I (436) main_task: Started on CPU0
-I (436) main_task: Calling app_main()
-I (436) fw_update: Start FW Update sample.
-esp32> I (2246) esp_netif_handlers: sta ip: 10.0.0.202, mask: 255.255.255.0, gw: 10.0.0.1
-I (2246) example_wifi: WiFi Connected. Got IP:10.0.0.202
-W (2266) fw_update: Waiting for connection to Golioth...
-I (2416) golioth_coap_client_libcoap: Start CoAP session with host: coaps://coap.golioth.io
-I (2416) golioth_coap_client_libcoap: Session PSK-ID: 2device-id@project-id
-I (2426) libcoap: Setting PSK key
-I (2436) golioth_coap_client_libcoap: Entering CoAP I/O loop
-I (2926) golioth_coap_client_libcoap: Golioth CoAP client connected
-I (2926) fw_update: Golioth client connected
-W (2926) fw_update: Current FW Version: 1.2.4
-I (2936) golioth_fw_update: Current firmware version: main - 1.2.4
-I (2946) golioth_fw_update: Waiting for golioth client to connect before cancelling rollback
-I (2956) golioth_fw_update: Firmware updated successfully!
-I (2946) main_task: Returned from app_main()
-I (3006) golioth_fw_update: State = Idle
-I (4246) golioth_fw_update: Waiting to receive OTA manifest
-I (4366) golioth_fw_update: Received OTA manifest
-I (4366) golioth_fw_update: Manifest does not contain different firmware version. Nothing to do.
-I (4376) golioth_fw_update: Waiting to receive OTA manifest
+I (243900) golioth_fw_update: Received block 919/921
+I (244010) golioth_fw_update: Received block 920/921
+I (244110) golioth_fw_update: Received block 921/921
+I (244120) golioth_fw_update: Successfully downloaded 943248 bytes in 212390 ms
+I (244120) esp_image: segment 0: paddr=001a0020 vaddr=3f400020 size=2efach (192428) map
+I (244200) esp_image: segment 1: paddr=001cefd4 vaddr=3ffb0000 size=01044h (  4164)
+I (244210) esp_image: segment 2: paddr=001d0020 vaddr=400d0020 size=9d4d4h (644308) map
+I (244430) esp_image: segment 3: paddr=0026d4fc vaddr=3ffb1044 size=02dc0h ( 11712)
+I (244440) esp_image: segment 4: paddr=002702c4 vaddr=40080000 size=161a0h ( 90528)
+I (244480) golioth_fw_update: State = Downloaded
+I (244680) golioth_fw_update: State = Updating
+I (244780) fw_update_esp_idf: Setting boot partition
+I (244780) esp_image: segment 0: paddr=001a0020 vaddr=3f400020 size=2efach (192428) map
+I (244850) esp_image: segment 1: paddr=001cefd4 vaddr=3ffb0000 size=01044h (  4164)
+I (244860) esp_image: segment 2: paddr=001d0020 vaddr=400d0020 size=9d4d4h (644308) map
+I (245080) esp_image: segment 3: paddr=0026d4fc vaddr=3ffb1044 size=02dc0h ( 11712)
+I (245090) esp_image: segment 4: paddr=002702c4 vaddr=40080000 size=161a0h ( 90528)
+I (245160) golioth_fw_update: Rebooting into new image in 5 seconds
+I (246170) golioth_fw_update: Rebooting into new image in 4 seconds
+I (247170) golioth_fw_update: Rebooting into new image in 3 seconds
+I (248170) golioth_fw_update: Rebooting into new image in 2 seconds
+I (249170) golioth_fw_update: Rebooting into new image in 1 seconds
 
+...
+
+I (622) main_task: Started on CPU0
+I (632) main_task: Calling app_main()
+I (632) fw_update: Start FW Update sample.
+
+Type 'help' to get the list of commands.
+Use UP/DOWN arrows to navigate through command history.
+Press TAB when typing command name to auto-complete.
+I (712) wifi_init: rx ba win: 6
+I (712) wifi_init: tcpip mbox: 32
+I (712) wifi_init: udp mbox: 6
+I (712) wifi_init: tcp mbox: 6
+I (722) wifi_init: tcp tx win: 5760
+I (732) wifi_init: tcp rx win: 5760
+I (732) wifi_init: tcp mss: 1440
+I (732) wifi_init: WiFi IRAM OP enabled
+I (732) wifi_init: WiFi RX IRAM OP enabled
+esp32> I (752) phy_init: phy_version 4791,2c4672b,Dec 20 2023,16:06:06
+I (5262) esp_netif_handlers: sta ip: 192.168.200.7, mask: 255.255.255.0, gw: 192.168.200.1
+I (5262) example_wifi: WiFi Connected. Got IP:192.168.200.7
+I (5272) example_wifi: Connected to AP SSID: golioth
+I (5282) golioth_mbox: Mbox created, bufsize: 2520, num_items: 20, item_size: 120
+W (5282) fw_update: Waiting for connection to Golioth...
+I (5312) golioth_coap_client_libcoap: Start CoAP session with host: coaps://coap.golioth.io
+I (5322) golioth_coap_client_libcoap: Session PSK-ID: devboard-one-id@ttgo-demo
+I (5332) libcoap: Setting PSK key
+
+I (5342) golioth_coap_client_libcoap: Entering CoAP I/O loop
+I (5632) golioth_coap_client_libcoap: Golioth CoAP client connected
+I (5642) fw_update: Golioth client connected
+W (5642) fw_update: Current FW Version: 1.2.4
+I (5652) golioth_fw_update: Current firmware version: main - 1.2.4
+I (5662) golioth_fw_update: Waiting for golioth client to connect before cancelling rollback
+I (5662) golioth_fw_update: Firmware updated successfully!
+I (5662) main_task: Returned from app_main()
+I (5732) golioth_fw_update: State = Idle
+I (6922) golioth_fw_update: Waiting to receive OTA manifest
+I (6972) golioth_fw_update: Received OTA manifest
+I (6982) golioth_fw_update: Manifest does not contain different firmware version. Nothing to do.
+I (6992) golioth_fw_update: Waiting to receive OTA manifest
 ```
 
 After a successful update the new version number will be printed out on
