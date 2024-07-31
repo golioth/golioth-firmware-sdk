@@ -35,7 +35,7 @@ async def test_fw_update(board, project, device, fw_info, release):
 
     # Monitor block download and watch for reboot after update
 
-    board.wait_for_regex_in_line('.*Downloading block index.', timeout_s=90.0)
+    board.wait_for_regex_in_line('.*Received block.', timeout_s=90.0)
     LOGGER.info("Block download has begun!")
 
     board.wait_for_regex_in_line('.*Rebooting into new image.', timeout_s=600.0)
