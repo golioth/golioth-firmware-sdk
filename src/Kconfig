@@ -48,13 +48,6 @@ config GOLIOTH_OTA_OBSERVATION_RETRY_MAX_DELAY_S
         backoff doubling between retry attempts. The delay value will increase until this limit is
         reached.
 
-config GOLIOTH_OTA_PATCH
-    bool "Enable OTA artifact patching"
-    help
-        If enabled, the Golioth client will interpret downloaded OTA firmware artifacts
-        as patches, and will apply the bsdiff patching algorithm to them, using the currently
-        running firmware image as the old/base version.
-
 endif # GOLIOTH_FW_UPDATE
 
 config GOLIOTH_LIGHTDB_STATE
