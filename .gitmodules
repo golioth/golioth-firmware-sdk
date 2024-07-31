@@ -7,12 +7,6 @@
 [submodule "external/fff"]
 	path = external/fff
 	url = https://github.com/meekrosoft/fff.git
-[submodule "external/heatshrink"]
-	path = external/heatshrink
-	url = https://github.com/atomicobject/heatshrink.git
-[submodule "external/miniz"]
-	path = external/miniz
-	url = https://github.com/richgel999/miniz.git
 [submodule "external/bsdiff"]
 	path = external/bsdiff
 	url = https://github.com/golioth/bsdiff.git
