@@ -41,7 +41,7 @@ async def test_fw_update(shell, project, device, wifi_ssid, wifi_psk, fw_info, r
 
     # Monitor block download and watch for reboot after update
 
-    shell._device.readlines_until(regex=".*Downloading block index.", timeout=90.0)
+    shell._device.readlines_until(regex=".*Received block.", timeout=90.0)
     LOGGER.info("Block download has begun!")
 
     shell._device.readlines_until(regex=".*Rebooting into new image.", timeout=600.0)
