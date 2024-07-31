@@ -1,9 +1,14 @@
 import logging
-import pytest
+from pathlib import Path
 import subprocess
 import datetime
 import logging
 from time import sleep
+
+import pytest
+import west.configuration
+
+WEST_TOPDIR = Path(west.configuration.west_dir()).parent
 
 LOGGER = logging.getLogger(__name__)
 
@@ -41,7 +46,7 @@ async def test_credentials(shell, project, device_name, device_port, certificate
 
     # Generate device certificates
 
-    subprocess.run(["modules/lib/golioth-firmware-sdk/scripts/certificates/generate_device_certificate.sh",
+    subprocess.run([WEST_TOPDIR / "modules/lib/golioth-firmware-sdk/scripts/certificates/generate_device_certificate.sh",
                     project.info['id'], device_name])
 
     # Set Golioth credential

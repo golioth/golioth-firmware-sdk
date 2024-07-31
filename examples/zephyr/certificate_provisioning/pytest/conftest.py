@@ -1,8 +1,13 @@
 import os
-import pytest
+from pathlib import Path
 import random
 import string
 import subprocess
+
+import pytest
+import west.configuration
+
+WEST_TOPDIR = Path(west.configuration.west_dir()).parent
 
 def pytest_addoption(parser):
     parser.addoption("--device-port", type=str,
@@ -24,7 +29,7 @@ def anyio_backend():
 
 @pytest.fixture(scope="module")
 async def certificate_cred(project):
-    subprocess.run(["modules/lib/golioth-firmware-sdk/scripts/certificates/generate_root_certificate.sh"])
+    subprocess.run([WEST_TOPDIR / "modules/lib/golioth-firmware-sdk/scripts/certificates/generate_root_certificate.sh"])
 
     # Pass root public key to Golioth server
 
