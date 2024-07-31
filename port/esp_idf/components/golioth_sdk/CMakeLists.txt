@@ -19,7 +19,6 @@ idf_component_register(
         "zcbor"
     PRIV_REQUIRES
         "coap"
-        "bsdiff"
         "lwip"
         "mbedtls"
         "app_update"

@@ -1,7 +1,6 @@
 set(repo_root ../../..)
 set(sdk_src ${repo_root}/src)
 set(sdk_port ${repo_root}/port)
-set(bsdiff_dir ${repo_root}/external/bsdiff)
 set(zcbor_dir ${repo_root}/external/zcbor)
 
 option(ENABLE_DOCS "" OFF)
@@ -10,10 +9,6 @@ option(ENABLE_SERVER_MODE "" OFF)
 option(ENABLE_TCP "" OFF)
 option(WITH_EPOLL "" OFF)
 add_subdirectory("${repo_root}/external/libcoap" build)
-
-set(bsdiff_srcs
-    "${bsdiff_dir}/bspatch.c"
-)
 
 set(zcbor_srcs
     "${zcbor_dir}/src/zcbor_common.c"
@@ -46,7 +41,6 @@ set(sdk_srcs
 )
 
 add_library(golioth_sdk
-    ${bsdiff_srcs}
     ${zcbor_srcs}
     ${sdk_srcs}
 )
@@ -57,7 +51,6 @@ target_include_directories(golioth_sdk
         ${repo_root}/include
         ${sdk_port}/linux
     PRIVATE
-        ${bsdiff_dir}
         ${zcbor_dir}
 )
 target_link_libraries(golioth_sdk
