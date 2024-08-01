@@ -1564,6 +1564,11 @@ static void purge_request_mbox(golioth_mbox_t request_mbox)
             // free dynamically allocated user payload copy
             golioth_sys_free(request_msg.post.payload);
         }
+        else if (request_msg.type == GOLIOTH_COAP_REQUEST_POST_BLOCK)
+        {
+            // free dynamically allocated user payload copy
+            golioth_sys_free(request_msg.post_block.payload);
+        }
     }
 }
 
@@ -1572,6 +1577,10 @@ void golioth_client_destroy(struct golioth_client *client)
     if (!client)
     {
         return;
+    }
+    if (client->is_running)
+    {
+        golioth_client_stop(client);
     }
     if (client->keepalive_timer)
     {
