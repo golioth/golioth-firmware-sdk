@@ -29,14 +29,6 @@ zephyr_library()
 zephyr_library_include_directories(
     # bsdiff
     ../../external/bsdiff
-
-    # heatshrink
-    ../../external/heatshrink/src
-    ../../external/heatshrink/include
-
-    # miniz
-    ../../external/miniz
-    ../common/miniz
 )
 
 zephyr_library_sources(
@@ -62,15 +54,6 @@ zephyr_library_sources(
     ../../src/golioth_status.c
     ../../src/zcbor_utils.c
     golioth_sys_zephyr.c
-
-    # bsdiff
-    ../../external/bsdiff/bspatch.c
-
-    # heatshrink
-    ../../external/heatshrink/src/heatshrink_decoder.c
-
-    # miniz
-    ../../external/miniz/miniz_tinfl.c
 )
 
 zephyr_library_sources_ifdef(CONFIG_GOLIOTH_FW_UPDATE golioth_fw_zephyr.c)
