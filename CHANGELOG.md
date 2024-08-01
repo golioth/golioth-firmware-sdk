@@ -4,7 +4,34 @@ All notable changes to this project will be documented in this file.
 The format is based on [Keep a Changelog](https://keepachangelog.com/en/1.0.0/),
 and this project adheres to [Semantic Versioning](https://semver.org/spec/v2.0.0.html).
 
-## [Unreleased]
+## [0.15.0] 2024-09-04
+
+### Highlights:
+
+- Zephyr port updated to Zephyr v3.7
+- NCS port updated to NCS v2.7
+- ESP-IDF port updated to ESP-IDF v5.3
+
+### Added:
+
+- `native_sim` platform support in Zephyr's twister execution of
+  `fw_update` example
+
+### Changed:
+
+- Use `VERSION` file to specify application version in `fw_update`
+  example
+- Better error message on manifest decode error
+- Updated libcoap version to v4.3.4a
+- Merged `GOLIOTH_SAMPLE_{,PSK_}SETTINGS` Kconfig settings
+- Added `extern "C"` in headers for improved C++ compatibility
+
+### Fixed:
+
+- CoAP keepalive behavior with Zephyr
+- Memory leak by freeing post_block memory in `purge_request_mbox()`
+- Disabled FreeRTOS logging backend on client disconnect
+- Stop client during client destroy in `golioth_client_destroy()`
 
 ### Known Issues:
 
