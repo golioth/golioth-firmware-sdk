@@ -113,14 +113,14 @@ jobs:
               --platform ${{ inputs.west_board }}                             \
               -T modules/lib/golioth-firmware-sdk/examples/zephyr             \
               --prep-artifacts-for-testing                                    \
-              --package-artifacts test_artifacts_${{ inputs.west_board }}.tar \
+              --package-artifacts test_artifacts_${{ inputs.hil_board }}.tar \
               $EXTRA_BUILD_ARGS
 
     - name: Save artifacts
       uses: actions/upload-artifact@v4
       with:
-        name: test_artifacts_${{ inputs.west_board }}
-        path: test_artifacts_${{ inputs.west_board }}.tar
+        name: test_artifacts_${{ inputs.hil_board }}
+        path: test_artifacts_${{ inputs.hil_board }}.tar
 
   test:
     name: zephyr-${{ inputs.hil_board }}-twister-run
@@ -170,10 +170,10 @@ jobs:
       - name: Download build
         uses: actions/download-artifact@v4
         with:
-          name: test_artifacts_${{ inputs.west_board }}
+          name: test_artifacts_${{ inputs.hil_board }}
           path: .
       - name: Extract artifacts
-        run: tar -xvf test_artifacts_${{ inputs.west_board }}.tar
+        run: tar -xvf test_artifacts_${{ inputs.hil_board }}.tar
       - name: Run test
         shell: bash
         env:

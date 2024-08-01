@@ -253,9 +253,6 @@ void test_rpc_call_one(void)
     TEST_ASSERT_EQUAL(1, test_rpc_method_fn_fake.call_count);
 }
 
-/** Extract the major type, i.e. the first 3 bits of the header byte. */
-#define ZCBOR_MAJOR_TYPE(header_byte) ((zcbor_major_type_t) (((header_byte) >> 5) & 0x7))
-
 enum golioth_rpc_status rpc_method_fake(zcbor_state_t *request_params_array,
                                         zcbor_state_t *response_detail_map,
                                         void *callback_arg)
