@@ -569,7 +569,7 @@ static void golioth_coap_post_block(golioth_coap_request_msg_t *req,
     golioth_coap_add_content_type(req_pdu, req->post_block.content_type);
     golioth_coap_add_block1(req_pdu,
                             req->post_block.block_index,
-                            CONFIG_GOLIOTH_BLOCKWISE_UPLOAD_BLOCK_SIZE,
+                            CONFIG_GOLIOTH_BLOCKWISE_UPLOAD_MAX_BLOCK_SIZE,
                             req->post_block.is_last);
     coap_add_data(req_pdu, req->post_block.payload_size, (unsigned char *) req->post_block.payload);
     coap_send(session, req_pdu);
