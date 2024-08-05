@@ -40,6 +40,43 @@ config GOLIOTH_MAX_NUM_OBSERVATIONS
     help
         The maximum number of CoAP paths which can be simultaneously observed.
 
+choice GOLIOTH_BLOCKSIZE_DN
+    prompt "Golioth blockwise download: Max block size"
+    help
+        Buffer size used in blockwise downloads. This choice is assigned to
+        GOLIOTH_BLOCKWISE_DOWNLOAD_MAX_BLOCK_SIZE. The block download size negotiated with the
+        server will be no larger than the value of this setting.
+
+    config GOLIOTH_BLOCKSIZE_DN_1024
+        bool "1024"
+    config GOLIOTH_BLOCKSIZE_DN_512
+        bool "512"
+    config GOLIOTH_BLOCKSIZE_DN_256
+        bool "256"
+    config GOLIOTH_BLOCKSIZE_DN_128
+        bool "128"
+    config GOLIOTH_BLOCKSIZE_DN_64
+        bool "64"
+    config GOLIOTH_BLOCKSIZE_DN_32
+        bool "32"
+    config GOLIOTH_BLOCKSIZE_DN_16
+        bool "16"
+
+endchoice # GOLIOTH_BLOCKSIZE_DN
+
+config GOLIOTH_BLOCKWISE_DOWNLOAD_MAX_BLOCK_SIZE
+    int
+    default 1024 if GOLIOTH_BLOCKSIZE_DN_1024
+    default 512 if GOLIOTH_BLOCKSIZE_DN_512
+    default 256 if GOLIOTH_BLOCKSIZE_DN_256
+    default 128 if GOLIOTH_BLOCKSIZE_DN_128
+    default 64 if GOLIOTH_BLOCKSIZE_DN_64
+    default 32 if GOLIOTH_BLOCKSIZE_DN_32
+    default 16 if GOLIOTH_BLOCKSIZE_DN_16
+    help
+        Buffer size used in blockwise downloads. The block download size negotiated with the server
+        will be no larger than the value of this setting.
+
 choice GOLIOTH_BLOCKSIZE_UP
     prompt "Golioth blockwise upload: Max block size"
     help
