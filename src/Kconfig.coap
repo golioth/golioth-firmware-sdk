@@ -40,11 +40,41 @@ config GOLIOTH_MAX_NUM_OBSERVATIONS
     help
         The maximum number of CoAP paths which can be simultaneously observed.
 
-config GOLIOTH_BLOCKWISE_UPLOAD_BLOCK_SIZE
-    int "Golioth blockwise uploads block size"
-    default 1024
+choice
+    prompt "Golioth blockwise upload: Max block size"
+
+    config UP_BLOCKSIZE_1024
+        bool "1024"
+    config UP_BLOCKSIZE_512
+        bool "512"
+    config UP_BLOCKSIZE_256
+        bool "256"
+    config UP_BLOCKSIZE_128
+        bool "128"
+    config UP_BLOCKSIZE_64
+        bool "64"
+    config UP_BLOCKSIZE_32
+        bool "32"
+    config UP_BLOCKSIZE_16
+        bool "16"
+
     help
         Block size in Blockwise Uploads.
+
+endchoice # "Golioth blockwise upload: Max block size"
+
+config GOLIOTH_BLOCKWISE_UPLOAD_MAX_BLOCK_SIZE
+    int
+    default 1024 if UP_BLOCKSIZE_1024
+    default 512 if UP_BLOCKSIZE_512
+    default 256 if UP_BLOCKSIZE_256
+    default 128 if UP_BLOCKSIZE_128
+    default 64 if UP_BLOCKSIZE_64
+    default 32 if UP_BLOCKSIZE_32
+    default 16 if UP_BLOCKSIZE_16
+    help
+        Buffer size used in blockwise uploads. The block upload size negotiated with the server
+        will be no larger than the value of this setting.
 
 config GOLIOTH_BLOCKWISE_DOWNLOAD_BUFFER_SIZE
     int "Golioth blockwise downloads buffer size"
