@@ -20,7 +20,7 @@ LOG_TAG_DEFINE(golioth_fw_update);
 static struct golioth_client *_client;
 static golioth_sys_sem_t _manifest_rcvd;
 static struct golioth_ota_manifest _ota_manifest;
-static uint8_t _ota_block_buffer[GOLIOTH_OTA_BLOCKSIZE + 1];
+static uint8_t _ota_block_buffer[CONFIG_GOLIOTH_BLOCKWISE_DOWNLOAD_MAX_BLOCK_SIZE + 1];
 static const struct golioth_ota_component *_main_component;
 static golioth_fw_update_state_change_callback _state_callback;
 static void *_state_callback_arg;

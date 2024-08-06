@@ -92,7 +92,7 @@ static enum golioth_status download_block(download_ctx_t *ctx)
         }
     }
 
-    assert(ctx->block_bytes_downloaded <= GOLIOTH_OTA_BLOCKSIZE);
+    assert(ctx->block_bytes_downloaded <= CONFIG_GOLIOTH_BLOCKWISE_DOWNLOAD_MAX_BLOCK_SIZE);
     block_stats_update(&ctx->block_stats, golioth_sys_now_ms() - download_start_ms);
 
     ctx->block_index++;

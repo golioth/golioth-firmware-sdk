@@ -26,7 +26,7 @@ static golioth_sys_sem_t block_test_sem;
 #define DUMMY_VER_EXTRA "1.2.5"
 
 static uint8_t callback_arg = 17;
-static uint8_t block_buf[GOLIOTH_OTA_BLOCKSIZE];
+static uint8_t block_buf[CONFIG_GOLIOTH_BLOCKWISE_DOWNLOAD_MAX_BLOCK_SIZE];
 
 struct golioth_client *client;
 
@@ -119,7 +119,8 @@ static void test_block_ops(void)
 
     GLTH_LOGI(TAG,
               "golioth_ota_size_to_nblocks: %d",
-              golioth_ota_size_to_nblocks((TEST_BLOCK_CNT * GOLIOTH_OTA_BLOCKSIZE) + 1));
+              golioth_ota_size_to_nblocks(
+                  (TEST_BLOCK_CNT * CONFIG_GOLIOTH_BLOCKWISE_DOWNLOAD_MAX_BLOCK_SIZE) + 1));
 
     // Test NULL client
     status = golioth_ota_get_block_sync(NULL,
