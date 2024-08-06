@@ -56,8 +56,8 @@ static enum golioth_ota_state _state = GOLIOTH_OTA_STATE_IDLE;
 
 size_t golioth_ota_size_to_nblocks(size_t component_size)
 {
-    size_t nblocks = component_size / GOLIOTH_OTA_BLOCKSIZE;
-    if ((component_size % GOLIOTH_OTA_BLOCKSIZE) != 0)
+    size_t nblocks = component_size / CONFIG_GOLIOTH_BLOCKWISE_DOWNLOAD_MAX_BLOCK_SIZE;
+    if ((component_size % CONFIG_GOLIOTH_BLOCKWISE_DOWNLOAD_MAX_BLOCK_SIZE) != 0)
     {
         nblocks++;
     }
@@ -307,7 +307,7 @@ static void on_block_rcvd(struct golioth_client *client,
                           void *arg)
 {
     assert(arg);
-    assert(payload_size <= GOLIOTH_OTA_BLOCKSIZE);
+    assert(payload_size <= CONFIG_GOLIOTH_BLOCKWISE_DOWNLOAD_MAX_BLOCK_SIZE);
 
     if (response->status != GOLIOTH_OK)
     {
@@ -368,7 +368,7 @@ enum golioth_status golioth_ota_get_block_sync(struct golioth_client *client,
                                                const char *package,
                                                const char *version,
                                                size_t block_index,
-                                               uint8_t *buf,  // >= GOLIOTH_OTA_BLOCKSIZE bytes
+                                               uint8_t *buf,
                                                size_t *block_nbytes,
                                                bool *is_last,
                                                int32_t timeout_s)
@@ -387,7 +387,7 @@ enum golioth_status golioth_ota_get_block_sync(struct golioth_client *client,
                                            path,
                                            GOLIOTH_CONTENT_TYPE_JSON,
                                            block_index,
-                                           GOLIOTH_OTA_BLOCKSIZE,
+                                           CONFIG_GOLIOTH_BLOCKWISE_DOWNLOAD_MAX_BLOCK_SIZE,
                                            on_block_rcvd,
                                            &out_params,
                                            true,

@@ -22,8 +22,6 @@ extern "C"
 /// https://docs.golioth.io/reference/protocols/coap/ota
 /// @{
 
-/// Maximum size of an OTA block, in bytes
-#define GOLIOTH_OTA_BLOCKSIZE 1024
 /// Size of a SHA256 of Artifact Binary in bytes
 #define GOLIOTH_OTA_COMPONENT_HASH_LEN 64
 /// Maximum size of Binary Detected Type in bytes
@@ -110,7 +108,8 @@ enum golioth_status golioth_ota_payload_as_manifest(const uint8_t *payload,
                                                     size_t payload_size,
                                                     struct golioth_ota_manifest *manifest);
 
-/// Convert a size in bytes to the number of blocks required (of size up to GOLIOTH_OTA_BLOCKSIZE)
+/// Convert a size in bytes to the number of blocks required (of size up to
+/// GOLIOTH_BLOCKWISE_DOWNLOAD_MAX_BLOCK_SIZE)
 size_t golioth_ota_size_to_nblocks(size_t component_size);
 
 /// Find a component by package name in a manifest, or NULL if not found.
@@ -191,9 +190,9 @@ enum golioth_status golioth_ota_download_component(struct golioth_client *client
 /// @param version Version of package, to identify the artifact
 /// @param block_index 0-based index of block to get
 /// @param buf Output param, memory allocated by caller, block data will be copied here.
-///           Must be at least GOLIOTH_OTA_BLOCKSIZE bytes.
+///           Must be at least GOLIOTH_BLOCKWISE_DOWNLOAD_MAX_BLOCK_SIZE bytes.
 /// @param block_nbytes Output param, memory allocated by caller, populated with number
-///             of bytes in the block, 0 to GOLIOTH_OTA_BLOCKSIZE.
+///             of bytes in the block, 0 to GOLIOTH_BLOCKWISE_DOWNLOAD_MAX_BLOCK_SIZE.
 /// @param is_last Set to true, if this is the last block
 /// @param timeout_s The timeout, in seconds, for receiving a server response
 ///
