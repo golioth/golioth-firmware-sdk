@@ -24,6 +24,12 @@ static const uint8_t tls_ca_crt[] = {
 #include "golioth-systemclient-ca_crt.inc"
 };
 
+static const uint8_t tls_secondary_ca_crt[] = {
+#if CONFIG_GOLIOTH_SECONDARY_CA_CRT
+#include "golioth-systemclient-secondary_ca_crt.inc"
+#endif
+};
+
 FS_LITTLEFS_DECLARE_DEFAULT_CONFIG(cstorage);
 
 static struct fs_mount_t littlefs_mnt = {
@@ -153,6 +159,8 @@ int main(void)
                             .public_cert_len = tls_client_crt_len,
                             .private_key = tls_client_key,
                             .private_key_len = tls_client_key_len,
+                            .secondary_ca_cert = tls_secondary_ca_crt,
+                            .secondary_ca_cert_len = sizeof(tls_secondary_ca_crt),
                         },
                 },
         };
