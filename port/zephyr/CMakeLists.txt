@@ -78,6 +78,9 @@ zephyr_library_sources_ifdef(CONFIG_NET_L2_OPENTHREAD golioth_openthread.c)
 
 if(CONFIG_GOLIOTH_AUTH_METHOD_CERT)
   include_cert(CONFIG_GOLIOTH_HARDCODED_CA_CRT_PATH ca_crt)
+  if(CONFIG_GOLIOTH_SECONDARY_CA_CRT)
+    include_cert(CONFIG_GOLIOTH_HARDCODED_SECONDARY_CA_CRT_PATH secondary_ca_crt)
+  endif()
 endif()
 
 zephyr_library_sources_ifdef(CONFIG_LOG_BACKEND_GOLIOTH golioth_log_zephyr.c)

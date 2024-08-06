@@ -28,4 +28,22 @@ config GOLIOTH_HARDCODED_CA_CRT_PATH
     help
       Path to a certificate that will be used to authenticate the server
 
+config GOLIOTH_SECONDARY_CA_CRT
+    bool "Include a secondary CA certificate"
+    default y
+    help
+      Include a second CA certificate. Disabling this option can result in
+      devices being unable to connect to Golioth, either now or in the
+      future, without warning.
+
+if GOLIOTH_SECONDARY_CA_CRT
+
+config GOLIOTH_HARDCODED_SECONDARY_CA_CRT_PATH
+    string "Secondary Server CA certificate path"
+    help
+      Path to a secondary certificate that will be used to authenticate
+      the server.
+
+endif
+
 endif
