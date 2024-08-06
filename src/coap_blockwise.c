@@ -236,7 +236,7 @@ static void blockwise_download_init(struct blockwise_transfer *ctx,
     ctx->path_prefix = path_prefix;
     ctx->path = path;
     ctx->content_type = content_type;
-    ctx->block_size = CONFIG_GOLIOTH_BLOCKWISE_UPLOAD_MAX_BLOCK_SIZE;
+    ctx->block_size = CONFIG_GOLIOTH_BLOCKWISE_DOWNLOAD_MAX_BLOCK_SIZE;
     ctx->block_idx = 0;
     ctx->block_buffer = data_buf;
     ctx->callback_arg = callback_arg;
@@ -270,7 +270,7 @@ static void on_block_rcvd(struct golioth_client *client,
 {
     // assert valid values of arg, payload size and block_buffer
     assert(arg);
-    assert(payload_size <= CONFIG_GOLIOTH_BLOCKWISE_DOWNLOAD_BUFFER_SIZE);
+    assert(payload_size <= CONFIG_GOLIOTH_BLOCKWISE_DOWNLOAD_MAX_BLOCK_SIZE);
     struct get_block_ctx *ctx = arg;
     assert(ctx->buffer);
 
@@ -364,7 +364,7 @@ enum golioth_status golioth_blockwise_get(struct golioth_client *client,
         goto finish;
     }
 
-    uint8_t *data_buff = malloc(CONFIG_GOLIOTH_BLOCKWISE_DOWNLOAD_BUFFER_SIZE);
+    uint8_t *data_buff = malloc(CONFIG_GOLIOTH_BLOCKWISE_DOWNLOAD_MAX_BLOCK_SIZE);
     if (!data_buff)
     {
         status = GOLIOTH_ERR_MEM_ALLOC;
