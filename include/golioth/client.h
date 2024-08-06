@@ -109,6 +109,10 @@ struct golioth_pki_credential
     /// DER Private client key
     const uint8_t *private_key;
     size_t private_key_len;
+
+    /// DER secondary Common CA cert
+    const uint8_t *secondary_ca_cert;
+    size_t secondary_ca_cert_len;
 };
 
 /// TLS Authentication Credential

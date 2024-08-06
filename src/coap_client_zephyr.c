@@ -62,6 +62,9 @@ static struct zsock_pollfd fds[NUM_POLLFDS];
 
 static sec_tag_t sec_tag_list[] = {
     CONFIG_GOLIOTH_COAP_CLIENT_CREDENTIALS_TAG,
+#if CONFIG_GOLIOTH_SECONDARY_CA_CRT
+    CONFIG_GOLIOTH_COAP_CLIENT_SECONDARY_CA_CREDENTIALS_TAG,
+#endif
 };
 
 /* Use mbedTLS macros which are IANA ciphersuite names prepended with MBEDTLS_ */
@@ -1423,6 +1426,19 @@ static int credentials_set_pki(const struct golioth_pki_credential *pki)
     {
         return 0;
     }
+
+#if CONFIG_GOLIOTH_SECONDARY_CA_CRT
+
+    err = tls_credential_add(sec_tag_list[1],
+                             TLS_CREDENTIAL_CA_CERTIFICATE,
+                             pki->secondary_ca_cert,
+                             pki->secondary_ca_cert_len);
+    if (err)
+    {
+        return 0;
+    }
+
+#endif  // CONFIG_GOLIOTH_SECONDARY_CA_CRT
 
     return 1;
 }
