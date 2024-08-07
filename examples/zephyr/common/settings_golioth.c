@@ -152,21 +152,6 @@ static int golioth_settings_set(const char *name,
     return 0;
 }
 
-static int golioth_settings_init(void)
-{
-    int err = settings_subsys_init();
-
-    if (err)
-    {
-        LOG_ERR("Failed to initialize settings subsystem: %d", err);
-        return err;
-    }
-
-    return 0;
-}
-
-SYS_INIT(golioth_settings_init, APPLICATION, CONFIG_APPLICATION_INIT_PRIORITY);
-
 SETTINGS_STATIC_HANDLER_DEFINE(golioth,
                                "golioth",
                                IS_ENABLED(CONFIG_SETTINGS_RUNTIME) ? golioth_settings_get : NULL,
