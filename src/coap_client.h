@@ -14,6 +14,8 @@
 #define RESPONSE_RECEIVED_EVENT_BIT (1 << 0)
 #define RESPONSE_TIMEOUT_EVENT_BIT (1 << 1)
 
+#define SZX_TO_BLOCKSIZE(szx) (1 << (szx + 4))
+
 #define BLOCKSIZE_TO_SZX(blockSize) \
     ((blockSize == 16)         ? 0  \
          : (blockSize == 32)   ? 1  \

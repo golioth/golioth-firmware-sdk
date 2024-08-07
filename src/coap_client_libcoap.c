@@ -172,13 +172,26 @@ static coap_response_t coap_response_handler(coap_session_t *session,
 
                 uint32_t opt_block_index = block_opt ? coap_opt_block_num(block_opt) : 0;
                 bool is_last = block_opt ? (COAP_OPT_BLOCK_MORE(block_opt) == 0) : true;
+                size_t szx = block_opt ? COAP_OPT_BLOCK_SZX(block_opt) : 0;
+
+                if (block_opt && (opt_block_index == 0)
+                    && BLOCKSIZE_TO_SZX(req->get_block.block_size) > szx)
+                {
+
+                    GLTH_LOGW(TAG, "Received SZX from server for block index 0: %zu", szx);
+                    GLTH_LOGW(TAG,
+                              "Requested blocksize was %zu, updating",
+                              req->get_block.block_size);
+                    req->get_block.block_size = SZX_TO_BLOCKSIZE(szx);
+                }
 
                 GLTH_LOGD(TAG,
                           "Request block index = %" PRIu32 ", response block index = %" PRIu32
                           ", offset 0x%08" PRIX32,
                           (uint32_t) req->get_block.block_index,
                           (uint32_t) opt_block_index,
-                          opt_block_index * 1024);
+                          opt_block_index * szx);
+
                 GLTH_LOG_BUFFER_HEXDUMP(TAG,
                                         data,
                                         min(32, data_len),
