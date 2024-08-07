@@ -25,20 +25,6 @@ def subprocess_logger(result, log_msg):
         LOGGER.error(f'{log_msg} stderr: {result.stderr}')
 
 async def test_credentials(shell, project, device_name, device_port, certificate_cred, wifi_ssid, wifi_psk):
-
-    # Ensure there are no credentials currently stored on device
-    shell._device.clear_buffer()
-    shell._device.write('kernel reboot cold\n\n'.encode())
-    shell._device.readlines_until(regex=".*Start certificate provisioning sample", timeout=90.0)
-    sleep(5) # Time for fs bringup and in case nRF9160 reset loop reboot happens
-    shell.exec_command(f'fs rm {FS_CRT_PATH}')
-    shell.exec_command(f'fs rm {FS_KEY_PATH}')
-    shell.exec_command(f'fs rm {FS_SUBDIR}')
-    shell._device.clear_buffer()
-    shell._device.write('kernel reboot cold\n\n'.encode())
-    shell._device.readlines_until(regex=".*Start certificate provisioning sample", timeout=90.0)
-    sleep(5) # Time for fs bringup and in case nRF9160 reset loop reboot happens
-
     # Check cloud to verify device does not exist
 
     with pytest.raises(Exception):
@@ -59,6 +45,8 @@ async def test_credentials(shell, project, device_name, device_port, certificate
 
     # Set Golioth credential
 
+    shell._device.readlines_until(regex=".*Could not stat /lfs1/credentials/client_cert.der", timeout=180.0)
+
     shell.exec_command('fs mkdir /lfs1/credentials')
     shell.exec_command('log halt')
 
@@ -78,7 +66,6 @@ async def test_credentials(shell, project, device_name, device_port, certificate
 
     shell.exec_command('log go')
     shell._device.clear_buffer()
-    shell._device.write('kernel reboot cold\n\n'.encode())
 
     # Await connection
 

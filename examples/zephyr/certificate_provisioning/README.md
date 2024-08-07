@@ -146,10 +146,10 @@ Be sure to replace `<path/to/your/device>` with the appropriate serial
 device for your board, typically something like
 `/dev/cu.usbmodem0009600837441`.
 
-Finally, re-open a serial connection and reset your device:
+Finally, re-open a serial connection and restart the logs:
 
 ```console
-uart:-$ kernel reboot cold
+uart:-$ log go
 ```
 
 ### Sample output
