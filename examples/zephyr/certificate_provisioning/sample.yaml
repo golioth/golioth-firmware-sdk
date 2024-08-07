@@ -16,7 +16,4 @@ tests:
       mimxrt1024_evk
       nrf52840dk_nrf52840
       nrf9160dk_nrf9160_ns
-  sample.golioth.certificate_provisioning.buildonly:
-    build_only: true
-    platform_allow: >
       rak5010_nrf52840
