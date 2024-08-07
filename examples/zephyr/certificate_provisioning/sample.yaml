@@ -8,6 +8,7 @@ tests:
     harness: pytest
     tags: golioth socket goliothd
     timeout: 180
+    extra_args: EXTRA_CONF_FILE="../common/runtime_settings.conf"
     extra_configs:
       - CONFIG_GOLIOTH_SAMPLE_NRF91_RESET_LOOP_OVERRIDE=y
     platform_allow: >
