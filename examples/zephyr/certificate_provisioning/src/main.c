@@ -9,16 +9,13 @@ LOG_MODULE_REGISTER(cert_provisioning, LOG_LEVEL_DBG);
 
 #include <golioth/client.h>
 #include <samples/common/net_connect.h>
+#include <zephyr/kernel.h>
 #include <zephyr/net/coap.h>
 #include <zephyr/device.h>
 #include <zephyr/fs/fs.h>
-#include <zephyr/fs/littlefs.h>
 
 #define CLIENT_CERTIFICATE_PATH "/lfs1/credentials/client_cert.der"
 #define PRIVATE_KEY_PATH "/lfs1/credentials/private_key.der"
-
-#define STORAGE_PARTITION_LABEL storage_partition
-#define STORAGE_PARTITION_ID FIXED_PARTITION_ID(STORAGE_PARTITION_LABEL)
 
 static const uint8_t tls_ca_crt[] = {
 #include "golioth-systemclient-ca_crt.inc"
@@ -30,14 +27,6 @@ static const uint8_t tls_secondary_ca_crt[] = {
 #endif
 };
 
-FS_LITTLEFS_DECLARE_DEFAULT_CONFIG(cstorage);
-
-static struct fs_mount_t littlefs_mnt = {
-    .type = FS_LITTLEFS,
-    .fs_data = &cstorage,
-    .storage_dev = (void *) STORAGE_PARTITION_ID,
-    .mnt_point = "/lfs1",
-};
 struct golioth_client *client;
 static K_SEM_DEFINE(connected, 0, 1);
 
@@ -129,12 +118,6 @@ int main(void)
     int counter = 0;
 
     LOG_DBG("Start certificate provisioning sample");
-
-    int err = fs_mount(&littlefs_mnt);
-    if (err < 0)
-    {
-        LOG_ERR("Error mounting littlefs [%d]", err);
-    }
 
     uint8_t *tls_client_crt = NULL;
     uint8_t *tls_client_key = NULL;
