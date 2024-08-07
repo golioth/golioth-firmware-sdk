@@ -16,16 +16,6 @@
 #include "mbox.h"
 #include "coap_client_libcoap.h"
 
-#define BLOCKSIZE_TO_SZX(blockSize) \
-    ((blockSize == 16)         ? 0  \
-         : (blockSize == 32)   ? 1  \
-         : (blockSize == 64)   ? 2  \
-         : (blockSize == 128)  ? 3  \
-         : (blockSize == 256)  ? 4  \
-         : (blockSize == 512)  ? 5  \
-         : (blockSize == 1024) ? 6  \
-                               : -1)
-
 LOG_TAG_DEFINE(golioth_coap_client_libcoap);
 
 static bool _initialized;

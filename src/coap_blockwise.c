@@ -10,6 +10,13 @@
 #include "coap_client.h"
 #include "coap_blockwise.h"
 
+_Static_assert(BLOCKSIZE_TO_SZX(CONFIG_GOLIOTH_BLOCKWISE_DOWNLOAD_MAX_BLOCK_SIZE) != -1,
+               "GOLIOTH_BLOCKWISE_DOWNLOAD_MAX_BLOCK_SIZE must be "
+               "one of the following: 16,32,64,128,256,512,1024");
+_Static_assert(BLOCKSIZE_TO_SZX(CONFIG_GOLIOTH_BLOCKWISE_UPLOAD_MAX_BLOCK_SIZE) != -1,
+               "GOLIOTH_BLOCKWISE_UPLOAD_MAX_BLOCK_SIZE must be "
+               "one of the following: 16,32,64,128,256,512,1024");
+
 struct blockwise_transfer
 {
     bool is_last;

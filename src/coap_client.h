@@ -14,6 +14,16 @@
 #define RESPONSE_RECEIVED_EVENT_BIT (1 << 0)
 #define RESPONSE_TIMEOUT_EVENT_BIT (1 << 1)
 
+#define BLOCKSIZE_TO_SZX(blockSize) \
+    ((blockSize == 16)         ? 0  \
+         : (blockSize == 32)   ? 1  \
+         : (blockSize == 64)   ? 2  \
+         : (blockSize == 128)  ? 3  \
+         : (blockSize == 256)  ? 4  \
+         : (blockSize == 512)  ? 5  \
+         : (blockSize == 1024) ? 6  \
+                               : -1)
+
 typedef struct
 {
     enum golioth_content_type content_type;
