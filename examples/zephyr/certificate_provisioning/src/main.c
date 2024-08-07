@@ -78,32 +78,32 @@ static int load_credential_from_fs(const char *path, uint8_t **buf_p, size_t *bu
         goto finish;
     }
 
-    /* NOTE: cred_buf is used directly by the TLS Credentials library, and so must remain
+    /* NOTE: *buf_p is used directly by the TLS Credentials library, and so must remain
      * allocated for the life of the program.
      */
 
-    void *cred_buf = malloc(dirent.size);
+    free(*buf_p);
+    *buf_p = malloc(dirent.size);
 
-    if (cred_buf == NULL)
+    if (*buf_p == NULL)
     {
         LOG_ERR("Could not allocate space to read credential");
         err = -ENOMEM;
         goto finish_with_file;
     }
 
-    err = fs_read(&file, cred_buf, dirent.size);
+    err = fs_read(&file, *buf_p, dirent.size);
 
     if (err < 0)
     {
         LOG_ERR("Could not read %s, err: %d", path, err);
-        free(cred_buf);
+        free(*buf_p);
         goto finish_with_file;
     }
 
     LOG_INF("Read %d bytes from %s", dirent.size, path);
 
-    /* Preserve the memory address and size for use after return */
-    *buf_p = cred_buf;
+    /* Set the size of the allocated buffer */
     *buf_len = dirent.size;
 
 finish_with_file:
@@ -119,17 +119,30 @@ int main(void)
 
     LOG_DBG("Start certificate provisioning sample");
 
+    net_connect();
+
     uint8_t *tls_client_crt = NULL;
     uint8_t *tls_client_key = NULL;
     size_t tls_client_crt_len, tls_client_key_len;
 
-    load_credential_from_fs(CLIENT_CERTIFICATE_PATH, &tls_client_crt, &tls_client_crt_len);
-    load_credential_from_fs(PRIVATE_KEY_PATH, &tls_client_key, &tls_client_key_len);
+    while (1)
+    {
+        int ret =
+            load_credential_from_fs(CLIENT_CERTIFICATE_PATH, &tls_client_crt, &tls_client_crt_len);
+        if (ret > 0)
+        {
+            ret = load_credential_from_fs(PRIVATE_KEY_PATH, &tls_client_key, &tls_client_key_len);
+            if (ret > 0)
+            {
+                break;
+            }
+        }
+
+        k_sleep(K_SECONDS(5));
+    }
 
     if (tls_client_crt != NULL && tls_client_key != NULL)
     {
-        net_connect();
-
         struct golioth_client_config client_config = {
             .credentials =
                 {
