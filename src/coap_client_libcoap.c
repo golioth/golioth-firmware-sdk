@@ -16,16 +16,6 @@
 #include "mbox.h"
 #include "coap_client_libcoap.h"
 
-#define BLOCKSIZE_TO_SZX(blockSize) \
-    ((blockSize == 16)         ? 0  \
-         : (blockSize == 32)   ? 1  \
-         : (blockSize == 64)   ? 2  \
-         : (blockSize == 128)  ? 3  \
-         : (blockSize == 256)  ? 4  \
-         : (blockSize == 512)  ? 5  \
-         : (blockSize == 1024) ? 6  \
-                               : -1)
-
 LOG_TAG_DEFINE(golioth_coap_client_libcoap);
 
 static bool _initialized;
@@ -439,7 +429,8 @@ static void golioth_coap_add_block1(coap_pdu_t *request,
 
 static void golioth_coap_add_block2(coap_pdu_t *request, size_t block_index, size_t block_size)
 {
-    size_t szx = 6;  // 1024 bytes
+    size_t szx = BLOCKSIZE_TO_SZX(block_size);
+    assert(szx != -1);
     coap_block_t block = {
         .num = block_index,
         .m = 0,
@@ -569,7 +560,7 @@ static void golioth_coap_post_block(golioth_coap_request_msg_t *req,
     golioth_coap_add_content_type(req_pdu, req->post_block.content_type);
     golioth_coap_add_block1(req_pdu,
                             req->post_block.block_index,
-                            CONFIG_GOLIOTH_BLOCKWISE_UPLOAD_BLOCK_SIZE,
+                            CONFIG_GOLIOTH_BLOCKWISE_UPLOAD_MAX_BLOCK_SIZE,
                             req->post_block.is_last);
     coap_add_data(req_pdu, req->post_block.payload_size, (unsigned char *) req->post_block.payload);
     coap_send(session, req_pdu);

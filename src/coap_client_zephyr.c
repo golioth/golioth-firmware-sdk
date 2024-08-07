@@ -128,7 +128,7 @@ static int golioth_coap_req_append_block1_option(golioth_coap_request_msg_t *req
          */
         req->request_wo_block1 = req->request;
     }
-    val |= BLOCKSIZE_TO_SZX(CONFIG_GOLIOTH_BLOCKWISE_UPLOAD_BLOCK_SIZE) & 0x07;
+    val |= BLOCKSIZE_TO_SZX(CONFIG_GOLIOTH_BLOCKWISE_UPLOAD_MAX_BLOCK_SIZE) & 0x07;
     val |= req_msg->post_block.is_last ? 0x00 : 0x08;
     val |= req_msg->post_block.block_index << 4;
     return coap_append_option_int(&req->request, COAP_OPTION_BLOCK1, val);
@@ -378,6 +378,7 @@ static int golioth_coap_get_block(golioth_coap_request_msg_t *req)
     }
 
     coap_req->block_ctx.current = (req->get_block.block_index * req->get_block.block_size);
+    coap_req->block_ctx.block_size = coap_bytes_to_block_size(req->get_block.block_size);
 
     err = golioth_coap_req_append_block2_option(coap_req);
     if (err)
