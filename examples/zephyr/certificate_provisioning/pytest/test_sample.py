@@ -24,7 +24,7 @@ def subprocess_logger(result, log_msg):
     if result.stderr:
         LOGGER.error(f'{log_msg} stderr: {result.stderr}')
 
-async def test_credentials(shell, project, device_name, device_port, certificate_cred):
+async def test_credentials(shell, project, device_name, device_port, certificate_cred, wifi_ssid, wifi_psk):
 
     # Ensure there are no credentials currently stored on device
     shell._device.clear_buffer()
@@ -48,6 +48,14 @@ async def test_credentials(shell, project, device_name, device_port, certificate
 
     subprocess.run([WEST_TOPDIR / "modules/lib/golioth-firmware-sdk/scripts/certificates/generate_device_certificate.sh",
                     project.info['id'], device_name])
+
+    # Set WiFi credential
+
+    if wifi_ssid is not None:
+        shell.exec_command(f"settings set wifi/ssid \"{wifi_ssid}\"")
+
+    if wifi_psk is not None:
+        shell.exec_command(f"settings set wifi/psk \"{wifi_psk}\"")
 
     # Set Golioth credential
 
