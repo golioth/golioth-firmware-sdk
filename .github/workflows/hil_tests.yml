@@ -15,6 +15,19 @@ on:
         description: "The CoAP gateway URL to be hardcoded into test firmware"
         required: false
         default: "coaps://coap.golioth.io"
+      workflow:
+        description: "Select which workflow to run"
+        required: false
+        type: choice
+        default: 'all'
+        options:
+          - all
+          - zephyr_integration
+          - zephyr_sample
+          - zephyr_sample_native_sim
+          - esp_idf_integration
+          - esp_idf_sample
+          - linux_integration
   workflow_call:
     inputs:
       api-url:
@@ -32,9 +45,15 @@ on:
         required: false
         type: string
         default: "coaps://coap.golioth.io"
+      workflow:
+        description: "Select which workflow to run"
+        required: false
+        type: string
+        default: 'all'
 
 jobs:
   hil_test_zephyr:
+    if: ${{ inputs.workflow == 'all' || inputs.workflow == 'zephyr_integration' }}
     strategy:
       fail-fast: false
       matrix:
@@ -69,6 +88,7 @@ jobs:
     secrets: inherit
 
   hil_test_esp-idf:
+    if: ${{ inputs.workflow == 'all' || inputs.workflow == 'esp_idf_integration' }}
     strategy:
       fail-fast: false
       matrix:
@@ -89,6 +109,7 @@ jobs:
     secrets: inherit
 
   hil_test_linux:
+    if: ${{ inputs.workflow == 'all' || inputs.workflow == 'linux_integration' }}
     uses: ./.github/workflows/hil_test_linux.yml
     with:
       api-url: ${{ inputs.api-url }}
@@ -97,6 +118,7 @@ jobs:
     secrets: inherit
 
   hil_sample_zephyr:
+    if: ${{ inputs.workflow == 'all' || inputs.workflow == 'zephyr_sample' }}
     strategy:
       fail-fast: false
       matrix:
@@ -149,6 +171,7 @@ jobs:
     secrets: inherit
 
   hil_sample_zephyr_nsim:
+    if: ${{ inputs.workflow == 'all' || inputs.workflow == 'zephyr_sample_native_sim' }}
     runs-on: ubuntu-latest
     container:
       image: golioth/golioth-zephyr-base:0.16.3-SDK-v0
@@ -211,6 +234,7 @@ jobs:
             twister-out/*.json
 
   hil_sample_esp-idf:
+    if: ${{ inputs.workflow == 'all' || inputs.workflow == 'esp_idf_sample' }}
     strategy:
       fail-fast: false
       matrix:
