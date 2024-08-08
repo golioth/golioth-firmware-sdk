@@ -2,8 +2,8 @@
 
 set -eu
 
-if [[ $# -ne 2 ]]; then
-    echo "usage: $0 <project_id> <certificate_id>" >&2
+if [[ $# -lt 2 ]]; then
+    echo "usage: $0 <project_id> <certificate_id> [pem]" >&2
     exit 2
 fi
 
@@ -19,6 +19,11 @@ fi
 
 PROJECT_NAME=$1
 CERTIFICATE_ID=$2 # A unique identifier for the device across an entire project
+if [[ $# -ge 3 ]]; then
+    GENERATE_PEM=$3 # Contains "pem" if script should output PEM format certificates
+else
+    GENERATE_PEM=""
+fi
 
 SERVER_NAME='golioth'
 CLIENT_NAME="${PROJECT_NAME}-${CERTIFICATE_ID}"
@@ -39,9 +44,12 @@ openssl x509 -req \
     -out "${CLIENT_NAME}.crt.pem" \
     -days 500 -sha256
 
-openssl x509 -in "${CLIENT_NAME}.crt.pem" --outform DER -out "${CLIENT_NAME}.crt.der"
-openssl ec -in "${CLIENT_NAME}.key.pem" --outform DER -out "${CLIENT_NAME}.key.der"
+if [[ $GENERATE_PEM != "pem" ]]; then
+    openssl x509 -in "${CLIENT_NAME}.crt.pem" --outform DER -out "${CLIENT_NAME}.crt.der"
+    openssl ec -in "${CLIENT_NAME}.key.pem" --outform DER -out "${CLIENT_NAME}.key.der"
 
-rm "${CLIENT_NAME}.crt.pem"
-rm "${CLIENT_NAME}.key.pem"
+    rm "${CLIENT_NAME}.crt.pem"
+    rm "${CLIENT_NAME}.key.pem"
+fi
+
 rm "${CLIENT_NAME}.csr.pem"
