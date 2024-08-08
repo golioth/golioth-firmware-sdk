@@ -11,7 +11,7 @@
 
 #define TAG "main"
 
-#define MAX_DER_FILE_SIZE 2048
+#define MAX_PEM_FILE_SIZE 2048
 
 static int read_file(const char *filepath, uint8_t *buffer, size_t buffer_size)
 {
@@ -31,15 +31,15 @@ static int read_file(const char *filepath, uint8_t *buffer, size_t buffer_size)
 
 int main(void)
 {
-    uint8_t client_key_der[MAX_DER_FILE_SIZE];
-    uint8_t client_cert_der[MAX_DER_FILE_SIZE];
-    uint8_t root_ca_der[MAX_DER_FILE_SIZE];
+    uint8_t client_key_pem[MAX_PEM_FILE_SIZE];
+    uint8_t client_cert_pem[MAX_PEM_FILE_SIZE];
+    uint8_t root_ca_pem[MAX_PEM_FILE_SIZE];
 
     size_t client_key_len =
-        read_file("certs/client.key.der", client_key_der, sizeof(client_key_der));
+        read_file("certs/client.key.pem", client_key_pem, sizeof(client_key_pem));
     size_t client_cert_len =
-        read_file("certs/client.crt.der", client_cert_der, sizeof(client_cert_der));
-    size_t root_ca_len = read_file("isrgrootx1.der", root_ca_der, sizeof(root_ca_der));
+        read_file("certs/client.crt.pem", client_cert_pem, sizeof(client_cert_pem));
+    size_t root_ca_len = read_file("isrgrootx1_x2.pem", root_ca_pem, sizeof(root_ca_pem));
     if ((client_key_len <= 0) || (client_cert_len <= 0) || (root_ca_len <= 0))
     {
         return 1;
@@ -51,11 +51,11 @@ int main(void)
                 .auth_type = GOLIOTH_TLS_AUTH_TYPE_PKI,
                 .pki =
                     {
-                        .ca_cert = root_ca_der,
+                        .ca_cert = root_ca_pem,
                         .ca_cert_len = root_ca_len,
-                        .public_cert = client_cert_der,
+                        .public_cert = client_cert_pem,
                         .public_cert_len = client_cert_len,
-                        .private_key = client_key_der,
+                        .private_key = client_key_pem,
                         .private_key_len = client_key_len,
                     },
             },
@@ -64,7 +64,7 @@ int main(void)
     struct golioth_client *client = golioth_client_create(&config);
     assert(client);
 
-    bool connected = golioth_client_wait_for_connect(client, 1000);
+    bool connected = golioth_client_wait_for_connect(client, 5000);
     golioth_client_stop(client);
 
     if (!connected)

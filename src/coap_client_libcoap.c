@@ -821,8 +821,8 @@ static enum golioth_status create_session(struct golioth_client *client,
             .client_sni = client_sni,
             .pki_key =
                 {
-                    .key_type = COAP_PKI_KEY_ASN1,
-                    .key.asn1 =
+                    .key_type = COAP_PKI_KEY_PEM_BUF,
+                    .key.pem_buf =
                         {
                             .ca_cert = pki_creds.ca_cert,
                             .ca_cert_len = pki_creds.ca_cert_len,
@@ -830,7 +830,6 @@ static enum golioth_status create_session(struct golioth_client *client,
                             .public_cert_len = pki_creds.public_cert_len,
                             .private_key = pki_creds.private_key,
                             .private_key_len = pki_creds.private_key_len,
-                            .private_key_type = COAP_ASN1_PKEY_EC,
                         },
                 },
         };
