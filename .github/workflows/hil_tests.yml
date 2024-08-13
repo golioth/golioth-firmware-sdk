@@ -104,8 +104,9 @@ jobs:
           - hil_board: esp32_devkitc_wrover
             west_board: esp32_devkitc_wrover/esp32/procpu
             manifest: .ci-west-zephyr.yml
+            extra_twister_args: '--flash-before'
             binary_blob: hal_espressif
-            run_tests: false
+            run_tests: true
 
           - hil_board: mimxrt1024_evk
             west_board: mimxrt1024_evk
