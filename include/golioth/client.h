@@ -25,9 +25,7 @@ extern "C"
 /// For authentication, you can use either pre-shared key (PSK) or
 /// X.509 certificates (aka Public Key Infrastructure, PKI).
 ///
-/// https://docs.golioth.io/reference/protocols/coap
-/// <br>
-/// https://docs.golioth.io/reference/protocols/device-auth
+/// https://docs.golioth.io/reference/device-api
 /// @{
 
 /// @brief Opaque Golioth client
