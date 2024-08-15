@@ -1,5 +1,5 @@
 #
-# Copyright (C) 2021-2022 Golioth, Inc.
+# Copyright (C) 2021-2024 Golioth, Inc.
 #
 # SPDX-License-Identifier: Apache-2.0
 #
@@ -201,5 +201,11 @@ config GOLIOTH_SAMPLE_WIFI_PSK
 	  unsecure (open) AP.
 
 endif # GOLIOTH_SAMPLE_WIFI
+
+config GOLIOTH_SAMPLE_TWISTER_TEST
+	bool "Twister test"
+	help
+	  Helper option used for selecting better defaults for Twister (Hardware-in-the-loop or Native
+	  Simulator) tests, e.g. for increased tests reliability.
 
 endif # GOLIOTH_SAMPLE_COMMON
