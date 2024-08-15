@@ -253,3 +253,18 @@ jobs:
       api-key-id: ${{ inputs.api-key-id }}
       coap_gateway_url: ${{ inputs.coap_gateway_url }}
     secrets: inherit
+
+  collate_results:
+    needs:
+      - hil_test_zephyr
+      - hil_test_esp-idf
+      - hil_test_linux
+      - hil_sample_zephyr
+      - hil_sample_zephyr_nsim
+      - hil_sample_esp-idf
+    if: always() && !cancelled()
+    runs-on: ubuntu-latest
+    steps:
+      - run: |
+          echo "collate job"
+
