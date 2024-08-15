@@ -11,11 +11,8 @@ tests:
     timeout: 180
     extra_args: EXTRA_CONF_FILE="../common/runtime_settings.conf"
     extra_configs:
-      - CONFIG_SHELL_BACKEND_SERIAL_RX_RING_BUFFER_SIZE=128
-      - CONFIG_SHELL_DEFAULT_TERMINAL_WIDTH=100
-      - CONFIG_GOLIOTH_SAMPLE_NRF91_RESET_LOOP_OVERRIDE=y
+      - CONFIG_GOLIOTH_SAMPLE_TWISTER_TEST=y
       - arch:posix:CONFIG_NATIVE_UART_0_ON_STDINOUT=y
-      - arch:posix:CONFIG_LOG_BACKEND_NATIVE_POSIX=n
     platform_allow:
       - esp32_devkitc_wrover/esp32/procpu
       - mimxrt1024_evk
@@ -33,12 +30,9 @@ tests:
     timeout: 180
     extra_args: EXTRA_CONF_FILE="../common/runtime_settings.conf"
     extra_configs:
+      - CONFIG_GOLIOTH_SAMPLE_TWISTER_TEST=y
       - CONFIG_GOLIOTH_USE_CONNECTION_ID=y
-      - CONFIG_SHELL_BACKEND_SERIAL_RX_RING_BUFFER_SIZE=128
-      - CONFIG_SHELL_DEFAULT_TERMINAL_WIDTH=100
-      - CONFIG_GOLIOTH_SAMPLE_NRF91_RESET_LOOP_OVERRIDE=y
       - arch:posix:CONFIG_NATIVE_UART_0_ON_STDINOUT=y
-      - arch:posix:CONFIG_LOG_BACKEND_NATIVE_POSIX=n
     platform_allow:
       - esp32_devkitc_wrover/esp32/procpu
       - mimxrt1024_evk

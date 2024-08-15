@@ -16,7 +16,7 @@ tests:
     timeout: 180
     extra_args: EXTRA_CONF_FILE="../common/runtime_settings.conf"
     extra_configs:
-      - CONFIG_GOLIOTH_SAMPLE_NRF91_RESET_LOOP_OVERRIDE=y
+      - CONFIG_GOLIOTH_SAMPLE_TWISTER_TEST=y
     platform_allow:
       - esp32_devkitc_wrover/esp32/procpu
       - mimxrt1024_evk

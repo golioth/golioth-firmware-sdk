@@ -10,6 +10,5 @@ tests:
       - goliothd
     timeout: 180
     extra_configs:
-      - CONFIG_GOLIOTH_SAMPLE_NRF91_RESET_LOOP_OVERRIDE=y
-      - CONFIG_SHELL_DEFAULT_TERMINAL_WIDTH=160
+      - CONFIG_GOLIOTH_SAMPLE_TWISTER_TEST=y
     platform_allow: nrf9160dk/nrf9160/ns
