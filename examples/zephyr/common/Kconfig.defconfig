@@ -141,4 +141,25 @@ config GOLIOTH_SAMPLE_WIFI_PSK
 	default "$(GOLIOTH_SAMPLE_WIFI_PSK)" if "$(GOLIOTH_SAMPLE_WIFI_PSK)" != ""
 
 endif # GOLIOTH_SAMPLE_WIFI
+
+if GOLIOTH_SAMPLE_TWISTER_TEST
+
+configdefault GOLIOTH_SAMPLE_NRF91_RESET_LOOP_OVERRIDE
+	bool
+	default y
+
+configdefault LOG_BACKEND_NATIVE_POSIX
+	bool
+	default n
+
+configdefault SHELL_BACKEND_SERIAL_RX_RING_BUFFER_SIZE
+	int
+	default 128
+
+configdefault SHELL_DEFAULT_TERMINAL_WIDTH
+	int
+	default 100
+
+endif # GOLIOTH_SAMPLE_TWISTER_TEST
+
 endif # GOLIOTH_SAMPLE_COMMON
