@@ -24,7 +24,7 @@ def subprocess_logger(result, log_msg):
     if result.stderr:
         LOGGER.error(f'{log_msg} stderr: {result.stderr}')
 
-async def test_credentials(shell, project, device_name, device_port, certificate_cred, wifi_ssid, wifi_psk):
+async def test_credentials(shell, project, device_name, mcumgr_conn_args, certificate_cred, wifi_ssid, wifi_psk):
     # Check cloud to verify device does not exist
 
     with pytest.raises(Exception):
@@ -50,17 +50,17 @@ async def test_credentials(shell, project, device_name, device_port, certificate
     shell.exec_command('fs mkdir /lfs1/credentials')
     shell.exec_command('log halt')
 
-    result = subprocess.run(["mcumgr", "--conntype", "serial",
-                             f"--connstring=dev={device_port},baud=115200", "fs", "upload",
+    result = subprocess.run(["mcumgr"] + mcumgr_conn_args +
+                            ["fs", "upload",
                              f"{project.info['id']}-{device_name}.crt.der", FS_CRT_PATH],
-                             capture_output = True, text = True)
+                            capture_output = True, text = True)
     subprocess_logger(result, 'mcumgr crt')
     assert result.returncode == 0
 
-    result = subprocess.run(["mcumgr", "--conntype", "serial",
-                             f"--connstring=dev={device_port},baud=115200", "fs", "upload",
+    result = subprocess.run(["mcumgr"] + mcumgr_conn_args +
+                            ["fs", "upload",
                              f"{project.info['id']}-{device_name}.key.der", FS_KEY_PATH],
-                             capture_output = True, text = True)
+                            capture_output = True, text = True)
     subprocess_logger(result, 'mcumgr key')
     assert result.returncode == 0
 

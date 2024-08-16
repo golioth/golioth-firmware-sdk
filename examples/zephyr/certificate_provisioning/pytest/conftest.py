@@ -15,13 +15,19 @@ def pytest_addoption(parser):
     parser.addoption("--wifi-ssid", type=str, help="WiFi SSID")
     parser.addoption("--wifi-psk",  type=str, help="WiFi PSK")
 
-@pytest.fixture(scope="session")
-def device_port(request):
+def get_device_port(request):
     if request.config.getoption("--device-port") is not None:
         return request.config.getoption("--device-port")
     else:
         port_key = f"CI_{os.environ['hil_board'].upper()}_PORT"
         return os.environ[port_key]
+
+@pytest.fixture
+def mcumgr_conn_args(request, dut):
+    return [
+        "--conntype=serial",
+        f"--connstring=dev={get_device_port(request)},baud=115200"
+    ]
 
 @pytest.fixture(scope='session')
 def anyio_backend():
