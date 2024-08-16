@@ -51,14 +51,16 @@ async def test_credentials(shell, project, device_name, mcumgr_conn_args, certif
     shell.exec_command('log halt')
 
     result = subprocess.run(["mcumgr"] + mcumgr_conn_args +
-                            ["fs", "upload",
+                            ["--tries=3", "--timeout=2",
+                             "fs", "upload",
                              f"{project.info['id']}-{device_name}.crt.der", FS_CRT_PATH],
                             capture_output = True, text = True)
     subprocess_logger(result, 'mcumgr crt')
     assert result.returncode == 0
 
     result = subprocess.run(["mcumgr"] + mcumgr_conn_args +
-                            ["fs", "upload",
+                            ["--tries=3", "--timeout=2",
+                             "fs", "upload",
                              f"{project.info['id']}-{device_name}.key.der", FS_KEY_PATH],
                             capture_output = True, text = True)
     subprocess_logger(result, 'mcumgr key')
