@@ -28,6 +28,18 @@ void golioth_sys_msleep(uint32_t ms);
 uint64_t golioth_sys_now_ms(void);
 
 /*--------------------------------------------------
+ * Mutexes
+ *------------------------------------------------*/
+
+// Opaque handle for mutex
+typedef void *golioth_sys_mutex_t;
+
+golioth_sys_mutex_t golioth_sys_mutex_create(void);
+bool golioth_sys_mutex_lock(golioth_sys_mutex_t mutex, int32_t ms_to_wait);
+bool golioth_sys_mutex_unlock(golioth_sys_mutex_t mutex);
+void golioth_sys_mutex_destroy(golioth_sys_mutex_t mutex);
+
+/*--------------------------------------------------
  * Semaphores
  *------------------------------------------------*/
 
