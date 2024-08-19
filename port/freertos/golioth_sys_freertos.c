@@ -25,6 +25,33 @@ void golioth_sys_msleep(uint32_t ms)
 }
 
 /*--------------------------------------------------
+ * Mutexes
+ *------------------------------------------------*/
+
+golioth_sys_mutex_t golioth_sys_mutex_create(void)
+{
+    SemaphoreHandle_t mutex = xSemaphoreCreateMutex();
+    return (golioth_sys_mutex_t) mutex;
+}
+
+bool golioth_sys_mutex_lock(golioth_sys_mutex_t mutex, int32_t ms_to_wait)
+{
+    TickType_t ticks_to_wait =
+        (ms_to_wait < 0 ? portMAX_DELAY : (uint32_t) ms_to_wait / portTICK_PERIOD_MS);
+    return (pdTRUE == xSemaphoreTake((SemaphoreHandle_t) mutex, ticks_to_wait));
+}
+
+bool golioth_sys_mutex_unlock(golioth_sys_mutex_t mutex)
+{
+    return (pdTRUE == xSemaphoreGive((SemaphoreHandle_t) mutex));
+}
+
+void golioth_sys_mutex_destroy(golioth_sys_mutex_t mutex)
+{
+    vSemaphoreDelete((SemaphoreHandle_t) mutex);
+}
+
+/*--------------------------------------------------
  * Semaphores
  *------------------------------------------------*/
 
