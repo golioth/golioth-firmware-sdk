@@ -27,6 +27,33 @@ uint64_t golioth_sys_now_ms(void)
 }
 
 /*--------------------------------------------------
+ * Mutexes
+ *------------------------------------------------*/
+
+golioth_sys_mutex_t golioth_sys_mutex_create(void)
+{
+    struct k_mutex *mutex = golioth_sys_malloc(sizeof(struct k_mutex));
+    k_mutex_init(mutex);
+    return (golioth_sys_mutex_t) mutex;
+}
+
+bool golioth_sys_mutex_lock(golioth_sys_mutex_t mutex, int32_t ms_to_wait)
+{
+    k_timeout_t timeout = (ms_to_wait == GOLIOTH_SYS_WAIT_FOREVER) ? K_FOREVER : K_MSEC(ms_to_wait);
+    return (0 == k_mutex_lock(mutex, timeout));
+}
+
+bool golioth_sys_mutex_unlock(golioth_sys_mutex_t mutex)
+{
+    return (0 == k_mutex_unlock(mutex));
+}
+
+void golioth_sys_mutex_destroy(golioth_sys_mutex_t mutex)
+{
+    golioth_sys_free(mutex);
+}
+
+/*--------------------------------------------------
  * Semaphores
  *------------------------------------------------*/
 
