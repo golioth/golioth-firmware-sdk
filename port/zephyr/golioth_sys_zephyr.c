@@ -16,11 +16,13 @@ LOG_TAG_DEFINE(golioth_sys_zephyr);
  * Time
  *------------------------------------------------*/
 
-void golioth_sys_msleep(uint32_t ms) {
+void golioth_sys_msleep(uint32_t ms)
+{
     k_msleep(ms);
 }
 
-uint64_t golioth_sys_now_ms(void) {
+uint64_t golioth_sys_now_ms(void)
+{
     return k_uptime_get();
 }
 
@@ -28,14 +30,16 @@ uint64_t golioth_sys_now_ms(void) {
  * Semaphores
  *------------------------------------------------*/
 
-#define SEM_TO_FD(sem) ((int)(intptr_t)(sem))
-#define FD_TO_SEM(sem) ((golioth_sys_sem_t)(intptr_t)(fd))
+#define SEM_TO_FD(sem) ((int) (intptr_t) (sem))
+#define FD_TO_SEM(sem) ((golioth_sys_sem_t) (intptr_t) (fd))
 
-golioth_sys_sem_t golioth_sys_sem_create(uint32_t sem_max_count, uint32_t sem_initial_count) {
+golioth_sys_sem_t golioth_sys_sem_create(uint32_t sem_max_count, uint32_t sem_initial_count)
+{
     int fd;
 
     fd = eventfd(sem_initial_count, EFD_SEMAPHORE);
-    if (fd < 0) {
+    if (fd < 0)
+    {
         GLTH_LOGE(TAG, "eventfd creation failed, errno: %d", errno);
         return NULL;
     }
@@ -43,9 +47,11 @@ golioth_sys_sem_t golioth_sys_sem_create(uint32_t sem_max_count, uint32_t sem_in
     return FD_TO_SEM(fd);
 }
 
-bool golioth_sys_sem_take(golioth_sys_sem_t sem, int32_t ms_to_wait) {
+bool golioth_sys_sem_take(golioth_sys_sem_t sem, int32_t ms_to_wait)
+{
     int fd = SEM_TO_FD(sem);
-    while (true) {
+    while (true)
+    {
         struct zsock_pollfd pfd = {
             .fd = fd,
             .events = ZSOCK_POLLIN,
@@ -54,19 +60,24 @@ bool golioth_sys_sem_take(golioth_sys_sem_t sem, int32_t ms_to_wait) {
         int ret;
 
         ret = zsock_poll(&pfd, 1, ms_to_wait);
-        if (ret < 0) {
-            if (errno == EINTR) {
+        if (ret < 0)
+        {
+            if (errno == EINTR)
+            {
                 GLTH_LOGI(TAG, "EINTR");
                 continue;
             }
             GLTH_LOGE(TAG, "sem poll failed, errno: %d", errno);
             return false;
-        } else if (ret == 0) {
+        }
+        else if (ret == 0)
+        {
             return false;
         }
 
         ret = eventfd_read(fd, &val);
-        if (ret < 0) {
+        if (ret < 0)
+        {
             GLTH_LOGE(TAG, "sem eventfd_read failed, errno: %d", errno);
             return false;
         }
@@ -77,15 +88,18 @@ bool golioth_sys_sem_take(golioth_sys_sem_t sem, int32_t ms_to_wait) {
     return true;
 }
 
-bool golioth_sys_sem_give(golioth_sys_sem_t sem) {
+bool golioth_sys_sem_give(golioth_sys_sem_t sem)
+{
     return (0 == eventfd_write(SEM_TO_FD(sem), 1));
 }
 
-void golioth_sys_sem_destroy(golioth_sys_sem_t sem) {
+void golioth_sys_sem_destroy(golioth_sys_sem_t sem)
+{
     zsock_close(SEM_TO_FD(sem));
 }
 
-int golioth_sys_sem_get_fd(golioth_sys_sem_t sem) {
+int golioth_sys_sem_get_fd(golioth_sys_sem_t sem)
+{
     return SEM_TO_FD(sem);
 }
 
@@ -93,7 +107,8 @@ int golioth_sys_sem_get_fd(golioth_sys_sem_t sem) {
  * Software Timers
  *------------------------------------------------*/
 
-struct golioth_timer {
+struct golioth_timer
+{
     struct k_timer timer;
     struct k_work work;
     struct golioth_timer_config config;
@@ -103,22 +118,26 @@ static void timer_handler_worker(struct k_work *work)
 {
     struct golioth_timer *timer = CONTAINER_OF(work, struct golioth_timer, work);
 
-    if (timer->config.fn) {
+    if (timer->config.fn)
+    {
         timer->config.fn(timer, timer->config.user_arg);
     }
 }
 
-static void on_timer(struct k_timer* ztimer) {
-    struct golioth_timer* timer = CONTAINER_OF(ztimer, struct golioth_timer, timer);
+static void on_timer(struct k_timer *ztimer)
+{
+    struct golioth_timer *timer = CONTAINER_OF(ztimer, struct golioth_timer, timer);
 
     k_work_submit(&timer->work);
 }
 
-golioth_sys_timer_t golioth_sys_timer_create(const struct golioth_timer_config *config) {
-    struct golioth_timer* timer;
+golioth_sys_timer_t golioth_sys_timer_create(const struct golioth_timer_config *config)
+{
+    struct golioth_timer *timer;
 
     timer = golioth_sys_malloc(sizeof(*timer));
-    if (!timer) {
+    if (!timer)
+    {
         return NULL;
     }
 
@@ -127,23 +146,26 @@ golioth_sys_timer_t golioth_sys_timer_create(const struct golioth_timer_config *
     k_timer_init(&timer->timer, on_timer, NULL);
     k_work_init(&timer->work, timer_handler_worker);
 
-    return (golioth_sys_timer_t)timer;
+    return (golioth_sys_timer_t) timer;
 }
 
-bool golioth_sys_timer_start(golioth_sys_timer_t gtimer) {
-    struct golioth_timer* timer = gtimer;
+bool golioth_sys_timer_start(golioth_sys_timer_t gtimer)
+{
+    struct golioth_timer *timer = gtimer;
 
     k_timer_start(&timer->timer, K_MSEC(timer->config.expiration_ms), K_NO_WAIT);
 
     return true;
 }
 
-bool golioth_sys_timer_reset(golioth_sys_timer_t timer) {
+bool golioth_sys_timer_reset(golioth_sys_timer_t timer)
+{
     return golioth_sys_timer_start(timer);
 }
 
-void golioth_sys_timer_destroy(golioth_sys_timer_t gtimer) {
-    struct golioth_timer* timer = gtimer;
+void golioth_sys_timer_destroy(golioth_sys_timer_t gtimer)
+{
+    struct golioth_timer *timer = gtimer;
 
     k_timer_stop(&timer->timer);
     golioth_sys_free(timer);
@@ -156,65 +178,70 @@ void golioth_sys_timer_destroy(golioth_sys_timer_t gtimer) {
 // Wrap pthread due to incompatibility with thread function type.
 //   pthread fn returns void*
 //   golioth_sys_thread_fn_t returns void
-struct golioth_thread {
+struct golioth_thread
+{
     struct k_thread thread;
     k_tid_t tid;
     golioth_sys_thread_fn_t fn;
-    void* user_arg;
+    void *user_arg;
 };
 
-K_THREAD_STACK_ARRAY_DEFINE(
-        golioth_thread_stacks,
-        CONFIG_GOLIOTH_ZEPHYR_THREAD_STACKS,
-        CONFIG_GOLIOTH_ZEPHYR_THREAD_STACK_SIZE);
+K_THREAD_STACK_ARRAY_DEFINE(golioth_thread_stacks,
+                            CONFIG_GOLIOTH_ZEPHYR_THREAD_STACKS,
+                            CONFIG_GOLIOTH_ZEPHYR_THREAD_STACK_SIZE);
 static atomic_t golioth_thread_idx;
 
-static k_thread_stack_t* stack_alloc(void) {
+static k_thread_stack_t *stack_alloc(void)
+{
     atomic_val_t idx = atomic_inc(&golioth_thread_idx);
 
-    if (idx > ARRAY_SIZE(golioth_thread_stacks)) {
+    if (idx > ARRAY_SIZE(golioth_thread_stacks))
+    {
         return NULL;
     }
 
     return golioth_thread_stacks[idx];
 }
 
-static void golioth_thread_main(void* p1, void* p2, void* p3) {
+static void golioth_thread_main(void *p1, void *p2, void *p3)
+{
     golioth_sys_thread_fn_t fn = p1;
-    void* user_arg = p2;
+    void *user_arg = p2;
 
     fn(user_arg);
 }
 
-golioth_sys_thread_t golioth_sys_thread_create(const struct golioth_thread_config *config) {
+golioth_sys_thread_t golioth_sys_thread_create(const struct golioth_thread_config *config)
+{
     // Intentionally ignoring from config:
     //      name
     //      stack_size
     //      prio
-    struct golioth_thread* thread = golioth_sys_malloc(sizeof(*thread));
-    k_thread_stack_t* stack;
+    struct golioth_thread *thread = golioth_sys_malloc(sizeof(*thread));
+    k_thread_stack_t *stack;
 
     stack = stack_alloc();
-    if (!stack) {
+    if (!stack)
+    {
         goto free_thread;
     }
 
-    thread->tid = k_thread_create(
-            &thread->thread,
-            stack,
-            CONFIG_GOLIOTH_ZEPHYR_THREAD_STACK_SIZE,
-            golioth_thread_main,
-            config->fn,
-            config->user_arg,
-            NULL,
-            config->prio,
-            0,
-            K_NO_WAIT);
-    if (config->name) {
+    thread->tid = k_thread_create(&thread->thread,
+                                  stack,
+                                  CONFIG_GOLIOTH_ZEPHYR_THREAD_STACK_SIZE,
+                                  golioth_thread_main,
+                                  config->fn,
+                                  config->user_arg,
+                                  NULL,
+                                  config->prio,
+                                  0,
+                                  K_NO_WAIT);
+    if (config->name)
+    {
         k_thread_name_set(thread->tid, config->name);
     }
 
-    return (golioth_sys_thread_t)thread;
+    return (golioth_sys_thread_t) thread;
 
 free_thread:
     golioth_sys_free(thread);
@@ -222,8 +249,9 @@ free_thread:
     return NULL;
 }
 
-void golioth_sys_thread_destroy(golioth_sys_thread_t gthread) {
-    struct golioth_thread* thread = gthread;
+void golioth_sys_thread_destroy(golioth_sys_thread_t gthread)
+{
+    struct golioth_thread *thread = gthread;
 
     k_thread_abort(thread->tid);
     golioth_sys_free(thread);
@@ -233,14 +261,18 @@ void golioth_sys_thread_destroy(golioth_sys_thread_t gthread) {
  * Misc
  *------------------------------------------------*/
 
-void golioth_sys_client_connected(void* client) {
-    if (IS_ENABLED(CONFIG_LOG_BACKEND_GOLIOTH)) {
+void golioth_sys_client_connected(void *client)
+{
+    if (IS_ENABLED(CONFIG_LOG_BACKEND_GOLIOTH))
+    {
         log_backend_golioth_enable(client);
     }
 }
 
-void golioth_sys_client_disconnected(void* client) {
-    if (IS_ENABLED(CONFIG_LOG_BACKEND_GOLIOTH)) {
+void golioth_sys_client_disconnected(void *client)
+{
+    if (IS_ENABLED(CONFIG_LOG_BACKEND_GOLIOTH))
+    {
         log_backend_golioth_disable(client);
     }
 }
