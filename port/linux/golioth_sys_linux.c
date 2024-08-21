@@ -48,6 +48,61 @@ uint64_t golioth_sys_now_ms(void)
 }
 
 /*--------------------------------------------------
+ * Mutexes
+ *------------------------------------------------*/
+
+golioth_sys_mutex_t golioth_sys_mutex_create(void)
+{
+    pthread_mutex_t *mutex = golioth_sys_malloc(sizeof(pthread_mutex_t));
+    if (!mutex)
+    {
+        GLTH_LOGE(TAG, "Failed to allocate memory for mutex");
+        return NULL;
+    }
+
+    int err = pthread_mutex_init(mutex, NULL);
+    if (err)
+    {
+        GLTH_LOGE(TAG, "Failed to initialize mutex");
+        golioth_sys_free(mutex);
+        return NULL;
+    }
+
+    return (golioth_sys_mutex_t) mutex;
+}
+
+bool golioth_sys_mutex_lock(golioth_sys_mutex_t mutex, int32_t ms_to_wait)
+{
+
+    if (ms_to_wait <= GOLIOTH_SYS_WAIT_FOREVER)
+    {
+        return (0 == pthread_mutex_lock(mutex));
+    }
+
+    struct timespec abstime;
+    timespec_get(&abstime, TIME_UTC);
+
+    if (ms_to_wait)
+    {
+        abstime.tv_sec += ms_to_wait / 1000;
+        abstime.tv_nsec += (ms_to_wait % 1000) * 1000000;
+    }
+
+    return (0 == pthread_mutex_timedlock(mutex, &abstime));
+}
+
+bool golioth_sys_mutex_unlock(golioth_sys_mutex_t mutex)
+{
+    return (0 == pthread_mutex_unlock(mutex));
+}
+
+void golioth_sys_mutex_destroy(golioth_sys_mutex_t mutex)
+{
+    pthread_mutex_destroy(mutex);
+    golioth_sys_free(mutex);
+}
+
+/*--------------------------------------------------
  * Semaphores
  *------------------------------------------------*/
 
