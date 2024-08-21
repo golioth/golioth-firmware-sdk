@@ -53,6 +53,19 @@ void golioth_sys_sem_destroy(golioth_sys_sem_t sem);
 int golioth_sys_sem_get_fd(golioth_sys_sem_t sem);
 
 /*--------------------------------------------------
+ * Signals
+ *------------------------------------------------*/
+
+// Opaque handle for signal
+typedef void *golioth_sys_signal_t;
+
+golioth_sys_signal_t golioth_sys_signal_create(void);
+bool golioth_sys_signal_poll(golioth_sys_signal_t sig, int32_t ms_to_wait);
+bool golioth_sys_signal_raise(golioth_sys_signal_t sig);
+void golioth_sys_signal_reset(golioth_sys_signal_t sig);
+void golioth_sys_signal_destroy(golioth_sys_signal_t sig);
+
+/*--------------------------------------------------
  * Software Timers
  *------------------------------------------------*/
 
