@@ -84,6 +84,59 @@ int golioth_sys_sem_get_fd(golioth_sys_sem_t sem)
 }
 
 /*--------------------------------------------------
+ * Signals
+ *------------------------------------------------*/
+
+golioth_sys_signal_t golioth_sys_signal_create(void)
+{
+    return xTaskGetCurrentTaskHandle();
+}
+
+bool golioth_sys_signal_poll(golioth_sys_signal_t sig, int32_t ms_to_wait)
+{
+    if (!sig)
+    {
+        return false;
+    }
+
+    TickType_t ticks_to_wait = (ms_to_wait < 0 ? portMAX_DELAY : pdMS_TO_TICKS(ms_to_wait));
+
+    return (pdPASS == ulTaskNotifyTake(pdTRUE, ticks_to_wait));
+}
+
+bool golioth_sys_signal_raise(golioth_sys_signal_t sig)
+{
+    if (!sig)
+    {
+        return false;
+    }
+
+    BaseType_t xHigherPriorityTaskWoken = pdFALSE;
+
+    vTaskNotifyGiveFromISR((TaskHandle_t) sig, &xHigherPriorityTaskWoken);
+
+    portYIELD_FROM_ISR(xHigherPriorityTaskWoken);
+    return true;
+}
+
+void golioth_sys_signal_reset(golioth_sys_signal_t sig)
+{
+    if (!sig)
+    {
+        return;
+    }
+
+    xTaskNotifyStateClear((TaskHandle_t) sig);
+}
+
+void golioth_sys_signal_destroy(golioth_sys_signal_t sig)
+{
+    /* We didn't allocate any memory for TaskHandle_t */
+    (void) sig;
+    return;
+}
+
+/*--------------------------------------------------
  * Software Timers
  *------------------------------------------------*/
 
