@@ -7,6 +7,8 @@ import subprocess
 import pytest
 import west.configuration
 
+from twister_harness.device.binary_adapter import NativeSimulatorAdapter
+
 WEST_TOPDIR = Path(west.configuration.west_dir()).parent
 
 def pytest_addoption(parser):
@@ -24,6 +26,12 @@ def get_device_port(request):
 
 @pytest.fixture
 def mcumgr_conn_args(request, dut):
+    if isinstance(dut, NativeSimulatorAdapter):
+        return [
+            "--conntype=udp",
+            "--connstring=127.0.0.1:1337",
+        ]
+
     return [
         "--conntype=serial",
         f"--connstring=dev={get_device_port(request)},baud=115200"
