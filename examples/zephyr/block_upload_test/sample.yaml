@@ -1,6 +1,6 @@
 sample:
-  description: Send data to Golioth Stream service
-  name: stream
+  description: Block upload Test
+  name: block_upload_test
 common:
   harness: pytest
   tags:
@@ -8,7 +8,7 @@ common:
     - socket
     - goliothd
 tests:
-  sample.golioth.stream:
+  sample.golioth.block_upload_test:
     timeout: 180
     extra_args: EXTRA_CONF_FILE="../common/runtime_settings.conf"
     extra_configs:
