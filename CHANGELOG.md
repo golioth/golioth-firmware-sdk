@@ -4,6 +4,16 @@ All notable changes to this project will be documented in this file.
 The format is based on [Keep a Changelog](https://keepachangelog.com/en/1.0.0/),
 and this project adheres to [Semantic Versioning](https://semver.org/spec/v2.0.0.html).
 
+## [Unreleased]
+
+### Workarounds:
+
+- The MIMXRT1024-EVK received a new upstream Ethernet driver that was
+  found to have sporadic "Link Down/Up" events that cause a loss of
+  connectivity when downloading binaries during OTA Firmware Update. All
+  Zephyr examples in this release include an overlay file for this board
+  that reverts to the old driver.
+
 ## [0.14.0] 2024-06-21
 
 ### Highlights:
