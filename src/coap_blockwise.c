@@ -40,6 +40,7 @@ struct post_block_ctx
 {
     enum golioth_status status;
     golioth_sys_sem_t sem;
+    size_t negotiated_blocksize_szx;
 };
 
 struct get_block_ctx
@@ -90,7 +91,9 @@ static void on_block_sent(struct golioth_client *client,
 // blockwise upload
 static int call_read_block_callback(struct blockwise_transfer *ctx)
 {
+    /* Do not allow user callback to directly change ctx->block_size value */
     size_t block_size = ctx->block_size;
+
     int err = ctx->callback.read_cb(ctx->block_idx,
                                     ctx->block_buffer,
                                     &block_size,
@@ -103,6 +106,17 @@ static int call_read_block_callback(struct blockwise_transfer *ctx)
     return block_size;
 }
 
+// Return the next block idx based on a smaller block size
+static int recalculate_next_block_idx(int from_idx, size_t from_larger_szx, size_t to_smaller_szx)
+{
+    assert(from_larger_szx >= to_smaller_szx);
+
+    int next_idx_before_recalc = from_idx + 1;
+    int size_change_multiplier = (1 << (from_larger_szx - to_smaller_szx));
+
+    return next_idx_before_recalc * size_change_multiplier;
+}
+
 // Function to upload a single block
 static enum golioth_status upload_single_block(struct golioth_client *client,
                                                struct blockwise_transfer *ctx,
@@ -113,6 +127,7 @@ static enum golioth_status upload_single_block(struct golioth_client *client,
     struct post_block_ctx arg = {
         .status = GOLIOTH_ERR_FAIL,
         .sem = ctx->sem,
+        .negotiated_blocksize_szx = BLOCKSIZE_TO_SZX(ctx->block_size),
     };
 
     enum golioth_status err = golioth_coap_client_set_block(client,
@@ -131,6 +146,20 @@ static enum golioth_status upload_single_block(struct golioth_client *client,
     {
         golioth_sys_sem_take(ctx->sem, GOLIOTH_SYS_WAIT_FOREVER);
         err = arg.status;
+
+        if (arg.negotiated_blocksize_szx < BLOCKSIZE_TO_SZX(ctx->block_size))
+        {
+            /* Recalculate index so what was sent is now based on the new block_size */
+            int next_block_idx = recalculate_next_block_idx(ctx->block_idx,
+                                                            BLOCKSIZE_TO_SZX(ctx->block_size),
+                                                            arg.negotiated_blocksize_szx);
+
+            /* Subtract 1 to indicate the block we just sent; inc happens after return */
+            ctx->block_idx = next_block_idx - 1;
+
+            /* Store the new blocksize for future blocks */
+            ctx->block_size = SZX_TO_BLOCKSIZE(arg.negotiated_blocksize_szx);
+        }
     }
 
     return err;
