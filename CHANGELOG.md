@@ -6,6 +6,14 @@ and this project adheres to [Semantic Versioning](https://semver.org/spec/v2.0.0
 
 ## [Unreleased]
 
+### Known Issues:
+
+- [Zephyr only] Espressif devices have a regression in Zephyr 3.7 that
+  frequently causes crashes during flash operations. We recommend remaining
+  on Zephyr 3.6 and Golioth Firmware SDK [0.14.0] until the issue is
+  is resolved. For more information see
+  https://github.com/zephyrproject-rtos/zephyr/issues/77952
+
 ### Workarounds:
 
 - The MIMXRT1024-EVK received a new upstream Ethernet driver that was
