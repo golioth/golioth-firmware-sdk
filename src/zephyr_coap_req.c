@@ -279,6 +279,25 @@ static int golioth_coap_req_reply_handler(struct golioth_coap_req *req,
     }
     else
     {
+        if (coap_get_option_int(response, COAP_OPTION_BLOCK1) >= 0)
+        {
+            /* This response has block1 */
+            if (coap_update_from_block(response, &req->block_ctx) == 0)
+            {
+                golioth_coap_request_msg_t *rmsg = req->user_data;
+
+                if (req->block_ctx.block_size < rmsg->post_block.block_szx)
+                {
+
+                    LOG_DBG("Server wants blocksize: %i intead of: %i",
+                            coap_block_size_to_bytes(req->block_ctx.block_size),
+                            coap_block_size_to_bytes(rmsg->post_block.block_szx));
+
+                    rmsg->post_block.block_szx = req->block_ctx.block_size;
+                }
+            }
+        }
+
         struct golioth_req_rsp rsp = {
             .data = payload,
             .len = payload_len,
