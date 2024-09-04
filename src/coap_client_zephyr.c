@@ -29,16 +29,6 @@ LOG_TAG_DEFINE(golioth_coap_client_zephyr);
 #define GOLIOTH_MAX_IDENTITY_LEN 32
 #define GOLIOTH_EMPTY_PACKET_LEN (16 + GOLIOTH_MAX_IDENTITY_LEN)
 
-#define BLOCKSIZE_TO_SZX(blockSize) \
-    ((blockSize == 16)         ? 0  \
-         : (blockSize == 32)   ? 1  \
-         : (blockSize == 64)   ? 2  \
-         : (blockSize == 128)  ? 3  \
-         : (blockSize == 256)  ? 4  \
-         : (blockSize == 512)  ? 5  \
-         : (blockSize == 1024) ? 6  \
-                               : -1)
-
 enum
 {
     FLAG_STOP_CLIENT,
