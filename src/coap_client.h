@@ -24,6 +24,8 @@
          : (blockSize == 1024) ? 6  \
                                : -1)
 
+#define SZX_TO_BLOCKSIZE(szx) ((size_t) (1 << (szx + 4)))
+
 typedef struct
 {
     enum golioth_content_type content_type;
