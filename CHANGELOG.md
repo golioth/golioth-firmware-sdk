@@ -13,6 +13,13 @@ and this project adheres to [Semantic Versioning](https://semver.org/spec/v2.0.0
   on Zephyr 3.6 and Golioth Firmware SDK [0.14.0] until the issue is
   is resolved. For more information see
   https://github.com/zephyrproject-rtos/zephyr/issues/77952
+- [Zephyr only] Boards utilizing the [ESP AT WiFi
+  driver](https://docs.zephyrproject.org/3.7.0/kconfig.html#CONFIG_WIFI_ESP_AT),
+  such as the nRF52840 DK + ESP32, frequently fail to complete DTLS
+  handshakes when using certificate authentication due to an issue with
+  DTLS fragment handling when operating in passive mode, which is
+  required for DNS resolution in Zephyr 3.7. For more information see
+  https://github.com/zephyrproject-rtos/zephyr/issues/77993
 
 ### Workarounds:
 
