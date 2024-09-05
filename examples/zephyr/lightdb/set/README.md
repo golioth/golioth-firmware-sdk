@@ -111,8 +111,7 @@ Configure the following Kconfig options based on your WiFi AP credentials:
 - GOLIOTH_SAMPLE_WIFI_SSID  - WiFi SSID
 - GOLIOTH_SAMPLE_WIFI_PSK   - WiFi PSK
 
-by adding these lines to configuration file (e.g. `prj.conf` or
-`board/esp32_devkitc_wrover.conf`):
+by adding these lines to configuration file (e.g. `prj.conf`):
 
 ```cfg
 CONFIG_GOLIOTH_SAMPLE_WIFI_SSID="my-wifi"
