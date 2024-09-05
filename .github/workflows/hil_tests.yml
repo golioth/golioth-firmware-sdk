@@ -283,6 +283,15 @@ jobs:
           body: ${{ steps.run_test.outputs.coverage_summary }}
           edit-mode: replace
 
+  hil_sample_zephyr_nsim_coverage_report:
+    if: always()
+    name: "Coverage report for native_sim"
+    needs:
+      - hil_sample_zephyr_nsim
+    uses: ./.github/workflows/coverage-report.yml
+    with:
+      needs_context: ${{ toJson(needs) }}
+
   hil_sample_esp-idf:
     if: ${{ inputs.workflow == 'all' || inputs.workflow == 'esp_idf_sample' }}
     strategy:

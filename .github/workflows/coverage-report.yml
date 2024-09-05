@@ -1,0 +1,29 @@
+name: coverage report
+
+on:
+  workflow_call:
+    inputs:
+      needs_context:
+        type: string
+        required: true
+
+jobs:
+  coverage_report:
+    name: coverage report
+    runs-on: ubuntu-latest
+    steps:
+      - name: "Collect coverage from all jobs"
+        run: |-
+          NEEDS_CONTEXT='${{ inputs.needs_context }}'
+          echo NEEDS_CONTEXT ${NEEDS_CONTEXT}
+          JOB_IDS=$(echo "$NEEDS_CONTEXT" | jq -r 'keys[]')
+          for JOB_ID in $JOB_IDS; do
+            RESULT=$(echo "$NEEDS_CONTEXT" | jq -r ".[\"$JOB_ID\"].result")
+            echo "$JOB_ID job result: $RESULT"
+            if [[ $RESULT != "success" && $RESULT != "skipped" ]]; then
+              echo "***"
+              echo "Error: The $JOB_ID job did not pass."
+              exit 1
+            fi
+          done
+          echo "All jobs passed or were skipped."
