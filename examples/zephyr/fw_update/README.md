@@ -170,7 +170,7 @@ On your host computer open a terminal window, locate the source code of
 this sample application (i.e., `examples/zephyr/fw_update`) and type:
 
 ```console
-$ west build -b nrf9160dk/nrf9160/ns examples/zephyr/fw_update
+$ west build -b nrf9160dk/nrf9160/ns --sysbuild examples/zephyr/fw_update
 $ west flash
 ```
 
@@ -219,28 +219,20 @@ update file will be uploaded to Golioth for the OTA update.
 # For esp32_devkitc_wrover/esp32/procpu
 $ west build -b esp32_devkitc_wrover/esp32/procpu --sysbuild examples/zephyr/fw_update
 
-# For nRF52840dk (Zephyr):
+# For nRF52840dk:
 $ west build -b nrf52840dk/nrf52840 --sysbuild examples/zephyr/fw_update
 
-# For nRF9160dk (NCS):
-$ west build -b nrf9160dk/nrf9160/ns examples/zephyr/fw_update
+# For nRF9160dk:
+$ west build -b nrf9160dk/nrf9160/ns --sysbuild examples/zephyr/fw_update
 ```
 
 ### Start FW Update using `goliothctl`
-
-FW update requires one of two files based on the which platform you are using:
-
-* Zephyr: `build/fw_update/zephyr/zephyr.signed.bin`
-* NCS (Nordic version of Zephyr): `build/zephyr/app_update.bin`
-
-Use the correct file from your build to replace `<binary_file>` in the
-commands below.
 
 1. Run the following command on a host PC to upload the new firmware as
    an artifact to Golioth:
 
     ```console
-    $ goliothctl dfu artifact create <binary_file> --version 1.2.4
+    $ goliothctl dfu artifact create build/fw_update/zephyr/zephyr.signed.bin --version 1.2.4
     ```
 
 2. Create a new release consisting of this single firmware and roll it
