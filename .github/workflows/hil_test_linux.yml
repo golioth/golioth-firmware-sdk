@@ -98,7 +98,7 @@ jobs:
         # Echo coverage summary into GitHub Output, with title
 
         echo "coverage_summary<<EOF" >> $GITHUB_OUTPUT
-        echo "# Code Coverage" >> $GITHUB_OUTPUT
+        echo "# Code Coverage (Linux)" >> $GITHUB_OUTPUT
         echo "| Type | Coverage |" >> $GITHUB_OUTPUT
         echo "| --- | --- |" >> $GITHUB_OUTPUT
         echo "$coverage_summary" >> $GITHUB_OUTPUT
@@ -111,7 +111,7 @@ jobs:
       with:
         issue-number: ${{ github.event.pull_request.number }}
         comment-author: 'github-actions[bot]'
-        body-includes: Code Coverage
+        body-includes: Code Coverage (Linux)
     - name: Code coverage comment
       uses: peter-evans/create-or-update-comment@v4
       if: github.event_name == 'pull_request'
