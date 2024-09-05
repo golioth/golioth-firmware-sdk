@@ -215,14 +215,36 @@ jobs:
           pip3 install git+https://github.com/golioth/python-golioth-tools@v0.6.3
 
       - name: Run tests
+        id: run_test
         run: |
           zephyr/scripts/twister                                                    \
               --platform ${{ matrix.west_board }}                                   \
               -T modules/lib/golioth-firmware-sdk/examples/zephyr                   \
+              -C --coverage-basedir modules/lib/golioth-firmware-sdk                \
               -x=CONFIG_GOLIOTH_COAP_HOST_URI=\"${{ inputs.coap_gateway_url }}\"    \
               --pytest-args="--api-url=${{ inputs.api-url }}"                       \
               --pytest-args="--api-key=${{ secrets[inputs.api-key-id] }}"           \
               --pytest-args="--mask-secrets"
+
+          # Generate coverage summary and format into markdown table
+
+          coverage_summary=$(gcovr -r modules/lib/golioth-firmware-sdk  \
+              --add-tracefile twister-out/coverage.json                 \
+              --merge-mode-functions=separate                           \
+              --txt-summary                                             \
+              -e "modules/lib/golioth-firmware-sdk/examples/.*"         \
+              -e "modules/lib/golioth-firmware-sdk/external/.*"         \
+              | tail -n 3                                               \
+              | sed -e 's/:/ | /g' -e 's/^/| /g' -e 's/$/ |/g')
+
+          # Echo coverage summary into GitHub Output, with title
+
+          echo "coverage_summary<<EOF" >> $GITHUB_OUTPUT
+          echo "# Code Coverage (${{ matrix.west_board }})" >> $GITHUB_OUTPUT
+          echo "| Type | Coverage |" >> $GITHUB_OUTPUT
+          echo "| --- | --- |" >> $GITHUB_OUTPUT
+          echo "$coverage_summary" >> $GITHUB_OUTPUT
+          echo "EOF" >> $GITHUB_OUTPUT
 
       - name: Upload artifacts
         uses: actions/upload-artifact@v4
@@ -235,6 +257,24 @@ jobs:
             twister-out/**/report.xml
             twister-out/*.xml
             twister-out/*.json
+
+      - name: Find Comment
+        uses: peter-evans/find-comment@v3
+        if: github.event_name == 'pull_request'
+        id: fc
+        with:
+          issue-number: ${{ github.event.pull_request.number }}
+          comment-author: 'github-actions[bot]'
+          body-includes: Code Coverage (${{ matrix.west_board }})
+
+      - name: Code coverage comment
+        uses: peter-evans/create-or-update-comment@v4
+        if: github.event_name == 'pull_request'
+        with:
+          comment-id: ${{ steps.fc.outputs.comment-id }}
+          issue-number: ${{ github.event.pull_request.number }}
+          body: ${{ steps.run_test.outputs.coverage_summary }}
+          edit-mode: replace
 
   hil_sample_esp-idf:
     if: ${{ inputs.workflow == 'all' || inputs.workflow == 'esp_idf_sample' }}
