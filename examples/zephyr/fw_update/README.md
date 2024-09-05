@@ -167,7 +167,7 @@ $ west flash
 #### nRF9160 DK
 
 On your host computer open a terminal window, locate the source code of
-this sample application (i.e., `examples/zephyr/hello`) and type:
+this sample application (i.e., `examples/zephyr/fw_update`) and type:
 
 ```console
 $ west build -b nrf9160dk/nrf9160/ns examples/zephyr/fw_update
