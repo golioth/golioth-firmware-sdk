@@ -33,5 +33,4 @@ $ west build -b mimxrt1024_evk --sysbuild examples/zephyr/fw_update
 3. Upload artifacts:
     1. Select the blueprint that matches the artifact.
     2. Use version number `255.8.9`.
-    3. For the nRF9160 upload `build/zephyr/app_update.bin`. For all
-       other boards upload `build/fw_update/zephyr/zephyr.signed.bin`
+    3. Upload `build/fw_update/zephyr/zephyr.signed.bin`.
