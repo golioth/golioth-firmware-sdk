@@ -15,6 +15,13 @@
 	};
 };
 
-&storage_partition {
-	reg = <DT_SIZE_M(1) DT_SIZE_M(1)>;
+/delete-node/ &storage_partition;
+
+&flash0 {
+	partitions {
+		storage_partition: partition@100000 {
+			label = "storage";
+			reg = <DT_SIZE_M(1) DT_SIZE_M(1)>;
+		};
+	};
 };
