@@ -226,12 +226,18 @@ jobs:
               --pytest-args="--api-key=${{ secrets[inputs.api-key-id] }}"           \
               --pytest-args="--mask-secrets"
 
+          # Default HTML coverage report is for Zephyr sources only, so drop it
+
+          rm -rf twister-out/coverage
+          mkdir -p twister-out/coverage
+
           # Generate coverage summary and format into markdown table
 
           coverage_summary=$(gcovr -r modules/lib/golioth-firmware-sdk  \
               --add-tracefile twister-out/coverage.json                 \
               --merge-mode-functions=separate                           \
               --txt-summary                                             \
+              --html-details twister-out/coverage/index.html            \
               -e "modules/lib/golioth-firmware-sdk/examples/.*"         \
               -e "modules/lib/golioth-firmware-sdk/external/.*"         \
               | tail -n 3                                               \
@@ -253,6 +259,7 @@ jobs:
           name: twister-run-artifacts-${{ matrix.artifact_suffix }}
           path: |
             reports/*
+            twister-out/coverage/*
             twister-out/**/*.log
             twister-out/**/report.xml
             twister-out/*.xml
