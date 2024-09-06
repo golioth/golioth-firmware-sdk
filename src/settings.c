@@ -372,6 +372,16 @@ static void on_settings(struct golioth_client *client,
                         size_t payload_size,
                         void *arg)
 {
+    if (GOLIOTH_OK != response->status)
+    {
+        GLTH_LOGE(TAG,
+                  "Settings callback received status error: %d  CoAP error: %d.%02d",
+                  response->status,
+                  response->status_class,
+                  response->status_code);
+        return;
+    }
+
     ZCBOR_STATE_D(zsd, 2, payload, payload_size, 1, 0);
     int64_t version;
     struct golioth_settings *settings = arg;
