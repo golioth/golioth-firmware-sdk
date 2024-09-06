@@ -16,7 +16,7 @@
 #define TAG "fw_update"
 
 static const char *_current_version = "255.8.9";
-static const char *_sdk_version = "0.12.1";
+static const char *_sdk_version = "0.15.0";
 
 static SemaphoreHandle_t _connected_sem = NULL;
 
