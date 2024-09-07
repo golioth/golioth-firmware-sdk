@@ -344,12 +344,13 @@ static enum golioth_status process_blockwise_downloads(struct golioth_client *cl
     return status;
 }
 
-enum golioth_status golioth_blockwise_get(struct golioth_client *client,
-                                          const char *path_prefix,
-                                          const char *path,
-                                          enum golioth_content_type content_type,
-                                          write_block_cb cb,
-                                          void *callback_arg)
+enum golioth_status golioth_blockwise_get_from_block_idx(struct golioth_client *client,
+                                                         const char *path_prefix,
+                                                         const char *path,
+                                                         enum golioth_content_type content_type,
+                                                         write_block_cb cb,
+                                                         void *callback_arg,
+                                                         uint32_t block_idx)
 {
     enum golioth_status status = GOLIOTH_ERR_FAIL;
     if (!client || !path || !cb)
@@ -372,6 +373,8 @@ enum golioth_status golioth_blockwise_get(struct golioth_client *client,
     }
 
     blockwise_download_init(ctx, data_buff, path_prefix, path, content_type, cb, callback_arg);
+
+    ctx->block_idx = block_idx;
 
     ctx->sem = golioth_sys_sem_create(1, 0);
     if (!ctx->sem)
@@ -401,4 +404,20 @@ finish_with_ctx:
 
 finish:
     return status;
+}
+
+enum golioth_status golioth_blockwise_get(struct golioth_client *client,
+                                          const char *path_prefix,
+                                          const char *path,
+                                          enum golioth_content_type content_type,
+                                          write_block_cb cb,
+                                          void *callback_arg)
+{
+    return golioth_blockwise_get_from_block_idx(client,
+                                                path_prefix,
+                                                path,
+                                                content_type,
+                                                cb,
+                                                callback_arg,
+                                                0);
 }
