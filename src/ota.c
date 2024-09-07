@@ -345,10 +345,12 @@ static enum golioth_status ota_component_write_cb_wrapper(uint32_t block_idx,
     return ctx->cb(ctx->component, block_idx, block_buffer, block_size, is_last, ctx->arg);
 }
 
-enum golioth_status golioth_ota_download_component(struct golioth_client *client,
-                                                   const struct golioth_ota_component *component,
-                                                   ota_component_block_write_cb cb,
-                                                   void *arg)
+enum golioth_status golioth_ota_download_component_from_block_idx(
+    struct golioth_client *client,
+    const struct golioth_ota_component *component,
+    ota_component_block_write_cb cb,
+    void *arg,
+    uint32_t block_idx)
 {
     struct ota_component_blockwise_ctx ctx = {
         .component = component,
@@ -356,12 +358,21 @@ enum golioth_status golioth_ota_download_component(struct golioth_client *client
         .arg = arg,
     };
 
-    return golioth_blockwise_get(client,
-                                 "",
-                                 component->uri,
-                                 GOLIOTH_CONTENT_TYPE_OCTET_STREAM,
-                                 ota_component_write_cb_wrapper,
-                                 &ctx);
+    return golioth_blockwise_get_from_block_idx(client,
+                                                "",
+                                                component->uri,
+                                                GOLIOTH_CONTENT_TYPE_OCTET_STREAM,
+                                                ota_component_write_cb_wrapper,
+                                                &ctx,
+                                                block_idx);
+}
+
+enum golioth_status golioth_ota_download_component(struct golioth_client *client,
+                                                   const struct golioth_ota_component *component,
+                                                   ota_component_block_write_cb cb,
+                                                   void *arg)
+{
+    return golioth_ota_download_component_from_block_idx(client, component, cb, arg, 0);
 }
 
 enum golioth_status golioth_ota_get_block_sync(struct golioth_client *client,
