@@ -173,18 +173,16 @@ static int finalize_and_send_response(struct golioth_client *client,
                             response->zse->payload - response->buf,
                             GOLIOTH_DEBUG_LOG_LEVEL_DEBUG);
 
-    golioth_coap_client_set(client,
-                            SETTINGS_PATH_PREFIX,
-                            "status",
-                            GOLIOTH_CONTENT_TYPE_CBOR,
-                            response->buf,
-                            response->zse->payload - response->buf,
-                            NULL,
-                            NULL,
-                            false,
-                            GOLIOTH_SYS_WAIT_FOREVER);
-
-    return 0;
+    return golioth_coap_client_set(client,
+                                   SETTINGS_PATH_PREFIX,
+                                   SETTINGS_STATUS_PATH,
+                                   GOLIOTH_CONTENT_TYPE_CBOR,
+                                   response->buf,
+                                   response->zse->payload - response->buf,
+                                   NULL,
+                                   NULL,
+                                   false,
+                                   GOLIOTH_SYS_WAIT_FOREVER);
 }
 
 static int settings_decode(zcbor_state_t *zsd, void *value)
