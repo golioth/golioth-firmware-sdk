@@ -3,4 +3,8 @@
 
 source "${ZEPHYR_GOLIOTH_FIRMWARE_SDK_MODULE_DIR}/examples/zephyr/common/Kconfig.defconfig"
 
+configdefault GOLIOTH_SAMPLE_WIFI_SETTINGS
+	bool
+	default y
+
 source "Kconfig.zephyr"
