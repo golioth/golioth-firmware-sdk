@@ -126,7 +126,7 @@ jobs:
           - hil_board: esp32_devkitc_wrover
             west_board: esp32_devkitc_wrover/esp32/procpu
             manifest: .ci-west-zephyr.yml
-            extra_twister_args: '--flash-before'
+            extra_twister_args: '--flash-before --west-flash=--esp-tool=$(which esptool.py),--esp-device=${!PORT_VAR}'
             binary_blob: hal_espressif
             run_tests: true
 
