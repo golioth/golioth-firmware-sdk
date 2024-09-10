@@ -41,10 +41,10 @@ pytestmark = pytest.mark.anyio
 async def setup(board, device):
     # Set Golioth credentials
     golioth_cred = (await device.credentials.list())[0]
-    board.set_golioth_psk_credentials(golioth_cred.identity, golioth_cred.key)
+    await board.set_golioth_psk_credentials(golioth_cred.identity, golioth_cred.key)
 
     # Confirm connection to Golioth
-    assert None != board.wait_for_regex_in_line('Golioth CoAP client connected', timeout_s=120)
+    assert None != await board.wait_for_regex_in_line('Golioth CoAP client connected', timeout_s=120)
 
 @pytest.fixture(scope="module")
 async def tag(project, device):
@@ -114,61 +114,61 @@ async def releases_teardown(project, releases):
             if r.rollout:
                 await project.releases.rollout_set(r.id, False)
 
-def verify_component_values(board, info):
+async def verify_component_values(board, info):
     package_info = info["package"]
     version_info = info["version"]
     b_info = info["binaryInfo"]
 
-    assert None != board.wait_for_regex_in_line(f'component.package: {package_info}', timeout_s=2)
-    assert None != board.wait_for_regex_in_line(f'component.version: {version_info}', timeout_s=2)
-    assert None != board.wait_for_regex_in_line(f'component.size: {b_info["size"]}', timeout_s=2)
-    assert None != board.wait_for_regex_in_line(f'component.hash: {b_info["digests"]["sha256"]["digest"]}', timeout_s=2)
-    assert None != board.wait_for_regex_in_line(f'component.bootloader: {b_info["type"]}', timeout_s=2)
+    assert None != await board.wait_for_regex_in_line(f'component.package: {package_info}', timeout_s=2)
+    assert None != await board.wait_for_regex_in_line(f'component.version: {version_info}', timeout_s=2)
+    assert None != await board.wait_for_regex_in_line(f'component.size: {b_info["size"]}', timeout_s=2)
+    assert None != await board.wait_for_regex_in_line(f'component.hash: {b_info["digests"]["sha256"]["digest"]}', timeout_s=2)
+    assert None != await board.wait_for_regex_in_line(f'component.bootloader: {b_info["type"]}', timeout_s=2)
 
 ##### Tests #####
 
 async def test_manifest(artifacts, board, project, releases):
     await project.releases.rollout_set(releases["test_manifest"].id, True)
 
-    assert None != board.wait_for_regex_in_line('Manifest received', timeout_s=30)
+    assert None != await board.wait_for_regex_in_line('Manifest received', timeout_s=30)
 
-    assert None != board.wait_for_regex_in_line('Manifest successfully decoded', timeout_s=2)
+    assert None != await board.wait_for_regex_in_line('Manifest successfully decoded', timeout_s=2)
 
     # We may need to wait for the second manifest to trigger this line (the first has no rollouts)
 
-    assert None != board.wait_for_regex_in_line('Found main component', timeout_s=30)
-    assert None != board.wait_for_regex_in_line('No absent component found', timeout_s=2)
+    assert None != await board.wait_for_regex_in_line('Found main component', timeout_s=30)
+    assert None != await board.wait_for_regex_in_line('No absent component found', timeout_s=2)
 
     # Test all parts of OTA component
 
-    verify_component_values(board, artifacts["test_manifest"].info)
+    await verify_component_values(board, artifacts["test_manifest"].info)
 
 async def test_multiple_artifacts(artifacts, board, project, releases):
     await project.releases.rollout_set(releases["test_multiple"].id, True)
 
-    assert None != board.wait_for_regex_in_line('Manifest received', timeout_s=30)
-    assert None != board.wait_for_regex_in_line('Manifest successfully decoded', timeout_s=2)
-    assert None != board.wait_for_regex_in_line('Found main component', timeout_s=30)
-    assert None != board.wait_for_regex_in_line('Found walrus component', timeout_s=2)
+    assert None != await board.wait_for_regex_in_line('Manifest received', timeout_s=30)
+    assert None != await board.wait_for_regex_in_line('Manifest successfully decoded', timeout_s=2)
+    assert None != await board.wait_for_regex_in_line('Found main component', timeout_s=30)
+    assert None != await board.wait_for_regex_in_line('Found walrus component', timeout_s=2)
 
     # Test all parts of OTA component
 
-    verify_component_values(board, artifacts["multi_artifact"].info)
+    await verify_component_values(board, artifacts["multi_artifact"].info)
 
 async def test_block_operations(board, project, releases):
     await project.releases.rollout_set(releases["test_blocks"].id, True)
-    assert None != board.wait_for_regex_in_line(f"golioth_ota_size_to_nblocks: {TEST_BLOCK_CNT + 1}", timeout_s=12)
+    assert None != await board.wait_for_regex_in_line(f"golioth_ota_size_to_nblocks: {TEST_BLOCK_CNT + 1}", timeout_s=12)
 
     # Test NULL client
 
-    assert None != board.wait_for_regex_in_line("Block sync failed: 5", timeout_s=12)
+    assert None != await board.wait_for_regex_in_line("Block sync failed: 5", timeout_s=12)
 
     # Test block download
 
-    assert None != board.wait_for_regex_in_line("Received block 0", timeout_s=4)
-    assert None != board.wait_for_regex_in_line("is_last: 0", timeout_s=4)
-    assert None != board.wait_for_regex_in_line("Received block 1", timeout_s=4)
-    assert None != board.wait_for_regex_in_line("is_last: 1", timeout_s=40)
+    assert None != await board.wait_for_regex_in_line("Received block 0", timeout_s=4)
+    assert None != await board.wait_for_regex_in_line("is_last: 0", timeout_s=4)
+    assert None != await board.wait_for_regex_in_line("Received block 1", timeout_s=4)
+    assert None != await board.wait_for_regex_in_line("is_last: 1", timeout_s=40)
 
 
 async def test_reason_and_state(board, device, project, releases):
@@ -176,7 +176,7 @@ async def test_reason_and_state(board, device, project, releases):
     # Test reason and state code updates
 
     for i, r in enumerate(golioth_ota_reason):
-        board.wait_for_regex_in_line("OTA status reported successfully", timeout_s=20)
+        await board.wait_for_regex_in_line("OTA status reported successfully", timeout_s=20)
 
         # Wait for state update to propagate
         await trio.sleep(2)
@@ -195,8 +195,8 @@ async def test_reason_and_state(board, device, project, releases):
 
     # Test golioth_ota_get_state()
 
-    board.wait_for_regex_in_line(f"golioth_ota_get_state: {(GOLIOTH_OTA_REASON_CNT - 1) % GOLIOTH_OTA_STATE_CNT}", timeout_s=12)
+    await board.wait_for_regex_in_line(f"golioth_ota_get_state: {(GOLIOTH_OTA_REASON_CNT - 1) % GOLIOTH_OTA_STATE_CNT}", timeout_s=12)
 
     # Test NULL client
 
-    board.wait_for_regex_in_line("GOLIOTH_ERR_NULL: 5", timeout_s=12)
+    await board.wait_for_regex_in_line("GOLIOTH_ERR_NULL: 5", timeout_s=12)

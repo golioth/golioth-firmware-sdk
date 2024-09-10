@@ -14,16 +14,16 @@ class ESPIDFBoard(ESPBoard):
     def USES_WIFI(self):
         return True
 
-    def set_setting(self, key, value):
-        self.send_cmd(f'settings set {key} {value}', wait_str='saved')
+    async def set_setting(self, key, value):
+        await self.send_cmd(f'settings set {key} {value}', wait_str='saved')
 
-    def reset(self):
-        self.send_cmd('reset', wait_str='Calling app_main*()')
+    async def reset(self):
+        await self.send_cmd('reset', wait_str='Calling app_main*()')
 
-    def set_wifi_credentials(self, ssid, psk):
-        self.set_setting('wifi/ssid', f'"{ssid}"')
-        self.set_setting('wifi/psk', f'"{psk}"')
+    async def set_wifi_credentials(self, ssid, psk):
+        await self.set_setting('wifi/ssid', f'"{ssid}"')
+        await self.set_setting('wifi/psk', f'"{psk}"')
 
-    def set_golioth_psk_credentials(self, psk_id, psk):
-        self.set_setting('golioth/psk-id', f'"{psk_id}"')
-        self.set_setting('golioth/psk', f'"{psk}"')
+    async def set_golioth_psk_credentials(self, psk_id, psk):
+        await self.set_setting('golioth/psk-id', f'"{psk_id}"')
+        await self.set_setting('golioth/psk', f'"{psk}"')

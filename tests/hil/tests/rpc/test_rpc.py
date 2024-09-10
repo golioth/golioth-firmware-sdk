@@ -7,10 +7,10 @@ pytestmark = pytest.mark.anyio
 async def setup(project, board, device):
     # Set Golioth credentials
     golioth_cred = (await device.credentials.list())[0]
-    board.set_golioth_psk_credentials(golioth_cred.identity, golioth_cred.key)
+    await board.set_golioth_psk_credentials(golioth_cred.identity, golioth_cred.key)
 
     # Confirm connection to Golioth
-    assert None != board.wait_for_regex_in_line('RPC observation established', timeout_s=120)
+    assert None != await board.wait_for_regex_in_line('RPC observation established', timeout_s=120)
 
 ##### Tests #####
 
@@ -23,17 +23,17 @@ async def test_not_registered(board, device):
 async def test_no_args(board, device):
     await device.rpc.no_response()
 
-    assert None != board.wait_for_regex_in_line('Received no_response with 0 args', timeout_s=10)
+    assert None != await board.wait_for_regex_in_line('Received no_response with 0 args', timeout_s=10)
 
 async def test_one_arg(board, device):
     await device.rpc.no_response("foo")
 
-    assert None != board.wait_for_regex_in_line('Received no_response with 1 args', timeout_s=10)
+    assert None != await board.wait_for_regex_in_line('Received no_response with 1 args', timeout_s=10)
 
 async def test_many_args(board, device):
     await device.rpc.no_response(1,2,3,4,5,6,7,8,9)
 
-    assert None != board.wait_for_regex_in_line('Received no_response with 9 args', timeout_s=10)
+    assert None != await board.wait_for_regex_in_line('Received no_response with 9 args', timeout_s=10)
 
 async def test_int_return(board, device):
     rsp = await device.rpc.basic_return_type("int")
@@ -75,11 +75,11 @@ async def test_observation_repeat_restart(board, device):
         rsp = await device.rpc.disconnect()
 
         # Confirm re-connection to Golioth
-        assert None != board.wait_for_regex_in_line('RPC observation established', timeout_s=120)
+        assert None != await board.wait_for_regex_in_line('RPC observation established', timeout_s=120)
 
         rsp = await device.rpc.basic_return_type("int")
 
-        assert None != board.wait_for_regex_in_line('Received basic_return_type RPC', timeout_s=10)
+        assert None != await board.wait_for_regex_in_line('Received basic_return_type RPC', timeout_s=10)
 
         assert rsp['value'] == 42
         print(f"Loop {i} successful!")
@@ -87,16 +87,16 @@ async def test_observation_repeat_restart(board, device):
 async def test_observation_cancel_all(board, device):
     rsp = await device.rpc.cancel_all()
 
-    assert None != board.wait_for_regex_in_line('Cancelling observations', timeout_s=10)
-    assert None != board.wait_for_regex_in_line('Observations cancelled', timeout_s=10)
+    assert None != await board.wait_for_regex_in_line('Cancelling observations', timeout_s=10)
+    assert None != await board.wait_for_regex_in_line('Observations cancelled', timeout_s=10)
 
     with pytest.raises(RPCTimeout):
         rsp = await device.rpc.basic_return_type("int")
 
-    assert None != board.wait_for_regex_in_line('RPC observation established', timeout_s=30)
+    assert None != await board.wait_for_regex_in_line('RPC observation established', timeout_s=30)
 
     rsp = await device.rpc.basic_return_type("int")
 
-    assert None != board.wait_for_regex_in_line('Received basic_return_type RPC', timeout_s=10)
+    assert None != await board.wait_for_regex_in_line('Received basic_return_type RPC', timeout_s=10)
 
     assert rsp['value'] == 42

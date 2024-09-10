@@ -8,7 +8,7 @@ pytestmark = pytest.mark.anyio
 async def setup(project, board, device):
     # Set Golioth credentials
     golioth_cred = (await device.credentials.list())[0]
-    board.set_golioth_psk_credentials(golioth_cred.identity, golioth_cred.key)
+    await board.set_golioth_psk_credentials(golioth_cred.identity, golioth_cred.key)
 
     # Setup data for replication
     await device.lightdb.delete('hil/lightdb')
@@ -39,10 +39,10 @@ async def setup(project, board, device):
     await device.lightdb.set('hil/lightdb/desired/ready', True)
 
     # Confirm connection to Golioth
-    assert None != board.wait_for_regex_in_line('Golioth CoAP client connected', timeout_s=120)
+    assert None != await board.wait_for_regex_in_line('Golioth CoAP client connected', timeout_s=120)
 
     # Give some time to replicate desired state
-    assert None != board.wait_for_regex_in_line('LightDB State reported data is ready', timeout_s=30)
+    assert None != await board.wait_for_regex_in_line('LightDB State reported data is ready', timeout_s=30)
 
     # Give enough time for Golioth backend to propagate data
     await trio.sleep(5)
