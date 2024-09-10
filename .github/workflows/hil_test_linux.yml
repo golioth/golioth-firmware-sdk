@@ -49,7 +49,7 @@ jobs:
         pip install --upgrade pip
         pip install pytest pytest-timeout
         pip install tests/hil/scripts/pytest-hil
-        pip install git+https://github.com/golioth/python-golioth-tools@v0.6.3
+        pip install git+https://github.com/golioth/python-golioth-tools@v0.6.4
     - name: Install Linux dependencies
       run: |
         sudo apt-get install lcov

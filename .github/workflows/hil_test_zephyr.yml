@@ -127,7 +127,7 @@ jobs:
         run: |
           pip install pytest pytest-timeout
           pip install tests/hil/scripts/pytest-hil
-          pip install git+https://github.com/golioth/python-golioth-tools@v0.6.3
+          pip install git+https://github.com/golioth/python-golioth-tools@v0.6.4
       - name: Power On USB Hub
         run: python3 /opt/golioth-scripts/usb_hub_power.py on
       - name: Download build
