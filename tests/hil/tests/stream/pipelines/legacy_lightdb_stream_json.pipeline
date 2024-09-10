@@ -1,0 +1,19 @@
+filter:
+  path: "*"
+  content_type: application/json
+steps:
+  - name: step-0
+    destination:
+      type: batch
+      version: v1
+  - name: step-1
+    transformer:
+      type: extract-timestamp
+      version: v1
+  - name: step-2
+    transformer:
+      type: inject-path
+      version: v1
+    destination:
+      type: lightdb-stream
+      version: v1
