@@ -30,6 +30,12 @@ class LinuxBoard(Board):
 
         return await self.process.stdout.receive_some()
 
+    async def send_all(self, data: bytes):
+        assert self.process is not None
+        assert self.process.stdin is not None
+
+        await self.process.stdin.send_all(data)
+
     @property
     def PROMPT(self):
         return ''
@@ -61,5 +67,6 @@ class LinuxBoard(Board):
 
         self.process = await self.nursery.start(partial(trio.run_process,
                                                         ["stdbuf", "-o0", self.binary],
+                                                        stdin=subprocess.PIPE,
                                                         stdout=subprocess.PIPE,
                                                         env=env))
