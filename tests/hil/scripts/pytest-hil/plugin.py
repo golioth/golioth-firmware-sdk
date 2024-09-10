@@ -6,6 +6,7 @@ from nrf52840dk import nRF52840DK
 from nrf9160dk  import nRF9160DK
 from mimxrt1024evk import MIMXRT1024EVK
 from linuxboard import LinuxBoard
+from native_sim import NativeSimBoard
 
 def pytest_addoption(parser):
     parser.addoption("--platform", type=str,
@@ -76,6 +77,8 @@ async def board(board_name, port, baud, wifi_ssid, wifi_psk, fw_image, serial_nu
         board = nRF9160DK(port, baud, wifi_ssid, wifi_psk, fw_image, serial_number)
     elif board_name.lower() == "mimxrt1024_evk":
         board = MIMXRT1024EVK(port, baud, wifi_ssid, wifi_psk, fw_image, serial_number)
+    elif board_name.lower() == "native_sim":
+        board = NativeSimBoard(fw_image)
     elif board_name.lower() == "linux":
         board = LinuxBoard(fw_image)
     else:
