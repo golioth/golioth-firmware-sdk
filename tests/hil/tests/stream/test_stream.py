@@ -13,10 +13,10 @@ pytestmark = pytest.mark.anyio
 async def setup(board, device):
     # Set Golioth credentials
     golioth_cred = (await device.credentials.list())[0]
-    board.set_golioth_psk_credentials(golioth_cred.identity, golioth_cred.key)
+    await board.set_golioth_psk_credentials(golioth_cred.identity, golioth_cred.key)
 
     # Confirm connection to Golioth
-    assert None != board.wait_for_regex_in_line('Golioth CoAP client connected', timeout_s=120)
+    assert None != await board.wait_for_regex_in_line('Golioth CoAP client connected', timeout_s=120)
 
 def hash_from_dict(dict_to_hash: dict) -> str:
     str_data = json.dumps(dict_to_hash, sort_keys=True)
@@ -38,7 +38,7 @@ def get_test_data_hash() -> str:
 ##### Tests #####
 
 async def test_block_upload(board, device):
-    assert None != board.wait_for_regex_in_line('Block upload successful', timeout_s=20)
+    assert None != await board.wait_for_regex_in_line('Block upload successful', timeout_s=20)
 
     # Wait for stream to propagate from CDG to LightDB Stream
     await trio.sleep(6)

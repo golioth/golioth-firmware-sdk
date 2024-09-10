@@ -1,46 +1,85 @@
 from abc import ABC, abstractmethod
+from contextlib import asynccontextmanager
 import serial
 from time import time, sleep
 import re
 
+import trio
+from trio_serial import SerialStream
+
 class Board(ABC):
-    def __init__(self, port, baud, wifi_ssid, wifi_psk, fw_image, serial_number):
+    def __init__(self, port, baudrate, wifi_ssid, wifi_psk, fw_image, serial_number):
         if serial_number:
             self.serial_number = serial_number
         self.port = port
+        self.baudrate = baudrate
+        self.fw_image = fw_image
+        self.wifi_ssid = wifi_ssid
+        self.wifi_psk = wifi_psk
 
-        if fw_image:
-            self.program(fw_image)
+        self.received: bytes = b''
+
+        self.serial: SerialStream | None = None
+
+    @asynccontextmanager
+    async def started(self):
+        async with SerialStream(port=self.port,
+                                baudrate=self.baudrate) as serial:
+            self.serial = serial
+
+            if self.fw_image:
+                self.program(self.fw_image)
 
             # Wait for reboot
-            sleep(6)
+            await trio.sleep(6)
 
-        self.serial_device = serial.Serial(port, baud, timeout=1, write_timeout=1)
+            # Set WiFi credentials
+            if self.USES_WIFI:
+                await self.set_wifi_credentials(self.wifi_ssid,
+                                                    self.wifi_psk)
 
-        # Set WiFi credentials
-        if self.USES_WIFI:
-            self.set_wifi_credentials(wifi_ssid, wifi_psk)
+            yield self
 
-    def wait_for_regex_in_line(self, regex, timeout_s=20, log=True):
-        start_time = time()
-        while True:
-            self.serial_device.timeout=timeout_s
-            line = self.serial_device.read_until().decode('utf-8', errors='replace').replace("\r\n", "")
-            if line != "" and log:
-                print(line)
-            if time() - start_time > timeout_s:
-                raise RuntimeError('Timeout')
-            regex_search = re.search(regex, line)
-            if regex_search:
-                return regex_search
+    async def receive_some(self) -> bytes:
+        assert self.serial is not None
 
-    def send_cmd(self, cmd, wait_str=None):
+        return await self.serial.receive_some()
+
+    async def wait_for_regex_in_line(self, regex, timeout_s=20, log=True):
+        with trio.fail_after(timeout_s):
+            while True:
+                # Check in already received data
+                lines = self.received.splitlines(keepends=True)
+
+                for idx, line in enumerate(lines):
+                    regex_search = re.search(regex, line.replace(b'\r', b'').replace(b'\n', b'').decode('utf-8', errors='ignore'))
+                    if regex_search:
+                        # Drop this and any previous lines
+                        self.received = b''.join(lines[idx+1:])
+
+                        return regex_search
+
+                # Drop all but last line (in case it is not complete)
+                if len(lines) > 1:
+                    self.received = lines[-1]
+
+                # Receive more data
+                chunk = await self.receive_some()
+                if chunk == b'':
+                    return
+
+                if log:
+                    print(chunk.replace(b'\r', b'').decode('utf-8', errors='ignore'), end='')
+
+                self.received = self.received + chunk
+
+    async def send_cmd(self, cmd, wait_str=None):
         if wait_str == None:
             wait_str = self.PROMPT
-        self.serial_device.write('\r\n\r\n'.encode())
-        self.wait_for_regex_in_line(self.PROMPT)
-        self.serial_device.write('{}\r\n'.format(cmd).encode())
-        self.wait_for_regex_in_line(wait_str)
+        await self.serial.send_all('\r\n\r\n'.encode())
+        await self.wait_for_regex_in_line(self.PROMPT)
+        await self.serial.send_all('{}\r\n'.format(cmd).encode())
+        await self.wait_for_regex_in_line(wait_str)
 
     @property
     @abstractmethod
@@ -53,7 +92,7 @@ class Board(ABC):
         pass
 
     @abstractmethod
-    def reset(self):
+    async def reset(self):
         pass
 
     @abstractmethod
@@ -61,9 +100,9 @@ class Board(ABC):
         pass
 
     @abstractmethod
-    def set_wifi_credentials(self, ssid, psk):
+    async def set_wifi_credentials(self, ssid, psk):
         pass
 
     @abstractmethod
-    def set_golioth_psk_credentials(self, psk_id, psk):
+    async def set_golioth_psk_credentials(self, psk_id, psk):
         pass
