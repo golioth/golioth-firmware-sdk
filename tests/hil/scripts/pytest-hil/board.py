@@ -42,6 +42,11 @@ class Board(ABC):
 
         return await self.serial.receive_some()
 
+    async def send_all(self, data: bytes):
+        assert self.serial is not None
+
+        await self.serial.send_all(data)
+
     async def wait_for_regex_in_line(self, regex, timeout_s=20, log=True):
         with trio.fail_after(timeout_s):
             while True:
@@ -73,9 +78,9 @@ class Board(ABC):
     async def send_cmd(self, cmd, wait_str=None):
         if wait_str == None:
             wait_str = self.PROMPT
-        await self.serial.send_all('\r\n\r\n'.encode())
+        await self.send_all('\r\n\r\n'.encode())
         await self.wait_for_regex_in_line(self.PROMPT)
-        await self.serial.send_all('{}\r\n'.format(cmd).encode())
+        await self.send_all('{}\r\n'.format(cmd).encode())
         await self.wait_for_regex_in_line(wait_str)
 
     @property
