@@ -110,6 +110,7 @@ jobs:
         export EXTRA_BUILD_ARGS=-x=CONFIG_GOLIOTH_COAP_HOST_URI=\"${{ inputs.coap_gateway_url }}\"
 
         zephyr/scripts/twister                                                \
+              --overflow-as-errors                                            \
               --platform ${{ inputs.west_board }}                             \
               -T modules/lib/golioth-firmware-sdk/examples/zephyr             \
               --prep-artifacts-for-testing                                    \
