@@ -4,7 +4,6 @@ import json
 import hashlib
 import os
 
-EXPECTED_HASH='28540341b9655161a00b3a7193a8e2e2261d21ea3e3f2117fc9c7f18a5733681'
 BLOCK_UPLOAD_PATH='block_upload'
 
 pytestmark = pytest.mark.anyio
