@@ -63,6 +63,8 @@ jobs:
              --include "*/golioth-firmware-sdk/src/*"
         LCOV_FILES="-a baseline.info"
 
+        rm -rf allure-reports
+
         for test in `ls tests/hil/tests`
         do
           pytest --rootdir . tests/hil/tests/$test      \
@@ -73,6 +75,8 @@ jobs:
             --mask-secrets                              \
             -rP                                         \
             --timeout=600                               \
+            --alluredir=allure-reports                  \
+            --platform linux                            \
             || EXITCODE=$?
           lcov -c                                       \
                --directory build/${test}                \
@@ -104,6 +108,13 @@ jobs:
         echo "$coverage_summary" >> $GITHUB_OUTPUT
         echo "EOF" >> $GITHUB_OUTPUT
         exit $EXITCODE
+    - name: Upload reports
+      uses: actions/upload-artifact@v4
+      if: ${{ always() }}
+      with:
+        name: allure-reports-hil-linux
+        path: allure-reports
+        retention-days: 1
     - name: Find Comment
       uses: peter-evans/find-comment@v3
       if: github.event_name == 'pull_request'
