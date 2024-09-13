@@ -1,4 +1,5 @@
 import pytest
+import allure
 from espidfboard import ESPIDFBoard
 from esp32_devkitc_wrover import ESP32DevKitCWROVER
 from nrf52840dk import nRF52840DK
@@ -7,6 +8,10 @@ from mimxrt1024evk import MIMXRT1024EVK
 from linuxboard import LinuxBoard
 
 def pytest_addoption(parser):
+    parser.addoption("--platform", type=str,
+            help="Platform name (eg: esp-idf, linux, zephyr)")
+    parser.addoption("--runner-name", type=str,
+            help="Self-hosted runner name (eg: sams_orange_pi, mikes_testbench)")
     parser.addoption("--board", type=str,
             help="The board being tested")
     parser.addoption("--port",
@@ -20,6 +25,14 @@ def pytest_addoption(parser):
     parser.addoption("--wifi-ssid", type=str, help="WiFi SSID")
     parser.addoption("--wifi-psk", type=str, help="WiFi PSK")
 
+
+@pytest.fixture(scope="session")
+def platform_name(request):
+    return request.config.getoption("--platform")
+
+@pytest.fixture(scope="session")
+def runner_name(request):
+    return request.config.getoption("--runner-name")
 
 @pytest.fixture(scope="session")
 def board_name(request):
@@ -70,3 +83,22 @@ async def board(board_name, port, baud, wifi_ssid, wifi_psk, fw_image, serial_nu
 
     async with board.started():
         yield board
+
+@pytest.fixture(autouse=True, scope="session")
+def add_allure_report_parent_suite(board_name, platform_name):
+    # Set the full Allure suite name in case there is a failure during a fixture (before a test
+    # function runs).
+    allure.dynamic.parent_suite(f"hil.{platform_name}.{board_name}")
+
+@pytest.fixture(autouse=True, scope="function")
+def add_allure_report_device_and_platform(board_name, platform_name, runner_name):
+    # Set the Allure information for every test function.
+    # Especially important are the parameters which identify variants of the same test
+    allure.dynamic.tag(board_name)
+    allure.dynamic.tag(platform_name)
+    allure.dynamic.parameter("board_name", board_name)
+    allure.dynamic.parameter("platform_name", platform_name)
+    allure.dynamic.parent_suite(f"hil.{platform_name}.{board_name}")
+
+    if runner_name is not None:
+        allure.dynamic.tag(runner_name)
