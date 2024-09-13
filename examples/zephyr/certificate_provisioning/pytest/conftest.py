@@ -14,8 +14,6 @@ WEST_TOPDIR = Path(west.configuration.west_dir()).parent
 def pytest_addoption(parser):
     parser.addoption("--device-port", type=str,
                      help="Device serial port path")
-    parser.addoption("--wifi-ssid", type=str, help="WiFi SSID")
-    parser.addoption("--wifi-psk",  type=str, help="WiFi PSK")
 
 def get_device_port(request):
     if request.config.getoption("--device-port") is not None:
@@ -63,17 +61,3 @@ async def device_name(project):
         await project.delete_device_by_name(name)
     except:
         pass
-
-@pytest.fixture(scope="session")
-def wifi_ssid(request):
-    if request.config.getoption("--wifi-ssid") is not None:
-        return request.config.getoption("--wifi-ssid")
-    else:
-        return os.environ.get('WIFI_SSID')
-
-@pytest.fixture(scope="session")
-def wifi_psk(request):
-    if request.config.getoption("--wifi-psk") is not None:
-        return request.config.getoption("--wifi-psk")
-    else:
-        return os.environ.get('WIFI_PSK')
