@@ -17,4 +17,6 @@ int main(void)
     net_connect();
 
     hil_test_entry(golioth_sample_credentials_get());
+
+    return 0;
 }
