@@ -23,6 +23,7 @@ on:
         options:
           - all
           - zephyr_integration
+          - zephyr_integration_native_sim
           - zephyr_sample
           - zephyr_sample_native_sim
           - esp_idf_integration
@@ -86,6 +87,97 @@ jobs:
       api-key-id: ${{ inputs.api-key-id }}
       coap_gateway_url: ${{ inputs.coap_gateway_url }}
     secrets: inherit
+
+  hil_test_zephyr_nsim:
+    if: ${{ inputs.workflow == 'all' || inputs.workflow == 'zephyr_integration_native_sim' }}
+    runs-on: ubuntu-latest
+    container:
+      image: golioth/golioth-zephyr-base:0.16.3-SDK-v0
+    env:
+      ZEPHYR_SDK_INSTALL_DIR: /opt/toolchains/zephyr-sdk-0.16.3
+    name: zephyr-${{ matrix.west_board }}-test-nsim
+    strategy:
+      fail-fast: false
+      matrix:
+        include:
+          - west_board: native_sim
+            artifact_suffix: native_sim_32
+          - west_board: native_sim/native/64
+            artifact_suffix: native_sim_64
+    steps:
+      - name: Checkout repository and submodules
+        uses: actions/checkout@v4
+        with:
+          path: modules/lib/golioth-firmware-sdk
+          submodules: 'recursive'
+
+      - name: Init and update west
+        run: |
+          mkdir -p .west
+          cat <<EOF > .west/config
+          [manifest]
+          path = modules/lib/golioth-firmware-sdk
+          file = .ci-west-zephyr.yml
+          EOF
+
+          west update -o=--depth=1 -n
+          git config --global user.email user@git-scm.com
+          git config --global user.name "Git User"
+          west patch
+
+          pip install -r zephyr/scripts/requirements-base.txt
+          pip install -r zephyr/scripts/requirements-build-test.txt
+          pip install -r zephyr/scripts/requirements-run-test.txt
+
+          pip install pytest pytest-timeout
+          pip install modules/lib/golioth-firmware-sdk/tests/hil/scripts/pytest-hil
+          pip install git+https://github.com/golioth/python-golioth-tools@v0.6.4
+
+      - name: Run tests
+        shell: bash
+        run: |
+          export EXTRA_BUILD_ARGS=-DCONFIG_GOLIOTH_COAP_HOST_URI=\"${{ inputs.coap_gateway_url }}\"
+          EXITCODE=0
+
+          rm -rf hil-out
+          mkdir -p hil-out
+
+          for test in `ls modules/lib/golioth-firmware-sdk/tests/hil/tests`
+          do
+            echo "Testing $test"
+
+            west build -p -b ${{ matrix.west_board }}                        \
+              modules/lib/golioth-firmware-sdk/tests/hil/platform/zephyr     \
+              -d hil-out/$test -- $EXTRA_BUILD_ARGS -DGOLIOTH_HIL_TEST=$test \
+              || EXITCODE=$?
+
+            pytest --rootdir . \
+              modules/lib/golioth-firmware-sdk//tests/hil/tests/$test      \
+              --board native_sim                                           \
+              --fw-image hil-out/$test/zephyr/zephyr.exe                   \
+              --api-url ${{ inputs.api-url }}                              \
+              --api-key ${{ secrets[inputs.api-key-id] }}                  \
+              --mask-secrets                                               \
+              --timeout=600                                                \
+              || EXITCODE=$?
+
+            gcovr -r modules/lib/golioth-firmware-sdk                      \
+              --gcov-ignore-parse-errors=negative_hits.warn_once_per_file  \
+              --merge-mode-functions=separate                              \
+              --json hil-out/$test/coverage.json                           \
+              hil-out/$test                                                \
+              || EXITCODE=$?
+          done
+
+          exit $EXITCODE
+
+      - name: Upload artifacts
+        uses: actions/upload-artifact@v4
+        if: ${{ always() }}
+        with:
+          name: native-sim-hil-test-coverage-${{ matrix.artifact_suffix }}
+          path: |
+            hil-out/*/coverage.json
 
   hil_test_esp-idf:
     if: ${{ inputs.workflow == 'all' || inputs.workflow == 'esp_idf_integration' }}
@@ -242,10 +334,17 @@ jobs:
 
   hil_sample_zephyr_nsim_coverage:
     runs-on: ubuntu-latest
-    needs: hil_sample_zephyr_nsim
+    needs:
+      - hil_sample_zephyr_nsim
+      - hil_test_zephyr_nsim
     name: zephyr-coverage
     steps:
-      - name: Download coverage artifacts
+      - name: Download HIL coverage artifacts
+        uses: actions/download-artifact@v4
+        with:
+          pattern: native-sim-hil-test-coverage-*
+
+      - name: Download Twister coverage artifacts
         uses: actions/download-artifact@v4
         with:
           pattern: twister-run-artifacts-native*
@@ -263,15 +362,21 @@ jobs:
       - name: Merge coverage
         shell: bash
         run: |
-          tracefiles=$(for d in twister-run-artifacts-*; do
+          hil_tracefiles=$(for t in native-sim-hil-test-coverage-*; do
+            for d in $t/*; do
+              printf -- "--add-tracefile $d/coverage.json "
+            done
+          done)
+
+          twister_tracefiles=$(for d in twister-run-artifacts-*; do
             printf -- "--add-tracefile $d/twister-out/coverage.json "
           done)
 
           shopt -s expand_aliases
 
           alias gcovr="gcovr \
-            $tracefiles \
-            -e examples -e external"
+            $hil_tracefiles $twister_tracefiles \
+            -e examples -e external -e tests"
 
           gcovr --txt-summary --xml coverage.xml
 
