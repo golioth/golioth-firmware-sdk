@@ -212,6 +212,7 @@ jobs:
           pip3 install -r zephyr/scripts/requirements-build-test.txt
           pip3 install -r zephyr/scripts/requirements-run-test.txt
 
+          pip3 install modules/lib/golioth-firmware-sdk/tests/hil/scripts/pytest-zephyr-samples
           pip3 install git+https://github.com/golioth/python-golioth-tools@v0.6.3
 
       - name: Run tests
