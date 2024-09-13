@@ -217,6 +217,7 @@ jobs:
 
       - name: Run tests
         run: |
+          rm -rf allure-reports
           zephyr/scripts/twister                                                    \
               --platform ${{ matrix.west_board }}                                   \
               -T modules/lib/golioth-firmware-sdk/examples/zephyr                   \
@@ -225,7 +226,10 @@ jobs:
               -x=CONFIG_GOLIOTH_COAP_HOST_URI=\"${{ inputs.coap_gateway_url }}\"    \
               --pytest-args="--api-url=${{ inputs.api-url }}"                       \
               --pytest-args="--api-key=${{ secrets[inputs.api-key-id] }}"           \
-              --pytest-args="--mask-secrets"
+              --pytest-args="--mask-secrets"                                        \
+              --pytest-args="--alluredir=allure-reports"                            \
+              --pytest-args="--runner-name=${{ runner.name }}"                      \
+              --pytest-args="--hil-board=${{ matrix.artifact_suffix }}"
 
       - name: Mask secrets in logs
         id: mask-logs
@@ -247,6 +251,14 @@ jobs:
             twister-out/**/report.xml
             twister-out/*.xml
             twister-out/*.json
+
+      - name: Upload reports
+        uses: actions/upload-artifact@v4
+        if: ${{ always() }}
+        with:
+          name: allure-reports-samples-zephyr-${{ matrix.artifact_suffix }}
+          path: allure-reports
+          retention-days: 1
 
   hil_sample_zephyr_nsim_coverage:
     runs-on: ubuntu-latest
