@@ -181,6 +181,7 @@ jobs:
           hil_board: ${{ inputs.hil_board }}
           west_board: ${{ inputs.west_board }}
         run: |
+          rm -rf allure-reports
           source /opt/credentials/runner_env.sh
           export PATH=$PATH:/opt/SEGGER/JLink
           export PATH=$PATH:/usr/local/go/bin
@@ -199,6 +200,9 @@ jobs:
                 --pytest-args="--wifi-ssid=${{ secrets[format('{0}_WIFI_SSID', runner.name)] }}"  \
                 --pytest-args="--wifi-psk=${{ secrets[format('{0}_WIFI_PSK', runner.name)] }}"    \
                 --pytest-args="--mask-secrets"                                                    \
+                --pytest-args="--alluredir=allure-reports"                                        \
+                --pytest-args="--runner-name=${{ runner.name }}"                                  \
+                --pytest-args="--hil-board=${{ inputs.hil_board }}"                               \
                 -v
 
       - name: Mask secrets in logs
@@ -219,6 +223,14 @@ jobs:
             twister-out/**/report.xml
             twister-out/*.xml
             twister-out/*.json
+
+      - name: Upload reports
+        uses: actions/upload-artifact@v4
+        if: ${{ always() }}
+        with:
+          name: allure-reports-samples-zephyr-${{ inputs.hil_board }}
+          path: allure-reports
+          retention-days: 1
 
       - name: Erase flash
         if: always()

@@ -5,6 +5,9 @@ build-backend = "hatchling.build"
 [project]
 name = "pytest-zephyr-samples"
 version = "0.1.0"
+dependencies = [
+  'allure-pytest',
+]
 classifiers = [
     "Framework :: Pytest",
 ]
