@@ -1,4 +1,4 @@
-name: Hardware-in-the-Loop Tests
+name: Report tester
 
 on:
   workflow_dispatch:
@@ -325,30 +325,13 @@ jobs:
   publish_summary:
     runs-on: ubuntu-latest
     steps:
+    - uses: actions/checkout@v4     # checkout the repo
     - name: Download summaries
       run: |
          curl -L "https://drive.google.com/uc?export=download&id=1PpnGmEfRkauHqT4HPItmAM5OTDou7BjQ" -o twister.zip
          mkdir -p junit-summary
          unzip twister.zip -d junit-summary
          ls -lah junit-summary
-      with:
-        path: junit-summary
-        pattern: junit-summary-*
-        merge-multiple: true
-    #- name: Gather summaries
-      #uses: actions/download-artifact@v4
-      #with:
-        #path: junit-summary
-        #pattern: junit-summary-*
-        #merge-multiple: true
-
-    #- name: Publish summaries
-      #uses: EnricoMi/publish-unit-test-result-action@v2
-      #if: always()
-      #with:
-        #files: |
-          #junit-summary/*.xml
-          #
     - name: Test Report
       uses: phoenix-actions/test-reporting@v8
       id: test-report               # Set ID reference for step
