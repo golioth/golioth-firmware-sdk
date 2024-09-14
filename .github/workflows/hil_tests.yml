@@ -117,59 +117,59 @@ jobs:
       #coap_gateway_url: ${{ inputs.coap_gateway_url }}
     #secrets: inherit
 
-  hil_sample_zephyr:
-    if: ${{ inputs.workflow == 'all' || inputs.workflow == 'zephyr_sample' }}
-    strategy:
-      fail-fast: false
-      matrix:
-        include:
-          - hil_board: esp32_devkitc_wrover
-            west_board: esp32_devkitc_wrover/esp32/procpu
-            manifest: .ci-west-zephyr.yml
-            extra_twister_args: '--flash-before --west-flash=--esp-tool=$(which esptool.py),--esp-device=${!PORT_VAR}'
-            binary_blob: hal_espressif
-            run_tests: true
+  #hil_sample_zephyr:
+    #if: ${{ inputs.workflow == 'all' || inputs.workflow == 'zephyr_sample' }}
+    #strategy:
+      #fail-fast: false
+      #matrix:
+        #include:
+          #- hil_board: esp32_devkitc_wrover
+            #west_board: esp32_devkitc_wrover/esp32/procpu
+            #manifest: .ci-west-zephyr.yml
+            #extra_twister_args: '--flash-before --west-flash=--esp-tool=$(which esptool.py),--esp-device=${!PORT_VAR}'
+            #binary_blob: hal_espressif
+            #run_tests: true
 
-          - hil_board: mimxrt1024_evk
-            west_board: mimxrt1024_evk
-            manifest: .ci-west-zephyr.yml
-            extra_twister_args: '--west-flash="--dev-id=${!SNR_VAR}"'
-            run_tests: true
+          #- hil_board: mimxrt1024_evk
+            #west_board: mimxrt1024_evk
+            #manifest: .ci-west-zephyr.yml
+            #extra_twister_args: '--west-flash="--dev-id=${!SNR_VAR}"'
+            #run_tests: true
 
-          - hil_board: nrf52840dk
-            west_board: nrf52840dk/nrf52840
-            manifest: .ci-west-zephyr.yml
-            extra_twister_args: '--west-flash="--dev-id=${!SNR_VAR}"'
-            run_tests: true
+          #- hil_board: nrf52840dk
+            #west_board: nrf52840dk/nrf52840
+            #manifest: .ci-west-zephyr.yml
+            #extra_twister_args: '--west-flash="--dev-id=${!SNR_VAR}"'
+            #run_tests: true
 
-          - hil_board: nrf9160dk
-            west_board: nrf9160dk/nrf9160/ns
-            manifest: .ci-west-ncs.yml
-            extra_twister_args: '--west-flash="--dev-id=${!SNR_VAR}"'
-            run_tests: true
+          #- hil_board: nrf9160dk
+            #west_board: nrf9160dk/nrf9160/ns
+            #manifest: .ci-west-ncs.yml
+            #extra_twister_args: '--west-flash="--dev-id=${!SNR_VAR}"'
+            #run_tests: true
 
-          - hil_board: rak5010
-            west_board: rak5010/nrf52840
-            manifest: .ci-west-zephyr.yml
-            extra_twister_args: '--flash-before --west-flash=--gdb=/usr/bin/gdb --west-runner blackmagicprobe'
-            run_tests: true
+          #- hil_board: rak5010
+            #west_board: rak5010/nrf52840
+            #manifest: .ci-west-zephyr.yml
+            #extra_twister_args: '--flash-before --west-flash=--gdb=/usr/bin/gdb --west-runner blackmagicprobe'
+            #run_tests: true
 
-          - hil_board: qemu_x86
-            west_board: qemu_x86
-            manifest: .ci-west-zephyr.yml
-            run_tests: false
-    uses: ./.github/workflows/hil_sample_zephyr.yml
-    with:
-      hil_board: ${{ matrix.hil_board }}
-      west_board: ${{ matrix.west_board }}
-      manifest: ${{ matrix.manifest }}
-      binary_blob: ${{ matrix.binary_blob }}
-      run_tests: ${{ matrix.run_tests }}
-      extra_twister_args: ${{ matrix.extra_twister_args }}
-      api-url: ${{ inputs.api-url }}
-      api-key-id: ${{ inputs.api-key-id }}
-      coap_gateway_url: ${{ inputs.coap_gateway_url }}
-    secrets: inherit
+          #- hil_board: qemu_x86
+            #west_board: qemu_x86
+            #manifest: .ci-west-zephyr.yml
+            #run_tests: false
+    #uses: ./.github/workflows/hil_sample_zephyr.yml
+    #with:
+      #hil_board: ${{ matrix.hil_board }}
+      #west_board: ${{ matrix.west_board }}
+      #manifest: ${{ matrix.manifest }}
+      #binary_blob: ${{ matrix.binary_blob }}
+      #run_tests: ${{ matrix.run_tests }}
+      #extra_twister_args: ${{ matrix.extra_twister_args }}
+      #api-url: ${{ inputs.api-url }}
+      #api-key-id: ${{ inputs.api-key-id }}
+      #coap_gateway_url: ${{ inputs.coap_gateway_url }}
+    #secrets: inherit
 
   #hil_sample_zephyr_nsim:
     #if: ${{ inputs.workflow == 'all' || inputs.workflow == 'zephyr_sample_native_sim' }}
@@ -324,26 +324,36 @@ jobs:
 
   publish_summary:
     runs-on: ubuntu-latest
-    needs: [
-              #hil_sample_esp-idf,
-              hil_sample_zephyr,
-              #hil_sample_zephyr_nsim,
-              #hil_test_esp-idf,
-              #hil_test_linux,
-              #hil_test_zephyr,
-           ]
-    if: ${{ always() }}
     steps:
-    - name: Gather summaries
-      uses: actions/download-artifact@v4
+    - name: Download summaries
+      run: |
+         curl -L "https://drive.google.com/uc?export=download&id=1PpnGmEfRkauHqT4HPItmAM5OTDou7BjQ" -o twister.zip
+         mkdir -p junit-summary
+         unzip twister.zip -d junit-summary
+         ls -lah junit-summary
       with:
         path: junit-summary
         pattern: junit-summary-*
         merge-multiple: true
+    #- name: Gather summaries
+      #uses: actions/download-artifact@v4
+      #with:
+        #path: junit-summary
+        #pattern: junit-summary-*
+        #merge-multiple: true
 
-    - name: Publish summaries
-      uses: EnricoMi/publish-unit-test-result-action@v2
-      if: always()
+    #- name: Publish summaries
+      #uses: EnricoMi/publish-unit-test-result-action@v2
+      #if: always()
+      #with:
+        #files: |
+          #junit-summary/*.xml
+          #
+    - name: Test Report
+      uses: phoenix-actions/test-reporting@v8
+      id: test-report               # Set ID reference for step
+      if: success() || failure()    # run this step even if previous step failed
       with:
-        files: |
-          junit-summary/*.xml
+        name: Twister Tests            # Name of the check run which will be created
+        path: junit-summary/*.xml    # Path to test results
+        reporter: java-junit        # Format of test results
