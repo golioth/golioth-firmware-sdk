@@ -101,6 +101,7 @@ jobs:
         env:
           hil_board: ${{ inputs.hil_board }}
         run: |
+          rm -rf allure-reports
           source /opt/credentials/runner_env.sh
           PORT_VAR=CI_${hil_board^^}_PORT
           for sample in `find examples/esp_idf -type d -name pytest -exec dirname "{}" \;`
@@ -115,9 +116,19 @@ jobs:
               --wifi-psk ${{ secrets[format('{0}_WIFI_PSK', runner.name)] }}    \
               --mask-secrets                                                    \
               --timeout=600                                                     \
+              --alluredir=allure-reports                                        \
+              --platform esp-idf                                                \
+              --runner-name ${{ runner.name }}                                  \
               || EXITCODE=$?
           done
           exit $EXITCODE
+      - name: Upload reports
+        uses: actions/upload-artifact@v4
+        if: ${{ always() }}
+        with:
+          name: allure-reports-samples-espidf-${{ inputs.hil_board }}
+          path: allure-reports
+          retention-days: 1
       - name: Erase flash
         if: always()
         shell: bash
