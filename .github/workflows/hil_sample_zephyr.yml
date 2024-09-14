@@ -211,6 +211,21 @@ jobs:
             twister-out/*.xml
             twister-out/*.json
 
+      - name: Twister summary unique name
+        if: ${{ always() }}
+        run: |
+          if test -f twister-out/twister_suite_report.xml; then
+            mv twister-out/twister_suite_report.xml \
+               twister-out/twister_suite_report-${{ inputs.hil_board }}.xml
+          fi
+
+      - name: Upload Twister summary
+        uses: actions/upload-artifact@v4
+        if: ${{ always() }}
+        with:
+          name: junit-summary-zephyr-${{ inputs.hil_board }}
+          path: twister-out/twister_suite_report-*
+
       - name: Erase flash
         if: always()
         shell: bash
