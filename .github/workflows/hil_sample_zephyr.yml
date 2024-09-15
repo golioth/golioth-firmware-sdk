@@ -199,9 +199,17 @@ jobs:
                 --pytest-args="--wifi-psk=${{ secrets[format('{0}_WIFI_PSK', runner.name)] }}"    \
                 --pytest-args="--mask-secrets"                                                    \
                 -v
+
+      - name: Mask secrets in logs
+        id: mask-logs
+        if: always()
+        uses: ./modules/lib/golioth-firmware-sdk/.github/actions/mask_secrets
+        with:
+          secrets-json: ${{ toJson(secrets) }}
+
       - name: Upload artifacts
         uses: actions/upload-artifact@v4
-        if: ${{ always() }}
+        if: always() && steps.mask-logs.outcome == 'success'
         with:
           name: twister-run-artifacts-${{ inputs.hil_board }}
           path: |
