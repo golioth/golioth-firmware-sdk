@@ -78,7 +78,7 @@ jobs:
     runs-on: [ is_active, "has_${{ inputs.hil_board }}" ]
 
     container:
-      image: golioth/golioth-hil-base:e635559
+      image: golioth/golioth-hil-base:75dd802
       volumes:
         - /dev:/dev
         - /home/golioth/credentials:/opt/credentials
