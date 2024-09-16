@@ -224,7 +224,21 @@ jobs:
             twister-out/*.xml
             twister-out/*.json
 
-      - name: Upload reports
+      - name: Prepare CI report summary
+        if: always() && steps.mask-logs.outcome == 'success'
+        run: |
+          rm -rf summary
+          mkdir summary
+          cp twister-out/twister_suite_report.xml summary/samples-zephyr-${{ inputs.hil_board }}.xml
+
+      - name: Upload CI report summary
+        uses: actions/upload-artifact@v4
+        if: always() && steps.mask-logs.outcome == 'success'
+        with:
+          name: ci-summary-samples-zephyr-${{ inputs.hil_board }}
+          path: summary/*
+
+      - name: Upload Allure reports
         uses: actions/upload-artifact@v4
         if: ${{ always() }}
         with:
