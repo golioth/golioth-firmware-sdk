@@ -247,6 +247,22 @@ jobs:
             twister-out/*.xml
             twister-out/*.json
 
+      - name: Prepare report summary
+        if: always() && steps.mask-logs.outcome == 'success'
+        run: |
+          rm -rf summary
+          mkdir summary
+          cp twister-out/twister_suite_report.xml summary/samples-zephyr-${{ matrix.artifact_suffix }}.xml
+
+      - name: Upload report summary
+        uses: actions/upload-artifact@v4
+        if: always() && steps.mask-logs.outcome == 'success'
+        with:
+          name: ci-summary-samples-zephyr-${{ matrix.artifact_suffix }}
+          path: |
+            summary/*
+
+
   hil_sample_zephyr_nsim_coverage:
     runs-on: ubuntu-latest
     needs: hil_sample_zephyr_nsim
@@ -328,3 +344,29 @@ jobs:
       api-key-id: ${{ inputs.api-key-id }}
       coap_gateway_url: ${{ inputs.coap_gateway_url }}
     secrets: inherit
+
+  publish_summary:
+    runs-on: ubuntu-latest
+    if: always()
+    needs:
+      - hil_sample_zephyr
+      - hil_sample_zephyr_nsim
+
+    steps:
+    - name: Checkout repository
+      uses: actions/checkout@v4
+
+    - name: Gather summaries
+      uses: actions/download-artifact@v4
+      with:
+        path: summary
+        pattern: ci-summary-*
+        merge-multiple: true
+
+    - name: Test Report
+      uses: phoenix-actions/test-reporting@v15
+      if: success() || failure()
+      with:
+        name: HIL Test Summary
+        path: summary/*.xml
+        reporter: java-junit
