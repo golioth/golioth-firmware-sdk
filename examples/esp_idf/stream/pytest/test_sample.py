@@ -17,10 +17,10 @@ async def test_stream(board, device):
 
     # Set Golioth credential
     golioth_cred = (await device.credentials.list())[0]
-    board.set_golioth_psk_credentials(golioth_cred.identity, golioth_cred.key)
+    await board.set_golioth_psk_credentials(golioth_cred.identity, golioth_cred.key)
 
     # Wait for device to connect
-    board.wait_for_regex_in_line('.*Golioth client connected', timeout_s=30.0)
+    await board.wait_for_regex_in_line('.*Golioth client connected', timeout_s=30.0)
 
     # Verify temp messages
 

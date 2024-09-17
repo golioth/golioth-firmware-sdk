@@ -27,16 +27,16 @@ async def test_settings(board, project, device):
 
     # Set Golioth credential
     golioth_cred = (await device.credentials.list())[0]
-    board.set_golioth_psk_credentials(golioth_cred.identity, golioth_cred.key)
+    await board.set_golioth_psk_credentials(golioth_cred.identity, golioth_cred.key)
 
     # Reset board
-    board.reset()
+    await board.reset()
 
     # Wait for device to reboot and connect
-    board.wait_for_regex_in_line(r'.*Golioth client connected', timeout_s=30.0)
+    await board.wait_for_regex_in_line(r'.*Golioth client connected', timeout_s=30.0)
 
     # Set device-level setting
 
     await device.settings.set('LOOP_DELAY_S', 5)
 
-    board.wait_for_regex_in_line(r'.*Setting loop delay to 5 s', timeout_s=5.0)
+    await board.wait_for_regex_in_line(r'.*Setting loop delay to 5 s', timeout_s=5.0)
