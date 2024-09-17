@@ -233,10 +233,12 @@ jobs:
         with:
           secrets-json: ${{ toJson(secrets) }}
 
-      - name: Upload artifacts
-        uses: actions/upload-artifact@v4
-        if: always() && steps.mask-logs.outcome == 'success'
+      - name: Safe upload twister artifacts
+        id: safe-upload-artifacts
+        if: always()
+        uses: ./modules/lib/golioth-firmware-sdk/.github/actions/safe-upload-artifacts
         with:
+          secrets-json: ${{ toJson(secrets) }}
           name: twister-run-artifacts-${{ matrix.artifact_suffix }}
           path: |
             reports/*
@@ -248,20 +250,18 @@ jobs:
             twister-out/*.json
 
       - name: Prepare report summary
-        if: always() && steps.mask-logs.outcome == 'success'
+        if: always()
         run: |
           rm -rf summary
           mkdir summary
           cp twister-out/twister_suite_report.xml summary/samples-zephyr-${{ matrix.artifact_suffix }}.xml
 
-      - name: Upload report summary
-        uses: actions/upload-artifact@v4
-        if: always() && steps.mask-logs.outcome == 'success'
+      - name: Safe upload report summary
+        uses: ./modules/lib/golioth-firmware-sdk/.github/actions/safe-upload-artifacts
+        if: always()
         with:
-          name: ci-summary-samples-zephyr-${{ matrix.artifact_suffix }}
-          path: |
-            summary/*
-
+          name: ci-summary-samples-zephyr-${{ inputs.hil_board }}
+          path: summary/*
 
   hil_sample_zephyr_nsim_coverage:
     runs-on: ubuntu-latest
