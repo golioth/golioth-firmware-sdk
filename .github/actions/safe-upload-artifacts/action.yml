@@ -1,0 +1,96 @@
+name: Mask secrets in files
+
+description: |
+  Search all files in a give path(s) and replace any GitHub secrets with ***NAME_OF_SECRET***
+
+inputs:
+  secrets-json:
+    description: 'Secrets context to be masked, in JSON format'
+    required: true
+  name:
+    description: 'String to use as the archive name'
+    required: true
+  path:
+    description: 'Path(s) to the files to be include in the upload'
+    required: true
+
+runs:
+  using: composite
+  steps:
+    - name: Check for installed commands
+      shell: bash
+      run: |
+        if ! command -v jq; then
+          apt update && apt install -y jq
+
+          if ! command -v jq; then
+            echo "Could not install command: jq"
+            exit 1
+          fi
+        fi
+
+    - name: Generate list of files to mask
+      shell: bash
+      run: |
+        rm -rf files_to_search.txt
+        rm -rf found_files.txt
+        touch found_files.txt
+
+        # Enable globbing
+        shopt -s globstar
+
+        # Iterate list of input paths and use find to create a file list from the patterns
+        while IFS= read -r line || [[ -n $line ]]; do
+          echo $line
+          [ $(find "${line}" -type f 2>/dev/null >> found_files.txt) >= 0 ]
+        done < <(printf '%s' "${{ inputs.path }}")
+
+        uniq found_files.txt > files_to_search.txt
+
+        if [ ! -s files_to_search.txt ]; then
+          echo "Failed to find any files to process. Check path input."
+          rm found_files.txt
+          rm files_to_search.txt
+          exit 1
+        fi
+
+        rm found_files.txt
+
+    - name: Find and mask
+      id: find-and-mask
+      shell: bash
+      env:
+        SECRETS_CONTEXT: '${{ inputs.secrets-json }}'
+      run: |
+        for key in $(jq -r "keys[]" <<< "$SECRETS_CONTEXT");
+        do
+          secret_val=$(jq -r ".$key" <<< "$SECRETS_CONTEXT")
+
+          if [[ ! $secret_val =~ "\n" ]]; then
+            # This approach to escaping the regex found: https://stackoverflow.com/a/29613573/922013
+            ESCAPED_SECRET=$(sed 's/[^^]/[&]/g; s/\^/\\^/g' <<< "$secret_val")
+
+            cat files_to_search.txt | while read search_file
+            do
+              if [ -f $search_file ]; then
+                # Always return true, otherwise a grep that doesn't find files will cause step to fail
+                [ $(grep -Rl $ESCAPED_SECRET $search_dir > files_with_secret.txt) >= 0 ]
+              fi
+            done
+
+            uniq files_with_secret.txt > file_list.txt
+
+            if [ -s files_with_secret.txt ]; then
+              cat file_list.txt | xargs -I{} sed -i "s/$ESCAPED_SECRET/***$key***/g" {}
+            fi
+
+            rm files_with_secret.txt file_list.txt
+          fi
+        done
+
+    - name: Upload artifacts
+      uses: actions/upload-artifact@v4
+      if: steps.find-and-mask.outcome == 'success'
+      with:
+        name: ${{ inputs.name }}
+        path: ${{ inputs.path }}
