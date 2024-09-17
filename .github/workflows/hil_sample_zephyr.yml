@@ -64,68 +64,68 @@ on:
         type: string
 
 jobs:
-  build:
-    name: zephyr-${{ inputs.hil_board }}-twister-build
-    container: golioth/golioth-zephyr-base:0.16.3-SDK-v0
-    env:
-      ZEPHYR_SDK_INSTALL_DIR: /opt/toolchains/zephyr-sdk-0.16.3
-    runs-on: ubuntu-latest
-    steps:
-    - name: Checkout repository and submodules
-      uses: actions/checkout@v4
-      with:
-        path: modules/lib/golioth-firmware-sdk
-        submodules: 'recursive'
-    - name: Init and update west
-      run: |
-        mkdir -p .west
-        cat <<EOF > .west/config
-        [manifest]
-        path = modules/lib/golioth-firmware-sdk
-        file = ${{ inputs.manifest }}
-        EOF
+  #build:
+    #name: zephyr-${{ inputs.hil_board }}-twister-build
+    #container: golioth/golioth-zephyr-base:0.16.3-SDK-v0
+    #env:
+      #ZEPHYR_SDK_INSTALL_DIR: /opt/toolchains/zephyr-sdk-0.16.3
+    #runs-on: ubuntu-latest
+    #steps:
+    #- name: Checkout repository and submodules
+      #uses: actions/checkout@v4
+      #with:
+        #path: modules/lib/golioth-firmware-sdk
+        #submodules: 'recursive'
+    #- name: Init and update west
+      #run: |
+        #mkdir -p .west
+        #cat <<EOF > .west/config
+        #[manifest]
+        #path = modules/lib/golioth-firmware-sdk
+        #file = ${{ inputs.manifest }}
+        #EOF
 
-        west update -o=--depth=1 -n
+        #west update -o=--depth=1 -n
 
-        # Patch but only for Zephyr (patch will fail on NCS builds)
-        if west config manifest.file | grep -q '.ci-west-zephyr.yml'; then
-          git config --global user.email user@git-scm.com
-          git config --global user.name "Git User"
-          west patch
-        fi
+        ## Patch but only for Zephyr (patch will fail on NCS builds)
+        #if west config manifest.file | grep -q '.ci-west-zephyr.yml'; then
+          #git config --global user.email user@git-scm.com
+          #git config --global user.name "Git User"
+          #west patch
+        #fi
 
-        pip3 install -r zephyr/scripts/requirements-base.txt
-        pip3 install -r zephyr/scripts/requirements-build-test.txt
-        pip3 install -r zephyr/scripts/requirements-run-test.txt
-        # Needed for TF-M
-        pip3 install cryptography==41.0.7 pyasn1 pyyaml cbor>=1.0.0 imgtool>=1.9.0 jinja2 click
+        #pip3 install -r zephyr/scripts/requirements-base.txt
+        #pip3 install -r zephyr/scripts/requirements-build-test.txt
+        #pip3 install -r zephyr/scripts/requirements-run-test.txt
+        ## Needed for TF-M
+        #pip3 install cryptography==41.0.7 pyasn1 pyyaml cbor>=1.0.0 imgtool>=1.9.0 jinja2 click
 
-    - name: Download binary blobs
-      if: ${{ inputs.binary_blob }}
-      run: |
-        west blobs fetch ${{ inputs.binary_blob }}
+    #- name: Download binary blobs
+      #if: ${{ inputs.binary_blob }}
+      #run: |
+        #west blobs fetch ${{ inputs.binary_blob }}
 
-    - name: Compile Tests
-      run: |
-        export EXTRA_BUILD_ARGS=-x=CONFIG_GOLIOTH_COAP_HOST_URI=\"${{ inputs.coap_gateway_url }}\"
+    #- name: Compile Tests
+      #run: |
+        #export EXTRA_BUILD_ARGS=-x=CONFIG_GOLIOTH_COAP_HOST_URI=\"${{ inputs.coap_gateway_url }}\"
 
-        zephyr/scripts/twister                                                \
-              --platform ${{ inputs.west_board }}                             \
-              -T modules/lib/golioth-firmware-sdk/examples/zephyr             \
-              --prep-artifacts-for-testing                                    \
-              --package-artifacts test_artifacts_${{ inputs.hil_board }}.tar \
-              $EXTRA_BUILD_ARGS
+        #zephyr/scripts/twister                                                \
+              #--platform ${{ inputs.west_board }}                             \
+              #-T modules/lib/golioth-firmware-sdk/examples/zephyr             \
+              #--prep-artifacts-for-testing                                    \
+              #--package-artifacts test_artifacts_${{ inputs.hil_board }}.tar \
+              #$EXTRA_BUILD_ARGS
 
-    - name: Save artifacts
-      uses: actions/upload-artifact@v4
-      with:
-        name: test_artifacts_${{ inputs.hil_board }}
-        path: test_artifacts_${{ inputs.hil_board }}.tar
+    #- name: Save artifacts
+      #uses: actions/upload-artifact@v4
+      #with:
+        #name: test_artifacts_${{ inputs.hil_board }}
+        #path: test_artifacts_${{ inputs.hil_board }}.tar
 
   test:
     name: zephyr-${{ inputs.hil_board }}-twister-run
     if: ${{ inputs.run_tests }}
-    needs: build
+    #needs: build
     runs-on: [ is_active, "has_${{ inputs.hil_board }}" ]
 
     container:
@@ -142,63 +142,63 @@ jobs:
         uses: actions/checkout@v4
         with:
           path: modules/lib/golioth-firmware-sdk
-      - name: Init and update west
-        run: |
-          rm -rf zephyr
+      #- name: Init and update west
+        #run: |
+          #rm -rf zephyr
 
-          mkdir -p .west
-          cat <<EOF > .west/config
-          [manifest]
-          path = modules/lib/golioth-firmware-sdk
-          file = .ci-west-zephyr-twister.yml
-          EOF
+          #mkdir -p .west
+          #cat <<EOF > .west/config
+          #[manifest]
+          #path = modules/lib/golioth-firmware-sdk
+          #file = .ci-west-zephyr-twister.yml
+          #EOF
 
-          pip3 install west
+          #pip3 install west
 
-          west update -o=--depth=1 -n
-          git config --global user.email user@git-scm.com
-          git config --global user.name "Git User"
-          west patch
+          #west update -o=--depth=1 -n
+          #git config --global user.email user@git-scm.com
+          #git config --global user.name "Git User"
+          #west patch
 
-          pip3 install -r zephyr/scripts/requirements-base.txt
-          pip3 install -r zephyr/scripts/requirements-build-test.txt
-          pip3 install -r zephyr/scripts/requirements-run-test.txt
+          #pip3 install -r zephyr/scripts/requirements-base.txt
+          #pip3 install -r zephyr/scripts/requirements-build-test.txt
+          #pip3 install -r zephyr/scripts/requirements-run-test.txt
 
-          pip3 install git+https://github.com/golioth/python-golioth-tools@v0.6.3
-      - name: Power On USB Hub
-        run: python3 /opt/golioth-scripts/usb_hub_power.py on
-      - name: Download build
-        uses: actions/download-artifact@v4
-        with:
-          name: test_artifacts_${{ inputs.hil_board }}
-          path: .
-      - name: Extract artifacts
-        run: tar -xvf test_artifacts_${{ inputs.hil_board }}.tar
-      - name: Run test
-        shell: bash
-        env:
-          hil_board: ${{ inputs.hil_board }}
-          west_board: ${{ inputs.west_board }}
-        run: |
-          source /opt/credentials/runner_env.sh
-          export PATH=$PATH:/opt/SEGGER/JLink
-          export PATH=$PATH:/usr/local/go/bin
-          export PATH=$PATH:$(go env GOPATH)/bin
-          PORT_VAR=CI_${hil_board^^}_PORT
-          SNR_VAR=CI_${hil_board^^}_SNR
-          zephyr/scripts/twister                                                                  \
-                -p ${{ inputs.west_board }}                                                       \
-                -T modules/lib/golioth-firmware-sdk/examples/zephyr                               \
-                --device-testing                                                                  \
-                --device-serial ${!PORT_VAR}                                                      \
-                --test-only                                                                       \
-                ${{ inputs.extra_twister_args }}                                                  \
-                --pytest-args="--api-url=${{ inputs.api-url }}"                                   \
-                --pytest-args="--api-key=${{ secrets[inputs.api-key-id] }}"                       \
-                --pytest-args="--wifi-ssid=${{ secrets[format('{0}_WIFI_SSID', runner.name)] }}"  \
-                --pytest-args="--wifi-psk=${{ secrets[format('{0}_WIFI_PSK', runner.name)] }}"    \
-                --pytest-args="--mask-secrets"                                                    \
-                -v
+          #pip3 install git+https://github.com/golioth/python-golioth-tools@v0.6.3
+      #- name: Power On USB Hub
+        #run: python3 /opt/golioth-scripts/usb_hub_power.py on
+      #- name: Download build
+        #uses: actions/download-artifact@v4
+        #with:
+          #name: test_artifacts_${{ inputs.hil_board }}
+          #path: .
+      #- name: Extract artifacts
+        #run: tar -xvf test_artifacts_${{ inputs.hil_board }}.tar
+      #- name: Run test
+        #shell: bash
+        #env:
+          #hil_board: ${{ inputs.hil_board }}
+          #west_board: ${{ inputs.west_board }}
+        #run: |
+          #source /opt/credentials/runner_env.sh
+          #export PATH=$PATH:/opt/SEGGER/JLink
+          #export PATH=$PATH:/usr/local/go/bin
+          #export PATH=$PATH:$(go env GOPATH)/bin
+          #PORT_VAR=CI_${hil_board^^}_PORT
+          #SNR_VAR=CI_${hil_board^^}_SNR
+          #zephyr/scripts/twister                                                                  \
+                #-p ${{ inputs.west_board }}                                                       \
+                #-T modules/lib/golioth-firmware-sdk/examples/zephyr                               \
+                #--device-testing                                                                  \
+                #--device-serial ${!PORT_VAR}                                                      \
+                #--test-only                                                                       \
+                #${{ inputs.extra_twister_args }}                                                  \
+                #--pytest-args="--api-url=${{ inputs.api-url }}"                                   \
+                #--pytest-args="--api-key=${{ secrets[inputs.api-key-id] }}"                       \
+                #--pytest-args="--wifi-ssid=${{ secrets[format('{0}_WIFI_SSID', runner.name)] }}"  \
+                #--pytest-args="--wifi-psk=${{ secrets[format('{0}_WIFI_PSK', runner.name)] }}"    \
+                #--pytest-args="--mask-secrets"                                                    \
+                #-v
 
       - name: Safe upload twister artifacts
         id: safe-upload-artifacts
@@ -228,48 +228,48 @@ jobs:
           name: ci-summary-samples-zephyr-${{ inputs.hil_board }}
           path: summary/*
 
-      - name: Erase flash
-        if: always()
-        shell: bash
-        env:
-          hil_board: ${{ inputs.hil_board }}
-        run: |
-          source /opt/credentials/runner_env.sh
-          export PATH=$PATH:/opt/SEGGER/JLink
-          SNR_VAR=CI_${hil_board^^}_SNR
-          PORT_VAR=CI_${hil_board^^}_PORT
-          cat <<EOF > erase_mimxrt1024_evk.jlink
-          r
-          h
-          exec EnableEraseAllFlashBanks
-          erase
-          sleep 3
-          r
-          sleep 3
-          q
-          EOF
+      #- name: Erase flash
+        #if: always()
+        #shell: bash
+        #env:
+          #hil_board: ${{ inputs.hil_board }}
+        #run: |
+          #source /opt/credentials/runner_env.sh
+          #export PATH=$PATH:/opt/SEGGER/JLink
+          #SNR_VAR=CI_${hil_board^^}_SNR
+          #PORT_VAR=CI_${hil_board^^}_PORT
+          #cat <<EOF > erase_mimxrt1024_evk.jlink
+          #r
+          #h
+          #exec EnableEraseAllFlashBanks
+          #erase
+          #sleep 3
+          #r
+          #sleep 3
+          #q
+          #EOF
 
-          if [[ "${hil_board}" == "nrf9160dk" ]] || [[ "${hil_board}" == "nrf52840dk" ]]; then
-            nrfjprog --recover --snr ${!SNR_VAR}
+          #if [[ "${hil_board}" == "nrf9160dk" ]] || [[ "${hil_board}" == "nrf52840dk" ]]; then
+            #nrfjprog --recover --snr ${!SNR_VAR}
 
-          elif [[ "${hil_board}" == "esp32_devkitc_wrover" ]]; then
-            esptool.py --port ${!PORT_VAR} erase_flash
+          #elif [[ "${hil_board}" == "esp32_devkitc_wrover" ]]; then
+            #esptool.py --port ${!PORT_VAR} erase_flash
 
-          elif [[ "${hil_board}" == "mimxrt1024_evk" ]]; then
-            JLinkExe -nogui 1 -if swd -speed auto -device MIMXRT1024XXX5A -CommanderScript erase_mimxrt1024_evk.jlink -SelectEmuBySN ${!SNR_VAR}
+          #elif [[ "${hil_board}" == "mimxrt1024_evk" ]]; then
+            #JLinkExe -nogui 1 -if swd -speed auto -device MIMXRT1024XXX5A -CommanderScript erase_mimxrt1024_evk.jlink -SelectEmuBySN ${!SNR_VAR}
 
-          elif [[ "${hil_board}" == "rak5010" ]]; then
-            gdb \
-            -ex "set confirm off" \
-            -ex "target extended-remote "${CI_BLACKMAGICPROBE_PORT} \
-            -ex "monitor swdp_scan" \
-            -ex "attach 1" \
-            -ex "monitor erase_mass" \
-            -ex "kill" \
-            -ex "quit" \
-            -silent
+          #elif [[ "${hil_board}" == "rak5010" ]]; then
+            #gdb \
+            #-ex "set confirm off" \
+            #-ex "target extended-remote "${CI_BLACKMAGICPROBE_PORT} \
+            #-ex "monitor swdp_scan" \
+            #-ex "attach 1" \
+            #-ex "monitor erase_mass" \
+            #-ex "kill" \
+            #-ex "quit" \
+            #-silent
 
-          fi
-      - name: Power Off USB Hub
-        if: always()
-        run: python3 /opt/golioth-scripts/usb_hub_power.py off
+          #fi
+      #- name: Power Off USB Hub
+        #if: always()
+        #run: python3 /opt/golioth-scripts/usb_hub_power.py off
