@@ -1,0 +1,70 @@
+name: Mask secrets in files
+
+description: |
+  Search all files in a given path(s) and replace any GitHub secrets with ***NAME_OF_SECRET***
+
+inputs:
+  secrets-json:
+    description: 'Secrets context to be masked, in JSON format'
+    required: true
+  name:
+    description: 'String to use as the archive name'
+    required: true
+  path:
+    description: 'Path(s) to the files to be include in the upload'
+    required: true
+
+runs:
+  using: composite
+  steps:
+    - name: Check for installed commands
+      shell: bash
+      run: |
+        if ! command -v jq; then
+          apt update && apt install -y jq
+
+          if ! command -v jq; then
+            echo "Could not install command: jq"
+            exit 1
+          fi
+        fi
+
+    - name: Find and mask
+      id: find-and-mask
+      shell: bash
+      env:
+        SECRETS_CONTEXT: '${{ inputs.secrets-json }}'
+      run: |
+        rm -rf __grep_search_output.txt
+
+        # Enable globbing
+        shopt -s globstar
+
+        for key in $(jq -r "keys[]" <<< "$SECRETS_CONTEXT");
+        do
+          secret_val=$(jq -r ".$key" <<< "$SECRETS_CONTEXT")
+
+          if [[ ! $secret_val =~ "\n" ]]; then
+            # This approach to escaping the regex found: https://stackoverflow.com/a/29613573/922013
+            ESCAPED_SECRET=$(sed 's/[^^]/[&]/g; s/\^/\\^/g' <<< "$secret_val")
+
+            # Iterate list of input path patterns and use grep to create a list of files that
+            # contain secrets
+            while IFS= read -r search_path || [[ -n $search_path ]];
+            do
+              [ $(grep -Rl $ESCAPED_SECRET $search_path 2>/dev/null >> __grep_search_output.txt) >= 0 ]
+            done < <(printf '%s' "${{ inputs.path }}")
+
+            if [ -s __grep_search_output.txt ]; then
+              uniq __grep_search_output.txt | xargs -I{} sed -i "s/$ESCAPED_SECRET/***$key***/g" {}
+            fi
+
+            rm -rf __grep_search_output.txt
+          fi
+        done
+
+    - name: Upload artifacts
+      uses: actions/upload-artifact@v4
+      with:
+        name: ${{ inputs.name }}
+        path: ${{ inputs.path }}
