@@ -205,17 +205,12 @@ jobs:
                 --pytest-args="--hil-board=${{ inputs.hil_board }}"                               \
                 -v
 
-      - name: Mask secrets in logs
-        id: mask-logs
+      - name: Safe upload twister artifacts
+        id: safe-upload-artifacts
         if: always()
-        uses: ./modules/lib/golioth-firmware-sdk/.github/actions/mask_secrets
+        uses: ./modules/lib/golioth-firmware-sdk/.github/actions/safe-upload-artifacts
         with:
           secrets-json: ${{ toJson(secrets) }}
-
-      - name: Upload artifacts
-        uses: actions/upload-artifact@v4
-        if: always() && steps.mask-logs.outcome == 'success'
-        with:
           name: twister-run-artifacts-${{ inputs.hil_board }}
           path: |
             reports/*
@@ -225,15 +220,15 @@ jobs:
             twister-out/*.json
 
       - name: Prepare CI report summary
-        if: always() && steps.mask-logs.outcome == 'success'
+        if: always()
         run: |
           rm -rf summary
           mkdir summary
           cp twister-out/twister_suite_report.xml summary/samples-zephyr-${{ inputs.hil_board }}.xml
 
-      - name: Upload CI report summary
-        uses: actions/upload-artifact@v4
-        if: always() && steps.mask-logs.outcome == 'success'
+      - name: Safe upload CI report summary
+        uses: ./modules/lib/golioth-firmware-sdk/.github/actions/safe-upload-artifacts
+        if: always()
         with:
           name: ci-summary-samples-zephyr-${{ inputs.hil_board }}
           path: summary/*
