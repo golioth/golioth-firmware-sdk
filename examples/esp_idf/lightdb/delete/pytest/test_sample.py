@@ -30,14 +30,14 @@ async def test_lightdb_delete(board, device):
 
     # Set Golioth credential
     golioth_cred = (await device.credentials.list())[0]
-    board.set_golioth_psk_credentials(golioth_cred.identity, golioth_cred.key)
+    await board.set_golioth_psk_credentials(golioth_cred.identity, golioth_cred.key)
 
     # Wait for device to connect
-    board.wait_for_regex_in_line(r'.*Golioth client connected', timeout_s=30.0)
+    await board.wait_for_regex_in_line(r'.*Golioth client connected', timeout_s=30.0)
 
     # Verify lightdb delete (async)
 
-    board.wait_for_regex_in_line(r'.*Counter deleted successfully', timeout_s=10.0)
+    await board.wait_for_regex_in_line(r'.*Counter deleted successfully', timeout_s=10.0)
     counter = await device.lightdb.get("counter")
     assert counter is None
 
@@ -47,11 +47,11 @@ async def test_lightdb_delete(board, device):
 
     # Verify lightdb delete (sync)
 
-    board.wait_for_regex_in_line(r'.*Counter deleted successfully', timeout_s=10.0)
+    await board.wait_for_regex_in_line(r'.*Counter deleted successfully', timeout_s=10.0)
     counter = await device.lightdb.get("counter")
     if counter is not None:
         # Try again, since previous counter value might get reassigned in counter_set_and_verify()
-        board.wait_for_regex_in_line(r'.*Counter deleted successfully', timeout_s=10.0)
+        await board.wait_for_regex_in_line(r'.*Counter deleted successfully', timeout_s=10.0)
         await trio.sleep(2)
         counter = await device.lightdb.get("counter")
 

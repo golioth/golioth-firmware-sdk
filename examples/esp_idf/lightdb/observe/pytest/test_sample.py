@@ -21,15 +21,15 @@ async def test_lightdb_observe(board, device):
 
     # Set Golioth credential
     golioth_cred = (await device.credentials.list())[0]
-    board.set_golioth_psk_credentials(golioth_cred.identity, golioth_cred.key)
+    await board.set_golioth_psk_credentials(golioth_cred.identity, golioth_cred.key)
 
     # Wait for device to connect
-    board.wait_for_regex_in_line('.*Golioth client connected', timeout_s=30.0)
+    await board.wait_for_regex_in_line('.*Golioth client connected', timeout_s=30.0)
 
     await trio.sleep(2)
 
     pattern = re.compile(r'.*6e 75 6c 6c\s+\|null')
-    success_pattern = board.wait_for_regex_in_line(pattern, timeout_s=10.0)
+    success_pattern = await board.wait_for_regex_in_line(pattern, timeout_s=10.0)
     if success_pattern:
         print("Success for pattern '6e 75 6c 6c |null'")
 
@@ -38,6 +38,6 @@ async def test_lightdb_observe(board, device):
     await trio.sleep(2)
 
     pattern = re.compile(r'.*38 37\s+\|87')
-    success_pattern = board.wait_for_regex_in_line(pattern, timeout_s=10.0)
+    success_pattern = await board.wait_for_regex_in_line(pattern, timeout_s=10.0)
     if success_pattern:
         print("Success for pattern '38 37 |87'")

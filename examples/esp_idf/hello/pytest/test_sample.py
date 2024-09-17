@@ -14,11 +14,11 @@ pytestmark = pytest.mark.anyio
 async def test_hello(board, device):
     # Set Golioth credential
     golioth_cred = (await device.credentials.list())[0]
-    board.set_golioth_psk_credentials(golioth_cred.identity, golioth_cred.key)
+    await board.set_golioth_psk_credentials(golioth_cred.identity, golioth_cred.key)
 
     # Record timestamp and wait for fourth hello message
     start = datetime.datetime.utcnow()
-    board.wait_for_regex_in_line('.*Sending hello! 3', timeout_s=90.0)
+    await board.wait_for_regex_in_line('.*Sending hello! 3', timeout_s=90.0)
 
     # Check logs for hello messages
     end = datetime.datetime.utcnow()

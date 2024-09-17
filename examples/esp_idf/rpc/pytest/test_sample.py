@@ -13,10 +13,10 @@ pytestmark = pytest.mark.anyio
 async def test_rpc(board, device):
     # Set Golioth credential
     golioth_cred = (await device.credentials.list())[0]
-    board.set_golioth_psk_credentials(golioth_cred.identity, golioth_cred.key)
+    await board.set_golioth_psk_credentials(golioth_cred.identity, golioth_cred.key)
 
     # Wait for device to reboot and connect
-    board.wait_for_regex_in_line('.*RPC observation established', timeout_s=90.0)
+    await board.wait_for_regex_in_line('.*RPC observation established', timeout_s=90.0)
 
     # Test successful RPC
     result = await device.rpc.call("multiply", [ 7, 6 ])
