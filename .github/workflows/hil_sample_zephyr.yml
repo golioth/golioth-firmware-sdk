@@ -114,10 +114,11 @@ jobs:
               --platform ${{ inputs.west_board }}                             \
               -T modules/lib/golioth-firmware-sdk/examples/zephyr             \
               --prep-artifacts-for-testing                                    \
-              --package-artifacts test_artifacts_${{ inputs.hil_board }}.tar \
+              --package-artifacts test_artifacts_${{ inputs.hil_board }}.tar  \
               $EXTRA_BUILD_ARGS
 
     - name: Save artifacts
+      if: always()
       uses: actions/upload-artifact@v4
       with:
         name: test_artifacts_${{ inputs.hil_board }}
@@ -125,7 +126,7 @@ jobs:
 
   test:
     name: zephyr-${{ inputs.hil_board }}-twister-run
-    if: ${{ inputs.run_tests }}
+    if: ${{ inputs.run_tests && always() }}
     needs: build
     runs-on: [ is_active, "has_${{ inputs.hil_board }}" ]
     timeout-minutes: 30
