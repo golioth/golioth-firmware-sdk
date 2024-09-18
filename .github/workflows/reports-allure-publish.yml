@@ -1,0 +1,49 @@
+name: Publish Allure Reports to GitHub Pages
+
+on:
+  workflow_call:
+
+jobs:
+  allure-collect-and-publish:
+    runs-on: ubuntu-latest
+    steps:
+      - name: Load Allure report history
+        uses: actions/checkout@v4
+        continue-on-error: true
+        with:
+          repository: golioth/allure-reports
+          ref: gh-pages
+          path: gh-pages
+          ssh-key: ${{ secrets.ALLURE_REPORTS_DEPLOY_KEY }}
+
+      - name: Collect individual reports
+        uses: actions/download-artifact@v4
+        with:
+          path: reports/allure-results
+          pattern: allure-reports-*
+          merge-multiple: true
+
+      - name: Upload collected reports
+        uses: actions/upload-artifact@v4
+        with:
+          name: allure-reports-alltest
+          path: reports/allure-results
+
+      - name: Build Allure report
+        uses: simple-elf/allure-report-action@v1.9
+        if: always()
+        with:
+          gh_pages: gh-pages
+          allure_history: reports/allure-history
+          allure_results: reports/allure-results
+          github_repo: golioth/allure-reports
+          github_repo_owner: golioth
+
+      - name: Publish test report
+        uses: peaceiris/actions-gh-pages@v4
+        if: always()
+        with:
+          deploy_key: ${{ secrets.ALLURE_REPORTS_DEPLOY_KEY }}
+          external_repository: golioth/allure-reports
+          publish_branch: gh-pages
+          publish_dir: reports/allure-history
