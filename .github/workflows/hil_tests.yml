@@ -482,27 +482,12 @@ jobs:
         path: allure-reports
 
   publish_summary:
-    runs-on: ubuntu-latest
-    if: always()
     needs:
+      - hil_sample_esp-idf
       - hil_sample_zephyr
       - hil_sample_zephyr_nsim
-
-    steps:
-    - name: Checkout repository
-      uses: actions/checkout@v4
-
-    - name: Gather summaries
-      uses: actions/download-artifact@v4
-      with:
-        path: summary
-        pattern: ci-summary-*
-        merge-multiple: true
-
-    - name: Test Report
-      uses: phoenix-actions/test-reporting@v15
-      if: success() || failure()
-      with:
-        name: HIL Test Summary
-        path: summary/*.xml
-        reporter: java-junit
+      - hil_test_esp-idf
+      - hil_test_linux
+      - hil_test_zephyr
+    if: always()
+    uses: ./.github/workflows/reports-summary-publish.yml
