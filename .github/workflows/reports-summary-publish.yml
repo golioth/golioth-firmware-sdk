@@ -1,0 +1,26 @@
+name: Publish Summary of all test to Checks section
+
+on:
+  workflow_call:
+
+jobs:
+  publish-test-summaries:
+    runs-on: ubuntu-latest
+    steps:
+    - name: Checkout repository
+      uses: actions/checkout@v4
+
+    - name: Gather summaries
+      uses: actions/download-artifact@v4
+      with:
+        path: summary
+        pattern: ci-summary-*
+        merge-multiple: true
+
+    - name: Test Report
+      uses: phoenix-actions/test-reporting@v15
+      if: success() || failure()
+      with:
+        name: Firmware Test Summary
+        path: summary/*.xml
+        reporter: java-junit
