@@ -24,7 +24,7 @@
 #include <golioth_ciphersuites.h>
 #include "golioth_openthread.h"
 
-LOG_MODULE_REGISTER(golioth_coap_client_zephyr);
+LOG_TAG_DEFINE(golioth_coap_client_zephyr);
 
 #define GOLIOTH_MAX_IDENTITY_LEN 32
 #define GOLIOTH_EMPTY_PACKET_LEN (16 + GOLIOTH_MAX_IDENTITY_LEN)
