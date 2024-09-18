@@ -86,12 +86,6 @@ jobs:
       with:
         python-version: 3.x
         architecture: 'x64'
-    - name: Build ESP-IDF golioth_basics project
-      uses: espressif/esp-idf-ci-action@v1
-      with:
-        esp_idf_version: v5.3
-        target: esp32
-        path: 'examples/esp_idf/golioth_basics'
     - name: Build ESP-IDF cpp project
       uses: espressif/esp-idf-ci-action@v1
       with:
@@ -112,25 +106,6 @@ jobs:
         esp_idf_version: v5.3
         target: esp32
         path: 'examples/esp_idf/certificate_auth'
-
-  esp_idf_old_release_build:
-    runs-on: ubuntu-latest
-    steps:
-    - name: Checkout repository and submodules
-      uses: actions/checkout@v4
-      with:
-        submodules: 'recursive'
-    - name: Setup Python
-      uses: actions/setup-python@v5
-      with:
-        python-version: 3.x
-        architecture: 'x64'
-    - name: Build ESP-IDF golioth_basics project with IDF 4.4.2
-      uses: espressif/esp-idf-ci-action@v1
-      with:
-        esp_idf_version: v4.4.2
-        target: esp32
-        path: 'examples/esp_idf/golioth_basics'
 
   modus_toolbox_build:
     runs-on: ubuntu-latest
