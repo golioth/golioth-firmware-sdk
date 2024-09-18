@@ -73,6 +73,7 @@ jobs:
     name: esp-idf-${{ inputs.hil_board }}-sample-test
     needs: build
     runs-on: [ is_active, "has_${{ inputs.hil_board }}" ]
+    timeout-minutes: 30
 
     container:
       image: golioth/golioth-hil-base:75dd802

@@ -112,6 +112,7 @@ jobs:
     name: zephyr-${{ inputs.hil_board }}-test
     needs: build
     runs-on: [ is_active, "has_${{ inputs.hil_board }}" ]
+    timeout-minutes: 30
 
     container:
       image: golioth/golioth-hil-base:75dd802
