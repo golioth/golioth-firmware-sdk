@@ -368,6 +368,9 @@ jobs:
       - hil_test_zephyr_nsim
     name: zephyr-coverage
     steps:
+      - name: Checkout repository
+        uses: actions/checkout@v4
+
       - name: Download HIL coverage artifacts
         uses: actions/download-artifact@v4
         with:
@@ -407,7 +410,17 @@ jobs:
             $hil_tracefiles $twister_tracefiles \
             -e examples -e external -e tests"
 
-          gcovr --txt-summary --xml coverage.xml
+          rm -rf coverage
+          mkdir -p coverage
+          gcovr --txt-summary --xml coverage.xml --html-details coverage/index.html
+
+      - name: Upload coverage artifacts
+        uses: actions/upload-artifact@v4
+        if: always()
+        with:
+          secrets-json: ${{ toJson(secrets) }}
+          name: coverage-native-sim
+          path: coverage/*
 
       - name: Coverage report
         uses: irongut/CodeCoverageSummary@v1.3.0
