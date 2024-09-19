@@ -37,7 +37,7 @@ def runner_name(request):
 def add_allure_report_parent_suite(hil_board):
     # Set the full Allure suite name in case there is a failure during a fixture (before a test
     # function runs).
-    allure.dynamic.parent_suite(f"hil.zephyr.{hil_board}")
+    allure.dynamic.parent_suite(f"sample.zephyr.{hil_board}")
 
 @pytest.fixture(autouse=True, scope="function")
 def add_allure_report_device_and_platform(hil_board, runner_name):
@@ -47,7 +47,7 @@ def add_allure_report_device_and_platform(hil_board, runner_name):
     allure.dynamic.tag("zephyr")
     allure.dynamic.parameter("board_name", hil_board)
     allure.dynamic.parameter("platform_name", "zephyr")
-    allure.dynamic.parent_suite(f"hil.zephyr.{hil_board}")
+    allure.dynamic.parent_suite(f"sample.zephyr.{hil_board}")
 
     if runner_name is not None:
         allure.dynamic.tag(runner_name)
