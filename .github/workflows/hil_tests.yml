@@ -396,18 +396,23 @@ jobs:
         run: |
           hil_tracefiles=$(for t in native-sim-hil-test-coverage-*; do
             for d in $t/*; do
-              printf -- "--add-tracefile $d/coverage.json "
+              printf -- "$d/coverage.json "
             done
           done)
 
           twister_tracefiles=$(for d in twister-run-artifacts-*; do
-            printf -- "--add-tracefile $d/twister-out/coverage.json "
+            printf -- "$d/twister-out/coverage.json "
           done)
 
           shopt -s expand_aliases
 
+          echo "HIL tracefiles:${hil_tracefiles}"
+          echo "Twister tracefiles:${twister_tracefiles}"
+
+          tracefiles="${hil_tracefiles}${twister_tracefiles}"
+
           alias gcovr="gcovr \
-            $hil_tracefiles $twister_tracefiles \
+            ${tracefiles// / --add-tracefile } \
             -e examples -e external -e tests"
 
           rm -rf coverage
