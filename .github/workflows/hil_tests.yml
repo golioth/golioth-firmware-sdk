@@ -315,7 +315,7 @@ jobs:
               --platform ${{ matrix.west_board }}                                   \
               -T modules/lib/golioth-firmware-sdk/examples/zephyr                   \
               -C --coverage-basedir modules/lib/golioth-firmware-sdk                \
-              --coverage-formats txt,html                                           \
+              --coverage-formats txt                                                \
               -x=CONFIG_GOLIOTH_COAP_HOST_URI=\"${{ inputs.coap_gateway_url }}\"    \
               --pytest-args="--api-url=${{ inputs.api-url }}"                       \
               --pytest-args="--api-key=${{ secrets[inputs.api-key-id] }}"           \
@@ -333,7 +333,6 @@ jobs:
           path: |
             reports/*
             twister-out/coverage.json
-            twister-out/coverage/*
             twister-out/**/*.log
             twister-out/**/report.xml
             twister-out/*.xml
