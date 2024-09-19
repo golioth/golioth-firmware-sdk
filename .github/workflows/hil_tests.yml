@@ -383,6 +383,11 @@ jobs:
         with:
           python-version: 3.x
 
+      - name: Checkout repository
+        uses: actions/checkout@v4
+        with:
+          path: modules/lib/golioth-firmware-sdk
+
       - name: Install gcovr
         shell: bash
         run: |
@@ -407,7 +412,20 @@ jobs:
             $hil_tracefiles $twister_tracefiles \
             -e examples -e external -e tests"
 
-          gcovr --txt-summary --xml coverage.xml
+          rm -rf coverage
+          mkdir -p coverage
+          gcovr -r modules/lib/golioth-firmware-sdk \
+            --txt-summary \
+            --xml coverage.xml \
+            --html-details coverage/index.html
+
+      - name: Upload coverage artifacts
+        uses: actions/upload-artifact@v4
+        if: always()
+        with:
+          secrets-json: ${{ toJson(secrets) }}
+          name: coverage-native-sim
+          path: coverage/*
 
       - name: Coverage report
         uses: irongut/CodeCoverageSummary@v1.3.0
