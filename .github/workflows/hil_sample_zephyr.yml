@@ -126,7 +126,7 @@ jobs:
 
   test:
     name: zephyr-${{ inputs.hil_board }}-twister-run
-    if: ${{ inputs.run_tests && always() }}
+    if: ${{ inputs.run_tests && !cancelled() }}
     needs: build
     runs-on: [ is_active, "has_${{ inputs.hil_board }}" ]
     timeout-minutes: 30
