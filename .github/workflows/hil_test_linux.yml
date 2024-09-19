@@ -108,13 +108,15 @@ jobs:
         echo "$coverage_summary" >> $GITHUB_OUTPUT
         echo "EOF" >> $GITHUB_OUTPUT
         exit $EXITCODE
-    - name: Upload reports
-      uses: actions/upload-artifact@v4
-      if: ${{ always() }}
+
+    - name: Safe upload Allure reports
+      if: always()
+      uses: ./.github/actions/safe-upload-artifacts
       with:
+        secrets-json: ${{ toJson(secrets) }}
         name: allure-reports-hil-linux
         path: allure-reports
-        retention-days: 1
+
     - name: Find Comment
       uses: peter-evans/find-comment@v3
       if: github.event_name == 'pull_request'
@@ -131,9 +133,11 @@ jobs:
         issue-number: ${{ github.event.pull_request.number }}
         body: ${{ steps.run_test.outputs.coverage_summary }}
         edit-mode: replace
-    - name: Upload artifacts
-      uses: actions/upload-artifact@v4
+
+    - name: Upload test coverage artifacts
+      uses: ./.github/actions/safe-upload-artifacts
       with:
+        secrets-json: ${{ toJson(secrets) }}
         name: linux-hil-test-coverage
         path: |
           coverage_html/*

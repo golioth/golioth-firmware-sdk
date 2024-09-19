@@ -123,13 +123,15 @@ jobs:
               || EXITCODE=$?
           done
           exit $EXITCODE
-      - name: Upload reports
-        uses: actions/upload-artifact@v4
-        if: ${{ always() }}
+
+      - name: Safe upload Allure reports
+        if: always()
+        uses: ./.github/actions/safe-upload-artifacts
         with:
+          secrets-json: ${{ toJson(secrets) }}
           name: allure-reports-samples-espidf-${{ inputs.hil_board }}
           path: allure-reports
-          retention-days: 1
+
       - name: Erase flash
         if: always()
         shell: bash

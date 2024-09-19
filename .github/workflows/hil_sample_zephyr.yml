@@ -209,7 +209,6 @@ jobs:
                 -v
 
       - name: Safe upload twister artifacts
-        id: safe-upload-artifacts
         if: always()
         uses: ./modules/lib/golioth-firmware-sdk/.github/actions/safe-upload-artifacts
         with:
@@ -236,13 +235,13 @@ jobs:
           name: ci-summary-samples-zephyr-${{ inputs.hil_board }}
           path: summary/*
 
-      - name: Upload Allure reports
-        uses: actions/upload-artifact@v4
-        if: ${{ always() }}
+      - name: Safe upload Allure reports
+        if: always()
+        uses: ./modules/lib/golioth-firmware-sdk/.github/actions/safe-upload-artifacts
         with:
+          secrets-json: ${{ toJson(secrets) }}
           name: allure-reports-samples-zephyr-${{ inputs.hil_board }}
           path: allure-reports
-          retention-days: 1
 
       - name: Erase flash
         if: always()
