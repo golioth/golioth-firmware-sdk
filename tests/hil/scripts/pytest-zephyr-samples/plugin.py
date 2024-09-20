@@ -33,16 +33,13 @@ def hil_board(request):
 def runner_name(request):
     return request.config.getoption("--runner-name")
 
-@pytest.fixture(autouse=True, scope="session")
-def add_allure_report_parent_suite(hil_board):
-    # Set the full Allure suite name in case there is a failure during a fixture (before a test
-    # function runs).
-    allure.dynamic.parent_suite(f"sample.zephyr.{hil_board}")
+@pytest.hookimpl(wrapper=True)
+def pytest_runtest_setup(item):
+    if item.config.getoption("--hil-board") is not None:
+        hil_board = item.config.getoption("--hil-board")
+    else:
+        hil_board = os.environ['hil_board']
 
-@pytest.fixture(autouse=True, scope="function")
-def add_allure_report_device_and_platform(hil_board, runner_name):
-    # Set the Allure information for every test function.
-    # Especially important are the parameters which identify variants of the same test
     allure.dynamic.tag(hil_board)
     allure.dynamic.tag("zephyr")
     allure.dynamic.parameter("board_name", hil_board)
@@ -50,4 +47,6 @@ def add_allure_report_device_and_platform(hil_board, runner_name):
     allure.dynamic.parent_suite(f"sample.zephyr.{hil_board}")
 
     if runner_name is not None:
-        allure.dynamic.tag(runner_name)
+        allure.dynamic.tag(item.config.getoption("--runner-name"))
+
+    yield
