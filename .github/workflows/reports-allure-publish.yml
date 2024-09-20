@@ -51,3 +51,9 @@ jobs:
           external_repository: golioth/allure-reports
           publish_branch: gh-pages
           publish_dir: reports/allure-history
+
+      - name: Add Allure link to summary
+        run: |
+          echo "### Allure Report" >> $GITHUB_STEP_SUMMARY
+          echo "" >> $GITHUB_STEP_SUMMARY
+          echo "- [Workflow ${{ github.run_number }}](https://golioth.github.io/allure-reports/${{ github.run_number }}/)" >> $GITHUB_STEP_SUMMARY
