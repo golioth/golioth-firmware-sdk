@@ -24,3 +24,4 @@ jobs:
         name: Firmware Test Summary
         path: summary/*.xml
         reporter: java-junit
+        output-to: step-summary
