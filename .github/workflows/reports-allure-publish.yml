@@ -34,7 +34,7 @@ jobs:
           path: reports/allure-results
 
       - name: Build Allure report
-        uses: simple-elf/allure-report-action@v1.9
+        uses: szczys/allure-report-action@fix-workflow-url-when-hosted-remotely
         if: always()
         with:
           gh_pages: gh-pages
