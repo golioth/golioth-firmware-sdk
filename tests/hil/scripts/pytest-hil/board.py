@@ -6,9 +6,12 @@ import trio
 from trio_serial import SerialStream
 
 class Board(ABC):
-    def __init__(self, port, baudrate, wifi_ssid, wifi_psk, fw_image, serial_number):
-        if serial_number:
+    def __init__(self, port, baudrate, wifi_ssid, wifi_psk, fw_image, serial_number=None,
+                 bmp_port=None):
+        if serial_number is not None:
             self.serial_number = serial_number
+        if bmp_port is not None:
+            self.bmp_port = bmp_port
         self.port = port
         self.baudrate = baudrate
         self.fw_image = fw_image
