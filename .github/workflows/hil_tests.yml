@@ -76,6 +76,10 @@ jobs:
             west_board: nrf9160dk/nrf9160/ns
             manifest: .ci-west-ncs.yml
             binary_name: merged.hex
+          - hil_board: rak5010
+            west_board: rak5010/nrf52840
+            manifest: .ci-west-zephyr.yml
+            binary_name: zephyr.hex
     uses: ./.github/workflows/hil_test_zephyr.yml
     with:
       hil_board: ${{ matrix.hil_board }}
