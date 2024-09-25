@@ -9,7 +9,7 @@ LOGGER = logging.getLogger(__name__)
 
 pytestmark = pytest.mark.anyio
 
-async def test_logging(shell, device, wifi_ssid, wifi_psk):
+async def test_rpc(shell, device, wifi_ssid, wifi_psk):
     await trio.sleep(2)
 
     # Set Golioth credential
