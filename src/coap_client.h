@@ -26,6 +26,19 @@
 
 #define SZX_TO_BLOCKSIZE(szx) ((size_t) (1 << (szx + 4)))
 
+/// Callback function type for blockwise uploads that also returns the blocksize in szx format
+///
+/// @param client The client handle from the original request.
+/// @param response Response status and class/code
+/// @param path The path from the original request
+/// @param block_szx The block size from the server in coap SZX format
+/// @param arg User argument, copied from the original request. Can be NULL.
+typedef void (*golioth_set_block_cb_fn)(struct golioth_client *client,
+                                        const struct golioth_response *response,
+                                        const char *path,
+                                        size_t block_szx,
+                                        void *arg);
+
 typedef struct
 {
     enum golioth_content_type content_type;
@@ -43,12 +56,13 @@ typedef struct
     bool is_last;
     enum golioth_content_type content_type;
     size_t block_index;
+    size_t block_szx;
     // CoAP payload assumed to be dynamically allocated before enqueue
     // and freed after dequeue.
     uint8_t *payload;
     // Size of payload, in bytes
     size_t payload_size;
-    golioth_set_cb_fn callback;
+    golioth_set_block_cb_fn callback;
     void *arg;
 } golioth_coap_post_block_params_t;
 
@@ -166,9 +180,10 @@ enum golioth_status golioth_coap_client_set_block(struct golioth_client *client,
                                                   bool is_last,
                                                   enum golioth_content_type content_type,
                                                   size_t block_index,
+                                                  size_t block_szx,
                                                   const uint8_t *payload,
                                                   size_t payload_size,
-                                                  golioth_set_cb_fn callback,
+                                                  golioth_set_block_cb_fn callback,
                                                   void *callback_arg,
                                                   bool is_synchronous,
                                                   int32_t timeout_s);
