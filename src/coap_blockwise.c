@@ -78,11 +78,13 @@ static void blockwise_upload_init(struct blockwise_transfer *ctx,
 static void on_block_sent(struct golioth_client *client,
                           const struct golioth_response *response,
                           const char *path,
+                          size_t block_szx,
                           void *arg)
 {
     assert(arg);
     struct post_block_ctx *ctx = arg;
     ctx->status = response->status;
+    ctx->negotiated_blocksize_szx = block_szx;
 
     golioth_sys_sem_give(ctx->sem);
 }
@@ -136,6 +138,7 @@ static enum golioth_status upload_single_block(struct golioth_client *client,
                                                             ctx->is_last,
                                                             ctx->content_type,
                                                             ctx->block_idx,
+                                                            arg.negotiated_blocksize_szx,
                                                             ctx->block_buffer,
                                                             block_size,
                                                             on_block_sent,

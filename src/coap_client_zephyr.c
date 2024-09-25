@@ -286,7 +286,11 @@ static int golioth_coap_cb(struct golioth_req_rsp *rsp)
         case GOLIOTH_COAP_REQUEST_POST_BLOCK:
             if (req->post_block.callback)
             {
-                req->post_block.callback(client, &response, req->path, req->post_block.arg);
+                req->post_block.callback(client,
+                                         &response,
+                                         req->path,
+                                         req->post_block.block_szx,
+                                         req->post_block.arg);
             }
             break;
         case GOLIOTH_COAP_REQUEST_DELETE:

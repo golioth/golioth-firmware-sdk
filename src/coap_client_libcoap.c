@@ -206,7 +206,11 @@ static coap_response_t coap_response_handler(coap_session_t *session,
             {
                 if (req->post_block.callback)
                 {
-                    req->post_block.callback(client, &response, req->path, req->post_block.arg);
+                    req->post_block.callback(client,
+                                             &response,
+                                             req->path,
+                                             req->post_block.block_szx,
+                                             req->post_block.arg);
                 }
             }
             else if (req->type == GOLIOTH_COAP_REQUEST_DELETE)
@@ -1099,6 +1103,7 @@ static enum golioth_status coap_io_loop_once(struct golioth_client *client,
             request_msg.post_block.callback(client,
                                             &response,
                                             request_msg.path,
+                                            request_msg.post_block.block_szx,
                                             request_msg.post_block.arg);
         }
         else if (request_msg.type == GOLIOTH_COAP_REQUEST_DELETE && request_msg.delete.callback)
