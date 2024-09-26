@@ -378,8 +378,7 @@ jobs:
       - name: Download HIL Linux coverage artifacts
         uses: actions/download-artifact@v4
         with:
-          name: linux-hil-test-coverage
-          path: linux-hil-test-coverage
+          pattern: linux-hil-test-coverage-*
 
       - name: Download HIL Zephyr coverage artifacts
         uses: actions/download-artifact@v4
@@ -404,7 +403,7 @@ jobs:
       - name: Merge coverage
         shell: bash
         run: |
-          tracefiles_hil_linux=$(for f in linux-hil-test-coverage/*-coverage.json; do
+          tracefiles_hil_linux=$(for f in linux-hil-test-coverage-*/coverage.json; do
             printf -- " $f"
           done)
 
