@@ -179,7 +179,7 @@ static void on_rpc(struct golioth_client *client,
 
         status = matching_rpc->callback(&params_zsd, zse, matching_rpc->callback_arg);
 
-        GLTH_LOGD(TAG, "RPC status code %d for call id :%.*s", status, id.len, id.value);
+        GLTH_LOGD(TAG, "RPC status code %d for call id :%.*s", status, (int) id.len, id.value);
 
         ok = zcbor_map_end_encode(zse, SIZE_MAX);
         if (!ok)
@@ -191,7 +191,7 @@ static void on_rpc(struct golioth_client *client,
     else
     {
         status = GOLIOTH_RPC_NOT_FOUND;
-        GLTH_LOGW(TAG, "Method %.*s not registered", method.len, method.value);
+        GLTH_LOGW(TAG, "Method %.*s not registered", (int) method.len, method.value);
     }
 
     ok = zcbor_tstr_put_lit(zse, "statusCode") && zcbor_uint64_put(zse, status);
