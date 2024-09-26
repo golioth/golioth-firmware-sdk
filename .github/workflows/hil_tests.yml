@@ -92,22 +92,51 @@ jobs:
       coap_gateway_url: ${{ inputs.coap_gateway_url }}
     secrets: inherit
 
+  hil_test_zephyr_nsim_matrix:
+    runs-on: ubuntu-latest
+    name: zephyr-native_sim-matrix-generate
+
+    outputs:
+      tests: ${{ steps.output-tests.outputs.tests }}
+
+    steps:
+      - name: Checkout repository and submodules
+        uses: actions/checkout@v4
+
+      - name: Prepare tests matrix
+        id: output-tests
+        shell: python
+        run: |
+          import json
+          import os
+          from pathlib import Path
+
+          tests = [p.name for p in Path('tests/hil/tests').iterdir()]
+
+          with open(os.environ['GITHUB_OUTPUT'], 'a') as github_output:
+            print('tests=' + json.dumps(tests), file=github_output)
+
   hil_test_zephyr_nsim:
     if: ${{ inputs.workflow == 'all' || inputs.workflow == 'zephyr_integration_native_sim' }}
     runs-on: ubuntu-latest
+    needs: hil_test_zephyr_nsim_matrix
     container:
       image: golioth/golioth-zephyr-base:0.16.3-SDK-v0
     env:
       ZEPHYR_SDK_INSTALL_DIR: /opt/toolchains/zephyr-sdk-0.16.3
-    name: zephyr-${{ matrix.west_board }}-test-nsim
+    name: zephyr-${{ matrix.platform }}-${{ matrix.test }}-test-nsim
     strategy:
       fail-fast: false
       matrix:
+        test: ${{ fromJSON(needs.hil_test_zephyr_nsim_matrix.outputs.tests) }}
+        platform:
+          - native_sim_32
+          - native_sim_64
         include:
-          - west_board: native_sim
-            artifact_suffix: native_sim_32
-          - west_board: native_sim/native/64
-            artifact_suffix: native_sim_64
+          - platform: native_sim_32
+            west_board: native_sim
+          - platform: native_sim_64
+            west_board: native_sim/native/64
     steps:
       - name: Checkout repository and submodules
         uses: actions/checkout@v4
@@ -137,50 +166,48 @@ jobs:
           pip install modules/lib/golioth-firmware-sdk/tests/hil/scripts/pytest-hil
           pip install git+https://github.com/golioth/python-golioth-tools@v0.6.4
 
-      - name: Run tests
-        shell: bash
+      - name: Build test
+        env:
+          test: ${{ matrix.test }}
         run: |
           export EXTRA_BUILD_ARGS=-DCONFIG_GOLIOTH_COAP_HOST_URI=\"${{ inputs.coap_gateway_url }}\"
-          EXITCODE=0
 
           rm -rf hil-out
           mkdir -p hil-out
 
-          for test in $(ls modules/lib/golioth-firmware-sdk/tests/hil/tests)
-          do
-            echo "Testing $test"
+          west build -p -b ${{ matrix.west_board }}                        \
+            modules/lib/golioth-firmware-sdk/tests/hil/platform/zephyr     \
+            -d hil-out/$test -- $EXTRA_BUILD_ARGS -DGOLIOTH_HIL_TEST=$test
 
-            west build -p -b ${{ matrix.west_board }}                        \
-              modules/lib/golioth-firmware-sdk/tests/hil/platform/zephyr     \
-              -d hil-out/$test -- $EXTRA_BUILD_ARGS -DGOLIOTH_HIL_TEST=$test \
-              || EXITCODE=$?
+      - name: Run test
+        env:
+          test: ${{ matrix.test }}
+        run: |
+          pytest --rootdir .                                             \
+            modules/lib/golioth-firmware-sdk//tests/hil/tests/$test      \
+            --board native_sim                                           \
+            --fw-image hil-out/$test/zephyr/zephyr.exe                   \
+            --api-url ${{ inputs.api-url }}                              \
+            --api-key ${{ secrets[inputs.api-key-id] }}                  \
+            --mask-secrets                                               \
+            --timeout=600
 
-            pytest --rootdir . \
-              modules/lib/golioth-firmware-sdk//tests/hil/tests/$test      \
-              --board native_sim                                           \
-              --fw-image hil-out/$test/zephyr/zephyr.exe                   \
-              --api-url ${{ inputs.api-url }}                              \
-              --api-key ${{ secrets[inputs.api-key-id] }}                  \
-              --mask-secrets                                               \
-              --timeout=600                                                \
-              || EXITCODE=$?
-
-            gcovr -r modules/lib/golioth-firmware-sdk                      \
-              --gcov-ignore-parse-errors=negative_hits.warn_once_per_file  \
-              --merge-mode-functions=separate                              \
-              --json hil-out/$test/coverage.json                           \
-              hil-out/$test                                                \
-              || EXITCODE=$?
-          done
-
-          exit $EXITCODE
+      - name: Capture coverage
+        env:
+          test: ${{ matrix.test }}
+        run: |
+          gcovr -r modules/lib/golioth-firmware-sdk                      \
+            --gcov-ignore-parse-errors=negative_hits.warn_once_per_file  \
+            --merge-mode-functions=separate                              \
+            --json hil-out/$test/coverage.json                           \
+            hil-out/$test
 
       - name: Upload test coverage artifacts
         if: always()
         uses: ./modules/lib/golioth-firmware-sdk/.github/actions/safe-upload-artifacts
         with:
           secrets-json: ${{ toJson(secrets) }}
-          name: native-sim-hil-test-coverage-${{ matrix.artifact_suffix }}
+          name: native-sim-hil-test-coverage-${{ matrix.platform }}-${{ matrix.test }}
           path: |
             hil-out/*/coverage.json
 
@@ -281,9 +308,9 @@ jobs:
       matrix:
         include:
           - west_board: native_sim
-            artifact_suffix: native_sim_32
+            platform: native_sim_32
           - west_board: native_sim/native/64
-            artifact_suffix: native_sim_64
+            platform: native_sim_64
     steps:
       - name: Checkout repository and submodules
         uses: actions/checkout@v4
