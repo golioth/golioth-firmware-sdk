@@ -146,7 +146,7 @@ jobs:
           rm -rf hil-out
           mkdir -p hil-out
 
-          for test in `ls modules/lib/golioth-firmware-sdk/tests/hil/tests`
+          for test in $(ls modules/lib/golioth-firmware-sdk/tests/hil/tests)
           do
             echo "Testing $test"
 

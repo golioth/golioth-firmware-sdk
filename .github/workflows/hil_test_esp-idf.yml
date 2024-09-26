@@ -52,7 +52,7 @@ jobs:
 
         rm -rf test_binaries
         mkdir test_binaries
-        echo test_list=`ls tests/hil/tests` >> "$GITHUB_OUTPUT"
+        echo test_list=$(ls tests/hil/tests) >> "$GITHUB_OUTPUT"
     - name: Build Test Firmware
       uses: espressif/esp-idf-ci-action@v1
       with:
@@ -110,7 +110,7 @@ jobs:
           rm -rf allure-reports
           source /opt/credentials/runner_env.sh
           PORT_VAR=CI_${hil_board^^}_PORT
-          for test in `ls tests/hil/tests`
+          for test in $(ls tests/hil/tests)
           do
             pytest --rootdir . tests/hil/tests/$test                            \
               --board ${{ inputs.hil_board }}_espidf                            \

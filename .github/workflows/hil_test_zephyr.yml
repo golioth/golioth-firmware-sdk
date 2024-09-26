@@ -97,7 +97,7 @@ jobs:
 
         export EXTRA_BUILD_ARGS=-DCONFIG_GOLIOTH_COAP_HOST_URI=\"${{ inputs.coap_gateway_url }}\"
 
-        for test in `ls modules/lib/golioth-firmware-sdk/tests/hil/tests`
+        for test in $(ls modules/lib/golioth-firmware-sdk/tests/hil/tests)
         do
           west build -p -b ${{ inputs.west_board }} modules/lib/golioth-firmware-sdk/tests/hil/platform/zephyr -- $EXTRA_BUILD_ARGS -DGOLIOTH_HIL_TEST=$test
           mv build/zephyr/${{ inputs.binary_name }} test_binaries/${test}-${{ inputs.binary_name }}
@@ -147,7 +147,7 @@ jobs:
           source /opt/credentials/runner_env.sh
           PORT_VAR=CI_${hil_board^^}_PORT
           SNR_VAR=CI_${hil_board^^}_SNR
-          for test in `ls tests/hil/tests`
+          for test in $(ls tests/hil/tests)
           do
             pytest --rootdir . tests/hil/tests/$test                            \
               --board ${hil_board}                                              \

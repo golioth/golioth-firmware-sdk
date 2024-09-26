@@ -39,7 +39,7 @@ jobs:
       run: |
         export EXTRA_BUILD_ARGS=-DCONFIG_GOLIOTH_COAP_HOST_URI=${{ inputs.coap_gateway_url }}
 
-        for test in `ls tests/hil/tests`
+        for test in $(ls tests/hil/tests)
         do
           cmake -B build/$test -S tests/hil/platform/linux $EXTRA_BUILD_ARGS -DGOLIOTH_HIL_TEST=$test
           make -j8 -C build/$test
@@ -67,7 +67,7 @@ jobs:
         mkdir summary
         rm -rf allure-reports
 
-        for test in `ls tests/hil/tests`
+        for test in $(ls tests/hil/tests)
         do
           pytest --rootdir . tests/hil/tests/$test      \
             --board linux                               \
@@ -97,7 +97,7 @@ jobs:
 
         # Generate coverage summary and format into markdown table
 
-        coverage_summary=`lcov --summary all_tests.info`
+        coverage_summary=$(lcov --summary all_tests.info)
         coverage_summary=${coverage_summary#*$'\n'*$'\n'}
         coverage_summary=${coverage_summary%%  branches*}
         coverage_summary="$(echo "$coverage_summary" | sed 's/\.*:/ |/g' | sed 's/^  /|/g' | sed 's/)/)|/g')"
