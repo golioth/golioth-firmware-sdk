@@ -46,9 +46,9 @@ jobs:
         with:
           submodules: 'recursive'
 
-      - name: Install ninja
+      - name: Install gcovr and ninja
         run: |
-          sudo apt install -y ninja-build
+          pip install gcovr ninja
 
       - name: Run unit tests
         run: |
@@ -58,6 +58,21 @@ jobs:
               ctest                                     \
                 --output-on-failure                     \
                 --timeout 2
+
+      - name: Coverage
+        run: |
+          gcovr                                                         \
+            --gcov-ignore-parse-errors=negative_hits.warn_once_per_file \
+            --merge-mode-functions=separate                             \
+            --json coverage.json                                        \
+            build
+
+      - name: Upload test coverage artifacts
+        if: always()
+        uses: actions/upload-artifact@v4
+        with:
+          name: unit-test-coverage
+          path: coverage.json
 
   linux_build:
     runs-on: ubuntu-latest
