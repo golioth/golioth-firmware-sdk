@@ -141,4 +141,4 @@ jobs:
         cd examples/modus_toolbox/golioth_basics/golioth_app
         cp source/credentials.inc.template source/credentials.inc
         make getlibs
-        make build -j8
+        make build -j$(nproc)

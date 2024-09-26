@@ -42,7 +42,7 @@ jobs:
         for test in `ls tests/hil/tests`
         do
           cmake -B build/$test -S tests/hil/platform/linux $EXTRA_BUILD_ARGS -DGOLIOTH_HIL_TEST=$test
-          make -j8 -C build/$test
+          make -j$(nproc) -C build/$test
         done
     - name: Setup Python dependencies
       run: |
