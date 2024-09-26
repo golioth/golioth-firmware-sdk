@@ -139,7 +139,7 @@ static enum golioth_status golioth_coap_client_set_internal(struct golioth_clien
 
     if (strlen(path) > sizeof(request_msg.path) - 1)
     {
-        GLTH_LOGE(TAG, "Path too long: %d > %d", strlen(path), sizeof(request_msg.path) - 1);
+        GLTH_LOGE(TAG, "Path too long: %zu > %zu", strlen(path), sizeof(request_msg.path) - 1);
         return GOLIOTH_ERR_INVALID_FORMAT;
     }
 
@@ -360,7 +360,7 @@ enum golioth_status golioth_coap_client_delete(struct golioth_client *client,
 
     if (strlen(path) > sizeof(request_msg.path) - 1)
     {
-        GLTH_LOGE(TAG, "Path too long: %d > %d", strlen(path), sizeof(request_msg.path) - 1);
+        GLTH_LOGE(TAG, "Path too long: %zu > %zu", strlen(path), sizeof(request_msg.path) - 1);
         return GOLIOTH_ERR_INVALID_FORMAT;
     }
     strncpy(request_msg.path, path, sizeof(request_msg.path) - 1);
@@ -458,7 +458,7 @@ static enum golioth_status golioth_coap_client_get_internal(struct golioth_clien
 
     if (strlen(path) > sizeof(request_msg.path) - 1)
     {
-        GLTH_LOGE(TAG, "Path too long: %d > %d", strlen(path), sizeof(request_msg.path) - 1);
+        GLTH_LOGE(TAG, "Path too long: %zu > %zu", strlen(path), sizeof(request_msg.path) - 1);
         return GOLIOTH_ERR_INVALID_FORMAT;
     }
     strncpy(request_msg.path, path, sizeof(request_msg.path) - 1);
@@ -618,7 +618,7 @@ enum golioth_status golioth_coap_client_observe(struct golioth_client *client,
 
     if (strlen(path) > sizeof(request_msg.path) - 1)
     {
-        GLTH_LOGE(TAG, "Path too long: %d > %d", strlen(path), sizeof(request_msg.path) - 1);
+        GLTH_LOGE(TAG, "Path too long: %zu > %zu", strlen(path), sizeof(request_msg.path) - 1);
         return GOLIOTH_ERR_INVALID_FORMAT;
     }
     strncpy(request_msg.path, path, sizeof(request_msg.path) - 1);
@@ -668,7 +668,7 @@ enum golioth_status golioth_coap_client_observe_release(struct golioth_client *c
 
     if (strlen(path) > sizeof(request_msg.path) - 1)
     {
-        GLTH_LOGE(TAG, "Path too long: %d > %d", strlen(path), sizeof(request_msg.path) - 1);
+        GLTH_LOGE(TAG, "Path too long: %zu > %zu", strlen(path), sizeof(request_msg.path) - 1);
         return GOLIOTH_ERR_INVALID_FORMAT;
     }
     strncpy(request_msg.path, path, sizeof(request_msg.path) - 1);
