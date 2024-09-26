@@ -28,8 +28,9 @@ enum golioth_status golioth_blockwise_post(struct golioth_client *client,
 /* Blockwise Download */
 typedef enum golioth_status (*write_block_cb)(uint32_t block_idx,
                                               uint8_t *block_buffer,
-                                              size_t block_size,
+                                              size_t block_buffer_len,
                                               bool is_last,
+                                              size_t negotiated_block_size,
                                               void *callback_arg);
 
 enum golioth_status golioth_blockwise_get(struct golioth_client *client,

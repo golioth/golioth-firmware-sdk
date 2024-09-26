@@ -143,15 +143,17 @@ enum golioth_status golioth_ota_observe_manifest_async(struct golioth_client *cl
 /// @param component The @ref golioth_ota_component pointer from the original request
 /// @param block_idx The block number in sequence (starting with 0)
 /// @param block_buffer The component payload in the response packet.
-/// @param block_size The size of payload, in bytes
+/// @param block_buffer_len The length of the component payload, in bytes.
 /// @param is_last true if this is the final block of the request
+/// @param negotiated_block_size The maximum block size negotated with the server, in bytes
 /// @param arg User argument, copied from the original request. Can be NULL.
 typedef enum golioth_status (*ota_component_block_write_cb)(
     const struct golioth_ota_component *component,
     uint32_t block_idx,
     uint8_t *block_buffer,
-    size_t block_size,
+    size_t block_buffer_len,
     bool is_last,
+    size_t negotiated_block_size,
     void *arg);
 
 /// Download an OTA component synchronously.
