@@ -46,11 +46,18 @@ jobs:
         with:
           submodules: 'recursive'
 
-      - name: Run unit tests
-        shell: bash
+      - name: Install ninja
         run: |
-          cd tests/unit_tests
-          ./test.sh
+          sudo apt install -y ninja-build
+
+      - name: Run unit tests
+        run: |
+          ctest --build-and-test tests/unit_tests build \
+            --build-generator Ninja                     \
+            --test-command                              \
+              ctest                                     \
+                --output-on-failure                     \
+                --timeout 2
 
   linux_build:
     runs-on: ubuntu-latest
