@@ -6,6 +6,13 @@ and this project adheres to [Semantic Versioning](https://semver.org/spec/v2.0.0
 
 ## [Unreleased]
 
+### Breaking Changes:
+
+- The parameters for `ota_component_block_write_cb()` have changed to
+  include `block_buffer_len` for the actual length of data and
+  `negotiated_block_size` to indicate the maximum block size (may be
+  used along with 'block_idx' to calculate a byte offset).
+
 ### Removed:
 
 - OTA compression was removed as the feature is currently unsupported on

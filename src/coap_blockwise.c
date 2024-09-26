@@ -290,6 +290,7 @@ static void call_write_block_callback(struct blockwise_transfer *ctx, size_t rcv
                                ctx->block_buffer,
                                rcvd_bytes,
                                ctx->is_last,
+                               ctx->block_size,
                                ctx->callback_arg)
         != GOLIOTH_OK)
     {

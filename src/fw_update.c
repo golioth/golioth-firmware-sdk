@@ -25,34 +25,28 @@ static golioth_fw_update_state_change_callback _state_callback;
 static void *_state_callback_arg;
 static struct golioth_fw_update_config _config;
 
-struct fw_component_download_ctx
-{
-    size_t total_blocks;
-    size_t bytes_downloaded;
-};
-
 static enum golioth_status fw_write_block_cb(const struct golioth_ota_component *component,
                                              uint32_t block_idx,
                                              uint8_t *block_buffer,
-                                             size_t block_size,
+                                             size_t block_buffer_len,
                                              bool is_last,
+                                             size_t negotiated_block_size,
                                              void *arg)
 {
     assert(arg);
-    struct fw_component_download_ctx *ctx = (struct fw_component_download_ctx *) arg;
+    size_t *bytes_downloaded = (size_t *) arg;
 
-    if ((block_idx == 0) && (block_size > 0))
-    {
-        /* Calculate total blocks here to support negotiated block_size */
-        ctx->total_blocks = component->size / block_size;
-    }
+    GLTH_LOGI(TAG,
+              "Received block %" PRIu32 "/%zu",
+              block_idx,
+              (size_t) (component->size / negotiated_block_size));
 
-    GLTH_LOGI(TAG, "Received block %" PRIu32 "/%zu", block_idx, ctx->total_blocks);
+    enum golioth_status status = fw_update_handle_block(block_buffer,
+                                                        block_buffer_len,
+                                                        negotiated_block_size * block_idx,
+                                                        component->size);
 
-    enum golioth_status status =
-        fw_update_handle_block(block_buffer, block_size, ctx->bytes_downloaded, component->size);
-
-    ctx->bytes_downloaded += block_size;
+    *bytes_downloaded += block_buffer_len;
 
     if (is_last)
     {
@@ -248,14 +242,12 @@ static void fw_update_thread(void *arg)
                                             GOLIOTH_SYS_WAIT_FOREVER);
 
         uint64_t start_time_ms = golioth_sys_now_ms();
-        struct fw_component_download_ctx download_ctx = {
-            .total_blocks = 0,
-            .bytes_downloaded = 0,
-        };
+        size_t bytes_downloaded = 0;
+
         int err = golioth_ota_download_component(_client,
                                                  _main_component,
                                                  fw_write_block_cb,
-                                                 (void *) &download_ctx);
+                                                 (void *) &bytes_downloaded);
         if (err != GOLIOTH_OK)
         {
             GLTH_LOGE(TAG, "Firmware download failed");
@@ -274,7 +266,7 @@ static void fw_update_thread(void *arg)
         }
         GLTH_LOGI(TAG,
                   "Successfully downloaded %zu bytes in %" PRIu64 " ms",
-                  download_ctx.bytes_downloaded,
+                  bytes_downloaded,
                   golioth_sys_now_ms() - start_time_ms);
 
         if (fw_update_validate() != GOLIOTH_OK)
