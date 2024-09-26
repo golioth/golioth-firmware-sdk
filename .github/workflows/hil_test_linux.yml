@@ -47,22 +47,13 @@ jobs:
     - name: Setup Python dependencies
       run: |
         pip install --upgrade pip
-        pip install pytest pytest-timeout
+        pip install gcovr pytest pytest-timeout
         pip install tests/hil/scripts/pytest-hil
         pip install git+https://github.com/golioth/python-golioth-tools@v0.6.4
-    - name: Install Linux dependencies
-      run: |
-        sudo apt-get install lcov
     - name: Run test
       id: run_test
       shell: bash
       run: |
-        # Get coverage baseline
-        lcov -i -o baseline.info -c   \
-             -d build/connection      \
-             --include "*/golioth-firmware-sdk/src/*"
-        LCOV_FILES="-a baseline.info"
-
         rm -rf summary
         mkdir summary
         rm -rf allure-reports
@@ -81,36 +72,53 @@ jobs:
             --alluredir=allure-reports                  \
             --platform linux                            \
             || EXITCODE=$?
-          lcov -c                                       \
-               --directory build/${test}                \
-               --include "*/golioth-firmware-sdk/src/*" \
-               -o ${test}.info
-          LCOV_FILES="$LCOV_FILES -a ${test}.info"
+
+          gcovr                                                         \
+            --gcov-ignore-parse-errors=negative_hits.warn_once_per_file \
+            --merge-mode-functions=separate                             \
+            --json summary/hil-linux-${test}-coverage.json              \
+            build/${test}
         done
 
-        lcov $LCOV_FILES -o all_tests.info
+        tracefiles=$(for f in summary/hil-linux-*-coverage.json; do
+          printf -- " $f"
+        done)
 
-        genhtml -o coverage_html          \
-                --rc genhtml_med_limit=50 \
-                --rc genhtml_hi_limit=80  \
-                all_tests.info
+        alias gcovr="gcovr \
+          ${tracefiles// / --add-tracefile } \
+          -e examples -e external -e tests"
 
-        # Generate coverage summary and format into markdown table
+        rm -rf coverage_html
+        mkdir -p coverage_html
+        gcovr --txt-summary --xml coverage.xml --html-details coverage_html/index.html
 
-        coverage_summary=$(lcov --summary all_tests.info)
-        coverage_summary=${coverage_summary#*$'\n'*$'\n'}
-        coverage_summary=${coverage_summary%%  branches*}
-        coverage_summary="$(echo "$coverage_summary" | sed 's/\.*:/ |/g' | sed 's/^  /|/g' | sed 's/)/)|/g')"
-
-        # Echo coverage summary into GitHub Output, with title
-
-        echo "coverage_summary<<EOF" >> $GITHUB_OUTPUT
-        echo "# Code Coverage (Linux)" >> $GITHUB_OUTPUT
-        echo "| Type | Coverage |" >> $GITHUB_OUTPUT
-        echo "| --- | --- |" >> $GITHUB_OUTPUT
-        echo "$coverage_summary" >> $GITHUB_OUTPUT
-        echo "EOF" >> $GITHUB_OUTPUT
         exit $EXITCODE
+
+    - name: Coverage report
+      uses: irongut/CodeCoverageSummary@v1.3.0
+      with:
+        filename: coverage.xml
+        format: markdown
+        badge: true
+        output: file
+        hide_complexity: true
+
+    - name: Coverage summary
+      shell: bash
+      run: |
+        cat code-coverage-results.md >> $GITHUB_STEP_SUMMARY
+
+    - name: Append Coverage PR Comment title
+      shell: bash
+      run: |
+        echo "# Code Coverage (Linux)" > code-coverage-comment.md
+        cat code-coverage-results.md >> code-coverage-comment.md
+
+    - name: Add Coverage PR Comment
+      uses: marocchino/sticky-pull-request-comment@v2
+      if: github.event_name == 'pull_request'
+      with:
+        path: code-coverage-comment.md
 
     - name: Prepare summary
       if: always()
@@ -140,23 +148,6 @@ jobs:
         secrets-json: ${{ toJson(secrets) }}
         name: allure-reports-hil-linux
         path: allure-reports
-
-    - name: Find Comment
-      uses: peter-evans/find-comment@v3
-      if: github.event_name == 'pull_request'
-      id: fc
-      with:
-        issue-number: ${{ github.event.pull_request.number }}
-        comment-author: 'github-actions[bot]'
-        body-includes: Code Coverage (Linux)
-    - name: Code coverage comment
-      uses: peter-evans/create-or-update-comment@v4
-      if: github.event_name == 'pull_request'
-      with:
-        comment-id: ${{ steps.fc.outputs.comment-id }}
-        issue-number: ${{ github.event.pull_request.number }}
-        body: ${{ steps.run_test.outputs.coverage_summary }}
-        edit-mode: replace
 
     - name: Upload test coverage artifacts
       uses: ./.github/actions/safe-upload-artifacts
