@@ -6,44 +6,51 @@ on:
   pull_request:
 
 jobs:
-  lint_and_unit_test:
+  lint:
     runs-on: ubuntu-latest
+
     steps:
-    - name: Checkout repository and submodules
-      uses: actions/checkout@v4
-      with:
-        submodules: 'recursive'
-        # Fetch depth must be greater than the number of commits included in the push in order to
-        # compare against commit prior to merge. 15 is chosen as a reasonable default for the upper
-        # bound of commits in a single PR.
-        fetch-depth: 15
-    - name: Setup Python
-      uses: actions/setup-python@v5
-      with:
-        python-version: 3.x
-        architecture: 'x64'
-    - name: Install clang-format
-      shell: bash
-      run: |
-        wget https://apt.llvm.org/llvm.sh
-        chmod +x llvm.sh
-        sudo ./llvm.sh 17
-        sudo apt install clang-format-17
-    - name: Check code formatting
-      shell: bash
-      run: |
-        git fetch --no-recurse-submodules
-        if [[ $GITHUB_EVENT_NAME == 'push' ]]; then
-            BASE=${{ github.event.before }}
-        else
-            BASE=origin/$GITHUB_BASE_REF
-        fi
-        git clang-format-17 --verbose --extensions c,h --diff --diffstat $BASE
-    - name: Run unit tests
-      shell: bash
-      run: |
-        cd tests/unit_tests
-        ./test.sh
+      - name: Checkout repository and submodules
+        uses: actions/checkout@v4
+        with:
+          # Fetch depth must be greater than the number of commits included in the push in order to
+          # compare against commit prior to merge. 15 is chosen as a reasonable default for the upper
+          # bound of commits in a single PR.
+          fetch-depth: 15
+
+      - name: Install clang-format
+        shell: bash
+        run: |
+          wget https://apt.llvm.org/llvm.sh
+          chmod +x llvm.sh
+          sudo ./llvm.sh 17
+          sudo apt install clang-format-17
+
+      - name: Check code formatting
+        shell: bash
+        run: |
+          git fetch --no-recurse-submodules
+          if [[ $GITHUB_EVENT_NAME == 'push' ]]; then
+              BASE=${{ github.event.before }}
+          else
+              BASE=origin/$GITHUB_BASE_REF
+          fi
+          git clang-format-17 --verbose --extensions c,h --diff --diffstat $BASE
+
+  unit_tests:
+    runs-on: ubuntu-latest
+
+    steps:
+      - name: Checkout repository and submodules
+        uses: actions/checkout@v4
+        with:
+          submodules: 'recursive'
+
+      - name: Run unit tests
+        shell: bash
+        run: |
+          cd tests/unit_tests
+          ./test.sh
 
   linux_build:
     runs-on: ubuntu-latest
