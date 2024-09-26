@@ -38,7 +38,7 @@ target_compile_options(zcbor PRIVATE "-Wno-strict-aliasing" "-Wno-uninitialized"
 
 # Build libcoap
 
-set(ENABLE_DOCS OFF)
+option(ENABLE_DOCS "" OFF)
 add_subdirectory("${repo_root}/external/libcoap" build)
 
 # Function for declaring unit tests
