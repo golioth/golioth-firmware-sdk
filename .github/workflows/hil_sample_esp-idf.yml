@@ -108,7 +108,7 @@ jobs:
           for sample in $(find examples/esp_idf -type d -name pytest -exec dirname "{}" \;)
           do
             pytest --rootdir . $sample                                          \
-              --board ${{ inputs.hil_board }}_espidf                                                   \
+              --board ${{ inputs.hil_board }}_espidf                            \
               --port ${!PORT_VAR}                                               \
               --fw-image $(basename $sample).bin                                \
               --api-url ${{ inputs.api-url }}                                   \
@@ -118,8 +118,9 @@ jobs:
               --mask-secrets                                                    \
               --timeout=600                                                     \
               --alluredir=allure-reports                                        \
-              --platform esp-idf                                                \
+              --platform=esp-idf                                                \
               --runner-name ${{ runner.name }}                                  \
+              --custom-suitename=sample                                         \
               || EXITCODE=$?
           done
           exit $EXITCODE

@@ -27,6 +27,8 @@ def pytest_addoption(parser):
             help="Serial number to identify on-board debugger")
     parser.addoption("--bmp-port", type=str,
             help="Serial port of a BlackMagicProbe programmer")
+    parser.addoption("--custom-suitename", type=str,
+            help="Use a custom suite name when generating Allure reports")
     parser.addoption("--wifi-ssid", type=str, help="WiFi SSID")
     parser.addoption("--wifi-psk", type=str, help="WiFi PSK")
 
@@ -65,6 +67,10 @@ def bmp_port(request):
         return request.config.getoption("--bmp-port")
     else:
         return os.environ.get('CI_BLACKMAGICPROBE_PORT')
+
+@pytest.fixture(scope="session")
+def custom_suitename(request):
+    return request.config.getoption("--custom-suitename")
 
 @pytest.fixture(scope="session")
 def wifi_ssid(request):
@@ -106,12 +112,13 @@ async def board(board_name, port, baud, wifi_ssid, wifi_psk, fw_image, serial_nu
 def pytest_runtest_setup(item):
     board_name = item.config.getoption("--board")
     platform_name = item.config.getoption("--platform")
+    suitename = item.config.getoption("--custom-suitename") or "hil"
 
     allure.dynamic.tag(board_name)
     allure.dynamic.tag(platform_name)
     allure.dynamic.parameter("board_name", board_name)
     allure.dynamic.parameter("platform_name", platform_name)
-    allure.dynamic.parent_suite(f"hil.{platform_name}.{board_name}")
+    allure.dynamic.parent_suite(f"{suitename}.{platform_name}.{board_name}")
 
     if runner_name is not None:
         allure.dynamic.tag(item.config.getoption("--runner-name"))
