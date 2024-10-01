@@ -59,6 +59,14 @@ jobs:
                 --output-on-failure                     \
                 --timeout 2
 
+      - name: Coverage
+        run: |
+          gcovr                                                         \
+            --gcov-ignore-parse-errors=negative_hits.warn_once_per_file \
+            --merge-mode-functions=separate                             \
+            --json coverage.json                                        \
+            build
+
   linux_build:
     runs-on: ubuntu-latest
     steps:
