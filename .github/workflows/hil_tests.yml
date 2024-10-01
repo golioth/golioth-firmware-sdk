@@ -53,6 +53,43 @@ on:
         default: 'all'
 
 jobs:
+  unit_tests:
+    runs-on: ubuntu-latest
+
+    steps:
+      - name: Checkout repository and submodules
+        uses: actions/checkout@v4
+        with:
+          submodules: 'recursive'
+
+      - name: Install gcovr and ninja
+        run: |
+          pip install gcovr ninja
+
+      - name: Run unit tests
+        run: |
+          ctest --build-and-test tests/unit_tests build \
+            --build-generator Ninja                     \
+            --test-command                              \
+              ctest                                     \
+                --output-on-failure                     \
+                --timeout 2
+
+      - name: Coverage
+        run: |
+          gcovr                                                         \
+            --gcov-ignore-parse-errors=negative_hits.warn_once_per_file \
+            --merge-mode-functions=separate                             \
+            --json coverage.json                                        \
+            build
+
+      - name: Upload test coverage artifacts
+        if: always()
+        uses: actions/upload-artifact@v4
+        with:
+          name: unit-test-coverage
+          path: coverage.json
+
   hil_test_zephyr:
     if: ${{ inputs.workflow == 'all' || inputs.workflow == 'zephyr_integration' }}
     strategy:
@@ -425,6 +462,7 @@ jobs:
       - hil_sample_zephyr_nsim
       - hil_test_linux
       - hil_test_zephyr_nsim
+      - unit_tests
     name: coverage
     steps:
       - name: Checkout repository
@@ -444,6 +482,12 @@ jobs:
         uses: actions/download-artifact@v4
         with:
           pattern: twister-run-artifacts-native*
+
+      - name: Download Unit Tests coverage artifacts
+        uses: actions/download-artifact@v4
+        with:
+          name: unit-test-coverage
+          path: unit-test-coverage
 
       - name: Setup Python
         uses: actions/setup-python@v5
@@ -472,13 +516,16 @@ jobs:
             printf -- " $d/twister-out/coverage.json"
           done)
 
+          tracefiles_unit_tests=" unit-test-coverage/coverage.json"
+
           shopt -s expand_aliases
 
           echo -e "HIL Linux tracefiles:${tracefiles_hil_linux// /\\n - }"
           echo -e "HIL Zephyr tracefiles:${tracefiles_hil_zephyr// /\\n - }"
           echo -e "Twister tracefiles:${tracefiles_twister// /\\n - }"
+          echo -e "Unit Tests tracefiles:${tracefiles_unit_tests// /\\n - }"
 
-          tracefiles="${tracefiles_hil_linux}${tracefiles_hil_zephyr}${tracefiles_twister}"
+          tracefiles="${tracefiles_hil_linux}${tracefiles_hil_zephyr}${tracefiles_twister}${tracefiles_unit_tests}"
 
           alias gcovr="gcovr \
             ${tracefiles// / --add-tracefile } \

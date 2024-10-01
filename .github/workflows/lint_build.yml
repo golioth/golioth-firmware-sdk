@@ -37,43 +37,6 @@ jobs:
           fi
           git clang-format-17 --verbose --extensions c,h --diff --diffstat $BASE
 
-  unit_tests:
-    runs-on: ubuntu-latest
-
-    steps:
-      - name: Checkout repository and submodules
-        uses: actions/checkout@v4
-        with:
-          submodules: 'recursive'
-
-      - name: Install gcovr and ninja
-        run: |
-          pip install gcovr ninja
-
-      - name: Run unit tests
-        run: |
-          ctest --build-and-test tests/unit_tests build \
-            --build-generator Ninja                     \
-            --test-command                              \
-              ctest                                     \
-                --output-on-failure                     \
-                --timeout 2
-
-      - name: Coverage
-        run: |
-          gcovr                                                         \
-            --gcov-ignore-parse-errors=negative_hits.warn_once_per_file \
-            --merge-mode-functions=separate                             \
-            --json coverage.json                                        \
-            build
-
-      - name: Upload test coverage artifacts
-        if: always()
-        uses: actions/upload-artifact@v4
-        with:
-          name: unit-test-coverage
-          path: coverage.json
-
   linux_build:
     runs-on: ubuntu-latest
     steps:
