@@ -67,6 +67,13 @@ jobs:
             --json coverage.json                                        \
             build
 
+      - name: Upload test coverage artifacts
+        if: always()
+        uses: actions/upload-artifact@v4
+        with:
+          name: unit-test-coverage
+          path: coverage.json
+
   linux_build:
     runs-on: ubuntu-latest
     steps:
