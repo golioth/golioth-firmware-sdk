@@ -46,9 +46,9 @@ jobs:
         with:
           submodules: 'recursive'
 
-      - name: Install ninja
+      - name: Install gcovr and ninja
         run: |
-          sudo apt install -y ninja-build
+          pip install gcovr ninja
 
       - name: Run unit tests
         run: |
