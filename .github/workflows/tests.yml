@@ -162,9 +162,9 @@ jobs:
     runs-on: ubuntu-latest
     needs: hil_test_zephyr_nsim_matrix
     container:
-      image: golioth/golioth-zephyr-base:0.16.3-SDK-v0
+      image: golioth/golioth-zephyr-base:0.16.8-SDK-v0
     env:
-      ZEPHYR_SDK_INSTALL_DIR: /opt/toolchains/zephyr-sdk-0.16.3
+      ZEPHYR_SDK_INSTALL_DIR: /opt/toolchains/zephyr-sdk-0.16.8
     name: zephyr-${{ matrix.platform }}-${{ matrix.test }}-test-nsim
     strategy:
       fail-fast: false
@@ -349,9 +349,9 @@ jobs:
     if: ${{ inputs.workflow == 'all' || inputs.workflow == 'zephyr_sample_native_sim' }}
     runs-on: ubuntu-latest
     container:
-      image: golioth/golioth-zephyr-base:0.16.3-SDK-v0
+      image: golioth/golioth-zephyr-base:0.16.8-SDK-v0
     env:
-      ZEPHYR_SDK_INSTALL_DIR: /opt/toolchains/zephyr-sdk-0.16.3
+      ZEPHYR_SDK_INSTALL_DIR: /opt/toolchains/zephyr-sdk-0.16.8
     name: zephyr-${{ matrix.west_board }}-twister
     strategy:
       fail-fast: false

@@ -57,9 +57,9 @@ on:
 jobs:
   build:
     name: zephyr-${{ inputs.hil_board }}-build
-    container: golioth/golioth-zephyr-base:0.16.3-SDK-v0
+    container: golioth/golioth-zephyr-base:0.16.8-SDK-v0
     env:
-      ZEPHYR_SDK_INSTALL_DIR: /opt/toolchains/zephyr-sdk-0.16.3
+      ZEPHYR_SDK_INSTALL_DIR: /opt/toolchains/zephyr-sdk-0.16.8
     runs-on: ubuntu-latest
     steps:
       - name: Checkout repository and submodules
@@ -129,7 +129,7 @@ jobs:
     timeout-minutes: 30
 
     container:
-      image: golioth/golioth-hil-base:75dd802
+      image: golioth/golioth-hil-base:3407412
       volumes:
         - /dev:/dev
         - /home/golioth/credentials:/opt/credentials

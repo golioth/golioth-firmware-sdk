@@ -82,7 +82,7 @@ jobs:
     timeout-minutes: 30
 
     container:
-      image: golioth/golioth-hil-base:75dd802
+      image: golioth/golioth-hil-base:3407412
       volumes:
         - /dev:/dev
         - /home/golioth/credentials:/opt/credentials
