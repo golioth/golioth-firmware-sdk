@@ -72,7 +72,7 @@ static const glth_log_fn log_to_log_func(struct log_msg *log)
 static int cbpprintf_out_func(int c, void *out_ctx)
 {
     struct cbpprintf_ctx *ctx = out_ctx;
-    if (ctx->ctr >= CONFIG_LOG_BACKEND_GOLIOTH_MAX_LOG_STRING_SIZE)
+    if (ctx->ctr >= CONFIG_LOG_BACKEND_GOLIOTH_MAX_LOG_STRING_SIZE - 1)
     {
         return -ENOMEM;
     }
