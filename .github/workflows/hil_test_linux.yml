@@ -70,7 +70,8 @@ jobs:
       run: |
         export EXTRA_BUILD_ARGS=-DCONFIG_GOLIOTH_COAP_HOST_URI=${{ inputs.coap_gateway_url }}
 
-        cmake -B build -S tests/hil/platform/linux $EXTRA_BUILD_ARGS -DGOLIOTH_HIL_TEST=${{ matrix.test }}
+        cmake -B build -S tests/hil/platform/linux \
+          $EXTRA_BUILD_ARGS -DGOLIOTH_HIL_TEST=${{ matrix.test }}
         make -j$(nproc) -C build
     - name: Setup Python dependencies
       run: |
@@ -156,7 +157,11 @@ jobs:
             sudo apt install -y xml-twig-tools
           fi
 
-          xml_grep --pretty_print indented --wrap testsuites --descr '' --cond "testsuite" ci-hil-linux-*/*.xml > hil-linux.xml
+          xml_grep --pretty_print indented \
+            --wrap testsuites --descr '' \
+            --cond "testsuite" \
+            ci-hil-linux-*/*.xml \
+            > hil-linux.xml
 
       - name: Safe upload CI report summary
         uses: ./.github/actions/safe-upload-artifacts

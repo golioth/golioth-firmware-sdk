@@ -24,6 +24,11 @@ jobs:
           for CID in $(git rev-list --reverse origin/$GITHUB_BASE_REF..); do
               git show $CID -s --format='    pre-commit %h ("%s")'
               git checkout -f -q $CID
-              pre-commit run --color always --show-diff-on-failure --from-ref $CID^ --to-ref $CID || CODE=$?
+              pre-commit run \
+                --color always \
+                --show-diff-on-failure \
+                --from-ref $CID^ \
+                --to-ref $CID \
+                || CODE=$?
           done
           exit $CODE

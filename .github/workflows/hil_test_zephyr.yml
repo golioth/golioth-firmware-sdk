@@ -108,7 +108,9 @@ jobs:
 
         for test in $(ls modules/lib/golioth-firmware-sdk/tests/hil/tests)
         do
-          west build -p -b ${{ inputs.west_board }} modules/lib/golioth-firmware-sdk/tests/hil/platform/zephyr -- $EXTRA_BUILD_ARGS -DGOLIOTH_HIL_TEST=$test
+          west build -p -b ${{ inputs.west_board }} \
+            modules/lib/golioth-firmware-sdk/tests/hil/platform/zephyr \
+            -- $EXTRA_BUILD_ARGS -DGOLIOTH_HIL_TEST=$test
           mv build/zephyr/${{ inputs.binary_name }} test_binaries/${test}-${{ inputs.binary_name }}
         done
     - name: Save artifacts
@@ -190,7 +192,13 @@ jobs:
             sudo apt install -y xml-twig-tools
           fi
 
-          xml_grep --pretty_print indented --wrap testsuites --descr '' --cond "testsuite" summary/*.xml > combined.xml
+          xml_grep \
+            --pretty_print indented \
+            --wrap testsuites \
+            --descr '' \
+            --cond "testsuite" \
+            summary/*.xml \
+            > combined.xml
           mv combined.xml summary/hil-zephyr-${{ inputs.hil_board }}.xml
 
       - name: Safe upload CI report summary
@@ -236,7 +244,13 @@ jobs:
             esptool.py --port ${!PORT_VAR} erase_flash
 
           elif [[ "${hil_board}" == "mimxrt1024_evk" ]]; then
-            JLinkExe -nogui 1 -if swd -speed auto -device MIMXRT1024XXX5A -CommanderScript erase_mimxrt1024_evk.jlink -SelectEmuBySN ${!SNR_VAR}
+            JLinkExe \
+              -nogui 1 \
+              -if swd \
+              -speed auto \
+              -device MIMXRT1024XXX5A \
+              -CommanderScript erase_mimxrt1024_evk.jlink \
+              -SelectEmuBySN ${!SNR_VAR}
 
           elif [[ "${hil_board}" == "rak5010" ]]; then
             gdb \

@@ -48,7 +48,8 @@ jobs:
     - name: Prep for build
       id: build_prep
       run: |
-        echo CONFIG_GOLIOTH_COAP_HOST_URI=\"${{ inputs.coap_gateway_url }}\" >> tests/hil/platform/esp-idf/sdkconfig.defaults
+        echo CONFIG_GOLIOTH_COAP_HOST_URI=\"${{ inputs.coap_gateway_url }}\" \
+          >> tests/hil/platform/esp-idf/sdkconfig.defaults
 
         rm -rf test_binaries
         mkdir test_binaries
@@ -143,7 +144,13 @@ jobs:
             sudo apt install -y xml-twig-tools
           fi
 
-          xml_grep --pretty_print indented --wrap testsuites --descr '' --cond "testsuite" summary/*.xml > combined.xml
+          xml_grep \
+            --pretty_print indented \
+            --wrap testsuites \
+            --descr '' \
+            --cond "testsuite" \
+            summary/*.xml \
+            > combined.xml
           mv combined.xml summary/hil-espidf-${{ inputs.hil_board }}.xml
 
       - name: Safe upload CI report summary
