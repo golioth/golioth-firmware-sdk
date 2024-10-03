@@ -1,4 +1,4 @@
-name: Hardware-in-the-Loop Tests
+name: Tests
 
 on:
   workflow_dispatch:
