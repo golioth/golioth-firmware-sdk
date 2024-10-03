@@ -874,6 +874,16 @@ static int golioth_setsockopt_dtls(struct golioth_client *client, int sock, cons
         }
     }
 
+    if (IS_ENABLED(CONFIG_GOLIOTH_USE_CONNECTION_ID))
+    {
+        int supported = TLS_DTLS_CID_SUPPORTED;
+        ret = zsock_setsockopt(sock, SOL_TLS, TLS_DTLS_CID, &supported, sizeof(supported));
+        if (ret < 0)
+        {
+            return -errno;
+        }
+    }
+
     if (sizeof(golioth_ciphersuites) > 0)
     {
         ret = zsock_setsockopt(sock,
