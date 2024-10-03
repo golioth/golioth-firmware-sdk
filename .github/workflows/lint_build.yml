@@ -14,8 +14,8 @@ jobs:
         uses: actions/checkout@v4
         with:
           # Fetch depth must be greater than the number of commits included in the push in order to
-          # compare against commit prior to merge. 15 is chosen as a reasonable default for the upper
-          # bound of commits in a single PR.
+          # compare against commit prior to merge. 15 is chosen as a reasonable default for the
+          # upper bound of commits in a single PR.
           fetch-depth: 15
 
       - name: Install clang-format
@@ -126,8 +126,10 @@ jobs:
     - name: Build MTB golioth_basics project
       shell: bash
       run: |
-        # Ref: https://community.infineon.com/t5/ModusToolbox-General/ModusToolbox-Project-Creator-and-Library-Manager-report-no-Internet-connection/td-p/347593
-        export CyRemoteManifestOverride=https://github.com/cypresssemiconductorco/mtb-super-manifest/raw/v2.X/mtb-super-manifest-fv2.xml
+        # Ref:
+        # https://community.infineon.com/t5/ModusToolbox-General/ModusToolbox-Project-Creator-and-Library-Manager-report-no-Internet-connection/td-p/347593
+        export CyRemoteManifestOverride=\
+        https://github.com/cypresssemiconductorco/mtb-super-manifest/raw/v2.X/mtb-super-manifest-fv2.xml
         export CY_TOOLS_PATHS=$HOME/ModusToolbox/tools_$MTB_TOOLS_VERSION
 
         cd examples/modus_toolbox/golioth_basics/golioth_app

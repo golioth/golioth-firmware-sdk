@@ -8,7 +8,9 @@ on:
         required: false
         default: "https://api.golioth.io"
       api-key-id:
-        description: "Name of GitHub secret containing an API key that will be used to authenticate with the Golioth backend"
+        description: >-
+          Name of GitHub secret containing an API key that will be used to authenticate with the
+          Golioth backend
         required: false
         default: "PROD_CI_PROJECT_API_KEY"
       coap_gateway_url:
@@ -37,7 +39,9 @@ on:
         type: string
         default: "https://api.golioth.io"
       api-key-id:
-        description: "Name of GitHub secret containing an API key that will be used to authenticate with the Golioth backend"
+        description: >-
+          Name of GitHub secret containing an API key that will be used to authenticate with the
+          Golioth backend
         required: false
         type: string
         default: "PROD_CI_PROJECT_API_KEY"
@@ -288,32 +292,40 @@ jobs:
           - hil_board: esp32_devkitc_wrover
             west_board: esp32_devkitc_wrover/esp32/procpu
             manifest: .ci-west-zephyr.yml
-            extra_twister_args: '--flash-before --west-flash=--esp-tool=$(which esptool.py),--esp-device=${!PORT_VAR}'
+            extra_twister_args: >-
+              --flash-before
+              --west-flash=--esp-tool=$(which esptool.py),--esp-device=${!PORT_VAR}
             binary_blob: hal_espressif
             run_tests: true
 
           - hil_board: mimxrt1024_evk
             west_board: mimxrt1024_evk
             manifest: .ci-west-zephyr.yml
-            extra_twister_args: '--west-flash="--dev-id=${!SNR_VAR}"'
+            extra_twister_args: >-
+              --west-flash="--dev-id=${!SNR_VAR}"
             run_tests: true
 
           - hil_board: nrf52840dk
             west_board: nrf52840dk/nrf52840
             manifest: .ci-west-zephyr.yml
-            extra_twister_args: '--west-flash="--dev-id=${!SNR_VAR}"'
+            extra_twister_args: >-
+              --west-flash="--dev-id=${!SNR_VAR}"
             run_tests: true
 
           - hil_board: nrf9160dk
             west_board: nrf9160dk/nrf9160/ns
             manifest: .ci-west-ncs.yml
-            extra_twister_args: '--west-flash="--dev-id=${!SNR_VAR}"'
+            extra_twister_args: >-
+              --west-flash="--dev-id=${!SNR_VAR}"
             run_tests: true
 
           - hil_board: rak5010
             west_board: rak5010/nrf52840
             manifest: .ci-west-zephyr.yml
-            extra_twister_args: '--flash-before --west-flash=--gdb=/usr/bin/gdb --west-runner blackmagicprobe'
+            extra_twister_args: >-
+              --flash-before
+              --west-flash=--gdb=/usr/bin/gdb
+              --west-runner blackmagicprobe
             run_tests: true
 
           - hil_board: qemu_x86
@@ -448,7 +460,11 @@ jobs:
           rm -rf summary
           mkdir summary
 
-          xml_grep --pretty_print indented --wrap testsuites --descr '' --cond "testsuite" ci-individual-samples-zephyr-*/*.xml > samples-zephyr-${{ matrix.platform }}.xml
+          xml_grep --pretty_print indented \
+            --wrap testsuites --descr '' \
+            --cond "testsuite" \
+            ci-individual-samples-zephyr-*/*.xml \
+            > samples-zephyr-${{ matrix.platform }}.xml
 
       - name: Upload CI report summary
         uses: actions/upload-artifact@v4

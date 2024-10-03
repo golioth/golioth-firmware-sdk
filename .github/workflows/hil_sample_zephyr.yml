@@ -278,7 +278,13 @@ jobs:
             esptool.py --port ${!PORT_VAR} erase_flash
 
           elif [[ "${hil_board}" == "mimxrt1024_evk" ]]; then
-            JLinkExe -nogui 1 -if swd -speed auto -device MIMXRT1024XXX5A -CommanderScript erase_mimxrt1024_evk.jlink -SelectEmuBySN ${!SNR_VAR}
+            JLinkExe \
+              -nogui 1 \
+              -if swd \
+              -speed auto \
+              -device MIMXRT1024XXX5A \
+              -CommanderScript erase_mimxrt1024_evk.jlink \
+              -SelectEmuBySN ${!SNR_VAR}
 
           elif [[ "${hil_board}" == "rak5010" ]]; then
             gdb \
