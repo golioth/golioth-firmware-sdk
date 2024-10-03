@@ -156,8 +156,6 @@ jobs:
           file = .ci-west-zephyr-twister.yml
           EOF
 
-          pip3 install west
-
           west update -o=--depth=1 -n
           git config --global user.email user@git-scm.com
           git config --global user.name "Git User"
