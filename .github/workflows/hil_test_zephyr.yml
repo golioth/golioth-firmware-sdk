@@ -62,67 +62,70 @@ jobs:
       ZEPHYR_SDK_INSTALL_DIR: /opt/toolchains/zephyr-sdk-0.16.3
     runs-on: ubuntu-latest
     steps:
-    - name: Checkout repository and submodules
-      uses: actions/checkout@v4
-      with:
-        path: modules/lib/golioth-firmware-sdk
-        submodules: 'recursive'
-    - name: Init and update west
-      run: |
-        mkdir -p .west
-        cat <<EOF > .west/config
-        [manifest]
-        path = modules/lib/golioth-firmware-sdk
-        file = ${{ inputs.manifest }}
-        EOF
+      - name: Checkout repository and submodules
+        uses: actions/checkout@v4
+        with:
+          path: modules/lib/golioth-firmware-sdk
+          submodules: 'recursive'
+      - name: Init and update west
+        run: |
+          mkdir -p .west
+          cat <<EOF > .west/config
+          [manifest]
+          path = modules/lib/golioth-firmware-sdk
+          file = ${{ inputs.manifest }}
+          EOF
 
-        west update -o=--depth=1 -n
+          west update -o=--depth=1 -n
 
-        pip3 install \
-          -r zephyr/scripts/requirements-base.txt \
-          -r zephyr/scripts/requirements-build-test.txt \
-          -r zephyr/scripts/requirements-run-test.txt
+          pip3 install \
+            -r zephyr/scripts/requirements-base.txt \
+            -r zephyr/scripts/requirements-build-test.txt \
+            -r zephyr/scripts/requirements-run-test.txt
 
-        # Needed for TF-M
-        pip3 install \
-          cryptography==41.0.7 \
-          pyasn1 \
-          pyyaml \
-          cbor>=1.0.0 \
-          imgtool>=1.9.0 \
-          jinja2 \
-          click
+          # Needed for TF-M
+          pip3 install \
+            cryptography==41.0.7 \
+            pyasn1 \
+            pyyaml \
+            cbor>=1.0.0 \
+            imgtool>=1.9.0 \
+            jinja2 \
+            click
 
-    - name: Download binary blobs
-      if: ${{ inputs.binary_blob }}
-      run: |
-        west blobs fetch ${{ inputs.binary_blob }}
+      - name: Download binary blobs
+        if: ${{ inputs.binary_blob }}
+        run: |
+          west blobs fetch ${{ inputs.binary_blob }}
 
-    - name: Compile
-      shell: bash
-      run: |
-        rm -rf test_binaries
-        mkdir -p test_binaries
+      - name: Compile
+        shell: bash
+        run: |
+          rm -rf test_binaries
+          mkdir -p test_binaries
 
-        export EXTRA_BUILD_ARGS=-DCONFIG_GOLIOTH_COAP_HOST_URI=\"${{ inputs.coap_gateway_url }}\"
+          export EXTRA_BUILD_ARGS=-DCONFIG_GOLIOTH_COAP_HOST_URI=\"${{ inputs.coap_gateway_url }}\"
 
-        for test in $(ls modules/lib/golioth-firmware-sdk/tests/hil/tests)
-        do
-          west build -p -b ${{ inputs.west_board }} \
-            modules/lib/golioth-firmware-sdk/tests/hil/platform/zephyr \
-            -- $EXTRA_BUILD_ARGS -DGOLIOTH_HIL_TEST=$test
-          mv build/zephyr/${{ inputs.binary_name }} test_binaries/${test}-${{ inputs.binary_name }}
-        done
-    - name: Save artifacts
-      uses: actions/upload-artifact@v4
-      with:
-        name: ${{ inputs.hil_board }}-hil-zephyr
-        path: test_binaries/*
+          for test in $(ls modules/lib/golioth-firmware-sdk/tests/hil/tests)
+          do
+            west build -p -b ${{ inputs.west_board }} \
+              modules/lib/golioth-firmware-sdk/tests/hil/platform/zephyr \
+              -- $EXTRA_BUILD_ARGS -DGOLIOTH_HIL_TEST=$test
+            mv build/zephyr/${{ inputs.binary_name }} \
+              test_binaries/${test}-${{ inputs.binary_name }}
+          done
+      - name: Save artifacts
+        uses: actions/upload-artifact@v4
+        with:
+          name: ${{ inputs.hil_board }}-hil-zephyr
+          path: test_binaries/*
 
   test:
     name: zephyr-${{ inputs.hil_board }}-test
     needs: build
-    runs-on: [ is_active, "has_${{ inputs.hil_board }}" ]
+    runs-on:
+      - is_active
+      - has_${{ inputs.hil_board }}
     timeout-minutes: 30
 
     container:

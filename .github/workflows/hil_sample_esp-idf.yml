@@ -41,40 +41,42 @@ jobs:
     name: esp-idf-${{ inputs.hil_board }}-sample-build
     runs-on: ubuntu-latest
     steps:
-    - name: Checkout Repository and Submodules
-      uses: actions/checkout@v4
-      with:
-        submodules: 'recursive'
-    - name: Prep for build
-      id: build_prep
-      run: |
-        rm -rf test_binaries
-        mkdir test_binaries
-        echo sample_list=$(find examples/esp_idf -type d -name pytest -exec dirname "{}" \;) \
-          >> "$GITHUB_OUTPUT"
-    - name: Build Samples
-      uses: espressif/esp-idf-ci-action@v1
-      with:
-        esp_idf_version: v5.3
-        target: ${{ inputs.idf_target }}
-        command: |
-          for sample in ${{ steps.build_prep.outputs.sample_list }};
-          do
-            echo CONFIG_GOLIOTH_COAP_HOST_URI=\"${{ inputs.coap_gateway_url }}\" \
-              >> ${sample}/sdkconfig.defaults && \
-            idf.py -C $sample build && \
-            mv ${sample}/build/merged.bin test_binaries/$(basename $sample).bin
-          done
-    - name: Save Artifacts
-      uses: actions/upload-artifact@v4
-      with:
-        name: ${{ inputs.hil_board }}-sample-esp-idf
-        path: test_binaries/*
+      - name: Checkout Repository and Submodules
+        uses: actions/checkout@v4
+        with:
+          submodules: 'recursive'
+      - name: Prep for build
+        id: build_prep
+        run: |
+          rm -rf test_binaries
+          mkdir test_binaries
+          echo sample_list=$(find examples/esp_idf -type d -name pytest -exec dirname "{}" \;) \
+            >> "$GITHUB_OUTPUT"
+      - name: Build Samples
+        uses: espressif/esp-idf-ci-action@v1
+        with:
+          esp_idf_version: v5.3
+          target: ${{ inputs.idf_target }}
+          command: |
+            for sample in ${{ steps.build_prep.outputs.sample_list }};
+            do
+              echo CONFIG_GOLIOTH_COAP_HOST_URI=\"${{ inputs.coap_gateway_url }}\" \
+                >> ${sample}/sdkconfig.defaults && \
+              idf.py -C $sample build && \
+              mv ${sample}/build/merged.bin test_binaries/$(basename $sample).bin
+            done
+      - name: Save Artifacts
+        uses: actions/upload-artifact@v4
+        with:
+          name: ${{ inputs.hil_board }}-sample-esp-idf
+          path: test_binaries/*
 
   test:
     name: esp-idf-${{ inputs.hil_board }}-sample-test
     needs: build
-    runs-on: [ is_active, "has_${{ inputs.hil_board }}" ]
+    runs-on:
+      - is_active
+      - has_${{ inputs.hil_board }}
     timeout-minutes: 30
 
     container:

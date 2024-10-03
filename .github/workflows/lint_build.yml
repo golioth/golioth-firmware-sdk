@@ -2,7 +2,8 @@ name: Firmware Build
 
 on:
   push:
-    branches: [ main ]
+    branches:
+      - main
   pull_request:
 
 jobs:
@@ -40,64 +41,64 @@ jobs:
   linux_build:
     runs-on: ubuntu-latest
     steps:
-    - name: Checkout repository and submodules
-      uses: actions/checkout@v4
-      with:
-        submodules: 'recursive'
-    - name: Setup Python
-      uses: actions/setup-python@v5
-      with:
-        python-version: 3.x
-        architecture: 'x64'
-    - name: Install Linux deps
-      shell: bash
-      run: |
-        sudo apt install libssl-dev
-    - name: Build golioth_basics
-      shell: bash
-      run: |
-        cd examples/linux/golioth_basics
-        echo "#define GOLIOTH_PSK_ID \"device@project\"" > credentials.inc
-        echo "#define GOLIOTH_PSK \"secret\"" >> credentials.inc
-        ./build.sh
-    - name: Build certificate_auth
-      shell: bash
-      run: |
-        cd examples/linux/certificate_auth
-        ./build.sh
+      - name: Checkout repository and submodules
+        uses: actions/checkout@v4
+        with:
+          submodules: 'recursive'
+      - name: Setup Python
+        uses: actions/setup-python@v5
+        with:
+          python-version: 3.x
+          architecture: 'x64'
+      - name: Install Linux deps
+        shell: bash
+        run: |
+          sudo apt install libssl-dev
+      - name: Build golioth_basics
+        shell: bash
+        run: |
+          cd examples/linux/golioth_basics
+          echo "#define GOLIOTH_PSK_ID \"device@project\"" > credentials.inc
+          echo "#define GOLIOTH_PSK \"secret\"" >> credentials.inc
+          ./build.sh
+      - name: Build certificate_auth
+        shell: bash
+        run: |
+          cd examples/linux/certificate_auth
+          ./build.sh
 
   esp_idf_build:
     runs-on: ubuntu-latest
     steps:
-    - name: Checkout repository and submodules
-      uses: actions/checkout@v4
-      with:
-        submodules: 'recursive'
-    - name: Setup Python
-      uses: actions/setup-python@v5
-      with:
-        python-version: 3.x
-        architecture: 'x64'
-    - name: Build ESP-IDF cpp project
-      uses: espressif/esp-idf-ci-action@v1
-      with:
-        esp_idf_version: v5.3
-        target: esp32
-        path: 'examples/esp_idf/cpp'
-    - name: Create empty certs/keys required by certificate_auth project
-      shell: bash
-      run: |
-        cd examples/esp_idf/certificate_auth
-        mkdir -p main/certs
-        cd main
-        touch certs/client.key.pem
-        touch certs/client.crt.pem
-    - name: Build ESP-IDF certificate_auth project
-      uses: espressif/esp-idf-ci-action@v1
-      with:
-        esp_idf_version: v5.3
-        target: esp32
-        path: 'examples/esp_idf/certificate_auth'
+      - name: Checkout repository and submodules
+        uses: actions/checkout@v4
+        with:
+          submodules: 'recursive'
+      - name: Setup Python
+        uses: actions/setup-python@v5
+        with:
+          python-version: 3.x
+          architecture: 'x64'
+      - name: Build ESP-IDF cpp project
+        uses: espressif/esp-idf-ci-action@v1
+        with:
+          esp_idf_version: v5.3
+          target: esp32
+          path: 'examples/esp_idf/cpp'
+      - name: Create empty certs/keys required by certificate_auth project
+        shell: bash
+        run: |
+          cd examples/esp_idf/certificate_auth
+          mkdir -p main/certs
+          cd main
+          touch certs/client.key.pem
+          touch certs/client.crt.pem
+      - name: Build ESP-IDF certificate_auth project
+        uses: espressif/esp-idf-ci-action@v1
+        with:
+          esp_idf_version: v5.3
+          target: esp32
+          path: 'examples/esp_idf/certificate_auth'
 
   modus_toolbox_build:
     runs-on: ubuntu-latest
@@ -106,33 +107,33 @@ jobs:
       MTB_TOOLS_VERSION: 2.4
       MTB_DOWNLOAD_ID: 1x_YeXR4XSjaf-NZimKxQ8MIyDGo72yHt
     steps:
-    - name: Checkout repository and submodules
-      uses: actions/checkout@v4
-      with:
-        submodules: 'recursive'
-    - name: Setup Python
-      uses: actions/setup-python@v5
-      with:
-        python-version: 3.x
-        architecture: 'x64'
-    - name: Download and install ModusToolbox 2.4
-      shell: bash
-      run: |
-        pip install click gdown==5.1.0 cryptography==41.0.7 intelhex cbor
-        gdown $MTB_DOWNLOAD_ID -O /tmp/ModusToolbox_$MTB_VERSION-linux-install.tar.gz
-        tar -C $HOME -zxf /tmp/ModusToolbox_$MTB_VERSION-linux-install.tar.gz
-        rm /tmp/ModusToolbox_$MTB_VERSION-linux-install.tar.gz
-        $HOME/ModusToolbox/tools_$MTB_TOOLS_VERSION/modus-shell/postinstall
-    - name: Build MTB golioth_basics project
-      shell: bash
-      run: |
-        # Ref:
-        # https://community.infineon.com/t5/ModusToolbox-General/ModusToolbox-Project-Creator-and-Library-Manager-report-no-Internet-connection/td-p/347593
-        export CyRemoteManifestOverride=\
-        https://github.com/cypresssemiconductorco/mtb-super-manifest/raw/v2.X/mtb-super-manifest-fv2.xml
-        export CY_TOOLS_PATHS=$HOME/ModusToolbox/tools_$MTB_TOOLS_VERSION
+      - name: Checkout repository and submodules
+        uses: actions/checkout@v4
+        with:
+          submodules: 'recursive'
+      - name: Setup Python
+        uses: actions/setup-python@v5
+        with:
+          python-version: 3.x
+          architecture: 'x64'
+      - name: Download and install ModusToolbox 2.4
+        shell: bash
+        run: |
+          pip install click gdown==5.1.0 cryptography==41.0.7 intelhex cbor
+          gdown $MTB_DOWNLOAD_ID -O /tmp/ModusToolbox_$MTB_VERSION-linux-install.tar.gz
+          tar -C $HOME -zxf /tmp/ModusToolbox_$MTB_VERSION-linux-install.tar.gz
+          rm /tmp/ModusToolbox_$MTB_VERSION-linux-install.tar.gz
+          $HOME/ModusToolbox/tools_$MTB_TOOLS_VERSION/modus-shell/postinstall
+      - name: Build MTB golioth_basics project
+        shell: bash
+        run: |
+          # Ref:
+          # https://community.infineon.com/t5/ModusToolbox-General/ModusToolbox-Project-Creator-and-Library-Manager-report-no-Internet-connection/td-p/347593
+          export CyRemoteManifestOverride=\
+          https://github.com/cypresssemiconductorco/mtb-super-manifest/raw/v2.X/mtb-super-manifest-fv2.xml
+          export CY_TOOLS_PATHS=$HOME/ModusToolbox/tools_$MTB_TOOLS_VERSION
 
-        cd examples/modus_toolbox/golioth_basics/golioth_app
-        cp source/credentials.inc.template source/credentials.inc
-        make getlibs
-        make build -j$(nproc)
+          cd examples/modus_toolbox/golioth_basics/golioth_app
+          cp source/credentials.inc.template source/credentials.inc
+          make getlibs
+          make build -j$(nproc)
