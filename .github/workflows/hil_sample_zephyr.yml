@@ -71,73 +71,75 @@ jobs:
       ZEPHYR_SDK_INSTALL_DIR: /opt/toolchains/zephyr-sdk-0.16.3
     runs-on: ubuntu-latest
     steps:
-    - name: Checkout repository and submodules
-      uses: actions/checkout@v4
-      with:
-        path: modules/lib/golioth-firmware-sdk
-        submodules: 'recursive'
-    - name: Init and update west
-      run: |
-        mkdir -p .west
-        cat <<EOF > .west/config
-        [manifest]
-        path = modules/lib/golioth-firmware-sdk
-        file = ${{ inputs.manifest }}
-        EOF
+      - name: Checkout repository and submodules
+        uses: actions/checkout@v4
+        with:
+          path: modules/lib/golioth-firmware-sdk
+          submodules: 'recursive'
+      - name: Init and update west
+        run: |
+          mkdir -p .west
+          cat <<EOF > .west/config
+          [manifest]
+          path = modules/lib/golioth-firmware-sdk
+          file = ${{ inputs.manifest }}
+          EOF
 
-        west update -o=--depth=1 -n
+          west update -o=--depth=1 -n
 
-        # Patch but only for Zephyr (patch will fail on NCS builds)
-        if west config manifest.file | grep -q '.ci-west-zephyr.yml'; then
-          git config --global user.email user@git-scm.com
-          git config --global user.name "Git User"
-          west patch
-        fi
+          # Patch but only for Zephyr (patch will fail on NCS builds)
+          if west config manifest.file | grep -q '.ci-west-zephyr.yml'; then
+            git config --global user.email user@git-scm.com
+            git config --global user.name "Git User"
+            west patch
+          fi
 
-        pip3 install \
-          -r zephyr/scripts/requirements-base.txt \
-          -r zephyr/scripts/requirements-build-test.txt \
-          -r zephyr/scripts/requirements-run-test.txt
+          pip3 install \
+            -r zephyr/scripts/requirements-base.txt \
+            -r zephyr/scripts/requirements-build-test.txt \
+            -r zephyr/scripts/requirements-run-test.txt
 
-        # Needed for TF-M
-        pip3 install \
-          cryptography==41.0.7 \
-          pyasn1 \
-          pyyaml \
-          cbor>=1.0.0 \
-          imgtool>=1.9.0 \
-          jinja2 \
-          click
+          # Needed for TF-M
+          pip3 install \
+            cryptography==41.0.7 \
+            pyasn1 \
+            pyyaml \
+            cbor>=1.0.0 \
+            imgtool>=1.9.0 \
+            jinja2 \
+            click
 
-    - name: Download binary blobs
-      if: ${{ inputs.binary_blob }}
-      run: |
-        west blobs fetch ${{ inputs.binary_blob }}
+      - name: Download binary blobs
+        if: ${{ inputs.binary_blob }}
+        run: |
+          west blobs fetch ${{ inputs.binary_blob }}
 
-    - name: Compile Tests
-      run: |
-        export EXTRA_BUILD_ARGS=-x=CONFIG_GOLIOTH_COAP_HOST_URI=\"${{ inputs.coap_gateway_url }}\"
+      - name: Compile Tests
+        run: |
+          export EXTRA_BUILD_ARGS=-x=CONFIG_GOLIOTH_COAP_HOST_URI=\"${{ inputs.coap_gateway_url }}\"
 
-        zephyr/scripts/twister                                                \
-              --overflow-as-errors                                            \
-              --platform ${{ inputs.west_board }}                             \
-              -T modules/lib/golioth-firmware-sdk/examples/zephyr             \
-              --prep-artifacts-for-testing                                    \
-              --package-artifacts test_artifacts_${{ inputs.hil_board }}.tar  \
-              $EXTRA_BUILD_ARGS
+          zephyr/scripts/twister                                                \
+                --overflow-as-errors                                            \
+                --platform ${{ inputs.west_board }}                             \
+                -T modules/lib/golioth-firmware-sdk/examples/zephyr             \
+                --prep-artifacts-for-testing                                    \
+                --package-artifacts test_artifacts_${{ inputs.hil_board }}.tar  \
+                $EXTRA_BUILD_ARGS
 
-    - name: Save artifacts
-      if: always()
-      uses: actions/upload-artifact@v4
-      with:
-        name: test_artifacts_${{ inputs.hil_board }}
-        path: test_artifacts_${{ inputs.hil_board }}.tar
+      - name: Save artifacts
+        if: always()
+        uses: actions/upload-artifact@v4
+        with:
+          name: test_artifacts_${{ inputs.hil_board }}
+          path: test_artifacts_${{ inputs.hil_board }}.tar
 
   test:
     name: zephyr-${{ inputs.hil_board }}-twister-run
     if: ${{ inputs.run_tests && !cancelled() }}
     needs: build
-    runs-on: [ is_active, "has_${{ inputs.hil_board }}" ]
+    runs-on:
+      - is_active,
+      - has_${{ inputs.hil_board }}
     timeout-minutes: 30
 
     container:

@@ -60,77 +60,77 @@ jobs:
         test: ${{ fromJSON(needs.hil-matrix.outputs.tests) }}
 
     steps:
-    - name: Checkout repository and submodules
-      uses: actions/checkout@v4
-      with:
-        path: .
-        submodules: 'recursive'
-    - name: Compile
-      shell: bash
-      run: |
-        export EXTRA_BUILD_ARGS=-DCONFIG_GOLIOTH_COAP_HOST_URI=${{ inputs.coap_gateway_url }}
+      - name: Checkout repository and submodules
+        uses: actions/checkout@v4
+        with:
+          path: .
+          submodules: 'recursive'
+      - name: Compile
+        shell: bash
+        run: |
+          export EXTRA_BUILD_ARGS=-DCONFIG_GOLIOTH_COAP_HOST_URI=${{ inputs.coap_gateway_url }}
 
-        cmake -B build -S tests/hil/platform/linux \
-          $EXTRA_BUILD_ARGS -DGOLIOTH_HIL_TEST=${{ matrix.test }}
-        make -j$(nproc) -C build
-    - name: Setup Python dependencies
-      run: |
-        pip install \
-          gcovr \
-          pytest \
-          pytest-timeout \
-          tests/hil/scripts/pytest-hil \
-          git+https://github.com/golioth/python-golioth-tools@v0.6.4
-    - name: Run test
-      id: run_test
-      shell: bash
-      env:
-        test: ${{ matrix.test }}
-      run: |
-        rm -rf summary
-        mkdir summary
+          cmake -B build -S tests/hil/platform/linux \
+            $EXTRA_BUILD_ARGS -DGOLIOTH_HIL_TEST=${{ matrix.test }}
+          make -j$(nproc) -C build
+      - name: Setup Python dependencies
+        run: |
+          pip install \
+            gcovr \
+            pytest \
+            pytest-timeout \
+            tests/hil/scripts/pytest-hil \
+            git+https://github.com/golioth/python-golioth-tools@v0.6.4
+      - name: Run test
+        id: run_test
+        shell: bash
+        env:
+          test: ${{ matrix.test }}
+        run: |
+          rm -rf summary
+          mkdir summary
 
-        rm -rf allure-reports
+          rm -rf allure-reports
 
-        pytest --rootdir . tests/hil/tests/$test      \
-          --board linux                               \
-          --fw-image build/hil                        \
-          --api-url ${{ inputs.api-url }}             \
-          --api-key ${{ secrets[inputs.api-key-id] }} \
-          --mask-secrets                              \
-          -rP                                         \
-          --timeout=600                               \
-          --junitxml=summary/hil-linux-${test}.xml    \
-          --alluredir=allure-reports                  \
-          --platform linux
+          pytest --rootdir . tests/hil/tests/$test      \
+            --board linux                               \
+            --fw-image build/hil                        \
+            --api-url ${{ inputs.api-url }}             \
+            --api-key ${{ secrets[inputs.api-key-id] }} \
+            --mask-secrets                              \
+            -rP                                         \
+            --timeout=600                               \
+            --junitxml=summary/hil-linux-${test}.xml    \
+            --alluredir=allure-reports                  \
+            --platform linux
 
-        gcovr                                                         \
-          --gcov-ignore-parse-errors=negative_hits.warn_once_per_file \
-          --merge-mode-functions=separate                             \
-          --json coverage.json                                        \
-          build
+          gcovr                                                         \
+            --gcov-ignore-parse-errors=negative_hits.warn_once_per_file \
+            --merge-mode-functions=separate                             \
+            --json coverage.json                                        \
+            build
 
-    - name: Upload coverage
-      uses: actions/upload-artifact@v4
-      with:
-        name: linux-hil-test-coverage-${{ matrix.test }}
-        path: |
-          coverage.json
+      - name: Upload coverage
+        uses: actions/upload-artifact@v4
+        with:
+          name: linux-hil-test-coverage-${{ matrix.test }}
+          path: |
+            coverage.json
 
-    - name: Safe upload CI report summary
-      uses: ./.github/actions/safe-upload-artifacts
-      if: always()
-      with:
-        name: ci-hil-linux-${{ matrix.test }}
-        path: summary/hil-linux-*.xml
+      - name: Safe upload CI report summary
+        uses: ./.github/actions/safe-upload-artifacts
+        if: always()
+        with:
+          name: ci-hil-linux-${{ matrix.test }}
+          path: summary/hil-linux-*.xml
 
-    - name: Safe upload Allure reports
-      if: always()
-      uses: ./.github/actions/safe-upload-artifacts
-      with:
-        secrets-json: ${{ toJson(secrets) }}
-        name: allure-reports-hil-linux-${{ matrix.test }}
-        path: allure-reports
+      - name: Safe upload Allure reports
+        if: always()
+        uses: ./.github/actions/safe-upload-artifacts
+        with:
+          secrets-json: ${{ toJson(secrets) }}
+          name: allure-reports-hil-linux-${{ matrix.test }}
+          path: allure-reports
 
   hil-summary:
     name: linux-hil-tests-summary
