@@ -2,7 +2,8 @@ name: Tests Trigger (push and schedule)
 
 on:
   push:
-    branches: [ main ]
+    branches:
+      - main
   pull_request:
   schedule:
     # Run workflow at the start of every day (12 AM UTC)
