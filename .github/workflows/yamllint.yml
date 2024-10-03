@@ -1,0 +1,18 @@
+name: yamllint
+
+on:
+  pull_request:
+
+  workflow_dispatch:
+
+jobs:
+  yamllint:
+    runs-on: ubuntu-latest
+
+    steps:
+      - name: Checkout repository
+        uses: actions/checkout@v4
+
+      - name: Install yamllint
+        run: |
+          yamllint -f github .
