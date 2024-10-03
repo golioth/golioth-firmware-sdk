@@ -55,9 +55,38 @@ on:
         type: string
 
 jobs:
+  matrix:
+    name: zephyr-${{ inputs.hil_board }}-matrix
+    runs-on: ubuntu-latest
+
+    outputs:
+      tests: ${{ steps.output-tests.outputs.tests }}
+
+    steps:
+      - name: Checkout repository
+        uses: actions/checkout@v4
+
+      - name: Prepare tests matrix
+        id: output-tests
+        shell: python
+        run: |
+          import json
+          import os
+          from pathlib import Path
+
+          tests = [p.name for p in Path('tests/hil/tests').iterdir()]
+
+          with open(os.environ['GITHUB_OUTPUT'], 'a') as github_output:
+            print('tests=' + json.dumps(tests), file=github_output)
+
   build:
-    name: zephyr-${{ inputs.hil_board }}-build
+    name: zephyr-${{ inputs.hil_board }}-build (${{ matrix.test }})
     container: golioth/golioth-zephyr-base:0.16.8-SDK-v0
+    needs: matrix
+    strategy:
+      fail-fast: false
+      matrix:
+        test: ${{ fromJSON(needs.matrix.outputs.tests) }}
     env:
       ZEPHYR_SDK_INSTALL_DIR: /opt/toolchains/zephyr-sdk-0.16.8
     runs-on: ubuntu-latest
@@ -106,23 +135,27 @@ jobs:
 
           export EXTRA_BUILD_ARGS=-DCONFIG_GOLIOTH_COAP_HOST_URI=\"${{ inputs.coap_gateway_url }}\"
 
-          for test in $(ls modules/lib/golioth-firmware-sdk/tests/hil/tests)
-          do
-            west build --no-sysbuild -p -b ${{ inputs.west_board }} \
-              modules/lib/golioth-firmware-sdk/tests/hil/platform/zephyr \
-              -- $EXTRA_BUILD_ARGS -DGOLIOTH_HIL_TEST=$test
-            mv build/zephyr/${{ inputs.binary_name }} \
-              test_binaries/${test}-${{ inputs.binary_name }}
-          done
+          west build --no-sysbuild -p -b ${{ inputs.west_board }} \
+            modules/lib/golioth-firmware-sdk/tests/hil/platform/zephyr \
+            -- $EXTRA_BUILD_ARGS -DGOLIOTH_HIL_TEST=${{ matrix.test }}
+          mv build/zephyr/${{ inputs.binary_name }} \
+            test_binaries/${{ matrix.test }}-${{ inputs.binary_name }}
+
       - name: Save artifacts
         uses: actions/upload-artifact@v4
         with:
-          name: ${{ inputs.hil_board }}-hil-zephyr
+          name: ${{ inputs.hil_board }}-hil-zephyr-${{ matrix.test }}
           path: test_binaries/*
 
   test:
-    name: zephyr-${{ inputs.hil_board }}-test
-    needs: build
+    name: zephyr-${{ inputs.hil_board }}-test (${{ matrix.test }})
+    needs:
+      - matrix
+      - build
+    strategy:
+      fail-fast: false
+      matrix:
+        test: ${{ fromJSON(needs.matrix.outputs.tests) }}
     runs-on:
       - is_active
       - has_${{ inputs.hil_board }}
@@ -150,7 +183,7 @@ jobs:
       - name: Download build
         uses: actions/download-artifact@v4
         with:
-          name: ${{ inputs.hil_board }}-hil-zephyr
+          name: ${{ inputs.hil_board }}-hil-zephyr-${{ matrix.test }}
           path: .
       - name: Run test
         shell: bash
@@ -163,60 +196,36 @@ jobs:
           source /opt/credentials/runner_env.sh
           PORT_VAR=CI_${hil_board^^}_PORT
           SNR_VAR=CI_${hil_board^^}_SNR
-          for test in $(ls tests/hil/tests)
-          do
-            pytest --rootdir . tests/hil/tests/$test                            \
-              --board ${hil_board}                                              \
-              --port ${!PORT_VAR}                                               \
-              --fw-image ${test}-${{ inputs.binary_name }}                      \
-              --serial-number ${!SNR_VAR}                                       \
-              --api-url ${{ inputs.api-url }}                                   \
-              --api-key ${{ secrets[inputs.api-key-id] }}                       \
-              --wifi-ssid ${{ secrets[format('{0}_WIFI_SSID', runner.name)] }}  \
-              --wifi-psk ${{ secrets[format('{0}_WIFI_PSK', runner.name)] }}    \
-              --mask-secrets                                                    \
-              --timeout=600                                                     \
-              --junitxml=summary/hil-zephyr-${{ inputs.hil_board }}-${test}.xml \
-              --alluredir=allure-reports                                        \
-              --platform zephyr                                                 \
-              --runner-name ${{ runner.name }}                                  \
-              || EXITCODE=$?
-          done
-          exit $EXITCODE
 
-      - name: Prepare summary
-        if: always()
-        shell: bash
-        run: |
-          if ! command -v sudo; then
-            # Self-hosted runner docker images don't have sudo installed
-            mkdir -p -m 777 /tmp && apt update && apt install -y xml-twig-tools
-          else
-            sudo apt install -y xml-twig-tools
-          fi
-
-          xml_grep \
-            --pretty_print indented \
-            --wrap testsuites \
-            --descr '' \
-            --cond "testsuite" \
-            summary/*.xml \
-            > combined.xml
-          mv combined.xml summary/hil-zephyr-${{ inputs.hil_board }}.xml
+          pytest --rootdir . tests/hil/tests/${{ matrix.test }}                          \
+            --board ${hil_board}                                                         \
+            --port ${!PORT_VAR}                                                          \
+            --fw-image ${{ matrix.test }}-${{ inputs.binary_name }}                      \
+            --serial-number ${!SNR_VAR}                                                  \
+            --api-url ${{ inputs.api-url }}                                              \
+            --api-key ${{ secrets[inputs.api-key-id] }}                                  \
+            --wifi-ssid ${{ secrets[format('{0}_WIFI_SSID', runner.name)] }}             \
+            --wifi-psk ${{ secrets[format('{0}_WIFI_PSK', runner.name)] }}               \
+            --mask-secrets                                                               \
+            --timeout=600                                                                \
+            --junitxml=summary/hil-zephyr-${{ inputs.hil_board }}-${{ matrix.test }}.xml \
+            --alluredir=allure-reports                                                   \
+            --platform zephyr                                                            \
+            --runner-name ${{ runner.name }}
 
       - name: Safe upload CI report summary
         uses: ./.github/actions/safe-upload-artifacts
         if: always()
         with:
-          name: ci-summary-hil-zephyr-${{ inputs.hil_board }}
-          path: summary/hil-zephyr-${{ inputs.hil_board }}.xml
+          name: ci-individual-hil-zephyr-${{ inputs.hil_board }}-${{ matrix.test }}
+          path: summary/*.xml
 
       - name: Safe upload Allure reports
         if: always()
         uses: ./.github/actions/safe-upload-artifacts
         with:
           secrets-json: ${{ toJson(secrets) }}
-          name: allure-reports-hil-zephyr-${{ inputs.hil_board }}
+          name: allure-reports-hil-zephyr-${{ inputs.hil_board }}-${{ matrix.test }}
           path: allure-reports
 
       - name: Erase flash
@@ -270,3 +279,37 @@ jobs:
       - name: Power Off USB Hub
         if: always()
         run: python3 /opt/golioth-scripts/usb_hub_power.py off
+
+  summary:
+    name: zephyr-${{ inputs.hil_board }}-summary
+    runs-on: ubuntu-latest
+    needs: test
+
+    steps:
+      - name: Collect JUnit reports
+        uses: actions/download-artifact@v4
+        with:
+          path: summary
+          pattern: ci-individual-hil-zephyr-*
+          merge-multiple: true
+
+      - name: Prepare CI report summary
+        if: always()
+        shell: bash
+        run: |
+          sudo apt install -y xml-twig-tools
+
+          xml_grep \
+            --pretty_print indented \
+            --wrap testsuites \
+            --descr '' \
+            --cond "testsuite" \
+            summary/*.xml \
+            > summary/hil-zephyr-${{ inputs.hil_board }}.xml
+
+      - name: Upload CI report summary
+        uses: actions/upload-artifact@v4
+        if: always()
+        with:
+          name: ci-summary-hil-zephyr-${{ inputs.hil_board }}
+          path: summary/hil-zephyr-${{ inputs.hil_board }}.xml
