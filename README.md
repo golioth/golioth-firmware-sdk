@@ -1,5 +1,7 @@
 # Golioth Firmware SDK
 
+[![codecov](https://codecov.io/github/golioth/golioth-firmware-sdk/graph/badge.svg?token=IQSG01ZIOP)](https://codecov.io/github/golioth/golioth-firmware-sdk)
+
 A software development kit for connecting embedded devices to the
 [Golioth](https://golioth.io) IoT cloud.
 
