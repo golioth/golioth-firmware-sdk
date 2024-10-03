@@ -195,13 +195,14 @@ jobs:
           git config --global user.name "Git User"
           west patch
 
-          pip install -r zephyr/scripts/requirements-base.txt
-          pip install -r zephyr/scripts/requirements-build-test.txt
-          pip install -r zephyr/scripts/requirements-run-test.txt
-
-          pip install pytest pytest-timeout
-          pip install modules/lib/golioth-firmware-sdk/tests/hil/scripts/pytest-hil
-          pip install git+https://github.com/golioth/python-golioth-tools@v0.6.4
+          pip install \
+            -r zephyr/scripts/requirements-base.txt \
+            -r zephyr/scripts/requirements-build-test.txt \
+            -r zephyr/scripts/requirements-run-test.txt \
+            pytest \
+            pytest-timeout \
+            modules/lib/golioth-firmware-sdk/tests/hil/scripts/pytest-hil \
+            git+https://github.com/golioth/python-golioth-tools@v0.6.4
 
       - name: Build test
         env:
@@ -369,12 +370,12 @@ jobs:
           git config --global user.name "Git User"
           west patch
 
-          pip3 install -r zephyr/scripts/requirements-base.txt
-          pip3 install -r zephyr/scripts/requirements-build-test.txt
-          pip3 install -r zephyr/scripts/requirements-run-test.txt
-
-          pip3 install modules/lib/golioth-firmware-sdk/tests/hil/scripts/pytest-zephyr-samples
-          pip3 install git+https://github.com/golioth/python-golioth-tools@v0.6.3
+          pip3 install \
+            -r zephyr/scripts/requirements-base.txt \
+            -r zephyr/scripts/requirements-build-test.txt \
+            -r zephyr/scripts/requirements-run-test.txt \
+            modules/lib/golioth-firmware-sdk/tests/hil/scripts/pytest-zephyr-samples \
+            git+https://github.com/golioth/python-golioth-tools@v0.6.3
 
       - name: Run tests
         run: |

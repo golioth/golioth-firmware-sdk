@@ -94,11 +94,20 @@ jobs:
           west patch
         fi
 
-        pip3 install -r zephyr/scripts/requirements-base.txt
-        pip3 install -r zephyr/scripts/requirements-build-test.txt
-        pip3 install -r zephyr/scripts/requirements-run-test.txt
+        pip3 install \
+          -r zephyr/scripts/requirements-base.txt \
+          -r zephyr/scripts/requirements-build-test.txt \
+          -r zephyr/scripts/requirements-run-test.txt
+
         # Needed for TF-M
-        pip3 install cryptography==41.0.7 pyasn1 pyyaml cbor>=1.0.0 imgtool>=1.9.0 jinja2 click
+        pip3 install \
+          cryptography==41.0.7 \
+          pyasn1 \
+          pyyaml \
+          cbor>=1.0.0 \
+          imgtool>=1.9.0 \
+          jinja2 \
+          click
 
     - name: Download binary blobs
       if: ${{ inputs.binary_blob }}
@@ -161,12 +170,12 @@ jobs:
           git config --global user.name "Git User"
           west patch
 
-          pip3 install -r zephyr/scripts/requirements-base.txt
-          pip3 install -r zephyr/scripts/requirements-build-test.txt
-          pip3 install -r zephyr/scripts/requirements-run-test.txt
-
-          pip3 install tests/hil/scripts/pytest-zephyr-samples
-          pip3 install git+https://github.com/golioth/python-golioth-tools@v0.6.3
+          pip3 install \
+            -r zephyr/scripts/requirements-base.txt \
+            -r zephyr/scripts/requirements-build-test.txt \
+            -r zephyr/scripts/requirements-run-test.txt \
+            tests/hil/scripts/pytest-zephyr-samples \
+            git+https://github.com/golioth/python-golioth-tools@v0.6.3
       - name: Power On USB Hub
         run: python3 /opt/golioth-scripts/usb_hub_power.py on
       - name: Download build

@@ -74,10 +74,12 @@ jobs:
         make -j$(nproc) -C build
     - name: Setup Python dependencies
       run: |
-        pip install --upgrade pip
-        pip install gcovr pytest pytest-timeout
-        pip install tests/hil/scripts/pytest-hil
-        pip install git+https://github.com/golioth/python-golioth-tools@v0.6.4
+        pip install \
+          gcovr \
+          pytest \
+          pytest-timeout \
+          tests/hil/scripts/pytest-hil \
+          git+https://github.com/golioth/python-golioth-tools@v0.6.4
     - name: Run test
       id: run_test
       shell: bash
