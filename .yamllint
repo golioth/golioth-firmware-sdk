@@ -1,0 +1,26 @@
+# SPDX-License-Identifier: Apache-2.0
+
+extends: default
+
+ignore: |
+  /external
+  /docs/doxygen/doxygen-awesome-css
+  mtb_shared
+
+rules:
+  line-length:
+    max: 100
+    ignore: |
+      /.github/actions/safe-upload-artifacts/action.yml
+      /.github/workflows/lint_build_unit_test.yml
+      /.github/workflows/reports-allure-publish.yml
+
+  comments:
+    min-spaces-from-content: 1
+  indentation:
+    spaces: 2
+    indent-sequences: consistent
+  document-start:
+    present: false
+  truthy:
+    check-keys: false
