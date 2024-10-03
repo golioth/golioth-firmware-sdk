@@ -1,4 +1,4 @@
-name: Hardware-in-the-Loop Tests Trigger (push and schedule)
+name: Tests Trigger (push and schedule)
 
 on:
   push:
@@ -13,6 +13,6 @@ concurrency:
   cancel-in-progress: true
 
 jobs:
-  hil_tests:
-    uses: ./.github/workflows/hil_tests.yml
+  tests:
+    uses: ./.github/workflows/tests.yml
     secrets: inherit
