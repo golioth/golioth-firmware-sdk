@@ -50,7 +50,8 @@ jobs:
       run: |
         rm -rf test_binaries
         mkdir test_binaries
-        echo sample_list=$(find examples/esp_idf -type d -name pytest -exec dirname "{}" \;) >> "$GITHUB_OUTPUT"
+        echo sample_list=$(find examples/esp_idf -type d -name pytest -exec dirname "{}" \;) \
+          >> "$GITHUB_OUTPUT"
     - name: Build Samples
       uses: espressif/esp-idf-ci-action@v1
       with:
@@ -59,7 +60,8 @@ jobs:
         command: |
           for sample in ${{ steps.build_prep.outputs.sample_list }};
           do
-            echo CONFIG_GOLIOTH_COAP_HOST_URI=\"${{ inputs.coap_gateway_url }}\" >> ${sample}/sdkconfig.defaults && \
+            echo CONFIG_GOLIOTH_COAP_HOST_URI=\"${{ inputs.coap_gateway_url }}\" \
+              >> ${sample}/sdkconfig.defaults && \
             idf.py -C $sample build && \
             mv ${sample}/build/merged.bin test_binaries/$(basename $sample).bin
           done

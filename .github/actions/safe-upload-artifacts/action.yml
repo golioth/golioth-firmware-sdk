@@ -52,7 +52,8 @@ runs:
             # contain secrets
             while IFS= read -r search_path || [[ -n $search_path ]];
             do
-              [ $(grep -Rl $ESCAPED_SECRET $search_path 2>/dev/null >> __grep_search_output.txt) >= 0 ]
+              [ $(grep -Rl $ESCAPED_SECRET $search_path 2>/dev/null >> \
+                __grep_search_output.txt) >= 0 ]
             done < <(printf '%s' "${{ inputs.path }}")
 
             if [ -s __grep_search_output.txt ]; then
