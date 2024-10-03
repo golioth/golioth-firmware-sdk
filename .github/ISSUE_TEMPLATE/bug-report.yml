@@ -6,7 +6,8 @@ body:
     id: sdk-version
     attributes:
       label: Golioth Firmware SDK Commit Hash
-      description: Run `git show HEAD -s --format='%H'` in your copy of the Golioth Firmware SDK repository
+      description: >-
+        Run `git show HEAD -s --format='%H'` in your copy of the Golioth Firmware SDK repository
     validations:
       required: true
   - type: input
@@ -55,5 +56,7 @@ body:
     id: logs
     attributes:
       label: Logs, console output, or any kind of debug information
-      description: Please copy and paste any relevant debug information. This will be automatically formatted into code, so no need for backticks.
+      description: >-
+        Please copy and paste any relevant debug information. This will be automatically formatted
+        into code, so no need for backticks.
       render: shell
