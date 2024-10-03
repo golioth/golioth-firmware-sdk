@@ -4,18 +4,5 @@ machine.
 To run tests:
 
 ```
-./test.sh
-```
-
-
-To run tests with code coverage, make sure you've installed lcov:
-
-```
-sudo apt install lcov
-```
-
-Then run
-
-```
-CODECOV=1 ./test.sh
+ctest --build-and-test . build --build-generator Ninja --test-command ctest
 ```
