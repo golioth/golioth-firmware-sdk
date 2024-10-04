@@ -204,12 +204,19 @@ static coap_response_t coap_response_handler(coap_session_t *session,
             }
             else if (req->type == GOLIOTH_COAP_REQUEST_POST_BLOCK)
             {
+                coap_opt_iterator_t opt_iter;
+                coap_opt_t *block_opt = coap_check_option(received, COAP_OPTION_BLOCK1, &opt_iter);
+
+                /* Get block1 szx value from server; use stored value if block1 is not preset */
+                size_t server_requested_szx =
+                    block_opt ? COAP_OPT_BLOCK_SZX(block_opt) : req->post_block.block_szx;
+
                 if (req->post_block.callback)
                 {
                     req->post_block.callback(client,
                                              &response,
                                              req->path,
-                                             req->post_block.block_szx,
+                                             server_requested_szx,
                                              req->post_block.arg);
                 }
             }
