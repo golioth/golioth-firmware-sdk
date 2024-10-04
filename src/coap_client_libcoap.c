@@ -421,15 +421,14 @@ static void golioth_coap_add_accept(coap_pdu_t *request, enum golioth_content_ty
 
 static void golioth_coap_add_block1(coap_pdu_t *request,
                                     size_t block_index,
-                                    size_t block_size,
+                                    size_t block_szx,
                                     bool is_last)
 {
-    size_t szx = BLOCKSIZE_TO_SZX(block_size);
-    assert(szx != -1);
+    assert(block_szx <= COAP_MAX_BLOCK_SZX);
     coap_block_t block = {
         .num = block_index,
         .m = !is_last,
-        .szx = szx,
+        .szx = block_szx,
     };
 
     unsigned char buf[4];
@@ -571,7 +570,7 @@ static void golioth_coap_post_block(golioth_coap_request_msg_t *req,
     golioth_coap_add_content_type(req_pdu, req->post_block.content_type);
     golioth_coap_add_block1(req_pdu,
                             req->post_block.block_index,
-                            CONFIG_GOLIOTH_BLOCKWISE_UPLOAD_MAX_BLOCK_SIZE,
+                            req->post_block.block_szx,
                             req->post_block.is_last);
     coap_add_data(req_pdu, req->post_block.payload_size, (unsigned char *) req->post_block.payload);
     coap_send(session, req_pdu);
