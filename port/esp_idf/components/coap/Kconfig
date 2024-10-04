@@ -1,0 +1,10 @@
+#
+# Copyright (C) 2024 Golioth, Inc.
+#
+# SPDX-License-Identifier: Apache-2.0
+#
+
+config LIBCOAP_ENABLE_IPV6_SUPPORT
+    bool "Enable libcoap IPv6 support"
+    help
+        Compile in libcoap IPv6 support.
