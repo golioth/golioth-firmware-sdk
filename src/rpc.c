@@ -104,6 +104,12 @@ static void on_rpc(struct golioth_client *client,
     int err;
     bool ok;
 
+    if (response->status != GOLIOTH_OK)
+    {
+        GLTH_LOGE(TAG, "Error response on observed RPC: %d", response->status);
+        return;
+    }
+
     GLTH_LOG_BUFFER_HEXDUMP(TAG, payload, min(64, payload_size), GOLIOTH_DEBUG_LOG_LEVEL_DEBUG);
 
     if (payload_size == 3 && payload[1] == 'O' && payload[2] == 'K')
