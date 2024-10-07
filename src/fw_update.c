@@ -93,6 +93,7 @@ static void on_ota_manifest(struct golioth_client *client,
 {
     if (response->status != GOLIOTH_OK)
     {
+        GLTH_LOGE(TAG, "Error in OTA manifest observation: %d", response->status);
         return;
     }
 
