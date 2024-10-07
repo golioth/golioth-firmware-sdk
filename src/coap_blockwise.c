@@ -33,12 +33,13 @@ struct blockwise_transfer
         read_block_cb read_cb;
         write_block_cb write_cb;
     } callback;
+    struct golioth_response response;
     void *callback_arg;
 };
 
 struct post_block_ctx
 {
-    enum golioth_status status;
+    struct golioth_response response;
     golioth_sys_sem_t sem;
     size_t negotiated_blocksize_szx;
 };
@@ -83,7 +84,7 @@ static void on_block_sent(struct golioth_client *client,
 {
     assert(arg);
     struct post_block_ctx *ctx = arg;
-    ctx->status = response->status;
+    ctx->response = *response;
     ctx->negotiated_blocksize_szx = block_szx;
 
     golioth_sys_sem_give(ctx->sem);
@@ -127,7 +128,7 @@ static enum golioth_status upload_single_block(struct golioth_client *client,
     assert(block_size > 0 && block_size <= ctx->block_size);
 
     struct post_block_ctx arg = {
-        .status = GOLIOTH_ERR_FAIL,
+        .response.status = GOLIOTH_ERR_FAIL,
         .sem = ctx->sem,
         .negotiated_blocksize_szx = BLOCKSIZE_TO_SZX(ctx->block_size),
     };
@@ -148,7 +149,7 @@ static enum golioth_status upload_single_block(struct golioth_client *client,
     if (GOLIOTH_OK == err)
     {
         golioth_sys_sem_take(ctx->sem, GOLIOTH_SYS_WAIT_FOREVER);
-        err = arg.status;
+        err = arg.response.status;
 
         if (arg.negotiated_blocksize_szx < BLOCKSIZE_TO_SZX(ctx->block_size))
         {
@@ -164,6 +165,8 @@ static enum golioth_status upload_single_block(struct golioth_client *client,
             ctx->block_size = SZX_TO_BLOCKSIZE(arg.negotiated_blocksize_szx);
         }
     }
+
+    ctx->response = arg.response;
 
     return err;
 }
@@ -205,11 +208,12 @@ enum golioth_status golioth_blockwise_post(struct golioth_client *client,
                                            const char *path_prefix,
                                            const char *path,
                                            enum golioth_content_type content_type,
-                                           read_block_cb cb,
+                                           read_block_cb read_cb,
+                                           golioth_set_cb_fn set_cb,
                                            void *callback_arg)
 {
     enum golioth_status status = GOLIOTH_ERR_FAIL;
-    if (!client || !path || !cb)
+    if (!client || !path || !read_cb)
     {
         return status;
     }
@@ -228,7 +232,7 @@ enum golioth_status golioth_blockwise_post(struct golioth_client *client,
         goto finish_with_ctx;
     }
 
-    blockwise_upload_init(ctx, data_buff, path_prefix, path, content_type, cb, callback_arg);
+    blockwise_upload_init(ctx, data_buff, path_prefix, path, content_type, read_cb, callback_arg);
 
     ctx->sem = golioth_sys_sem_create(1, 0);
     if (!ctx->sem)
@@ -243,6 +247,11 @@ enum golioth_status golioth_blockwise_post(struct golioth_client *client,
         {
             break;
         }
+    }
+
+    if (set_cb)
+    {
+        set_cb(client, &ctx->response, path, callback_arg);
     }
 
     /* Upload complete, clean up allocated resources */
