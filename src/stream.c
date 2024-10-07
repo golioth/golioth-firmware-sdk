@@ -56,7 +56,13 @@ enum golioth_status golioth_stream_set_blockwise_sync(struct golioth_client *cli
                                                       stream_read_block_cb cb,
                                                       void *arg)
 {
-    return golioth_blockwise_post(client, GOLIOTH_STREAM_PATH_PREFIX, path, content_type, cb, arg);
+    return golioth_blockwise_post(client,
+                                  GOLIOTH_STREAM_PATH_PREFIX,
+                                  path,
+                                  content_type,
+                                  cb,
+                                  NULL,
+                                  arg);
 }
 
 

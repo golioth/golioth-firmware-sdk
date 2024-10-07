@@ -23,6 +23,7 @@ enum golioth_status golioth_blockwise_post(struct golioth_client *client,
                                            const char *path,
                                            enum golioth_content_type content_type,
                                            read_block_cb cb,
+                                           golioth_set_cb_fn callback,
                                            void *callback_arg);
 
 /* Blockwise Download */
