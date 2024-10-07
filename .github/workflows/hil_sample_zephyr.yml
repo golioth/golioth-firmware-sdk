@@ -138,7 +138,7 @@ jobs:
     if: ${{ inputs.run_tests && !cancelled() }}
     needs: build
     runs-on:
-      - is_active,
+      - is_active
       - has_${{ inputs.hil_board }}
     timeout-minutes: 30
 
