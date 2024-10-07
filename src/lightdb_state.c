@@ -322,6 +322,7 @@ static void on_payload(struct golioth_client *client,
 
     if (response->status != GOLIOTH_OK)
     {
+        GLTH_LOGE(TAG, "Error response from LightDB State: %d", response->status);
         ldb_response->is_null = true;
         return;
     }
