@@ -8,6 +8,9 @@ and this project adheres to [Semantic Versioning](https://semver.org/spec/v2.0.0
 
 ### Breaking Changes:
 
+- `golioth_ota_download_component()` has a new `uint32_t
+  *next_block_idx` parameter. Use this to resume block download. Set to
+  `NULL` to use previous functionality in existing code.
 - The parameters for `ota_component_block_write_cb()` have changed to
   include `block_buffer_len` for the actual length of data and
   `negotiated_block_size` to indicate the maximum block size (may be

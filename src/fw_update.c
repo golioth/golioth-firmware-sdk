@@ -246,6 +246,7 @@ static void fw_update_thread(void *arg)
 
         int err = golioth_ota_download_component(_client,
                                                  _main_component,
+                                                 NULL,
                                                  fw_write_block_cb,
                                                  (void *) &bytes_downloaded);
         if (err != GOLIOTH_OK)
