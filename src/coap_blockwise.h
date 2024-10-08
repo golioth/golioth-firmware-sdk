@@ -39,3 +39,17 @@ enum golioth_status golioth_blockwise_get(struct golioth_client *client,
                                           enum golioth_content_type content_type,
                                           write_block_cb cb,
                                           void *callback_arg);
+
+/* Begin a blockwise download from a given block index
+ *
+ * This function will block until the download finishes or an error has occurred. The block_idx
+ * parameter will be set to the next expected block. This value may be used to resume after a block
+ * download has failed.
+ */
+enum golioth_status golioth_blockwise_get_from_idx(struct golioth_client *client,
+                                                   const char *path_prefix,
+                                                   const char *path,
+                                                   enum golioth_content_type content_type,
+                                                   uint32_t *block_idx,
+                                                   write_block_cb cb,
+                                                   void *callback_arg);
