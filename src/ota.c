@@ -367,6 +367,7 @@ enum golioth_status golioth_ota_download_component(struct golioth_client *client
                                  "",
                                  component->uri,
                                  GOLIOTH_CONTENT_TYPE_OCTET_STREAM,
+                                 NULL,
                                  ota_component_write_cb_wrapper,
                                  &ctx);
 }
