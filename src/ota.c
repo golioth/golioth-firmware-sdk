@@ -354,6 +354,7 @@ static enum golioth_status ota_component_write_cb_wrapper(uint32_t block_idx,
 
 enum golioth_status golioth_ota_download_component(struct golioth_client *client,
                                                    const struct golioth_ota_component *component,
+                                                   uint32_t *next_block_idx,
                                                    ota_component_block_write_cb cb,
                                                    void *arg)
 {
