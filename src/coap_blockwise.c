@@ -397,6 +397,7 @@ enum golioth_status golioth_blockwise_get(struct golioth_client *client,
                                           const char *path_prefix,
                                           const char *path,
                                           enum golioth_content_type content_type,
+                                          uint32_t *block_idx,
                                           write_block_cb cb,
                                           void *callback_arg)
 {
@@ -422,6 +423,11 @@ enum golioth_status golioth_blockwise_get(struct golioth_client *client,
 
     blockwise_download_init(ctx, data_buff, path_prefix, path, content_type, cb, callback_arg);
 
+    if (block_idx)
+    {
+        ctx->block_idx = *block_idx;
+    }
+
     ctx->sem = golioth_sys_sem_create(1, 0);
     if (!ctx->sem)
     {
@@ -436,6 +442,11 @@ enum golioth_status golioth_blockwise_get(struct golioth_client *client,
         {
             break;
         }
+    }
+
+    if (block_idx)
+    {
+        *block_idx = ctx->block_idx;
     }
 
     /* Download complete. Clean up allocated resources. */
