@@ -352,10 +352,12 @@ static enum golioth_status ota_component_write_cb_wrapper(uint32_t block_idx,
                    ctx->arg);
 }
 
-enum golioth_status golioth_ota_download_component(struct golioth_client *client,
-                                                   const struct golioth_ota_component *component,
-                                                   ota_component_block_write_cb cb,
-                                                   void *arg)
+enum golioth_status golioth_ota_download_component_resumable(
+    struct golioth_client *client,
+    const struct golioth_ota_component *component,
+    uint32_t *next_block_idx,
+    ota_component_block_write_cb cb,
+    void *arg)
 {
     struct ota_component_blockwise_ctx ctx = {
         .component = component,
@@ -363,12 +365,23 @@ enum golioth_status golioth_ota_download_component(struct golioth_client *client
         .arg = arg,
     };
 
-    return golioth_blockwise_get(client,
-                                 "",
-                                 component->uri,
-                                 GOLIOTH_CONTENT_TYPE_OCTET_STREAM,
-                                 ota_component_write_cb_wrapper,
-                                 &ctx);
+    return golioth_blockwise_get_from_idx(client,
+                                          "",
+                                          component->uri,
+                                          GOLIOTH_CONTENT_TYPE_OCTET_STREAM,
+                                          next_block_idx,
+                                          ota_component_write_cb_wrapper,
+                                          &ctx);
+}
+
+enum golioth_status golioth_ota_download_component(struct golioth_client *client,
+                                                   const struct golioth_ota_component *component,
+                                                   ota_component_block_write_cb cb,
+                                                   void *arg)
+{
+    uint32_t next_block_idx = 0;
+
+    return golioth_ota_download_component_resumable(client, component, &next_block_idx, cb, arg);
 }
 
 enum golioth_status golioth_ota_get_block_sync(struct golioth_client *client,
