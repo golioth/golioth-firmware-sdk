@@ -2,6 +2,10 @@ name: Publish Allure Reports to GitHub Pages
 
 on:
   workflow_call:
+  push:
+
+env:
+  GHPAGES_LABEL: "gh-pages"
 
 jobs:
   allure-collect-and-publish:
@@ -16,8 +20,8 @@ jobs:
         continue-on-error: true
         with:
           repository: golioth/allure-reports
-          ref: gh-pages
-          path: gh-pages
+          ref: ${{ env.GHPAGES_LABEL }}
+          path: ${{ env.GHPAGES_LABEL }}
           ssh-key: ${{ secrets.ALLURE_REPORTS_DEPLOY_KEY }}
 
       - name: Collect individual reports
@@ -33,15 +37,38 @@ jobs:
           name: allure-reports-alltest
           path: reports/allure-results
 
+      - name: Setup Allure Branch Awareness
+        id: vars
+        run: |
+          if [[ $GITHUB_REF_NAME == 'main' ]]; then
+            echo "allure_subdir=main" >> $GITHUB_OUTPUT
+          else
+            echo "allure_subdir=branch" >> $GITHUB_OUTPUT
+          fi
+
       - name: Build Allure report
         uses: szczys/allure-report-action@fix-workflow-url-when-hosted-remotely
         if: always()
         with:
-          gh_pages: gh-pages
+          gh_pages: ${{ env.GHPAGES_LABEL }}
           allure_history: reports/allure-history
           allure_results: reports/allure-results
           github_repo: golioth/allure-reports
           github_repo_owner: golioth
+          subfolder: ${{ steps.vars.outputs.allure_subdir}}
+
+      - name: Rsync the Allure build
+        run: |
+          rsync -a                                                            \
+                reports/allure-history/${{ steps.vars.outputs.allure_subdir}} \
+                ${{ env.GHPAGES_LABEL }}                                      \
+                --delete
+
+      - name: Place index.html
+        if: always() && github.ref == 'refs/heads/main'
+        # Root URL should always point to latest main report
+        run: cp reports/allure-history/${{ steps.vars.outputs.allure_subdir}}/index.html \
+                ${{ env.GHPAGES_LABEL }}/.
 
       - name: Publish test report
         uses: peaceiris/actions-gh-pages@v4
@@ -49,13 +76,13 @@ jobs:
         with:
           deploy_key: ${{ secrets.ALLURE_REPORTS_DEPLOY_KEY }}
           external_repository: golioth/allure-reports
-          publish_branch: gh-pages
-          publish_dir: reports/allure-history
+          publish_branch: ${{ env.GHPAGES_LABEL }}
+          publish_dir: ${{ env.GHPAGES_LABEL }}
 
       - name: Add Allure link to summary
         run: |
           echo "### Allure Report" >> $GITHUB_STEP_SUMMARY
           echo "" >> $GITHUB_STEP_SUMMARY
           echo "- [Workflow ${{ github.run_number }}]\
-          (https://golioth.github.io/allure-reports/${{ github.run_number }}/)" \
+          (https://golioth.github.io/allure-reports/${{ steps.vars.outputs.allure_subdir}}/${{ github.run_number }}/)" \
           >> $GITHUB_STEP_SUMMARY
