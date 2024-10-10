@@ -90,23 +90,32 @@ static void on_block_sent(struct golioth_client *client,
     golioth_sys_sem_give(ctx->sem);
 }
 
-// Function to call the application's read block callback after a successful
-// blockwise upload
-static int call_read_block_callback(struct blockwise_transfer *ctx)
+// Function to call the application's read block callback for obtaining
+// blockwise upload data
+static enum golioth_status call_read_block_callback(struct blockwise_transfer *ctx,
+                                                    size_t *block_buffer_len)
 {
     /* Do not allow user callback to directly change ctx->block_size value */
     size_t block_size = ctx->block_size;
 
-    int err = ctx->callback.read_cb(ctx->block_idx,
-                                    ctx->block_buffer,
-                                    &block_size,
-                                    &ctx->is_last,
-                                    ctx->callback_arg);
-    if (err != GOLIOTH_OK)
+    enum golioth_status status = ctx->callback.read_cb(ctx->block_idx,
+                                                       ctx->block_buffer,
+                                                       &block_size,
+                                                       &ctx->is_last,
+                                                       ctx->callback_arg);
+    if (status != GOLIOTH_OK)
     {
-        return -err;
+        return status;
     }
-    return block_size;
+
+    if ((ctx->is_last == false && block_size != ctx->block_size) || block_size > ctx->block_size
+        || block_size == 0)
+    {
+        return GOLIOTH_ERR_INVALID_BLOCK_SIZE;
+    }
+
+    *block_buffer_len = block_size;
+    return status;
 }
 
 // Return the next block idx based on a smaller block size
@@ -171,34 +180,19 @@ static enum golioth_status upload_single_block(struct golioth_client *client,
     return err;
 }
 
-// Function to handle blockwise upload errors
-static enum golioth_status handle_upload_error()
-{
-    // TODO: handle errors like disconnects etc
-    return GOLIOTH_OK;
-}
-
 // Function to manage blockwise upload and handle errors
 static enum golioth_status process_blockwise_uploads(struct golioth_client *client,
                                                      struct blockwise_transfer *ctx)
 {
-    enum golioth_status status = GOLIOTH_ERR_FAIL;
-    int ret = call_read_block_callback(ctx);
-    if (ret < 0)
+    size_t block_buffer_len = ctx->block_size;
+    enum golioth_status status = call_read_block_callback(ctx, &block_buffer_len);
+    if (status == GOLIOTH_OK)
     {
-        status = -ret;
-    }
-    else
-    {
-        status = upload_single_block(client, ctx, (size_t) ret);
+        status = upload_single_block(client, ctx, block_buffer_len);
         if (status == GOLIOTH_OK)
         {
+            /* Only advance block_idx if block was uploaded successfully */
             ctx->block_idx++;
-        }
-        else
-        {
-            // TODO: handle_upload_error
-            status = handle_upload_error();
         }
     }
     return status;
@@ -251,7 +245,21 @@ enum golioth_status golioth_blockwise_post(struct golioth_client *client,
 
     if (set_cb)
     {
-        set_cb(client, &ctx->response, path, callback_arg);
+        /* Only call set_cb if the upload was successful or there was a **coap** error .
+         *
+         * These "local" error cases should skip the callback:
+         * - If block_idx == 0 the first block was not successfully uploaded
+         * - If the response.status is OK but the return status isn't, it means the user callback
+         *   returned an error or the blockwise-set timed out (never got a callback from the coap
+         *   thread).
+         */
+        bool local_error =
+            (status != GOLIOTH_OK && (ctx->block_idx == 0 || ctx->response.status == GOLIOTH_OK));
+
+        if (!local_error)
+        {
+            set_cb(client, &ctx->response, path, callback_arg);
+        }
     }
 
     /* Upload complete, clean up allocated resources */
