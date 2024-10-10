@@ -175,6 +175,38 @@ enum golioth_status golioth_ota_download_component(struct golioth_client *client
                                                    ota_component_block_write_cb cb,
                                                    void *arg);
 
+/// Begin or resume downloading an OTA component synchronously.
+///
+/// This function will block until the final block of the component download is received from the
+/// server or an error is received on any block. The `next_block_idx` is used to pass in the first
+/// block index to be downloaded (components begin with the 0th index), after returning the same
+/// parameter has been updated to indicate the next expected block in the download process.
+///
+/// Use this function to resume OTA component downloads. Pass the `next_block_idx` from a failed run
+/// to resume the download. The `ota_component_block_write_cb` function must be designed to handle
+/// storage when resuming a download. Upon successful completion, it is up to the application to
+/// verify the integrity of the component (eg: compare to the SHA256 in `golioth_ota_component`).
+///
+/// @param client The client handle from @ref golioth_client_create
+/// @param component One @ref golioth_ota_component instance present in the @ref
+/// golioth_ota_manifest
+/// @param[in,out] next_block_idx Pointer to the next expected block index. The function will
+/// request the block index supplied as an input, when returning, this variable indicates the next
+/// block index expected. When an error status is returned, use this value as the input for the next
+/// resume operation.
+/// @param cb Callback function to register
+/// @param arg Optional argument, forwarded directly to the callback when invoked. Can be NULL.
+///
+/// @retval GOLIOTH_OK the final block of package was received
+/// @retval GOLIOTH_ERR_FAIL invalid client handle, path, or callback
+/// @retval GOLIOTH_ERR_MEM_ALLOC unable to allocate necessary memory
+enum golioth_status golioth_ota_download_component_resumable(
+    struct golioth_client *client,
+    const struct golioth_ota_component *component,
+    uint32_t *next_block_idx,
+    ota_component_block_write_cb cb,
+    void *arg);
+
 /// Get a single artfifact block synchronously
 ///
 /// Since some artifacts (e.g. "main" firmware) are larger than the amount of RAM
