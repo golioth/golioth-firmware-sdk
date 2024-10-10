@@ -176,7 +176,7 @@ jobs:
               --wifi-psk ${{ secrets[format('{0}_WIFI_PSK', runner.name)] }}    \
               --mask-secrets                                                    \
               --timeout=600                                                     \
-              --junitxml=summary/hil-zephyr-${{ inputs.hil_board }}-${test}.xml \
+              --junitxml=summary/hil-zephyr-${{ inputs.hil_board }}-${test}.junit.xml \
               --alluredir=allure-reports                                        \
               --platform zephyr                                                 \
               --runner-name ${{ runner.name }}                                  \
@@ -209,7 +209,7 @@ jobs:
         if: always()
         with:
           name: ci-summary-hil-zephyr-${{ inputs.hil_board }}
-          path: summary/hil-zephyr-${{ inputs.hil_board }}.xml
+          path: summary/hil-zephyr-${{ inputs.hil_board }}.junit.xml
 
       - name: Safe upload Allure reports
         if: always()

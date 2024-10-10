@@ -161,11 +161,11 @@ jobs:
             --wrap testsuites --descr '' \
             --cond "testsuite" \
             ci-hil-linux-*/*.xml \
-            > hil-linux.xml
+            > hil-linux.junit.xml
 
       - name: Safe upload CI report summary
         uses: ./.github/actions/safe-upload-artifacts
         if: always()
         with:
           name: ci-summary-hil-linux
-          path: hil-linux.xml
+          path: hil-linux.junit.xml
