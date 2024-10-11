@@ -2,7 +2,6 @@ name: Publish Allure Reports to GitHub Pages
 
 on:
   workflow_call:
-  push:
 
 env:
   GHPAGES_LABEL: "gh-pages"
