@@ -22,6 +22,6 @@ jobs:
       if: success() || failure()
       with:
         name: Firmware Test Summary
-        path: summary/*.xml
+        path: summary/*.junit.xml
         reporter: java-junit
         output-to: step-summary

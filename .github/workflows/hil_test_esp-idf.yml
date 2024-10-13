@@ -153,14 +153,14 @@ jobs:
             --cond "testsuite" \
             summary/*.xml \
             > combined.xml
-          mv combined.xml summary/hil-espidf-${{ inputs.hil_board }}.xml
+          mv combined.xml summary/hil-espidf-${{ inputs.hil_board }}.junit.xml
 
       - name: Safe upload CI report summary
         uses: ./.github/actions/safe-upload-artifacts
         if: always()
         with:
           name: ci-summary-hil-espidf-${{ inputs.hil_board }}
-          path: summary/hil-espidf-${{ inputs.hil_board }}.xml
+          path: summary/hil-espidf-${{ inputs.hil_board }}.junit.xml
 
       - name: Safe upload Allure reports
         if: always()

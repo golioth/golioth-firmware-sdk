@@ -235,7 +235,8 @@ jobs:
         run: |
           rm -rf summary
           mkdir summary
-          cp twister-out/twister_suite_report.xml summary/samples-zephyr-${{ inputs.hil_board }}.xml
+          cp twister-out/twister_suite_report.xml \
+            summary/samples-zephyr-${{ inputs.hil_board }}.junit.xml
 
       - name: Safe upload CI report summary
         uses: ./modules/lib/golioth-firmware-sdk/.github/actions/safe-upload-artifacts
