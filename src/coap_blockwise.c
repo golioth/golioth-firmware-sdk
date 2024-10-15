@@ -397,7 +397,7 @@ enum golioth_status golioth_blockwise_get(struct golioth_client *client,
     enum golioth_status status = GOLIOTH_ERR_FAIL;
     if (!client || !path || !cb)
     {
-        return status;
+        return GOLIOTH_ERR_NULL;
     }
 
     struct blockwise_transfer *ctx = malloc(sizeof(struct blockwise_transfer));
