@@ -1,0 +1,6 @@
+# Copyright (c) 2021 Golioth, Inc.
+# SPDX-License-Identifier: Apache-2.0
+
+source "${ZEPHYR_GOLIOTH_FIRMWARE_SDK_MODULE_DIR}/examples/zephyr/common/Kconfig.defconfig"
+
+source "Kconfig.zephyr"
