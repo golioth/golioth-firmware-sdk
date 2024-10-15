@@ -301,19 +301,23 @@ static void blockwise_download_init(struct blockwise_transfer *ctx,
 
 // Function to call the application's write block callback after a successful
 // blockwise download
-static void call_write_block_callback(struct blockwise_transfer *ctx, size_t rcvd_bytes)
+static enum golioth_status call_write_block_callback(struct blockwise_transfer *ctx,
+                                                     size_t rcvd_bytes)
 {
-    if (ctx->callback.write_cb(ctx->block_idx,
-                               ctx->block_buffer,
-                               rcvd_bytes,
-                               ctx->is_last,
-                               ctx->block_size,
-                               ctx->callback_arg)
-        != GOLIOTH_OK)
+    enum golioth_status status = ctx->callback.write_cb(ctx->block_idx,
+                                                        ctx->block_buffer,
+                                                        rcvd_bytes,
+                                                        ctx->is_last,
+                                                        ctx->block_size,
+                                                        ctx->callback_arg);
+
+    if (GOLIOTH_OK == status)
     {
-        // TODO: handle application callback error
+        /* Only advance block_idx if block was stored successfully */
+        ctx->block_idx++;
     }
-    ctx->block_idx++;
+
+    return status;
 }
 
 // Blockwise download's internal callback function that the COAP client calls
@@ -376,28 +380,18 @@ static enum golioth_status download_single_block(struct golioth_client *client,
     return err;
 }
 
-// Function to handle blockwise download errors
-static enum golioth_status handle_download_error()
-{
-    // TODO: handle errors like disconnects etc
-    return GOLIOTH_OK;
-}
-
 // Function to manage blockwise downloads and handle errors
 static enum golioth_status process_blockwise_downloads(struct golioth_client *client,
                                                        struct blockwise_transfer *ctx)
 {
     size_t rcvd_bytes = 0;
     enum golioth_status status = download_single_block(client, ctx, &rcvd_bytes);
+
     if (status == GOLIOTH_OK)
     {
-        call_write_block_callback(ctx, rcvd_bytes);
+        status = call_write_block_callback(ctx, rcvd_bytes);
     }
-    else
-    {
-        // TODO: handle_download_error
-        status = handle_download_error();
-    }
+
     return status;
 }
 
