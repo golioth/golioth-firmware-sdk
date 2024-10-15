@@ -66,8 +66,9 @@ jobs:
       - name: Place index.html
         if: always() && github.ref == 'refs/heads/main'
         # Root URL should always point to latest main report
-        run: cp reports/allure-history/${{ steps.vars.outputs.allure_subdir}}/index.html \
-                ${{ env.GHPAGES_LABEL }}/.
+        run: |
+          cp reports/allure-history/${{ steps.vars.outputs.allure_subdir}}/index.html \
+          ${{ env.GHPAGES_LABEL }}/.
 
       - name: Publish test report
         uses: peaceiris/actions-gh-pages@v4
