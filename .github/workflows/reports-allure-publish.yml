@@ -80,9 +80,11 @@ jobs:
           publish_dir: ${{ env.GHPAGES_LABEL }}
 
       - name: Add Allure link to summary
+        # yamllint disable rule:line-length
         run: |
           echo "### Allure Report" >> $GITHUB_STEP_SUMMARY
           echo "" >> $GITHUB_STEP_SUMMARY
           echo "- [Workflow ${{ github.run_number }}]\
           (https://golioth.github.io/allure-reports/${{ steps.vars.outputs.allure_subdir}}/${{ github.run_number }}/)" \
           >> $GITHUB_STEP_SUMMARY
+        # yamllint enable
