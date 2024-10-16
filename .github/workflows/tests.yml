@@ -403,7 +403,7 @@ jobs:
               --pytest-args="--mask-secrets"                                        \
               --pytest-args="--alluredir=allure-reports"                            \
               --pytest-args="--runner-name=${{ runner.name }}"                      \
-              --pytest-args="--hil-board=${{ matrix.artifact_suffix }}"
+              --pytest-args="--hil-board=${{ matrix.platform }}"
 
       - name: Safe upload twister artifacts
         if: always()
