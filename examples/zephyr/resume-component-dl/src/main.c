@@ -9,13 +9,12 @@ LOG_MODULE_REGISTER(resume_component_dl, LOG_LEVEL_DBG);
 
 #include <golioth/client.h>
 #include <golioth/fw_update.h>
+#include <golioth/golioth_sys.h>
 #include <samples/common/sample_credentials.h>
 #include <string.h>
 #include <zephyr/kernel.h>
 
 #include <samples/common/net_connect.h>
-#include <mbedtls/sha256.h>
-
 
 #define MODEL_PACKAGE_NAME "image"
 
@@ -104,11 +103,11 @@ enum golioth_status write_artifact_block_cb(const struct golioth_ota_component *
         return GOLIOTH_ERR_INVALID_FORMAT;
     }
 
-    mbedtls_sha256_context *sha = (mbedtls_sha256_context *) arg;
+    golioth_sys_sha256_t sha = (golioth_sys_sha256_t) arg;
 
     if (block_idx == 0)
     {
-        mbedtls_sha256_starts(sha, 0);
+        golioth_sys_sha256_init(sha);
     }
 
     if (_fail_pending && block_idx == 2)
@@ -118,14 +117,14 @@ enum golioth_status write_artifact_block_cb(const struct golioth_ota_component *
     }
 
     LOG_INF("Downloaded block: %d", block_idx);
-    mbedtls_sha256_update(sha, block_buffer, block_buffer_len);
+    golioth_sys_sha256_update(sha, block_buffer, block_buffer_len);
 
     if (is_last)
     {
         GLTH_LOGI(TAG, "Block download complete!");
 
         unsigned char sha_output[32];
-        mbedtls_sha256_finish(sha, sha_output);
+        golioth_sys_sha256_finish(sha, sha_output);
 
         unsigned char sha_server[32];
         hex2bin(component->hash, strlen(component->hash), sha_server, sizeof(sha_server));
@@ -167,8 +166,8 @@ int main(void)
     k_sem_take(&connected, K_FOREVER);
 
     uint32_t next_block_idx = 0;
-    mbedtls_sha256_context sha_ctx;
-    mbedtls_sha256_init(&sha_ctx);
+
+    golioth_sys_sha256_t sha_ctx = golioth_sys_sha256_create_and_init();
 
     int counter = 0;
     while(1)
@@ -189,7 +188,7 @@ int main(void)
                                                stored_component,
                                                &next_block_idx,
                                                write_artifact_block_cb,
-                                               (void *) &sha_ctx);
+                                               (void *) sha_ctx);
 
             if (status == GOLIOTH_OK)
             {
