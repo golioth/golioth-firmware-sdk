@@ -227,6 +227,7 @@ jobs:
         run: |
           rm -rf summary
           mkdir summary
+          rm -rf allure-reports
           pytest --rootdir .                                                            \
             modules/lib/golioth-firmware-sdk//tests/hil/tests/$test                     \
             --board native_sim                                                          \
@@ -235,7 +236,9 @@ jobs:
             --api-key ${{ secrets[inputs.api-key-id] }}                                 \
             --mask-secrets                                                              \
             --timeout=600                                                               \
-            --junitxml=summary/hil-zephyr-${{ matrix.platform }}-${{ matrix.test }}.xml
+            --junitxml=summary/hil-zephyr-${{ matrix.platform }}-${{ matrix.test }}.xml \
+            --alluredir=allure-reports                                                  \
+            --platform zephyr
 
       - name: Capture coverage
         env:
@@ -262,6 +265,14 @@ jobs:
         with:
           name: ci-individual-hil-zephyr-${{ matrix.platform }}-${{ matrix.test }}
           path: summary/*
+
+      - name: Safe upload Allure reports
+        if: ${{ !cancelled() }}
+        uses: ./modules/lib/golioth-firmware-sdk/.github/actions/safe-upload-artifacts
+        with:
+          secrets-json: ${{ toJson(secrets) }}
+          name: allure-reports-hil-zephyr-${{ matrix.platform }}-${{ matrix.test }}
+          path: allure-reports
 
   hil_test_zephyr_nsim_summary:
     name: zephyr-summary-hil-nsim
@@ -673,6 +684,7 @@ jobs:
       - hil_test_esp-idf
       - hil_test_linux
       - hil_test_zephyr
+      - hil_test_zephyr_nsim
     if: ${{ !cancelled() }}
     uses: ./.github/workflows/reports-allure-publish.yml
     secrets: inherit
