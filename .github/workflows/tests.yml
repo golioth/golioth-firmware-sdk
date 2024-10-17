@@ -410,7 +410,7 @@ jobs:
         uses: ./modules/lib/golioth-firmware-sdk/.github/actions/safe-upload-artifacts
         with:
           secrets-json: ${{ toJson(secrets) }}
-          name: twister-run-artifacts-${{ matrix.platform }}-${{ matrix.test }}
+          name: twister-run-artifacts-${{ matrix.platform }}
           path: |
             reports/*
             twister-out/coverage.json
@@ -423,7 +423,7 @@ jobs:
         uses: ./modules/lib/golioth-firmware-sdk/.github/actions/safe-upload-artifacts
         if: always()
         with:
-          name: ci-individual-samples-zephyr-${{ matrix.platform }}-${{ matrix.test }}
+          name: ci-individual-samples-zephyr-${{ matrix.platform }}
           path: twister-out/twister_suite_report.xml
 
       - name: Safe upload Allure reports
@@ -431,13 +431,14 @@ jobs:
         uses: ./modules/lib/golioth-firmware-sdk/.github/actions/safe-upload-artifacts
         with:
           secrets-json: ${{ toJson(secrets) }}
-          name: allure-reports-samples-zephyr-${{ matrix.platform }}-${{ matrix.test }}
+          name: allure-reports-samples-zephyr-${{ matrix.platform }}
           path: allure-reports
 
   hil_sample_zephyr_nsim_summary:
     name: zephyr-summary-twister
     runs-on: ubuntu-latest
     needs: hil_sample_zephyr_nsim
+    if: ${{ !cancelled() }}
 
     strategy:
       fail-fast: false
@@ -463,7 +464,7 @@ jobs:
           xml_grep --pretty_print indented \
             --wrap testsuites --descr '' \
             --cond "testsuite" \
-            ci-individual-samples-zephyr-*/*.xml \
+            ci-individual-samples-zephyr-${{ matrix.platform }}*/*.xml \
             > samples-zephyr-${{ matrix.platform }}.xml
 
       - name: Upload CI report summary
@@ -630,7 +631,7 @@ jobs:
     needs:
       - hil_sample_esp-idf
       - hil_sample_zephyr
-      - hil_sample_zephyr_nsim
+      - hil_sample_zephyr_nsim_summary
       - hil_test_esp-idf
       - hil_test_linux
       - hil_test_zephyr
