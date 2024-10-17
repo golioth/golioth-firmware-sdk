@@ -122,6 +122,21 @@ void golioth_sys_thread_destroy(golioth_sys_thread_t thread);
 #endif
 
 /*--------------------------------------------------
+ * Hash
+ *------------------------------------------------*/
+
+// Opaque handle for sha256 context
+typedef void *golioth_sys_sha256_t;
+
+golioth_sys_sha256_t golioth_sys_sha256_create_and_init(void);
+void golioth_sys_sha256_init(golioth_sys_sha256_t sha_ctx);
+void golioth_sys_sha256_free(golioth_sys_sha256_t sha_ctx);
+enum golioth_status golioth_sys_sha256_update(golioth_sys_sha256_t sha_ctx,
+                                              uint8_t *input,
+                                              size_t len);
+enum golioth_status golioth_sys_sha256_finish(golioth_sys_sha256_t sha_ctx, uint8_t *output);
+
+/*--------------------------------------------------
  * Misc
  *------------------------------------------------*/
 
