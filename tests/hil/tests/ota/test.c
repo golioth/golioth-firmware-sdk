@@ -16,6 +16,7 @@ LOG_TAG_DEFINE(test_ota);
 static golioth_sys_sem_t connected_sem;
 static golioth_sys_sem_t reason_test_sem;
 static golioth_sys_sem_t block_test_sem;
+static golioth_sys_sem_t resume_test_sem;
 
 #define GOLIOTH_OTA_REASON_CNT 10
 #define GOLIOTH_OTA_STATE_CNT 4
@@ -29,6 +30,14 @@ static uint8_t callback_arg = 17;
 static uint8_t block_buf[CONFIG_GOLIOTH_BLOCKWISE_DOWNLOAD_MAX_BLOCK_SIZE];
 
 struct golioth_client *client;
+
+static struct golioth_ota_component stored_component;
+struct resume_ctx
+{
+    bool in_progress;
+    bool fail_pending;
+    golioth_sys_sha256_t sha;
+};
 
 static void log_component_members(const struct golioth_ota_component *component)
 {
@@ -130,7 +139,7 @@ static void test_block_ops(void)
     bool is_last = false;
 
     GLTH_LOGI(TAG,
-              "golioth_ota_size_to_nblocks: %d",
+              "golioth_ota_size_to_nblocks: %zu",
               golioth_ota_size_to_nblocks(
                   (TEST_BLOCK_CNT * CONFIG_GOLIOTH_BLOCKWISE_DOWNLOAD_MAX_BLOCK_SIZE) + 1));
 
@@ -173,12 +182,110 @@ static void test_block_ops(void)
         }
         else
         {
-            GLTH_LOGI(TAG, "Received block %d", block_index);
+            GLTH_LOGI(TAG, "Received block %zu", block_index);
             GLTH_LOGI(TAG, "is_last: %d", is_last);
         }
 
         ++block_index;
     }
+}
+
+enum golioth_status write_artifact_block_cb(const struct golioth_ota_component *component,
+                                            uint32_t block_idx,
+                                            uint8_t *block_buffer,
+                                            size_t block_buffer_len,
+                                            bool is_last,
+                                            size_t negotiated_block_size,
+                                            void *arg)
+{
+    if (!arg)
+    {
+        GLTH_LOGE(TAG, "arg is NULL but should be a resume_ctx");
+        return GOLIOTH_ERR_INVALID_FORMAT;
+    }
+
+    struct resume_ctx *ctx = (struct resume_ctx *) arg;
+
+    if (ctx->fail_pending && block_idx == 2)
+    {
+        ctx->fail_pending = false;
+        return GOLIOTH_ERR_FAIL;
+    }
+
+    GLTH_LOGI(TAG, "Downloaded block: %" PRIu32, block_idx);
+    golioth_sys_sha256_update(ctx->sha, block_buffer, block_buffer_len);
+
+    if (is_last)
+    {
+        GLTH_LOGI(TAG, "Block download complete!");
+
+        unsigned char sha_output[32];
+        golioth_sys_sha256_finish(ctx->sha, sha_output);
+
+        if (sizeof(sha_output) == sizeof(component->hash)
+            && memcmp(sha_output, component->hash, sizeof(component->hash)) == 0)
+        {
+            GLTH_LOGW(TAG, "SHA256 matches as expected!!");
+
+            /* Small sleep to help ensure logs are not out of order */
+            golioth_sys_msleep(100);
+        }
+        else
+        {
+            GLTH_LOGE(TAG, "SHA256 doesn't match expected.");
+        }
+    }
+    return GOLIOTH_OK;
+}
+
+static void test_resume(struct golioth_ota_component *walrus)
+{
+    GLTH_LOGI(TAG, "Start resumable blockwise download test");
+
+    if (!walrus)
+    {
+        GLTH_LOGE(TAG, "OTA component is NULL");
+    }
+    enum golioth_status status;
+
+    struct resume_ctx ctx = {
+        .in_progress = false,
+        .fail_pending = true,
+    };
+    ctx.sha = golioth_sys_sha256_create();
+
+    uint32_t block_idx = 0;
+    int counter = 0;
+
+    while (counter < 10)
+    {
+        GLTH_LOGI(TAG, "Starting block download from %" PRIu32, block_idx);
+
+        status = golioth_ota_download_component(client,
+                                                walrus,
+                                                &block_idx,
+                                                write_artifact_block_cb,
+                                                (void *) &ctx);
+
+        if (status)
+        {
+            GLTH_LOGE(TAG, "Block download failed (will resume): %d", status);
+        }
+        else
+        {
+            GLTH_LOGI(TAG, "Block download successful!");
+
+            golioth_sys_sha256_destroy(ctx.sha);
+            ctx.sha = NULL;
+            return;
+        }
+
+        counter++;
+        golioth_sys_msleep(3000);
+    }
+
+    golioth_sys_sha256_destroy(ctx.sha);
+    GLTH_LOGE(TAG, "Blockwise resume test failed.");
 }
 
 static void on_manifest(struct golioth_client *client,
@@ -216,8 +323,19 @@ static void on_manifest(struct golioth_client *client,
 
     if (main == NULL)
     {
-        GLTH_LOGI(TAG, "Manifest is missing main, skipping this one.");
-        return;
+        const struct golioth_ota_component *walrus =
+            golioth_ota_find_component(&manifest, "walrus");
+        if (!walrus)
+        {
+            GLTH_LOGI(TAG, "Manifest doesn't have main or walrus components, skipping this one.");
+            return;
+        }
+        else
+        {
+            memcpy(&stored_component, walrus, sizeof(struct golioth_ota_component));
+
+            golioth_sys_sem_give(resume_test_sem);
+        }
     }
     else
     {
@@ -256,6 +374,7 @@ void hil_test_entry(const struct golioth_client_config *config)
     connected_sem = golioth_sys_sem_create(1, 0);
     reason_test_sem = golioth_sys_sem_create(1, 0);
     block_test_sem = golioth_sys_sem_create(1, 0);
+    resume_test_sem = golioth_sys_sem_create(1, 0);
 
     golioth_debug_set_cloud_log_enabled(false);
 
@@ -275,6 +394,10 @@ void hil_test_entry(const struct golioth_client_config *config)
         if (golioth_sys_sem_take(block_test_sem, 0))
         {
             test_block_ops();
+        }
+        if (golioth_sys_sem_take(resume_test_sem, 0))
+        {
+            test_resume(&stored_component);
         }
 
         golioth_sys_msleep(100);

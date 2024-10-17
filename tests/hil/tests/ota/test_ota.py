@@ -94,6 +94,7 @@ async def releases(project, artifacts, tag):
     releases["test_multiple"] = await project.releases.create([artifacts["test_multiple"].id, artifacts["multi_artifact"].id], [], [tag.id], False)
     releases["test_blocks"] = await project.releases.create([artifacts["test_blocks"].id], [], [tag.id], False)
     releases["test_reasons"] = await project.releases.create([artifacts["test_reasons"].id], [], [tag.id], False)
+    releases["test_resume"] = await project.releases.create([artifacts["multi_artifact"].id], [], [tag.id], False)
     yield releases
 
     # Clean Up
@@ -170,6 +171,15 @@ async def test_block_operations(board, project, releases):
     assert None != await board.wait_for_regex_in_line("Received block 1", timeout_s=4)
     assert None != await board.wait_for_regex_in_line("is_last: 1", timeout_s=40)
 
+async def test_resume(board, project, releases):
+    await project.releases.rollout_set(releases["test_resume"].id, True)
+
+    assert None != await board.wait_for_regex_in_line('Manifest received', timeout_s=30)
+    assert None != await board.wait_for_regex_in_line('Manifest successfully decoded', timeout_s=2)
+    assert None != await board.wait_for_regex_in_line('Start resumable blockwise download test', timeout_s=10)
+    assert None != await board.wait_for_regex_in_line('Block download failed', timeout_s=10)
+    assert None != await board.wait_for_regex_in_line('SHA256 matches as expected', timeout_s=20)
+    assert None != await board.wait_for_regex_in_line('Block download successful', timeout_s=2)
 
 async def test_reason_and_state(board, device, project, releases):
     await project.releases.rollout_set(releases["test_reasons"].id, True)
