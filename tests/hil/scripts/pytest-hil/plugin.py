@@ -29,6 +29,8 @@ def pytest_addoption(parser):
             help="Serial port of a BlackMagicProbe programmer")
     parser.addoption("--custom-suitename", type=str,
             help="Use a custom suite name when generating Allure reports")
+    parser.addoption("--allure-board", type=str,
+            help="Use a custom board name for Allure reports")
     parser.addoption("--wifi-ssid", type=str, help="WiFi SSID")
     parser.addoption("--wifi-psk", type=str, help="WiFi PSK")
 
@@ -110,7 +112,7 @@ async def board(board_name, port, baud, wifi_ssid, wifi_psk, fw_image, serial_nu
 
 @pytest.hookimpl(wrapper=True)
 def pytest_runtest_setup(item):
-    board_name = item.config.getoption("--board")
+    board_name = item.config.getoption("--allure-board") or item.config.getoption("--board")
     platform_name = item.config.getoption("--platform")
     suitename = item.config.getoption("--custom-suitename") or "hil"
 
