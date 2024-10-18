@@ -122,6 +122,70 @@ void golioth_sys_thread_destroy(golioth_sys_thread_t thread);
 #endif
 
 /*--------------------------------------------------
+ * Hash
+ *------------------------------------------------*/
+
+// Opaque handle for sha256 context
+typedef void *golioth_sys_sha256_t;
+
+/// Create a context for generating a sha256 hash.
+///
+/// Dynamically creates a context and returns an opaque handle to the context.
+/// The handle is a required parameter for all other Golioth sha256 functions.
+///
+/// The context is created and automatically initialized, no need to call golioth_sys_sha256_init.
+///
+/// @return Non-NULL The sha256 context handle (success)
+/// @return NULL There was an error creating the context
+golioth_sys_sha256_t golioth_sys_sha256_create(void);
+
+/// Initializes (or reinitializes) a sha256 context.
+///
+/// Call on an existing context to begin generating a new sha256 hash.
+///
+/// @param sha_ctx A sha256 context handle
+void golioth_sys_sha256_init(golioth_sys_sha256_t sha_ctx);
+
+/// Frees memory allocated to a sha256 context.
+///
+/// @param sha_ctx A sha256 context handle
+void golioth_sys_sha256_free(golioth_sys_sha256_t sha_ctx);
+
+/// Adds an input buffer into a sha256 hash calculation.
+///
+/// Call on an existing context to begin generating a new sha256 hash.
+///
+/// @param sha_ctx A sha256 context handle
+/// @param input   Input buffer to be added to the sha256 calculation
+/// @param len     Length of the input buffer, in bytes.
+///
+/// @return GOLIOTH_OK On success
+/// @return GOLIOTH_ERR_FAIL On failure
+enum golioth_status golioth_sys_sha256_update(golioth_sys_sha256_t sha_ctx,
+                                              uint8_t *input,
+                                              size_t len);
+
+/// Finalizes a sha256 hash calculation and outputs to a binary buffer.
+///
+/// @param sha_ctx A sha256 context handle.
+/// @param output  A buffer of exactly 32 bytes where the sha256 value is written.
+///
+/// @return GOLIOTH_OK On success
+/// @return GOLIOTH_ERR_FAIL On failure
+enum golioth_status golioth_sys_sha256_finish(golioth_sys_sha256_t sha_ctx, uint8_t *output);
+
+/// Convert a string of hexadecimal values to an array of bytes
+///
+/// @param hex    Pointer at a hexadecimal string.
+/// @param hexlen Length of the hex string.
+/// @param buf    A buffer where binary values will be written.
+/// @param buflen Length of the binary buffer.
+///
+/// @return GOLIOTH_OK On success
+/// @return GOLIOTH_ERR_FAIL On failure
+size_t golioth_sys_hex2bin(const char *hex, size_t hexlen, uint8_t *buf, size_t buflen);
+
+/*--------------------------------------------------
  * Misc
  *------------------------------------------------*/
 
