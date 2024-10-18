@@ -184,6 +184,83 @@ int golioth_sys_sem_get_fd(golioth_sys_sem_t sem)
 }
 
 /*--------------------------------------------------
+ * Signals
+ *------------------------------------------------*/
+
+struct condition_and_mutex
+{
+    pthread_cond_t cond;
+    pthread_mutex_t lock;
+};
+
+golioth_sys_signal_t golioth_sys_signal_create(void)
+{
+    struct condition_and_mutex *sig = golioth_sys_malloc(sizeof(struct condition_and_mutex));
+    pthread_cond_init(&sig->cond, NULL);
+    pthread_mutex_init(&sig->lock, NULL);
+    return (golioth_sys_signal_t) sig;
+}
+
+bool golioth_sys_signal_poll(golioth_sys_signal_t sig, int32_t ms_to_wait)
+{
+    if (!sig)
+    {
+        return false;
+    }
+
+    int ret = 0;
+    struct condition_and_mutex *signal = sig;
+    struct timespec abstime;
+
+    pthread_mutex_lock(&signal->lock);
+
+    if (ms_to_wait < 0)
+    {
+        ret = (0 == pthread_cond_wait(&signal->cond, &signal->lock));
+        goto signal_poll_finish;
+    }
+
+    clock_gettime(CLOCK_REALTIME, &abstime);
+
+    if (ms_to_wait)
+    {
+        abstime.tv_sec += ms_to_wait / 1000;
+        abstime.tv_nsec += (ms_to_wait % 1000) * 1000000;
+    }
+
+    ret = (0 == pthread_cond_timedwait(&signal->cond, &signal->lock, &abstime));
+
+signal_poll_finish:
+    pthread_mutex_unlock(&signal->lock);
+    return ret;
+}
+
+bool golioth_sys_signal_raise(golioth_sys_signal_t sig)
+{
+    if (!sig)
+    {
+        return false;
+    }
+
+    struct condition_and_mutex *signal = sig;
+    return (0 == pthread_cond_signal(&signal->cond));
+}
+
+void golioth_sys_signal_reset(golioth_sys_signal_t sig)
+{
+    /* There is nothing to reset */
+    return;
+}
+
+void golioth_sys_signal_destroy(golioth_sys_signal_t sig)
+{
+    struct condition_and_mutex *signal = sig;
+    pthread_cond_destroy(&signal->cond);
+    pthread_mutex_destroy(&signal->lock);
+    golioth_sys_free(sig);
+}
+
+/*--------------------------------------------------
  * Software Timers
  *------------------------------------------------*/
 
