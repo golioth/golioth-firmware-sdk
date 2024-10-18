@@ -54,5 +54,5 @@ target_include_directories(golioth_sdk
         ${zcbor_dir}
 )
 target_link_libraries(golioth_sdk
-    PRIVATE coap-3 pthread rt)
+    PRIVATE coap-3 pthread rt crypto)
 target_compile_definitions(golioth_sdk PRIVATE -DHEATSHRINK_DYNAMIC_ALLOC=0)

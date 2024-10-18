@@ -5,8 +5,10 @@
  */
 
 #include <golioth/golioth_sys.h>
+#include <golioth/golioth_status.h>
 #include <assert.h>
 #include <errno.h>
+#include <openssl/evp.h>
 #include <poll.h>
 #include <pthread.h>
 #include <semaphore.h>
@@ -15,6 +17,8 @@
 #include <sys/eventfd.h>
 #include <time.h>
 #include <unistd.h>
+#include "../utils/hex.h"
+
 
 #define TAG "golioth_sys_linux"
 
@@ -373,6 +377,76 @@ void golioth_sys_thread_destroy(golioth_sys_thread_t thread)
     //
     // Thread will be automatically destroyed when/if the parent
     // process exits.
+}
+
+/*--------------------------------------------------
+ * Hash
+ *------------------------------------------------*/
+
+golioth_sys_sha256_t golioth_sys_sha256_create(void)
+{
+    EVP_MD_CTX *mdctx = EVP_MD_CTX_new();
+    if (!mdctx)
+    {
+        return NULL;
+    }
+
+    EVP_MD *md = EVP_MD_fetch(NULL, "SHA2-256", NULL);
+    EVP_DigestInit_ex2(mdctx, md, NULL);
+
+    return (golioth_sys_sha256_t) mdctx;
+}
+
+void golioth_sys_sha256_destroy(golioth_sys_sha256_t sha_ctx)
+{
+    if (!sha_ctx)
+    {
+        return;
+    }
+
+    EVP_MD_CTX *mdctx = sha_ctx;
+    EVP_MD_CTX_free(mdctx);
+}
+
+enum golioth_status golioth_sys_sha256_update(golioth_sys_sha256_t sha_ctx,
+                                              const uint8_t *input,
+                                              size_t len)
+{
+    if (!sha_ctx || !input)
+    {
+        return GOLIOTH_ERR_NULL;
+    }
+
+    EVP_MD_CTX *mdctx = sha_ctx;
+    int err = EVP_DigestUpdate(mdctx, input, len);
+    if (err)
+    {
+        return GOLIOTH_ERR_FAIL;
+    }
+
+    return GOLIOTH_OK;
+}
+
+enum golioth_status golioth_sys_sha256_finish(golioth_sys_sha256_t sha_ctx, uint8_t *output)
+{
+    if (!sha_ctx || !output)
+    {
+        return GOLIOTH_ERR_NULL;
+    }
+
+    EVP_MD_CTX *mdctx = sha_ctx;
+    int err = EVP_DigestFinal_ex(mdctx, output, NULL);
+    if (err)
+    {
+        return GOLIOTH_ERR_FAIL;
+    }
+
+    return GOLIOTH_OK;
+}
+
+size_t golioth_sys_hex2bin(const char *hex, size_t hexlen, uint8_t *buf, size_t buflen)
+{
+    return hex2bin(hex, hexlen, buf, buflen);
 }
 
 /*--------------------------------------------------
