@@ -21,4 +21,4 @@ add_definitions(-DCONFIG_GOLIOTH_COAP_HOST_URI="${CONFIG_GOLIOTH_COAP_HOST_URI}"
 
 add_subdirectory(${repo_root}/port/linux/golioth_sdk build)
 add_executable(${projname} ${srcs})
-target_link_libraries(${projname} golioth_sdk gcov)
+target_link_libraries(${projname} golioth_sdk gcov crypto)

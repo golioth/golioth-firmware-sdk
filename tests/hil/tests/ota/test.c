@@ -222,8 +222,8 @@ enum golioth_status write_artifact_block_cb(const struct golioth_ota_component *
                             sha_server,
                             sizeof(sha_server));
 
-        GLTH_LOG_BUFFER_HEXDUMP(TAG, sha_output, sizeof(sha_output), GOLIOTH_DEBUG_LOG_LEVEL_DEBUG);
-        GLTH_LOG_BUFFER_HEXDUMP(TAG, sha_server, sizeof(sha_server), GOLIOTH_DEBUG_LOG_LEVEL_DEBUG);
+        GLTH_LOG_BUFFER_HEXDUMP(TAG, sha_output, sizeof(sha_output), GOLIOTH_DEBUG_LOG_LEVEL_INFO);
+        GLTH_LOG_BUFFER_HEXDUMP(TAG, sha_server, sizeof(sha_server), GOLIOTH_DEBUG_LOG_LEVEL_INFO);
 
         if (memcmp(sha_output, sha_server, sizeof(sha_output)) == 0)
         {

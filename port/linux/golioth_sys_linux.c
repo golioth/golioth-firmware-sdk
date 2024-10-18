@@ -5,6 +5,7 @@
  */
 
 #include <golioth/golioth_sys.h>
+#include <golioth/golioth_status.h>
 #include <assert.h>
 #include <errno.h>
 #include <poll.h>
@@ -15,6 +16,8 @@
 #include <sys/eventfd.h>
 #include <time.h>
 #include <unistd.h>
+#include <openssl/evp.h>
+
 
 #define TAG "golioth_sys_linux"
 
@@ -374,6 +377,102 @@ void golioth_sys_thread_destroy(golioth_sys_thread_t thread)
     // Thread will be automatically destroyed when/if the parent
     // process exits.
 }
+
+/*--------------------------------------------------
+ * Hash
+ *------------------------------------------------*/
+
+struct golioth_hash
+{
+    EVP_MD_CTX *mdctx;
+};
+
+golioth_sys_sha256_t golioth_sys_sha256_create(void)
+{
+    struct golioth_hash *hash;
+
+    hash = golioth_sys_malloc(sizeof(*hash));
+    if (!hash)
+    {
+        return NULL;
+    }
+
+    hash->mdctx = EVP_MD_CTX_new();
+    if (!hash->mdctx)
+    {
+        free(hash);
+        return NULL;
+    }
+
+    golioth_sys_sha256_init(hash);
+
+    return (golioth_sys_sha256_t) hash;
+}
+
+void golioth_sys_sha256_init(golioth_sys_sha256_t sha_ctx)
+{
+    if (!sha_ctx)
+    {
+        return;
+    }
+
+    struct golioth_hash *hash = sha_ctx;
+
+    EVP_MD *md = EVP_MD_fetch(NULL, "SHA2-256", NULL);
+    EVP_DigestInit_ex2(hash->mdctx, md, NULL);
+}
+
+void golioth_sys_sha256_free(golioth_sys_sha256_t sha_ctx)
+{
+    if (!sha_ctx)
+    {
+        return;
+    }
+
+    struct golioth_hash *hash = sha_ctx;
+    EVP_MD_CTX_free(hash->mdctx);
+    free(hash);
+}
+
+enum golioth_status golioth_sys_sha256_update(golioth_sys_sha256_t sha_ctx,
+                                              uint8_t *input,
+                                              size_t len)
+{
+    if (!sha_ctx || !input)
+    {
+        return GOLIOTH_ERR_NULL;
+    }
+
+    struct golioth_hash *hash = sha_ctx;
+    int err = EVP_DigestUpdate(hash->mdctx, input, len);
+    if (err) {
+        return GOLIOTH_ERR_FAIL;
+    }
+
+    return GOLIOTH_OK;
+}
+
+enum golioth_status golioth_sys_sha256_finish(golioth_sys_sha256_t sha_ctx, uint8_t *output)
+{
+    if (!sha_ctx || !output)
+    {
+        return GOLIOTH_ERR_NULL;
+    }
+
+    struct golioth_hash *hash = sha_ctx;
+    int err = EVP_DigestFinal_ex(hash->mdctx, output, NULL);
+    if (err) {
+        return GOLIOTH_ERR_FAIL;
+    }
+
+    return GOLIOTH_OK;
+}
+
+size_t golioth_sys_hex2bin(const char *hex, size_t hexlen, uint8_t *buf, size_t buflen)
+{
+    return 0; // hex2bin(hex, hexlen, buf, buflen);
+}
+
 
 /*--------------------------------------------------
  * Misc
