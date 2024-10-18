@@ -7,7 +7,10 @@
 #include <zephyr/net/socket.h>
 #include <zephyr/posix/sys/eventfd.h>
 
+#include <mbedtls/sha256.h>
+
 #include <golioth/golioth_sys.h>
+#include <golioth/golioth_status.h>
 #include "golioth_log_zephyr.h"
 
 LOG_TAG_DEFINE(golioth_sys_zephyr);
@@ -282,6 +285,95 @@ void golioth_sys_thread_destroy(golioth_sys_thread_t gthread)
 
     k_thread_abort(thread->tid);
     golioth_sys_free(thread);
+}
+
+/*--------------------------------------------------
+ * Hash
+ *------------------------------------------------*/
+
+struct golioth_hash
+{
+    mbedtls_sha256_context sha256_ctx;
+};
+
+golioth_sys_sha256_t golioth_sys_sha256_create(void)
+{
+    struct golioth_hash *hash;
+
+    hash = golioth_sys_malloc(sizeof(*hash));
+    if (!hash)
+    {
+        return NULL;
+    }
+
+    golioth_sys_sha256_init(hash);
+
+    return (golioth_sys_sha256_t) hash;
+}
+
+void golioth_sys_sha256_init(golioth_sys_sha256_t sha_ctx)
+{
+    if (!sha_ctx)
+    {
+        return;
+    }
+
+    struct golioth_hash *hash = sha_ctx;
+    mbedtls_sha256_init(&hash->sha256_ctx);
+    mbedtls_sha256_starts(&hash->sha256_ctx, 0);
+}
+
+void golioth_sys_sha256_free(golioth_sys_sha256_t sha_ctx)
+{
+    if (!sha_ctx)
+    {
+        return;
+    }
+
+    struct golioth_hash *hash = sha_ctx;
+    mbedtls_sha256_free(&hash->sha256_ctx);
+    free(hash);
+}
+
+enum golioth_status golioth_sys_sha256_update(golioth_sys_sha256_t sha_ctx,
+                                              uint8_t *input,
+                                              size_t len)
+{
+    if (!sha_ctx || !input)
+    {
+        return GOLIOTH_ERR_NULL;
+    }
+
+    struct golioth_hash *hash = sha_ctx;
+    int err = mbedtls_sha256_update(&hash->sha256_ctx, input, len);
+    if (err)
+    {
+        return GOLIOTH_ERR_FAIL;
+    }
+
+    return GOLIOTH_OK;
+}
+
+enum golioth_status golioth_sys_sha256_finish(golioth_sys_sha256_t sha_ctx, uint8_t *output)
+{
+    if (!sha_ctx || !output)
+    {
+        return GOLIOTH_ERR_NULL;
+    }
+
+    struct golioth_hash *hash = sha_ctx;
+    int err = mbedtls_sha256_finish(&hash->sha256_ctx, output);
+    if (err)
+    {
+        return GOLIOTH_ERR_FAIL;
+    }
+
+    return GOLIOTH_OK;
+}
+
+size_t golioth_sys_hex2bin(const char *hex, size_t hexlen, uint8_t *buf, size_t buflen)
+{
+    return hex2bin(hex, hexlen, buf, buflen);
 }
 
 /*--------------------------------------------------
