@@ -20,6 +20,7 @@ set(zcbor_srcs
 set(sdk_srcs
     "${sdk_port}/linux//golioth_sys_linux.c"
     "${sdk_port}/linux/fw_update_linux.c"
+    "${sdk_port}/utils/hex.c"
     "${sdk_src}/golioth_status.c"
     "${sdk_src}/coap_client.c"
     "${sdk_src}/coap_client_libcoap.c"
@@ -53,5 +54,5 @@ target_include_directories(golioth_sdk
         ${zcbor_dir}
 )
 target_link_libraries(golioth_sdk
-    PRIVATE coap-3 pthread rt)
+    PRIVATE coap-3 pthread rt crypto)
 target_compile_definitions(golioth_sdk PRIVATE -DHEATSHRINK_DYNAMIC_ALLOC=0)
