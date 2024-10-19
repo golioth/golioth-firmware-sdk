@@ -20,6 +20,7 @@ set(zcbor_srcs
 set(sdk_srcs
     "${sdk_port}/linux//golioth_sys_linux.c"
     "${sdk_port}/linux/fw_update_linux.c"
+    "${sdk_port}/utils/hex.c"
     "${sdk_src}/golioth_status.c"
     "${sdk_src}/coap_client.c"
     "${sdk_src}/coap_client_libcoap.c"
