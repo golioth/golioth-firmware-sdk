@@ -187,6 +187,7 @@ SOURCES+=\
     $(wildcard $(GOLIOTHSDK_PATH)/port/freertos/*.c)\
     $(wildcard $(GOLIOTHSDK_PATH)/port/modus_toolbox/*.c)\
     $(wildcard $(GOLIOTHSDK_PATH)/port/modus_toolbox/libcoap/*.c)\
+    $(wildcard $(GOLIOTHSDK_PATH)/port/utils/hex.c)\
     $(wildcard $(GOLIOTHSDK_PATH)/examples/common/*.c)\
     $(GOLIOTHSDK_PATH)/external/zcbor/src/zcbor_common.c\
     $(GOLIOTHSDK_PATH)/external/zcbor/src/zcbor_decode.c\
