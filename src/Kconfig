@@ -4,18 +4,13 @@
 # SPDX-License-Identifier: Apache-2.0
 #
 
-config GOLIOTH_FW_UPDATE
-    bool "Golioth Firmware Update service"
+config GOLIOTH_OTA
+    bool "Golioth Over-the-Air Update Service"
     help
-        Enable the Golioth Firmware Update service
+        Enable the Golioth OTA service to manage the transfer of OTA components between server and
+        device. See also: GOLIOTH_FW_UPDATE
 
-if GOLIOTH_FW_UPDATE
-
-config GOLIOTH_OTA_THREAD_STACK_SIZE
-    int "Golioth OTA thread stack size"
-    default 4096
-    help
-        Stack size of thread handling OTA updates.
+if GOLIOTH_OTA
 
 config GOLIOTH_OTA_MAX_PACKAGE_NAME_LEN
     int "Golioth maximum OTA component package name length"
@@ -37,7 +32,18 @@ config GOLIOTH_OTA_MAX_NUM_COMPONENTS
     help
         Maximum number of components in an OTA manifest.
 
-config GOLIOTH_OTA_OBSERVATION_RETRY_MAX_DELAY_S
+endif # GOLIOTH_OTA
+
+config GOLIOTH_FW_UPDATE
+    bool "Golioth Firmware Update service"
+    select GOLIOTH_OTA
+    help
+        Enable the Golioth Firmware Update service to automatically manage firmware updates
+        utilizing functionality of the Golioth OTA service.
+
+if GOLIOTH_FW_UPDATE
+
+config GOLIOTH_FW_UPDATE_OBSERVATION_RETRY_MAX_DELAY_S
     int "Golioth maximum delay before retrying firmware OTA manifest observation"
     default 300 # 5 minutes
     help
@@ -47,6 +53,12 @@ config GOLIOTH_OTA_OBSERVATION_RETRY_MAX_DELAY_S
         When registering an observation for firmware updates fails, a delay will be used with a
         backoff doubling between retry attempts. The delay value will increase until this limit is
         reached.
+
+config GOLIOTH_FW_UPDATE_THREAD_STACK_SIZE
+    int "Golioth OTA thread stack size"
+    default 4096
+    help
+        Stack size of thread handling OTA updates.
 
 endif # GOLIOTH_FW_UPDATE
 
