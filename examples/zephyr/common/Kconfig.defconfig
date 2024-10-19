@@ -18,12 +18,12 @@ endif # DNS_RESOLVER
 
 configdefault ZVFS_EVENTFD_MAX
 	int
-	default 14 if GOLIOTH_FW_UPDATE
+	default 14 if GOLIOTH_OTA
 	default 7
 
 configdefault EVENTFD_MAX
 	int
-	default 14 if GOLIOTH_FW_UPDATE
+	default 14 if GOLIOTH_OTA
 	default 7
 
 if LOG_BACKEND_GOLIOTH
@@ -112,12 +112,12 @@ config MAIN_STACK_SIZE
 
 configdefault ZVFS_OPEN_MAX
 	int
-	default 23 if GOLIOTH_FW_UPDATE
+	default 23 if GOLIOTH_OTA
 	default 16
 
 configdefault POSIX_MAX_FDS
 	int
-	default 23 if GOLIOTH_FW_UPDATE
+	default 23 if GOLIOTH_OTA
 	default 16
 
 config REBOOT
