@@ -21,6 +21,7 @@ LOG_TAG_DEFINE(golioth_ota);
 
 #define GOLIOTH_OTA_MANIFEST_PATH ".u/desired"
 #define GOLIOTH_OTA_COMPONENT_PATH_PREFIX ".u/c/"
+#define BIN_HASH_ARRAY_SIZE 32
 
 enum
 {
@@ -371,6 +372,26 @@ enum golioth_status golioth_ota_download_component(struct golioth_client *client
                                  block_idx,
                                  ota_component_write_cb_wrapper,
                                  &ctx);
+}
+
+enum golioth_status golioth_ota_component_verify_sha256(
+    const struct golioth_ota_component *component,
+    const uint8_t *local_hash)
+{
+    if (!component || !local_hash)
+    {
+        return GOLIOTH_ERR_NULL;
+    }
+
+    unsigned char sha_server[BIN_HASH_ARRAY_SIZE];
+    golioth_sys_hex2bin(component->hash, strlen(component->hash), sha_server, sizeof(sha_server));
+
+    if (memcmp(local_hash, sha_server, sizeof(sha_server)) == 0)
+    {
+        return GOLIOTH_OK;
+    }
+
+    return GOLIOTH_ERR_FAIL;
 }
 
 enum golioth_status golioth_ota_get_block_sync(struct golioth_client *client,

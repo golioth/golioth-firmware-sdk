@@ -188,6 +188,24 @@ enum golioth_status golioth_ota_download_component(struct golioth_client *client
                                                    ota_component_block_write_cb cb,
                                                    void *arg);
 
+/// Verify the component sha256 hash supplied by server matches one calculated locally
+///
+/// This function compares the component hash received in the OTA manifest to one that is supplied.
+/// Use the golioth_sys_sha256_*() functions (or similar) to calculate the hash as blocks are
+/// downloaded, and pass the result to the \p local_hash parameter of this function.
+///
+/// @param component The @ref golioth_ota_component pointer from the OTA manifest
+/// @param local_hash An array, exactly 32 bytes in length, containing a locally-calculated sha256
+/// hash for the component that was downloaded.
+///
+/// @retval GOLIOTH_OK The \p local_hash matches the component hash recevied from the server.
+/// server.
+/// @retval GOLIOTH_ERR_FAIL The \p local_hash does not match the hash the server supplied.
+/// @retval GOLIOTH_ERR_NULL One of the supplied parameters was NULL.
+enum golioth_status golioth_ota_component_verify_sha256(
+    const struct golioth_ota_component *component,
+    const uint8_t *local_hash);
+
 /// Get a single artfifact block synchronously
 ///
 /// Since some artifacts (e.g. "main" firmware) are larger than the amount of RAM
