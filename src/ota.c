@@ -373,6 +373,29 @@ enum golioth_status golioth_ota_download_component(struct golioth_client *client
                                  &ctx);
 }
 
+enum golioth_status golioth_ota_component_verify_sha256(
+    const struct golioth_ota_component *component,
+    uint8_t *local_hash)
+{
+    if (!component || !local_hash)
+    {
+        return GOLIOTH_ERR_NULL;
+    }
+
+    unsigned char sha_server[32];
+    golioth_sys_hex2bin(component->hash, strlen(component->hash), sha_server, sizeof(sha_server));
+
+    GLTH_LOG_BUFFER_HEXDUMP(TAG, local_hash, sizeof(local_hash), GOLIOTH_DEBUG_LOG_LEVEL_DEBUG);
+    GLTH_LOG_BUFFER_HEXDUMP(TAG, sha_server, sizeof(sha_server), GOLIOTH_DEBUG_LOG_LEVEL_DEBUG);
+
+    if (memcmp(local_hash, sha_server, sizeof(sha_server)) == 0)
+    {
+        return GOLIOTH_OK;
+    }
+
+    return GOLIOTH_ERR_INVALID_FORMAT;
+}
+
 enum golioth_status golioth_ota_get_block_sync(struct golioth_client *client,
                                                const char *package,
                                                const char *version,
