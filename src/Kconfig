@@ -4,12 +4,13 @@
 # SPDX-License-Identifier: Apache-2.0
 #
 
-config GOLIOTH_FW_UPDATE
-    bool "Golioth Firmware Update service"
+config GOLIOTH_OTA
+    bool "Golioth Over-the-Air Update Service"
     help
-        Enable the Golioth Firmware Update service
+        Enable the Golioth OTA service to manage the transfer of OTA components between server and
+        device. See also: GOLIOTH_FW_UPDATE
 
-if GOLIOTH_FW_UPDATE
+if GOLIOTH_OTA
 
 config GOLIOTH_OTA_THREAD_STACK_SIZE
     int "Golioth OTA thread stack size"
@@ -48,7 +49,14 @@ config GOLIOTH_OTA_OBSERVATION_RETRY_MAX_DELAY_S
         backoff doubling between retry attempts. The delay value will increase until this limit is
         reached.
 
-endif # GOLIOTH_FW_UPDATE
+endif # GOLIOTH_OTA
+
+config GOLIOTH_FW_UPDATE
+    bool "Golioth Firmware Update service"
+    select GOLIOTH_OTA
+    help
+        Enable the Golioth Firmware Update service to automatically manage firmware updates
+        utilizing functionality of the Golioth OTA service.
 
 config GOLIOTH_LIGHTDB_STATE
     bool "Golioth LightDB State service"

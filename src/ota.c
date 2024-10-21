@@ -15,7 +15,7 @@
 #include "golioth_util.h"
 #include <golioth/zcbor_utils.h>
 
-#if defined(CONFIG_GOLIOTH_FW_UPDATE)
+#if defined(CONFIG_GOLIOTH_OTA) || defined(CONFIG_GOLIOTH_FW_UPDATE)
 
 LOG_TAG_DEFINE(golioth_ota);
 
@@ -410,4 +410,4 @@ enum golioth_ota_state golioth_ota_get_state(void)
     return _state;
 }
 
-#endif  // CONFIG_GOLIOTH_FW_UPDATE
+#endif  // CONFIG_GOLIOTH_OTA || CONFIG_GOLIOTH_FW_UPDATE
