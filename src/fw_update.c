@@ -165,9 +165,9 @@ static void fw_report_and_observe(void)
 
         retry_delay_s = retry_delay_s * 2;
 
-        if (retry_delay_s > CONFIG_GOLIOTH_OTA_OBSERVATION_RETRY_MAX_DELAY_S)
+        if (retry_delay_s > CONFIG_GOLIOTH_FW_UPDATE_OBSERVATION_RETRY_MAX_DELAY_S)
         {
-            retry_delay_s = CONFIG_GOLIOTH_OTA_OBSERVATION_RETRY_MAX_DELAY_S;
+            retry_delay_s = CONFIG_GOLIOTH_FW_UPDATE_OBSERVATION_RETRY_MAX_DELAY_S;
         }
     }
 }
@@ -352,7 +352,7 @@ void golioth_fw_update_init_with_config(struct golioth_client *client,
             .name = "fw_update",
             .fn = fw_update_thread,
             .user_arg = NULL,
-            .stack_size = CONFIG_GOLIOTH_OTA_THREAD_STACK_SIZE,
+            .stack_size = CONFIG_GOLIOTH_FW_UPDATE_THREAD_STACK_SIZE,
             .prio = 3,
         };
 
