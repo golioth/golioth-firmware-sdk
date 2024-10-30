@@ -19,7 +19,6 @@ tests:
       - CONFIG_GOLIOTH_SAMPLE_TWISTER_TEST=y
       - arch:posix:CONFIG_NATIVE_UART_0_ON_STDINOUT=y
     platform_allow:
-      - esp32_devkitc_wrover/esp32/procpu
       - mimxrt1024_evk
       - native_sim
       - native_sim/native/64

@@ -6,6 +6,15 @@
 
 if GOLIOTH_SAMPLE_COMMON
 
+if SOC_ESP32
+
+# Force ESP32 WiFi to use system heap
+config ESP_HEAP_RUNTIME
+	bool
+	default n
+
+endif # SOC_ESP32
+
 if DNS_RESOLVER
 
 config DNS_SERVER_IP_ADDRESSES
