@@ -60,7 +60,6 @@ tests:
       - CONFIG_GOLIOTH_SAMPLE_HARDCODED_CRT_PATH="prj.conf"
       - CONFIG_GOLIOTH_SAMPLE_HARDCODED_KEY_PATH="prj.conf"
     platform_allow:
-      - esp32_devkitc_wrover/esp32/procpu
       - mimxrt1024_evk
       - native_sim
       - native_sim/native/64

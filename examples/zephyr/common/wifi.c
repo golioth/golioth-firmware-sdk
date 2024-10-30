@@ -333,7 +333,7 @@ static void wifi_disconnect(struct wifi_manager_data *wifi_mgmt)
 
 static void wifi_check_lower_up(struct wifi_manager_data *wifi_mgmt)
 {
-    if (net_if_flag_is_set(wifi_mgmt->iface, NET_IF_LOWER_UP))
+    if (IS_ENABLED(CONFIG_WIFI_ESP32) || net_if_flag_is_set(wifi_mgmt->iface, NET_IF_LOWER_UP))
     {
         wifi_event_notify(wifi_mgmt, WIFI_EVENT_LOWER_UP);
     }
