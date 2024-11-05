@@ -346,7 +346,6 @@ static int golioth_coap_get_block(golioth_coap_request_msg_t *req)
 {
     const uint8_t **pathv = PATHV(req->path_prefix, req->path);
     size_t path_len = coap_pathv_estimate_alloc_len(pathv);
-    bool first = req->get_block.block_index == 0;
     struct golioth_coap_req *coap_req;
     struct golioth_client *client = req->client;
     int err;
@@ -362,17 +361,6 @@ static int golioth_coap_get_block(golioth_coap_request_msg_t *req)
     if (err)
     {
         return err;
-    }
-
-    if (first)
-    {
-        /* Save token for subsequent block requests */
-        client->block_token_len = coap_header_get_token(&coap_req->request, client->block_token);
-    }
-    else
-    {
-        /* Override tokeń with the one geenrated in first block request */
-        memcpy(&coap_req->request.data[4], client->block_token, client->block_token_len);
     }
 
     err = coap_packet_append_uri_path_from_pathv(&coap_req->request, pathv);
@@ -411,7 +399,6 @@ static int golioth_coap_post_block(golioth_coap_request_msg_t *req)
 {
     const uint8_t **pathv = PATHV(req->path_prefix, req->path);
     size_t path_len = coap_pathv_estimate_alloc_len(pathv);
-    bool first = req->post_block.block_index == 0;
     struct golioth_coap_req *coap_req;
     struct golioth_client *client = req->client;
     int err;
@@ -428,17 +415,6 @@ static int golioth_coap_post_block(golioth_coap_request_msg_t *req)
     if (err)
     {
         return err;
-    }
-
-    if (first)
-    {
-        /* Save token for subsequent block requests */
-        client->block_token_len = coap_header_get_token(&coap_req->request, client->block_token);
-    }
-    else
-    {
-        /* Override token with the one geenrated in first block request */
-        memcpy(&coap_req->request.data[4], client->block_token, client->block_token_len);
     }
 
     err = coap_packet_append_uri_path_from_pathv(&coap_req->request, pathv);
