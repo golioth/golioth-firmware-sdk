@@ -31,6 +31,7 @@ uint8_t last_coap_payload[256];
 size_t last_coap_payload_size;
 
 enum golioth_status golioth_coap_client_set_custom_fake(struct golioth_client *client,
+                                                        const uint8_t token[GOLIOTH_COAP_TOKEN_LEN],
                                                         const char *path_prefix,
                                                         const char *path,
                                                         uint32_t content_type,
