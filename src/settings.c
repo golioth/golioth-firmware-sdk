@@ -173,7 +173,11 @@ static int finalize_and_send_response(struct golioth_client *client,
                             response->zse->payload - response->buf,
                             GOLIOTH_DEBUG_LOG_LEVEL_DEBUG);
 
+    uint8_t token[GOLIOTH_COAP_TOKEN_LEN];
+    golioth_coap_next_token(token);
+
     return golioth_coap_client_set(client,
+                                   token,
                                    SETTINGS_PATH_PREFIX,
                                    SETTINGS_STATUS_PATH,
                                    GOLIOTH_CONTENT_TYPE_CBOR,

@@ -216,7 +216,11 @@ static void on_rpc(struct golioth_client *client,
         return;
     }
 
+    uint8_t token[GOLIOTH_COAP_TOKEN_LEN];
+    golioth_coap_next_token(token);
+
     golioth_coap_client_set(client,
+                            token,
                             GOLIOTH_RPC_PATH_PREFIX,
                             "status",
                             GOLIOTH_CONTENT_TYPE_CBOR,

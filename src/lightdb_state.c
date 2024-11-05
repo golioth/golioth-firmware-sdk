@@ -48,7 +48,12 @@ enum golioth_status golioth_lightdb_set_int_async(struct golioth_client *client,
 {
     char buf[16] = {};
     snprintf(buf, sizeof(buf), "%" PRId32, value);
+
+    uint8_t token[GOLIOTH_COAP_TOKEN_LEN];
+    golioth_coap_next_token(token);
+
     return golioth_coap_client_set(client,
+                                   token,
                                    GOLIOTH_LIGHTDB_STATE_PATH_PREFIX,
                                    path,
                                    GOLIOTH_CONTENT_TYPE_JSON,
@@ -67,7 +72,12 @@ enum golioth_status golioth_lightdb_set_bool_async(struct golioth_client *client
                                                    void *callback_arg)
 {
     const char *valuestr = (value ? "true" : "false");
+
+    uint8_t token[GOLIOTH_COAP_TOKEN_LEN];
+    golioth_coap_next_token(token);
+
     return golioth_coap_client_set(client,
+                                   token,
                                    GOLIOTH_LIGHTDB_STATE_PATH_PREFIX,
                                    path,
                                    GOLIOTH_CONTENT_TYPE_JSON,
@@ -89,7 +99,12 @@ enum golioth_status golioth_lightdb_set_float_async(struct golioth_client *clien
 {
     char buf[32] = {};
     snprintf(buf, sizeof(buf), "%f", (double) value);
+
+    uint8_t token[GOLIOTH_COAP_TOKEN_LEN];
+    golioth_coap_next_token(token);
+
     return golioth_coap_client_set(client,
+                                   token,
                                    GOLIOTH_LIGHTDB_STATE_PATH_PREFIX,
                                    path,
                                    GOLIOTH_CONTENT_TYPE_JSON,
@@ -121,7 +136,11 @@ enum golioth_status golioth_lightdb_set_string_async(struct golioth_client *clie
     memset(buf, 0, bufsize);
     snprintf(buf, bufsize, "\"%s\"", str);
 
+    uint8_t token[GOLIOTH_COAP_TOKEN_LEN];
+    golioth_coap_next_token(token);
+
     enum golioth_status status = golioth_coap_client_set(client,
+                                                         token,
                                                          GOLIOTH_LIGHTDB_STATE_PATH_PREFIX,
                                                          path,
                                                          GOLIOTH_CONTENT_TYPE_JSON,
@@ -144,7 +163,11 @@ enum golioth_status golioth_lightdb_set_async(struct golioth_client *client,
                                               golioth_set_cb_fn callback,
                                               void *callback_arg)
 {
+    uint8_t token[GOLIOTH_COAP_TOKEN_LEN];
+    golioth_coap_next_token(token);
+
     return golioth_coap_client_set(client,
+                                   token,
                                    GOLIOTH_LIGHTDB_STATE_PATH_PREFIX,
                                    path,
                                    content_type,
@@ -211,7 +234,12 @@ enum golioth_status golioth_lightdb_set_int_sync(struct golioth_client *client,
 {
     char buf[16] = {};
     snprintf(buf, sizeof(buf), "%" PRId32, value);
+
+    uint8_t token[GOLIOTH_COAP_TOKEN_LEN];
+    golioth_coap_next_token(token);
+
     return golioth_coap_client_set(client,
+                                   token,
                                    GOLIOTH_LIGHTDB_STATE_PATH_PREFIX,
                                    path,
                                    GOLIOTH_CONTENT_TYPE_JSON,
@@ -229,7 +257,12 @@ enum golioth_status golioth_lightdb_set_bool_sync(struct golioth_client *client,
                                                   int32_t timeout_s)
 {
     const char *valuestr = (value ? "true" : "false");
+
+    uint8_t token[GOLIOTH_COAP_TOKEN_LEN];
+    golioth_coap_next_token(token);
+
     return golioth_coap_client_set(client,
+                                   token,
                                    GOLIOTH_LIGHTDB_STATE_PATH_PREFIX,
                                    path,
                                    GOLIOTH_CONTENT_TYPE_JSON,
@@ -250,7 +283,12 @@ enum golioth_status golioth_lightdb_set_float_sync(struct golioth_client *client
 {
     char buf[32] = {};
     snprintf(buf, sizeof(buf), "%f", (double) value);
+
+    uint8_t token[GOLIOTH_COAP_TOKEN_LEN];
+    golioth_coap_next_token(token);
+
     return golioth_coap_client_set(client,
+                                   token,
                                    GOLIOTH_LIGHTDB_STATE_PATH_PREFIX,
                                    path,
                                    GOLIOTH_CONTENT_TYPE_JSON,
@@ -281,7 +319,11 @@ enum golioth_status golioth_lightdb_set_string_sync(struct golioth_client *clien
     memset(buf, 0, bufsize);
     snprintf(buf, bufsize, "\"%s\"", str);
 
+    uint8_t token[GOLIOTH_COAP_TOKEN_LEN];
+    golioth_coap_next_token(token);
+
     enum golioth_status status = golioth_coap_client_set(client,
+                                                         token,
                                                          GOLIOTH_LIGHTDB_STATE_PATH_PREFIX,
                                                          path,
                                                          GOLIOTH_CONTENT_TYPE_JSON,
@@ -303,7 +345,11 @@ enum golioth_status golioth_lightdb_set_sync(struct golioth_client *client,
                                              size_t buf_len,
                                              int32_t timeout_s)
 {
+    uint8_t token[GOLIOTH_COAP_TOKEN_LEN];
+    golioth_coap_next_token(token);
+
     return golioth_coap_client_set(client,
+                                   token,
                                    GOLIOTH_LIGHTDB_STATE_PATH_PREFIX,
                                    path,
                                    content_type,
