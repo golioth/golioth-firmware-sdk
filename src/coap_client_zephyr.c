@@ -500,6 +500,7 @@ free_req:
 static int golioth_coap_observe(golioth_coap_request_msg_t *req, struct golioth_client *client)
 {
     int err = golioth_coap_req_cb(req->client,
+                                  req->token,
                                   COAP_METHOD_GET,
                                   PATHV(req->path_prefix, req->path),
                                   golioth_content_type_to_coap_format(req->observe.content_type),
@@ -710,6 +711,7 @@ static enum golioth_status coap_io_loop_once(struct golioth_client *client)
         case GOLIOTH_COAP_REQUEST_GET:
             LOG_DBG("Handle GET %s", req->path);
             err = golioth_coap_req_cb(req->client,
+                                      req->token,
                                       COAP_METHOD_GET,
                                       PATHV(req->path_prefix, req->path),
                                       golioth_content_type_to_coap_format(req->get.content_type),
@@ -726,6 +728,7 @@ static enum golioth_status coap_io_loop_once(struct golioth_client *client)
         case GOLIOTH_COAP_REQUEST_POST:
             LOG_DBG("Handle POST %s", req->path);
             err = golioth_coap_req_cb(req->client,
+                                      req->token,
                                       COAP_METHOD_POST,
                                       PATHV(req->path_prefix, req->path),
                                       golioth_content_type_to_coap_format(req->post.content_type),
@@ -744,6 +747,7 @@ static enum golioth_status coap_io_loop_once(struct golioth_client *client)
         case GOLIOTH_COAP_REQUEST_DELETE:
             LOG_DBG("Handle DELETE %s", req->path);
             err = golioth_coap_req_cb(req->client,
+                                      req->token,
                                       COAP_METHOD_DELETE,
                                       PATHV(req->path_prefix, req->path),
                                       COAP_CONTENT_FORMAT_APP_OCTET_STREAM /* not used */,

@@ -87,6 +87,7 @@ void golioth_coap_reqs_init(struct golioth_client *client);
  *
  * @param[out] req CoAP request, allocated and initialized
  * @param[in] client Client instance
+ * @param[in] token Array of bytes containing the CoAP token to use for this request
  * @param[in] method CoAP request method
  * @param[in] msg_type CoAP message type
  * @param[in] buffer_len Length of buffer for CoAP packet
@@ -98,6 +99,7 @@ void golioth_coap_reqs_init(struct golioth_client *client);
  */
 int golioth_coap_req_new(struct golioth_coap_req **req,
                          struct golioth_client *client,
+                         const uint8_t token[GOLIOTH_COAP_TOKEN_LEN],
                          enum coap_method method,
                          enum coap_msgtype msg_type,
                          size_t buffer_len,
@@ -147,6 +149,7 @@ int golioth_coap_req_find_and_cancel_observation(struct golioth_client *client,
  * packet.
  *
  * @param[in] client Client instance
+ * @param[in] token Array of bytes containing CoAP token for this request
  * @param[in] method CoAP request method
  * @param[in] pathv Array of CoAP path components
  * @param[in] format Content type
@@ -160,6 +163,7 @@ int golioth_coap_req_find_and_cancel_observation(struct golioth_client *client,
  * @retval <0 On failure
  */
 int golioth_coap_req_cb(struct golioth_client *client,
+                        const uint8_t token[GOLIOTH_COAP_TOKEN_LEN],
                         enum coap_method method,
                         const uint8_t **pathv,
                         enum coap_content_format format,
