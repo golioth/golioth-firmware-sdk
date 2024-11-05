@@ -419,6 +419,7 @@ static int golioth_coap_post_block(golioth_coap_request_msg_t *req)
 
     err = golioth_coap_req_new(&coap_req,
                                client,
+                               req->token,
                                COAP_METHOD_POST,
                                COAP_TYPE_CON,
                                buffer_len,

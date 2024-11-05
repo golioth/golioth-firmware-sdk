@@ -77,6 +77,7 @@ static void blockwise_upload_init(struct blockwise_transfer *ctx,
     ctx->block_buffer = data_buf;
     ctx->callback_arg = callback_arg;
     ctx->callback.read_cb = cb;
+    golioth_coap_next_token(ctx->token);
 }
 
 // Blockwise upload's internal callback function that the COAP client calls
@@ -150,6 +151,7 @@ static enum golioth_status upload_single_block(struct golioth_client *client,
     };
 
     enum golioth_status err = golioth_coap_client_set_block(client,
+                                                            ctx->token,
                                                             ctx->path_prefix,
                                                             ctx->path,
                                                             ctx->is_last,

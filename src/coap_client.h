@@ -188,6 +188,7 @@ enum golioth_status golioth_coap_client_set(struct golioth_client *client,
                                             int32_t timeout_s);
 
 enum golioth_status golioth_coap_client_set_block(struct golioth_client *client,
+                                                  const uint8_t token[GOLIOTH_COAP_TOKEN_LEN],
                                                   const char *path_prefix,
                                                   const char *path,
                                                   bool is_last,
