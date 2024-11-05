@@ -168,17 +168,19 @@ enum golioth_status golioth_coap_client_empty(struct golioth_client *client,
     return GOLIOTH_OK;
 }
 
-static enum golioth_status golioth_coap_client_set_internal(struct golioth_client *client,
-                                                            const char *path_prefix,
-                                                            const char *path,
-                                                            const uint8_t *payload,
-                                                            size_t payload_size,
-                                                            golioth_coap_request_type_t type,
-                                                            void *request_params,
-                                                            bool is_synchronous,
-                                                            int32_t timeout_s)
+static enum golioth_status golioth_coap_client_set_internal(
+    struct golioth_client *client,
+    const uint8_t token[GOLIOTH_COAP_TOKEN_LEN],
+    const char *path_prefix,
+    const char *path,
+    const uint8_t *payload,
+    size_t payload_size,
+    golioth_coap_request_type_t type,
+    void *request_params,
+    bool is_synchronous,
+    int32_t timeout_s)
 {
-    if (!client || !path)
+    if (!client || !token || !path)
     {
         return GOLIOTH_ERR_NULL;
     }
@@ -186,6 +188,8 @@ static enum golioth_status golioth_coap_client_set_internal(struct golioth_clien
     golioth_coap_request_msg_t request_msg = {};
     enum golioth_status status = GOLIOTH_OK;
     uint8_t *request_payload = NULL;
+
+    memcpy(request_msg.token, token, GOLIOTH_COAP_TOKEN_LEN);
 
     if (!client->is_running)
     {
@@ -318,6 +322,7 @@ static enum golioth_status golioth_coap_client_set_internal(struct golioth_clien
 }
 
 enum golioth_status golioth_coap_client_set(struct golioth_client *client,
+                                            const uint8_t token[GOLIOTH_COAP_TOKEN_LEN],
                                             const char *path_prefix,
                                             const char *path,
                                             enum golioth_content_type content_type,
@@ -334,6 +339,7 @@ enum golioth_status golioth_coap_client_set(struct golioth_client *client,
         .arg = callback_arg,
     };
     return golioth_coap_client_set_internal(client,
+                                            token,
                                             path_prefix,
                                             path,
                                             payload,
