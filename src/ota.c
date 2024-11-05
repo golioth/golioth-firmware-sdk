@@ -397,8 +397,12 @@ enum golioth_status golioth_ota_get_block_sync(struct golioth_client *client,
         .is_last = is_last,
     };
 
+    uint8_t token[GOLIOTH_COAP_TOKEN_LEN];
+    golioth_coap_next_token(token);
+
     enum golioth_status status = GOLIOTH_OK;
     status = golioth_coap_client_get_block(client,
+                                           token,
                                            GOLIOTH_OTA_COMPONENT_PATH_PREFIX,
                                            path,
                                            GOLIOTH_CONTENT_TYPE_JSON,

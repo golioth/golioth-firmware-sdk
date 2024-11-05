@@ -621,6 +621,7 @@ enum golioth_status golioth_coap_client_get(struct golioth_client *client,
 }
 
 enum golioth_status golioth_coap_client_get_block(struct golioth_client *client,
+                                                  const uint8_t token[GOLIOTH_COAP_TOKEN_LEN],
                                                   const char *path_prefix,
                                                   const char *path,
                                                   enum golioth_content_type content_type,
@@ -639,6 +640,7 @@ enum golioth_status golioth_coap_client_get_block(struct golioth_client *client,
         .arg = arg,
     };
     return golioth_coap_client_get_internal(client,
+                                            token,
                                             path_prefix,
                                             path,
                                             GOLIOTH_COAP_REQUEST_GET_BLOCK,
