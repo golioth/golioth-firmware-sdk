@@ -443,7 +443,11 @@ static struct golioth_setting *alloc_setting(struct golioth_settings *settings)
 
 static enum golioth_status request_settings(struct golioth_settings *settings)
 {
+    uint8_t token[GOLIOTH_COAP_TOKEN_LEN];
+    golioth_coap_next_token(token);
+
     return golioth_coap_client_get(settings->client,
+                                   token,
                                    SETTINGS_PATH_PREFIX,
                                    "",
                                    GOLIOTH_CONTENT_TYPE_CBOR,

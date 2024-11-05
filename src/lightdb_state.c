@@ -162,7 +162,11 @@ enum golioth_status golioth_lightdb_get_async(struct golioth_client *client,
                                               golioth_get_cb_fn callback,
                                               void *callback_arg)
 {
+    uint8_t token[GOLIOTH_COAP_TOKEN_LEN];
+    golioth_coap_next_token(token);
+
     return golioth_coap_client_get(client,
+                                   token,
                                    GOLIOTH_LIGHTDB_STATE_PATH_PREFIX,
                                    path,
                                    content_type,
@@ -375,7 +379,12 @@ enum golioth_status golioth_lightdb_get_int_sync(struct golioth_client *client,
         .type = LIGHTDB_GET_TYPE_INT,
         .i = value,
     };
+
+    uint8_t token[GOLIOTH_COAP_TOKEN_LEN];
+    golioth_coap_next_token(token);
+
     enum golioth_status status = golioth_coap_client_get(client,
+                                                         token,
                                                          GOLIOTH_LIGHTDB_STATE_PATH_PREFIX,
                                                          path,
                                                          GOLIOTH_CONTENT_TYPE_JSON,
@@ -399,7 +408,12 @@ enum golioth_status golioth_lightdb_get_bool_sync(struct golioth_client *client,
         .type = LIGHTDB_GET_TYPE_BOOL,
         .b = value,
     };
+
+    uint8_t token[GOLIOTH_COAP_TOKEN_LEN];
+    golioth_coap_next_token(token);
+
     enum golioth_status status = golioth_coap_client_get(client,
+                                                         token,
                                                          GOLIOTH_LIGHTDB_STATE_PATH_PREFIX,
                                                          path,
                                                          GOLIOTH_CONTENT_TYPE_JSON,
@@ -425,7 +439,12 @@ enum golioth_status golioth_lightdb_get_float_sync(struct golioth_client *client
         .type = LIGHTDB_GET_TYPE_FLOAT,
         .f = value,
     };
+
+    uint8_t token[GOLIOTH_COAP_TOKEN_LEN];
+    golioth_coap_next_token(token);
+
     enum golioth_status status = golioth_coap_client_get(client,
+                                                         token,
                                                          GOLIOTH_LIGHTDB_STATE_PATH_PREFIX,
                                                          path,
                                                          GOLIOTH_CONTENT_TYPE_JSON,
@@ -453,7 +472,12 @@ enum golioth_status golioth_lightdb_get_string_sync(struct golioth_client *clien
         .buf = (uint8_t *) strbuf,
         .buf_size = strbuf_size,
     };
+
+    uint8_t token[GOLIOTH_COAP_TOKEN_LEN];
+    golioth_coap_next_token(token);
+
     enum golioth_status status = golioth_coap_client_get(client,
+                                                         token,
                                                          GOLIOTH_LIGHTDB_STATE_PATH_PREFIX,
                                                          path,
                                                          GOLIOTH_CONTENT_TYPE_JSON,
@@ -480,7 +504,12 @@ enum golioth_status golioth_lightdb_get_sync(struct golioth_client *client,
         .buf = buf,
         .buf_size = *buf_size,
     };
+
+    uint8_t token[GOLIOTH_COAP_TOKEN_LEN];
+    golioth_coap_next_token(token);
+
     enum golioth_status status = golioth_coap_client_get(client,
+                                                         token,
                                                          GOLIOTH_LIGHTDB_STATE_PATH_PREFIX,
                                                          path,
                                                          content_type,
