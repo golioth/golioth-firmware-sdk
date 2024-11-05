@@ -4,6 +4,7 @@
  * SPDX-License-Identifier: Apache-2.0
  */
 
+#include "coap_client.h"
 #include <assert.h>
 #include <string.h>
 #include <golioth/golioth_debug.h>
@@ -483,15 +484,17 @@ enum golioth_status golioth_coap_client_delete(struct golioth_client *client,
     return GOLIOTH_OK;
 }
 
-static enum golioth_status golioth_coap_client_get_internal(struct golioth_client *client,
-                                                            const char *path_prefix,
-                                                            const char *path,
-                                                            golioth_coap_request_type_t type,
-                                                            void *request_params,
-                                                            bool is_synchronous,
-                                                            int32_t timeout_s)
+static enum golioth_status golioth_coap_client_get_internal(
+    struct golioth_client *client,
+    const uint8_t token[GOLIOTH_COAP_TOKEN_LEN],
+    const char *path_prefix,
+    const char *path,
+    golioth_coap_request_type_t type,
+    void *request_params,
+    bool is_synchronous,
+    int32_t timeout_s)
 {
-    if (!client || !path)
+    if (!client || !token || !path)
     {
         return GOLIOTH_ERR_NULL;
     }
@@ -512,6 +515,8 @@ static enum golioth_status golioth_coap_client_get_internal(struct golioth_clien
     enum golioth_status status = GOLIOTH_OK;
     request_msg.type = type;
     request_msg.path_prefix = path_prefix;
+
+    memcpy(request_msg.token, token, GOLIOTH_COAP_TOKEN_LEN);
 
     if (strlen(path) > sizeof(request_msg.path) - 1)
     {
@@ -591,6 +596,7 @@ static enum golioth_status golioth_coap_client_get_internal(struct golioth_clien
 }
 
 enum golioth_status golioth_coap_client_get(struct golioth_client *client,
+                                            const uint8_t token[GOLIOTH_COAP_TOKEN_LEN],
                                             const char *path_prefix,
                                             const char *path,
                                             enum golioth_content_type content_type,
@@ -605,6 +611,7 @@ enum golioth_status golioth_coap_client_get(struct golioth_client *client,
         .arg = arg,
     };
     return golioth_coap_client_get_internal(client,
+                                            token,
                                             path_prefix,
                                             path,
                                             GOLIOTH_COAP_REQUEST_GET,
