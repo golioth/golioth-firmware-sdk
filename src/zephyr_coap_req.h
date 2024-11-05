@@ -170,35 +170,6 @@ int golioth_coap_req_cb(struct golioth_client *client,
                         int flags);
 
 /**
- * @brief Schedule CoAP request and synchronously wait for response
- *
- * Synchronous version of golioth_coap_req_cb(). It waits for response/timeout/error and returns
- * status as return value.
- *
- * @param[in] client Client instance
- * @param[in] method CoAP request method
- * @param[in] pathv Array of CoAP path components
- * @param[in] format Content type
- * @param[in] data CoAP request payload (NULL if no payload should be appended)
- * @param[in] data_len Length of CoAP request payload
- * @param[in] cb Callback executed on response received, timeout or error
- * @param[in] user_data User data passed to @p cb
- * @param[in] flags Flags (@sa golioth_coap_req_flags)
- *
- * @retval 0 On success
- * @retval <0 On failure
- */
-int golioth_coap_req_sync(struct golioth_client *client,
-                          enum coap_method method,
-                          const uint8_t **pathv,
-                          enum coap_content_format format,
-                          const uint8_t *data,
-                          size_t data_len,
-                          golioth_req_cb_t cb,
-                          void *user_data,
-                          int flags);
-
-/**
  * @brief Handle CoAP packets (re)transmission and timeout
  *
  * Handles timeout of the next CoAP request retransmission, in case it was not responded to. If
