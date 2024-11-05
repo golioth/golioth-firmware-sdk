@@ -7,7 +7,6 @@
 #include <string.h>
 #include <netdb.h>      // struct addrinfo
 #include <sys/param.h>  // MIN
-#include <time.h>
 #include <coap3/coap.h>
 #include <golioth/golioth_debug.h>
 #include <golioth/golioth_status.h>
@@ -24,8 +23,8 @@ static bool _initialized;
 static bool token_matches_request(const struct golioth_coap_request_msg *req, const coap_pdu_t *pdu)
 {
     coap_bin_const_t rcvd_token = coap_pdu_get_token(pdu);
-    bool len_matches = (rcvd_token.length == req->token_len);
-    return (len_matches && (0 == memcmp(rcvd_token.s, req->token, req->token_len)));
+    bool len_matches = (rcvd_token.length == GOLIOTH_COAP_TOKEN_LEN);
+    return (len_matches && (0 == memcmp(rcvd_token.s, req->token, GOLIOTH_COAP_TOKEN_LEN)));
 }
 
 static void notify_observers(const coap_pdu_t *received,
@@ -47,9 +46,8 @@ static void notify_observers(const coap_pdu_t *received,
         }
 
         coap_bin_const_t rcvd_token = coap_pdu_get_token(received);
-        bool len_matches = (rcvd_token.length == obs_info->req.token_len);
-        if (len_matches
-            && (0 == memcmp(rcvd_token.s, obs_info->req.token, obs_info->req.token_len)))
+        bool len_matches = (rcvd_token.length == GOLIOTH_COAP_TOKEN_LEN);
+        if (len_matches && (0 == memcmp(rcvd_token.s, obs_info->req.token, GOLIOTH_COAP_TOKEN_LEN)))
         {
             callback(client,
                      status,
@@ -368,14 +366,6 @@ static enum golioth_status get_coap_dst_address(const coap_uri_t *host_uri,
     return GOLIOTH_OK;
 }
 
-static void golioth_coap_add_token(coap_pdu_t *req_pdu,
-                                   struct golioth_coap_request_msg *req,
-                                   coap_session_t *session)
-{
-    coap_session_new_token(session, &req->token_len, req->token);
-    coap_add_token(req_pdu, req->token_len, req->token);
-}
-
 static void golioth_coap_add_path(coap_pdu_t *request, const char *path_prefix, const char *path)
 {
     if (!path_prefix)
@@ -491,7 +481,7 @@ static void golioth_coap_empty(struct golioth_coap_request_msg *req, coap_sessio
         return;
     }
 
-    golioth_coap_add_token(req_pdu, req, session);
+    coap_add_token(req_pdu, GOLIOTH_COAP_TOKEN_LEN, req->token);
     coap_send(session, req_pdu);
 }
 
@@ -504,7 +494,7 @@ static void golioth_coap_get(struct golioth_coap_request_msg *req, coap_session_
         return;
     }
 
-    golioth_coap_add_token(req_pdu, req, session);
+    coap_add_token(req_pdu, GOLIOTH_COAP_TOKEN_LEN, req->token);
     golioth_coap_add_path(req_pdu, req->path_prefix, req->path);
     golioth_coap_add_accept(req_pdu, req->get.content_type);
     coap_send(session, req_pdu);
@@ -521,23 +511,7 @@ static void golioth_coap_get_block(struct golioth_coap_request_msg *req,
         return;
     }
 
-    if (req->get_block.block_index == 0)
-    {
-        // Save this token for further blocks
-        golioth_coap_add_token(req_pdu, req, session);
-        memcpy(client->block_token, req->token, req->token_len);
-        client->block_token_len = req->token_len;
-    }
-    else
-    {
-        coap_add_token(req_pdu, client->block_token_len, client->block_token);
-
-        // Copy block token into the current req_pdu token, since this is what
-        // is checked in coap_response_handler to verify the response has been received.
-        memcpy(req->token, client->block_token, client->block_token_len);
-        req->token_len = client->block_token_len;
-    }
-
+    coap_add_token(req_pdu, GOLIOTH_COAP_TOKEN_LEN, req->token);
     golioth_coap_add_path(req_pdu, req->path_prefix, req->path);
     golioth_coap_add_accept(req_pdu, req->get_block.content_type);
     golioth_coap_add_block2(req_pdu, req->get_block.block_index, req->get_block.block_size);
@@ -553,7 +527,7 @@ static void golioth_coap_post(struct golioth_coap_request_msg *req, coap_session
         return;
     }
 
-    golioth_coap_add_token(req_pdu, req, session);
+    coap_add_token(req_pdu, GOLIOTH_COAP_TOKEN_LEN, req->token);
     golioth_coap_add_path(req_pdu, req->path_prefix, req->path);
     golioth_coap_add_content_type(req_pdu, req->post.content_type);
     coap_add_data(req_pdu, req->post.payload_size, (unsigned char *) req->post.payload);
@@ -571,23 +545,7 @@ static void golioth_coap_post_block(struct golioth_coap_request_msg *req,
         return;
     }
 
-    if (req->post_block.block_index == 0)
-    {
-        // Save this token for further blocks
-        golioth_coap_add_token(req_pdu, req, session);
-        memcpy(client->block_token, req->token, req->token_len);
-        client->block_token_len = req->token_len;
-    }
-    else
-    {
-        coap_add_token(req_pdu, client->block_token_len, client->block_token);
-
-        // Copy block token into the current req_pdu token, since this is what
-        // is checked in coap_response_handler to verify the response has been received.
-        memcpy(req->token, client->block_token, client->block_token_len);
-        req->token_len = client->block_token_len;
-    }
-
+    coap_add_token(req_pdu, GOLIOTH_COAP_TOKEN_LEN, req->token);
     golioth_coap_add_path(req_pdu, req->path_prefix, req->path);
     golioth_coap_add_content_type(req_pdu, req->post_block.content_type);
     golioth_coap_add_block1(req_pdu,
@@ -607,7 +565,7 @@ static void golioth_coap_delete(struct golioth_coap_request_msg *req, coap_sessi
         return;
     }
 
-    golioth_coap_add_token(req_pdu, req, session);
+    coap_add_token(req_pdu, GOLIOTH_COAP_TOKEN_LEN, req->token);
     golioth_coap_add_path(req_pdu, req->path_prefix, req->path);
     coap_send(session, req_pdu);
 }
@@ -625,12 +583,11 @@ static enum golioth_status golioth_coap_observe(struct golioth_coap_request_msg 
         return GOLIOTH_ERR_MEM_ALLOC;
     }
 
-    unsigned char optbuf[4] = {};
+    coap_add_token(req_pdu, GOLIOTH_COAP_TOKEN_LEN, req->token);
 
+    unsigned char optbuf[4] = {};
     if (eager_release)
     {
-        coap_add_token(req_pdu, req->token_len, req->token);
-
         coap_add_option(req_pdu,
                         COAP_OPTION_OBSERVE,
                         coap_encode_var_safe(optbuf, sizeof(optbuf), COAP_OBSERVE_CANCEL),
@@ -638,8 +595,6 @@ static enum golioth_status golioth_coap_observe(struct golioth_coap_request_msg 
     }
     else
     {
-        golioth_coap_add_token(req_pdu, req, session);
-
         coap_add_option(req_pdu,
                         COAP_OPTION_OBSERVE,
                         coap_encode_var_safe(optbuf, sizeof(optbuf), COAP_OBSERVE_ESTABLISH),
@@ -714,11 +669,10 @@ void golioth_cancel_all_observations_by_prefix(struct golioth_client *client, co
 
             obs_info->in_use = false;
             golioth_coap_client_observe_release(client,
+                                                obs_info->req.token,
                                                 obs_info->req.path_prefix,
                                                 obs_info->req.path,
                                                 obs_info->req.observe.content_type,
-                                                obs_info->req.token,
-                                                obs_info->req.token_len,
                                                 NULL);
         }
     }
@@ -1225,11 +1179,25 @@ static void golioth_coap_client_thread(void *arg)
         }
 
         // Seed the session token generator
-        uint8_t seed_token[8];
-        size_t seed_token_len;
-        uint32_t randint = golioth_sys_rand();
-        seed_token_len = coap_encode_var_safe8(seed_token, sizeof(seed_token), randint);
-        coap_session_init_token(coap_session, seed_token_len, seed_token);
+        //
+        // We should still do this even though Golioth generates CoAP tokens outside of libcoap.
+        //
+        // There are a couple of cases (using eTag is the most notable) where libcoap uses this to
+        // generate a new token. However, with our current usage of libcoap we don't anticipate any
+        // cases where it generates its own token.
+        //
+        // The two generators both use simple increment after first token. Avoid collision by
+        // getting a token from Golioth, then incrementing it by half its max value.
+        uint8_t *seed_token = golioth_sys_malloc(sizeof(uint8_t) * GOLIOTH_COAP_TOKEN_LEN);
+        if (seed_token)
+        {
+            golioth_coap_next_token(seed_token);
+            seed_token[(GOLIOTH_COAP_TOKEN_LEN / 2) + 1] += 1;
+            coap_session_init_token(coap_session,
+                                    (GOLIOTH_COAP_TOKEN_LEN <= 8) ? GOLIOTH_COAP_TOKEN_LEN : 8,
+                                    seed_token);
+            free(seed_token);
+        }
 
         // Enqueue an asynchronous EMPTY request immediately.
         //
@@ -1302,10 +1270,6 @@ struct golioth_client *golioth_client_create(const struct golioth_client_config 
         coap_set_log_handler(coap_log_handler);
         coap_set_log_level(COAP_LOG_INFO);
 #endif /* GOLIOTH_OVERRIDE_LIBCOAP_LOG_HANDLER */
-
-        // Seed the random number generator. Used for token generation.
-        time_t t;
-        golioth_sys_srand(time(&t));
 
         _initialized = true;
     }

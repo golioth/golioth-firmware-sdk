@@ -120,7 +120,6 @@ struct golioth_coap_request_msg
     const char *path_prefix;
     char path[CONFIG_GOLIOTH_COAP_MAX_PATH_LEN + 1];
     uint8_t token[GOLIOTH_COAP_TOKEN_LEN];
-    size_t token_len;
     enum golioth_coap_request_type type;
     union
     {
@@ -176,6 +175,7 @@ enum golioth_status golioth_coap_client_empty(struct golioth_client *client,
                                               int32_t timeout_s);
 
 enum golioth_status golioth_coap_client_set(struct golioth_client *client,
+                                            const uint8_t token[GOLIOTH_COAP_TOKEN_LEN],
                                             const char *path_prefix,
                                             const char *path,
                                             enum golioth_content_type content_type,
@@ -187,6 +187,7 @@ enum golioth_status golioth_coap_client_set(struct golioth_client *client,
                                             int32_t timeout_s);
 
 enum golioth_status golioth_coap_client_set_block(struct golioth_client *client,
+                                                  const uint8_t token[GOLIOTH_COAP_TOKEN_LEN],
                                                   const char *path_prefix,
                                                   const char *path,
                                                   bool is_last,
@@ -209,6 +210,7 @@ enum golioth_status golioth_coap_client_delete(struct golioth_client *client,
                                                int32_t timeout_s);
 
 enum golioth_status golioth_coap_client_get(struct golioth_client *client,
+                                            const uint8_t token[GOLIOTH_COAP_TOKEN_LEN],
                                             const char *path_prefix,
                                             const char *path,
                                             enum golioth_content_type content_type,
@@ -218,6 +220,7 @@ enum golioth_status golioth_coap_client_get(struct golioth_client *client,
                                             int32_t timeout_s);
 
 enum golioth_status golioth_coap_client_get_block(struct golioth_client *client,
+                                                  const uint8_t token[GOLIOTH_COAP_TOKEN_LEN],
                                                   const char *path_prefix,
                                                   const char *path,
                                                   enum golioth_content_type content_type,
@@ -229,6 +232,7 @@ enum golioth_status golioth_coap_client_get_block(struct golioth_client *client,
                                                   int32_t timeout_s);
 
 enum golioth_status golioth_coap_client_observe(struct golioth_client *client,
+                                                const uint8_t token[GOLIOTH_COAP_TOKEN_LEN],
                                                 const char *path_prefix,
                                                 const char *path,
                                                 enum golioth_content_type content_type,
@@ -236,11 +240,10 @@ enum golioth_status golioth_coap_client_observe(struct golioth_client *client,
                                                 void *callback_arg);
 
 enum golioth_status golioth_coap_client_observe_release(struct golioth_client *client,
+                                                        const uint8_t token[GOLIOTH_COAP_TOKEN_LEN],
                                                         const char *path_prefix,
                                                         const char *path,
                                                         enum golioth_content_type content_type,
-                                                        uint8_t *token,
-                                                        size_t token_len,
                                                         void *arg);
 
 void golioth_coap_client_cancel_all_observations(struct golioth_client *client);

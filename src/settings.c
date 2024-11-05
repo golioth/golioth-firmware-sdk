@@ -66,6 +66,7 @@ struct golioth_setting
 struct golioth_settings
 {
     struct golioth_client *client;
+    uint8_t token[GOLIOTH_COAP_TOKEN_LEN];
     size_t num_settings;
     struct golioth_setting settings[CONFIG_GOLIOTH_MAX_NUM_SETTINGS];
 };
@@ -173,7 +174,11 @@ static int finalize_and_send_response(struct golioth_client *client,
                             response->zse->payload - response->buf,
                             GOLIOTH_DEBUG_LOG_LEVEL_DEBUG);
 
+    uint8_t token[GOLIOTH_COAP_TOKEN_LEN];
+    golioth_coap_next_token(token);
+
     return golioth_coap_client_set(client,
+                                   token,
                                    SETTINGS_PATH_PREFIX,
                                    SETTINGS_STATUS_PATH,
                                    GOLIOTH_CONTENT_TYPE_CBOR,
@@ -443,7 +448,11 @@ static struct golioth_setting *alloc_setting(struct golioth_settings *settings)
 
 static enum golioth_status request_settings(struct golioth_settings *settings)
 {
+    uint8_t token[GOLIOTH_COAP_TOKEN_LEN];
+    golioth_coap_next_token(token);
+
     return golioth_coap_client_get(settings->client,
+                                   token,
                                    SETTINGS_PATH_PREFIX,
                                    "",
                                    GOLIOTH_CONTENT_TYPE_CBOR,
@@ -464,8 +473,10 @@ struct golioth_settings *golioth_settings_init(struct golioth_client *client)
 
     gsettings->client = client;
     gsettings->num_settings = 0;
+    golioth_coap_next_token(gsettings->token);
 
     enum golioth_status status = golioth_coap_client_observe(client,
+                                                             gsettings->token,
                                                              SETTINGS_PATH_PREFIX,
                                                              "",
                                                              GOLIOTH_CONTENT_TYPE_CBOR,

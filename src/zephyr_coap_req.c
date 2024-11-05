@@ -389,6 +389,7 @@ static enum coap_block_size golioth_estimated_coap_block_size(struct golioth_cli
 
 static int golioth_coap_req_init(struct golioth_coap_req *req,
                                  struct golioth_client *client,
+                                 const uint8_t token[GOLIOTH_COAP_TOKEN_LEN],
                                  enum coap_method method,
                                  enum coap_msgtype msg_type,
                                  uint8_t *buffer,
@@ -404,7 +405,7 @@ static int golioth_coap_req_init(struct golioth_coap_req *req,
                            COAP_VERSION_1,
                            msg_type,
                            COAP_TOKEN_MAX_LEN,
-                           coap_next_token(),
+                           token,
                            method,
                            coap_next_id());
     if (err)
@@ -448,6 +449,7 @@ int golioth_coap_req_schedule(struct golioth_coap_req *req)
 
 int golioth_coap_req_new(struct golioth_coap_req **req,
                          struct golioth_client *client,
+                         const uint8_t token[GOLIOTH_COAP_TOKEN_LEN],
                          enum coap_method method,
                          enum coap_msgtype msg_type,
                          size_t buffer_len,
@@ -472,7 +474,15 @@ int golioth_coap_req_new(struct golioth_coap_req **req,
         goto free_req;
     }
 
-    err = golioth_coap_req_init(*req, client, method, msg_type, buffer, buffer_len, cb, user_data);
+    err = golioth_coap_req_init(*req,
+                                client,
+                                token,
+                                method,
+                                msg_type,
+                                buffer,
+                                buffer_len,
+                                cb,
+                                user_data);
     if (err)
     {
         LOG_ERR("Failed to initialize CoAP GET request: %d", err);
@@ -497,6 +507,7 @@ void golioth_coap_req_free(struct golioth_coap_req *req)
 }
 
 int golioth_coap_req_cb(struct golioth_client *client,
+                        const uint8_t token[GOLIOTH_COAP_TOKEN_LEN],
                         enum coap_method method,
                         const uint8_t **pathv,
                         enum coap_content_format format,
@@ -512,6 +523,7 @@ int golioth_coap_req_cb(struct golioth_client *client,
 
     err = golioth_coap_req_new(&req,
                                client,
+                               token,
                                method,
                                COAP_TYPE_CON,
                                GOLIOTH_COAP_MAX_NON_PAYLOAD_LEN + path_len + data_len,
@@ -784,11 +796,10 @@ static int __golioth_coap_req_find_and_cancel_observation(
 
             /* Enqueue an "eager release" request for this observation */
             err = golioth_coap_client_observe_release(client,
+                                                      coap_token,
                                                       req_msg->path_prefix,
                                                       req_msg->path,
                                                       coap_content_format,
-                                                      coap_token,
-                                                      coap_token_len,
                                                       NULL);
             if (err)
             {
