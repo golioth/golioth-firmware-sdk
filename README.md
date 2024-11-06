@@ -85,5 +85,5 @@ each of the samples is also continously verified on target.
 | nRF52840 DK + ESP32  | Zephyr (v4.0.0)          |
 | MIMXRT1024-EVK       | Zephyr (v4.0.0)          |
 | RAK5010              | Zephyr (v4.0.0)          |
-| nRF9160 DK           | nRF Connect SDK (v2.7.0) |
+| nRF9160 DK           | nRF Connect SDK (v2.8.0) |
 | CY8CPROTO-062-4343W  | ModusToolbox (3.0.0)     |
