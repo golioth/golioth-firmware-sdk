@@ -30,11 +30,6 @@ configdefault ZVFS_EVENTFD_MAX
 	default 14 if GOLIOTH_OTA
 	default 7
 
-configdefault EVENTFD_MAX
-	int
-	default 14 if GOLIOTH_OTA
-	default 7
-
 if LOG_BACKEND_GOLIOTH
 
 config LOG_PROCESS_THREAD_STACK_SIZE
@@ -120,11 +115,6 @@ config MAIN_STACK_SIZE
 	default 4096
 
 configdefault ZVFS_OPEN_MAX
-	int
-	default 23 if GOLIOTH_OTA
-	default 16
-
-configdefault POSIX_MAX_FDS
 	int
 	default 23 if GOLIOTH_OTA
 	default 16

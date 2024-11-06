@@ -108,7 +108,7 @@ jobs:
 
           for test in $(ls modules/lib/golioth-firmware-sdk/tests/hil/tests)
           do
-            west build -p -b ${{ inputs.west_board }} \
+            west build --no-sysbuild -p -b ${{ inputs.west_board }} \
               modules/lib/golioth-firmware-sdk/tests/hil/platform/zephyr \
               -- $EXTRA_BUILD_ARGS -DGOLIOTH_HIL_TEST=$test
             mv build/zephyr/${{ inputs.binary_name }} \

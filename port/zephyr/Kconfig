@@ -7,8 +7,7 @@ module-str = Golioth
 menuconfig GOLIOTH_FIRMWARE_SDK
 	bool "Golioth Firmware SDK"
 	select COAP
-	select ZVFS_EVENTFD if !ZEPHYR_NRF_MODULE
-	select EVENTFD if ZEPHYR_NRF_MODULE
+	select ZVFS_EVENTFD
 	select REBOOT if BOOTLOADER_MCUBOOT
 	select REQUIRES_FULL_LIBC
 	select MBEDTLS
