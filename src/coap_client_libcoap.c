@@ -7,7 +7,6 @@
 #include <string.h>
 #include <netdb.h>      // struct addrinfo
 #include <sys/param.h>  // MIN
-#include <time.h>
 #include <coap3/coap.h>
 #include <golioth/golioth_debug.h>
 #include <golioth/golioth_status.h>
@@ -1182,11 +1181,25 @@ static void golioth_coap_client_thread(void *arg)
         }
 
         // Seed the session token generator
-        uint8_t seed_token[8];
-        size_t seed_token_len;
-        uint32_t randint = golioth_sys_rand();
-        seed_token_len = coap_encode_var_safe8(seed_token, sizeof(seed_token), randint);
-        coap_session_init_token(coap_session, seed_token_len, seed_token);
+        //
+        // We should still do this even though Golioth generates CoAP tokens outside of libcoap.
+        //
+        // There are a couple of cases (using eTag is the most notable) where libcoap uses this to
+        // generate a new token. However, with our current usage of libcoap we don't anticipate any
+        // cases where it generates its own token.
+        //
+        // The two generators both use simple increment after first token. Avoid collision by
+        // getting a token from Golioth, then incrementing it by half its max value.
+        uint8_t *seed_token = golioth_sys_malloc(sizeof(uint8_t) * GOLIOTH_COAP_TOKEN_LEN);
+        if (seed_token)
+        {
+            golioth_coap_next_token(seed_token);
+            seed_token[(GOLIOTH_COAP_TOKEN_LEN / 2) + 1] += 1;
+            size_t seed_token_len =
+                coap_encode_var_safe8(seed_token, GOLIOTH_COAP_TOKEN_LEN, golioth_sys_rand());
+            coap_session_init_token(coap_session, seed_token_len, seed_token);
+            free(seed_token);
+        }
 
         // Enqueue an asynchronous EMPTY request immediately.
         //
@@ -1259,10 +1272,6 @@ struct golioth_client *golioth_client_create(const struct golioth_client_config 
         coap_set_log_handler(coap_log_handler);
         coap_set_log_level(COAP_LOG_INFO);
 #endif /* GOLIOTH_OVERRIDE_LIBCOAP_LOG_HANDLER */
-
-        // Seed the random number generator. Used for token generation.
-        time_t t;
-        golioth_sys_srand(time(&t));
 
         _initialized = true;
     }
