@@ -14,6 +14,8 @@
 #define RESPONSE_RECEIVED_EVENT_BIT (1 << 0)
 #define RESPONSE_TIMEOUT_EVENT_BIT (1 << 1)
 
+#define GOLIOTH_COAP_TOKEN_LEN 8
+
 #define BLOCKSIZE_TO_SZX(blockSize) \
     ((blockSize == 16)         ? 0  \
          : (blockSize == 32)   ? 1  \
@@ -117,7 +119,7 @@ struct golioth_coap_request_msg
     // Assumption: path_prefix is a string literal (i.e. we don't need to strcpy).
     const char *path_prefix;
     char path[CONFIG_GOLIOTH_COAP_MAX_PATH_LEN + 1];
-    uint8_t token[8];
+    uint8_t token[GOLIOTH_COAP_TOKEN_LEN];
     size_t token_len;
     enum golioth_coap_request_type type;
     union
