@@ -1328,6 +1328,8 @@ struct golioth_client *golioth_client_create(const struct golioth_client_config 
     }
     golioth_sys_sem_give(new_client->run_sem);
 
+    golioth_coap_token_mutex_create();
+
     new_client->request_queue = golioth_mbox_create(CONFIG_GOLIOTH_COAP_REQUEST_QUEUE_MAX_ITEMS,
                                                     sizeof(struct golioth_coap_request_msg));
     if (!new_client->request_queue)
