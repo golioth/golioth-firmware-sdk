@@ -675,7 +675,7 @@ enum golioth_status golioth_coap_client_observe_release(struct golioth_client *c
     }
     strncpy(request_msg.path, path, sizeof(request_msg.path) - 1);
 
-    size_t t_len = min(token_len, sizeof(request_msg.token));
+    size_t t_len = min(token_len, GOLIOTH_COAP_TOKEN_LEN);
     memcpy(request_msg.token, token, t_len);
     request_msg.token_len = t_len;
 
