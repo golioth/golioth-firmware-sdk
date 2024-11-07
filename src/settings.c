@@ -66,6 +66,7 @@ struct golioth_setting
 struct golioth_settings
 {
     struct golioth_client *client;
+    uint8_t token[GOLIOTH_COAP_TOKEN_LEN];
     size_t num_settings;
     struct golioth_setting settings[CONFIG_GOLIOTH_MAX_NUM_SETTINGS];
 };
@@ -472,8 +473,10 @@ struct golioth_settings *golioth_settings_init(struct golioth_client *client)
 
     gsettings->client = client;
     gsettings->num_settings = 0;
+    golioth_coap_next_token(gsettings->token);
 
     enum golioth_status status = golioth_coap_client_observe(client,
+                                                             gsettings->token,
                                                              SETTINGS_PATH_PREFIX,
                                                              "",
                                                              GOLIOTH_CONTENT_TYPE_CBOR,

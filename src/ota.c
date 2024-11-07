@@ -88,7 +88,11 @@ enum golioth_status golioth_ota_observe_manifest_async(struct golioth_client *cl
                                                        golioth_get_cb_fn callback,
                                                        void *arg)
 {
+    uint8_t token[GOLIOTH_COAP_TOKEN_LEN];
+    golioth_coap_next_token(token);
+
     return golioth_coap_client_observe(client,
+                                       token,
                                        "",
                                        GOLIOTH_OTA_MANIFEST_PATH,
                                        GOLIOTH_CONTENT_TYPE_CBOR,
