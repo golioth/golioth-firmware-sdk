@@ -24,8 +24,8 @@ static bool _initialized;
 static bool token_matches_request(const golioth_coap_request_msg_t *req, const coap_pdu_t *pdu)
 {
     coap_bin_const_t rcvd_token = coap_pdu_get_token(pdu);
-    bool len_matches = (rcvd_token.length == req->token_len);
-    return (len_matches && (0 == memcmp(rcvd_token.s, req->token, req->token_len)));
+    bool len_matches = (rcvd_token.length == GOLIOTH_COAP_TOKEN_LEN);
+    return (len_matches && (0 == memcmp(rcvd_token.s, req->token, GOLIOTH_COAP_TOKEN_LEN)));
 }
 
 static void notify_observers(const coap_pdu_t *received,
@@ -368,14 +368,6 @@ static enum golioth_status get_coap_dst_address(const coap_uri_t *host_uri,
     return GOLIOTH_OK;
 }
 
-static void golioth_coap_add_token(coap_pdu_t *req_pdu,
-                                   golioth_coap_request_msg_t *req,
-                                   coap_session_t *session)
-{
-    coap_session_new_token(session, &req->token_len, req->token);
-    coap_add_token(req_pdu, req->token_len, req->token);
-}
-
 static void golioth_coap_add_path(coap_pdu_t *request, const char *path_prefix, const char *path)
 {
     if (!path_prefix)
@@ -491,7 +483,7 @@ static void golioth_coap_empty(golioth_coap_request_msg_t *req, coap_session_t *
         return;
     }
 
-    golioth_coap_add_token(req_pdu, req, session);
+    coap_add_token(req_pdu, GOLIOTH_COAP_TOKEN_LEN, req->token);
     coap_send(session, req_pdu);
 }
 
@@ -504,7 +496,7 @@ static void golioth_coap_get(golioth_coap_request_msg_t *req, coap_session_t *se
         return;
     }
 
-    golioth_coap_add_token(req_pdu, req, session);
+    coap_add_token(req_pdu, GOLIOTH_COAP_TOKEN_LEN, req->token);
     golioth_coap_add_path(req_pdu, req->path_prefix, req->path);
     golioth_coap_add_accept(req_pdu, req->get.content_type);
     coap_send(session, req_pdu);
@@ -521,23 +513,7 @@ static void golioth_coap_get_block(golioth_coap_request_msg_t *req,
         return;
     }
 
-    if (req->get_block.block_index == 0)
-    {
-        // Save this token for further blocks
-        golioth_coap_add_token(req_pdu, req, session);
-        memcpy(client->block_token, req->token, req->token_len);
-        client->block_token_len = req->token_len;
-    }
-    else
-    {
-        coap_add_token(req_pdu, client->block_token_len, client->block_token);
-
-        // Copy block token into the current req_pdu token, since this is what
-        // is checked in coap_response_handler to verify the response has been received.
-        memcpy(req->token, client->block_token, client->block_token_len);
-        req->token_len = client->block_token_len;
-    }
-
+    coap_add_token(req_pdu, GOLIOTH_COAP_TOKEN_LEN, req->token);
     golioth_coap_add_path(req_pdu, req->path_prefix, req->path);
     golioth_coap_add_accept(req_pdu, req->get_block.content_type);
     golioth_coap_add_block2(req_pdu, req->get_block.block_index, req->get_block.block_size);
@@ -553,7 +529,7 @@ static void golioth_coap_post(golioth_coap_request_msg_t *req, coap_session_t *s
         return;
     }
 
-    golioth_coap_add_token(req_pdu, req, session);
+    coap_add_token(req_pdu, GOLIOTH_COAP_TOKEN_LEN, req->token);
     golioth_coap_add_path(req_pdu, req->path_prefix, req->path);
     golioth_coap_add_content_type(req_pdu, req->post.content_type);
     coap_add_data(req_pdu, req->post.payload_size, (unsigned char *) req->post.payload);
@@ -571,23 +547,7 @@ static void golioth_coap_post_block(golioth_coap_request_msg_t *req,
         return;
     }
 
-    if (req->post_block.block_index == 0)
-    {
-        // Save this token for further blocks
-        golioth_coap_add_token(req_pdu, req, session);
-        memcpy(client->block_token, req->token, req->token_len);
-        client->block_token_len = req->token_len;
-    }
-    else
-    {
-        coap_add_token(req_pdu, client->block_token_len, client->block_token);
-
-        // Copy block token into the current req_pdu token, since this is what
-        // is checked in coap_response_handler to verify the response has been received.
-        memcpy(req->token, client->block_token, client->block_token_len);
-        req->token_len = client->block_token_len;
-    }
-
+    coap_add_token(req_pdu, GOLIOTH_COAP_TOKEN_LEN, req->token);
     golioth_coap_add_path(req_pdu, req->path_prefix, req->path);
     golioth_coap_add_content_type(req_pdu, req->post_block.content_type);
     golioth_coap_add_block1(req_pdu,
@@ -607,7 +567,7 @@ static void golioth_coap_delete(golioth_coap_request_msg_t *req, coap_session_t 
         return;
     }
 
-    golioth_coap_add_token(req_pdu, req, session);
+    coap_add_token(req_pdu, GOLIOTH_COAP_TOKEN_LEN, req->token);
     golioth_coap_add_path(req_pdu, req->path_prefix, req->path);
     coap_send(session, req_pdu);
 }
@@ -625,12 +585,11 @@ static enum golioth_status golioth_coap_observe(golioth_coap_request_msg_t *req,
         return GOLIOTH_ERR_MEM_ALLOC;
     }
 
-    unsigned char optbuf[4] = {};
+    coap_add_token(req_pdu, GOLIOTH_COAP_TOKEN_LEN, req->token);
 
+    unsigned char optbuf[4] = {};
     if (eager_release)
     {
-        coap_add_token(req_pdu, req->token_len, req->token);
-
         coap_add_option(req_pdu,
                         COAP_OPTION_OBSERVE,
                         coap_encode_var_safe(optbuf, sizeof(optbuf), COAP_OBSERVE_CANCEL),
@@ -638,8 +597,6 @@ static enum golioth_status golioth_coap_observe(golioth_coap_request_msg_t *req,
     }
     else
     {
-        golioth_coap_add_token(req_pdu, req, session);
-
         coap_add_option(req_pdu,
                         COAP_OPTION_OBSERVE,
                         coap_encode_var_safe(optbuf, sizeof(optbuf), COAP_OBSERVE_ESTABLISH),
