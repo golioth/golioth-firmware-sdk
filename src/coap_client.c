@@ -17,6 +17,8 @@
 
 LOG_TAG_DEFINE(golioth_coap_client);
 
+static golioth_sys_mutex_t token_mut;
+
 bool golioth_client_is_connected(struct golioth_client *client)
 {
     if (!client)
@@ -24,6 +26,53 @@ bool golioth_client_is_connected(struct golioth_client *client)
         return false;
     }
     return client->session_connected;
+}
+
+void golioth_coap_token_mutex_create(void)
+{
+    /* Called by golioth_client_create(); created once, never destroyed */
+    if (!token_mut)
+    {
+        token_mut = golioth_sys_mutex_create();
+        assert(token_mut);
+    }
+}
+
+void golioth_coap_next_token(uint8_t token[GOLIOTH_COAP_TOKEN_LEN])
+{
+    static uint8_t stored_token[GOLIOTH_COAP_TOKEN_LEN] = {0};
+    static bool token_is_initialized = false;
+
+    golioth_sys_mutex_lock(token_mut, GOLIOTH_SYS_WAIT_FOREVER);
+
+    /* Systems without a hardware-backed random source need to seed rand. Waiting until now
+     * introduces the variability of the network connection time to receive a different ms count on
+     * each power cycle to use as the seed. */
+    if (!token_is_initialized)
+    {
+        uint32_t rnd = 0;
+        golioth_sys_srand(golioth_sys_now_ms());
+
+        for (int i = 0; i < GOLIOTH_COAP_TOKEN_LEN; i++)
+        {
+            if (i % 4 == 0)
+            {
+                rnd = golioth_sys_rand();
+            }
+
+            stored_token[i] = (uint8_t) (rnd >> (i % 4));
+        }
+
+        token_is_initialized = true;
+    }
+
+    uint64_t new_token = 0;
+    memcpy(&new_token, stored_token, GOLIOTH_COAP_TOKEN_LEN);
+    new_token++;
+    memcpy(stored_token, &new_token, GOLIOTH_COAP_TOKEN_LEN);
+    memcpy(token, stored_token, GOLIOTH_COAP_TOKEN_LEN);
+
+    golioth_sys_mutex_unlock(token_mut);
 }
 
 enum golioth_status golioth_coap_client_empty(struct golioth_client *client,

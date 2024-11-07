@@ -163,6 +163,14 @@ struct golioth_coap_observe_info
     struct golioth_coap_request_msg req;
 };
 
+/// Create the mutex that makes CoAP token generation thread-safe.
+void golioth_coap_token_mutex_create(void);
+
+/// Generate a unique CoAP token.
+///
+/// @param token byte array where new token will be stored.
+void golioth_coap_next_token(uint8_t token[GOLIOTH_COAP_TOKEN_LEN]);
+
 enum golioth_status golioth_coap_client_empty(struct golioth_client *client,
                                               bool is_synchronous,
                                               int32_t timeout_s);
