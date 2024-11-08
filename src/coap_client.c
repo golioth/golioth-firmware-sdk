@@ -749,10 +749,7 @@ enum golioth_status golioth_coap_client_observe_release(struct golioth_client *c
         return GOLIOTH_ERR_INVALID_FORMAT;
     }
     strncpy(request_msg.path, path, sizeof(request_msg.path) - 1);
-
-    size_t t_len = min(token_len, GOLIOTH_COAP_TOKEN_LEN);
-    memcpy(request_msg.token, token, t_len);
-    request_msg.token_len = t_len;
+    memcpy(request_msg.token, token, GOLIOTH_COAP_TOKEN_LEN);
 
     bool sent = golioth_mbox_try_send(client->request_queue, &request_msg);
     if (!sent)

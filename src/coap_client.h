@@ -120,7 +120,6 @@ typedef struct
     const char *path_prefix;
     char path[CONFIG_GOLIOTH_COAP_MAX_PATH_LEN + 1];
     uint8_t token[GOLIOTH_COAP_TOKEN_LEN];
-    size_t token_len;
     golioth_coap_request_type_t type;
     union
     {

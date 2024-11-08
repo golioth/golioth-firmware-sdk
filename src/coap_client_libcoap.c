@@ -46,9 +46,8 @@ static void notify_observers(const coap_pdu_t *received,
         }
 
         coap_bin_const_t rcvd_token = coap_pdu_get_token(received);
-        bool len_matches = (rcvd_token.length == obs_info->req.token_len);
-        if (len_matches
-            && (0 == memcmp(rcvd_token.s, obs_info->req.token, obs_info->req.token_len)))
+        bool len_matches = (rcvd_token.length == GOLIOTH_COAP_TOKEN_LEN);
+        if (len_matches && (0 == memcmp(rcvd_token.s, obs_info->req.token, GOLIOTH_COAP_TOKEN_LEN)))
         {
             callback(client,
                      status,
@@ -674,7 +673,7 @@ void golioth_cancel_all_observations_by_prefix(struct golioth_client *client, co
                                                 obs_info->req.path,
                                                 obs_info->req.observe.content_type,
                                                 obs_info->req.token,
-                                                obs_info->req.token_len,
+                                                GOLIOTH_COAP_TOKEN_LEN,
                                                 NULL);
         }
     }

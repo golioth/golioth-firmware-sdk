@@ -800,7 +800,7 @@ static int __golioth_coap_req_find_and_cancel_observation(
                                                       req_msg->path,
                                                       coap_content_format,
                                                       coap_token,
-                                                      coap_token_len,
+                                                      GOLIOTH_COAP_TOKEN_LEN,
                                                       NULL);
             if (err)
             {

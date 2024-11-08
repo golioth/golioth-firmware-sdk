@@ -574,7 +574,7 @@ static int golioth_deregister_observation(golioth_coap_request_msg_t *req,
                            sizeof(buffer),
                            COAP_VERSION_1,
                            COAP_TYPE_CON,
-                           req->token_len,
+                           GOLIOTH_COAP_TOKEN_LEN,
                            req->token,
                            COAP_METHOD_GET,
                            coap_next_id());
