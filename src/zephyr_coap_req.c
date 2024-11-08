@@ -796,11 +796,10 @@ static int __golioth_coap_req_find_and_cancel_observation(
 
             /* Enqueue an "eager release" request for this observation */
             err = golioth_coap_client_observe_release(client,
+                                                      coap_token,
                                                       req_msg->path_prefix,
                                                       req_msg->path,
                                                       coap_content_format,
-                                                      coap_token,
-                                                      GOLIOTH_COAP_TOKEN_LEN,
                                                       NULL);
             if (err)
             {

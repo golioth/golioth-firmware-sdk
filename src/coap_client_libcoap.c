@@ -669,11 +669,10 @@ void golioth_cancel_all_observations_by_prefix(struct golioth_client *client, co
 
             obs_info->in_use = false;
             golioth_coap_client_observe_release(client,
+                                                obs_info->req.token,
                                                 obs_info->req.path_prefix,
                                                 obs_info->req.path,
                                                 obs_info->req.observe.content_type,
-                                                obs_info->req.token,
-                                                GOLIOTH_COAP_TOKEN_LEN,
                                                 NULL);
         }
     }

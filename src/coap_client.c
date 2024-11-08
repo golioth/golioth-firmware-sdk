@@ -711,11 +711,10 @@ enum golioth_status golioth_coap_client_observe(struct golioth_client *client,
 }
 
 enum golioth_status golioth_coap_client_observe_release(struct golioth_client *client,
+                                                        const uint8_t token[GOLIOTH_COAP_TOKEN_LEN],
                                                         const char *path_prefix,
                                                         const char *path,
                                                         enum golioth_content_type content_type,
-                                                        uint8_t *token,
-                                                        size_t token_len,
                                                         void *arg)
 {
     if (!client || !path)
