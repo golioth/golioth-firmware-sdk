@@ -230,31 +230,6 @@ static int golioth_coap_cb(struct golioth_req_rsp *rsp)
     };
     int err = 0;
 
-    if (rsp->err)
-    {
-        if (req->request_complete_event)
-        {
-            *req->status = golioth_err_to_status(rsp->err);
-
-            golioth_event_group_set_bits(req->request_complete_event, RESPONSE_RECEIVED_EVENT_BIT);
-
-            // Wait for user thread to receive the event.
-            golioth_sys_sem_take(req->request_complete_ack_sem, GOLIOTH_SYS_WAIT_FOREVER);
-
-            // Now it's safe to delete the event and semaphore.
-            golioth_event_group_destroy(req->request_complete_event);
-            golioth_sys_sem_destroy(req->request_complete_ack_sem);
-        }
-
-        err = rsp->err;
-        if (req->type == GOLIOTH_COAP_REQUEST_OBSERVE)
-        {
-            // don't free observations so we can reestablish later
-            return err;
-        }
-        goto free_req;
-    }
-
     switch (req->type)
     {
         case GOLIOTH_COAP_REQUEST_EMPTY:
@@ -318,8 +293,11 @@ static int golioth_coap_cb(struct golioth_req_rsp *rsp)
         }
     }
 
+    /* Handle synchronous calls */
     if (req->request_complete_event)
     {
+        *req->status = golioth_err_to_status(rsp->err);
+
         golioth_event_group_set_bits(req->request_complete_event, RESPONSE_RECEIVED_EVENT_BIT);
 
         // Wait for user thread to receive the event.
@@ -331,7 +309,11 @@ static int golioth_coap_cb(struct golioth_req_rsp *rsp)
     }
 
 free_req:
-    free(req);
+    if (req->type != GOLIOTH_COAP_REQUEST_OBSERVE)
+    {
+        /* don't free observations so we can reestablish later */
+        free(req);
+    }
 
     return err;
 }
