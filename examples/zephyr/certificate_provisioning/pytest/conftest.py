@@ -40,12 +40,13 @@ def anyio_backend():
     return 'trio'
 
 @pytest.fixture(scope="module")
-async def certificate_cred(project):
-    subprocess.run([WEST_TOPDIR / "modules/lib/golioth-firmware-sdk/scripts/certificates/generate_root_certificate.sh"])
+async def certificate_cred(request, project):
+    subprocess.run([WEST_TOPDIR / "modules/lib/golioth-firmware-sdk/scripts/certificates/generate_root_certificate.sh"],
+                   cwd=request.config.option.build_dir)
 
     # Pass root public key to Golioth server
 
-    with open('golioth.crt.pem', 'rb') as f:
+    with open(Path(request.config.option.build_dir) / 'golioth.crt.pem', 'rb') as f:
         cert_pem = f.read()
     root_cert = await project.certificates.add(cert_pem, 'root')
     yield root_cert['data']['id']
