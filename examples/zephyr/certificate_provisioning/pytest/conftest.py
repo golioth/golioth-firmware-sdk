@@ -1,3 +1,4 @@
+from contextlib import suppress
 import os
 from pathlib import Path
 import random
@@ -18,9 +19,12 @@ def pytest_addoption(parser):
 def get_device_port(request):
     if request.config.getoption("--device-port") is not None:
         return request.config.getoption("--device-port")
-    else:
+
+    with suppress(KeyError):
         port_key = f"CI_{os.environ['hil_board'].upper()}_PORT"
         return os.environ[port_key]
+
+    return request.config.option.device_serial
 
 @pytest.fixture
 def mcumgr_conn_args(request, dut):
