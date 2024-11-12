@@ -76,8 +76,7 @@ static coap_response_t coap_response_handler(coap_session_t *session,
     }
 
     struct golioth_response response = {
-        .status =
-            (class == 2 ? GOLIOTH_OK : (code == 0 ? GOLIOTH_ERR_BAD_REQUEST : GOLIOTH_ERR_FAIL)),
+        .status = (class == 2 ? GOLIOTH_OK : GOLIOTH_ERR_COAP_RESPONSE),
         .status_class = class,
         .status_code = code,
     };

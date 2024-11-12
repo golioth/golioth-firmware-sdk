@@ -103,7 +103,7 @@ void test_rpc_fail(void)
     enum golioth_status ret = golioth_rpc_register(&grpc, "test", test_rpc_method_fn, NULL);
     TEST_ASSERT_EQUAL(GOLIOTH_OK, ret);
     struct golioth_response response = {
-        .status = GOLIOTH_ERR_FAIL,
+        .status = GOLIOTH_ERR_COAP_RESPONSE,
         .status_class = 4,
         .status_code = 3,
     };
