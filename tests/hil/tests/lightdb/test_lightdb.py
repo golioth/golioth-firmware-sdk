@@ -86,7 +86,7 @@ async def test_lightdb_deleted(device):
     assert (await device.lightdb.get('hil/lightdb/to_delete/async/obj')) is None
 
 async def test_lightdb_invalid(device):
-    assert (await device.lightdb.get('hil/lightdb/invalid/sync/set_dot')) == 'GOLIOTH_ERR_BAD_REQUEST'
+    assert (await device.lightdb.get('hil/lightdb/invalid/sync/set_dot')) == 'GOLIOTH_ERR_COAP_RESPONSE'
 
 class Coap_Content_Type(Enum):
     JSON = 1
