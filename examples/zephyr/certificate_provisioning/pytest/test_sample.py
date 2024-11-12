@@ -24,7 +24,10 @@ def subprocess_logger(result, log_msg):
     if result.stderr:
         LOGGER.error(f'{log_msg} stderr: {result.stderr}')
 
-async def test_credentials(shell, project, device_name, mcumgr_conn_args, certificate_cred, wifi_ssid, wifi_psk):
+async def test_credentials(request, shell,
+                           project, device_name,
+                           mcumgr_conn_args, certificate_cred,
+                           wifi_ssid, wifi_psk):
     # Check cloud to verify device does not exist
 
     with pytest.raises(Exception):
@@ -33,7 +36,8 @@ async def test_credentials(shell, project, device_name, mcumgr_conn_args, certif
     # Generate device certificates
 
     subprocess.run([WEST_TOPDIR / "modules/lib/golioth-firmware-sdk/scripts/certificates/generate_device_certificate.sh",
-                    project.info['id'], device_name])
+                    project.info['id'], device_name],
+                   cwd=request.config.option.build_dir)
 
     # Set WiFi credential
 
@@ -54,7 +58,8 @@ async def test_credentials(shell, project, device_name, mcumgr_conn_args, certif
                             ["--tries=3", "--timeout=2",
                              "fs", "upload",
                              f"{project.info['id']}-{device_name}.crt.der", FS_CRT_PATH],
-                            capture_output=True, text=True)
+                            capture_output=True, text=True,
+                            cwd=request.config.option.build_dir)
     subprocess_logger(result, 'mcumgr crt')
     assert result.returncode == 0
 
@@ -62,7 +67,8 @@ async def test_credentials(shell, project, device_name, mcumgr_conn_args, certif
                             ["--tries=3", "--timeout=2",
                              "fs", "upload",
                              f"{project.info['id']}-{device_name}.key.der", FS_KEY_PATH],
-                            capture_output=True, text=True)
+                            capture_output=True, text=True,
+                            cwd=request.config.option.build_dir)
     subprocess_logger(result, 'mcumgr key')
     assert result.returncode == 0
 
