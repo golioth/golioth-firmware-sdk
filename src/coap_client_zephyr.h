@@ -48,7 +48,8 @@ struct golioth_req_rsp
 
     void *user_data;
 
-    int err;
+    /* codes == error/status codes; named to avoid "response" and "req_rsp" confusion */
+    struct golioth_response codes;
 };
 
 /**
