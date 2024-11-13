@@ -234,7 +234,7 @@ static int golioth_coap_cb(struct golioth_req_rsp *rsp)
     {
         case GOLIOTH_COAP_REQUEST_EMPTY:
         case GOLIOTH_COAP_REQUEST_OBSERVE_RELEASE:
-            goto free_req;
+            break;
         case GOLIOTH_COAP_REQUEST_GET:
             if (req->get.callback)
             {
@@ -281,8 +281,7 @@ static int golioth_coap_cb(struct golioth_req_rsp *rsp)
                 req->observe
                     .callback(client, &response, req->path, rsp->data, rsp->len, req->observe.arg);
             }
-            /* There is no synchronous version of observe request */
-            return 0;
+            break;
     }
 
     if (CONFIG_GOLIOTH_COAP_KEEPALIVE_INTERVAL_S > 0)
@@ -308,7 +307,6 @@ static int golioth_coap_cb(struct golioth_req_rsp *rsp)
         golioth_sys_sem_destroy(req->request_complete_ack_sem);
     }
 
-free_req:
     if (req->type != GOLIOTH_COAP_REQUEST_OBSERVE)
     {
         /* don't free observations so we can reestablish later */
