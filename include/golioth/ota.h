@@ -22,8 +22,10 @@ extern "C"
 /// https://docs.golioth.io/reference/protocols/coap/ota
 /// @{
 
-/// Size of a SHA256 of Artifact Binary in bytes
-#define GOLIOTH_OTA_COMPONENT_HASH_LEN 64
+/// Size of a SHA256 of Artifact hex string in bytes
+#define GOLIOTH_OTA_COMPONENT_HEX_HASH_LEN 64
+/// Size of a SHA256 of Artifact bin array in bytes
+#define GOLIOTH_OTA_COMPONENT_BIN_HASH_LEN 32
 /// Maximum size of Binary Detected Type in bytes
 #define GOLIOTH_OTA_MAX_COMPONENT_BOOTLOADER_NAME_LEN 7
 /// Maximum size of Relative URI to download binary (+ 7 bytes for Path)
@@ -78,7 +80,7 @@ struct golioth_ota_component
     /// Size of the artifact, in bytes
     int32_t size;
     /// Artifact Hash
-    char hash[GOLIOTH_OTA_COMPONENT_HASH_LEN + 1];
+    uint8_t hash[GOLIOTH_OTA_COMPONENT_BIN_HASH_LEN];
     /// Artifact uri (e.g. "/.u/c/main@1.2.3")
     char uri[GOLIOTH_OTA_MAX_COMPONENT_URI_LEN + 1];
     /// Artifact bootloader ("mcuboot" or "default"")

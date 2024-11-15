@@ -12,6 +12,7 @@
 #include "coap_blockwise.h"
 #include "coap_client.h"
 #include <golioth/golioth_debug.h>
+#include <golioth/golioth_sys.h>
 #include "golioth_util.h"
 #include <golioth/zcbor_utils.h>
 
@@ -216,9 +217,10 @@ static int components_decode(zcbor_state_t *zsd, void *value)
             component->version,
             sizeof(component->version) - 1,
         };
+        char hash_string[GOLIOTH_OTA_COMPONENT_HEX_HASH_LEN + 1];
         struct component_tstr_value hash = {
-            component->hash,
-            sizeof(component->hash) - 1,
+            hash_string,
+            sizeof(hash_string) - 1,
         };
         struct component_tstr_value uri = {
             component->uri,
@@ -248,6 +250,10 @@ static int components_decode(zcbor_state_t *zsd, void *value)
             return err;
         }
 
+        golioth_sys_hex2bin(hash_string,
+                            strlen(hash_string),
+                            component->hash,
+                            sizeof(component->hash));
         component->size = component_size;
 
         manifest->num_components++;

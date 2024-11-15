@@ -32,10 +32,23 @@ struct golioth_client *client;
 
 static void log_component_members(const struct golioth_ota_component *component)
 {
+    char hash_string[GOLIOTH_OTA_COMPONENT_HEX_HASH_LEN + 1];
+    for (int i = 0; i < sizeof(component->hash); i++)
+    {
+        int write_idx = i * 2;
+        if (write_idx > (GOLIOTH_OTA_COMPONENT_HEX_HASH_LEN - 2))
+        {
+            GLTH_LOGE(TAG, "Error converting component hash to string");
+            return;
+        }
+
+        sprintf(hash_string + write_idx, "%02x", component->hash[i]);
+    }
+
     GLTH_LOGI(TAG, "component.package: %s", component->package);
     GLTH_LOGI(TAG, "component.version: %s", component->version);
     GLTH_LOGI(TAG, "component.size: %u", (unsigned int) component->size);
-    GLTH_LOGI(TAG, "component.hash: %s", component->hash);
+    GLTH_LOGI(TAG, "component.hash: %s", hash_string);
     GLTH_LOGI(TAG, "component.uri: %s", component->uri);
     GLTH_LOGI(TAG, "component.bootloader: %s", component->bootloader);
 }
