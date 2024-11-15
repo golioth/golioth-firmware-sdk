@@ -176,22 +176,33 @@ async def test_reason_and_state(board, device, project, releases):
     # Test reason and state code updates
 
     for i, r in enumerate(golioth_ota_reason):
-        await board.wait_for_regex_in_line("OTA status reported successfully", timeout_s=20)
+        retries_left = 20
 
-        # Wait for state update to propagate
-        await trio.sleep(2)
+        while retries_left:
+            await trio.sleep(1)
+            retries_left -= 1
 
-        await device.refresh()
+            await device.refresh()
 
-        print(f"Test reason code: {r}")
-        print(f"Received reason: {device.metadata['update']['lobster']['reason']}")
+            try:
+                latest_reason_code = int(device.metadata['update']['lobster']['reasonCode'])
+            except:
+                if retries_left == 0:
+                    assert false, "Unable to get reason/state using REST API"
+                continue
 
-        assert int(device.metadata['update']['lobster']['reasonCode']) == i
-        assert int(device.metadata['update']['lobster']['stateCode']) == i % GOLIOTH_OTA_STATE_CNT
-        assert device.metadata['update']['lobster']['state'] == golioth_ota_state[ i % GOLIOTH_OTA_STATE_CNT ]
-        assert device.metadata['update']['lobster']['package'] == "lobster"
-        assert device.metadata['update']['lobster']['version'] == "2.3.4"
-        assert device.metadata['update']['lobster']['target'] == "5.6.7"
+            if retries_left == 0 or latest_reason_code == i:
+                print(f"Test reason code: {r}")
+                print(f"Received reason: {device.metadata['update']['lobster']['reason']}")
+
+                assert int(device.metadata['update']['lobster']['reasonCode']) == i
+                assert int(device.metadata['update']['lobster']['stateCode']) == i % GOLIOTH_OTA_STATE_CNT
+                assert device.metadata['update']['lobster']['state'] == golioth_ota_state[ i % GOLIOTH_OTA_STATE_CNT ]
+                assert device.metadata['update']['lobster']['package'] == "lobster"
+                assert device.metadata['update']['lobster']['version'] == "2.3.4"
+                assert device.metadata['update']['lobster']['target'] == "5.6.7"
+
+                break
 
     # Test golioth_ota_get_state()
 
