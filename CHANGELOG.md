@@ -15,6 +15,8 @@ and this project adheres to [Semantic Versioning](https://semver.org/spec/v2.0.0
   include `block_buffer_len` for the actual length of data and
   `negotiated_block_size` to indicate the maximum block size (may be
   used along with 'block_idx' to calculate a byte offset).
+- `golioth_ota_component->hash` is now stored as an array of bytes
+  instead of as a hex string.
 
 ### Removed:
 
