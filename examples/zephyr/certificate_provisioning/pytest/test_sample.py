@@ -24,10 +24,10 @@ def subprocess_logger(result, log_msg):
     if result.stderr:
         LOGGER.error(f'{log_msg} stderr: {result.stderr}')
 
-async def test_credentials(request, shell,
-                           project, device_name,
-                           mcumgr_conn_args, certificate_cred,
-                           wifi_ssid, wifi_psk):
+async def test_cert_provisioning(request, shell,
+                                 project, device_name,
+                                 mcumgr_conn_args, certificate_cred,
+                                 wifi_ssid, wifi_psk):
     # Check cloud to verify device does not exist
 
     with pytest.raises(Exception):
