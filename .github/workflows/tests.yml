@@ -261,14 +261,14 @@ jobs:
             hil-out/*/coverage.json
 
       - name: Safe upload CI report summary
-        if: ${{ !cancelled() }}
+        if: success() || failure()
         uses: ./modules/lib/golioth-firmware-sdk/.github/actions/safe-upload-artifacts
         with:
           name: ci-individual-hil-zephyr-${{ matrix.platform }}-${{ matrix.test }}
           path: summary/*
 
       - name: Safe upload Allure reports
-        if: ${{ !cancelled() }}
+        if: success() || failure()
         uses: ./modules/lib/golioth-firmware-sdk/.github/actions/safe-upload-artifacts
         with:
           secrets-json: ${{ toJson(secrets) }}
@@ -279,7 +279,7 @@ jobs:
     name: zephyr-summary-hil-nsim
     runs-on: ubuntu-latest
     needs: hil_test_zephyr_nsim
-    if: ${{ !cancelled() }}
+    if: success() || failure()
 
     strategy:
       fail-fast: false
@@ -501,7 +501,7 @@ jobs:
     name: zephyr-summary-twister
     runs-on: ubuntu-latest
     needs: hil_sample_zephyr_nsim
-    if: ${{ !cancelled() }}
+    if: success() || failure()
 
     strategy:
       fail-fast: false
