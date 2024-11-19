@@ -39,7 +39,8 @@ int main(void)
         read_file("certs/client.key.pem", client_key_pem, sizeof(client_key_pem));
     size_t client_cert_len =
         read_file("certs/client.crt.pem", client_cert_pem, sizeof(client_cert_pem));
-    size_t root_ca_len = read_file("isrgrootx1_x2.pem", root_ca_pem, sizeof(root_ca_pem));
+    size_t root_ca_len =
+        read_file("isrgrootx1_goliothrootx1.pem", root_ca_pem, sizeof(root_ca_pem));
     if ((client_key_len <= 0) || (client_cert_len <= 0) || (root_ca_len <= 0))
     {
         return 1;

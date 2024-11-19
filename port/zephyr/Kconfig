@@ -161,7 +161,7 @@ config GOLIOTH_HARDCODED_CA_CRT_PATH
     default "${ZEPHYR_GOLIOTH_FIRMWARE_SDK_MODULE_DIR}/src/isrgrootx1.der"
 
 config GOLIOTH_HARDCODED_SECONDARY_CA_CRT_PATH
-    default "${ZEPHYR_GOLIOTH_FIRMWARE_SDK_MODULE_DIR}/src/isrgrootx2.der"
+    default "${ZEPHYR_GOLIOTH_FIRMWARE_SDK_MODULE_DIR}/src/goliothrootx1.der"
 
 endmenu # authentication
 

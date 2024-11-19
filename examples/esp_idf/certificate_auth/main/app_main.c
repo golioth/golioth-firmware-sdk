@@ -14,8 +14,8 @@
 
 #define TAG "certificate_auth"
 
-extern const uint8_t ca_pem_start[] asm("_binary_isrgrootx1_x2_pem_start");
-extern const uint8_t ca_pem_end[] asm("_binary_isrgrootx1_x2_pem_end");
+extern const uint8_t ca_pem_start[] asm("_binary_isrgrootx1_goliothrootx1_pem_start");
+extern const uint8_t ca_pem_end[] asm("_binary_isrgrootx1_goliothrootx1_pem_end");
 extern const uint8_t client_pem_start[] asm("_binary_client_crt_pem_start");
 extern const uint8_t client_pem_end[] asm("_binary_client_crt_pem_end");
 extern const uint8_t client_key_start[] asm("_binary_client_key_pem_start");

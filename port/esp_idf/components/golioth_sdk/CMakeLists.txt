@@ -44,7 +44,7 @@ idf_component_register(
         "${sdk_src}/coap_blockwise.c"
         "${sdk_src}/zcbor_utils.c"
     EMBED_TXTFILES
-        "${sdk_src}/isrgrootx1_x2.pem"
+        "${sdk_src}/isrgrootx1_goliothrootx1.pem"
 )
 
 # Enable errors and warnings that ESP-IDF disables by default
