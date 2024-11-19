@@ -191,7 +191,6 @@ jobs:
         shell: bash
         env:
           hil_board: ${{ inputs.hil_board }}
-          west_board: ${{ inputs.west_board }}
         run: |
           rm -rf allure-reports
           source /opt/credentials/runner_env.sh

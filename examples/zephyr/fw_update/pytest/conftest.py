@@ -6,22 +6,9 @@ UPDATE_VERSION = '255.8.9'
 UPDATE_PACKAGE = 'main'
 
 
-def pytest_addoption(parser):
-    parser.addoption("--west-board", type=str,
-                     help="Name of the board as specified in the Zephyr tree")
-
-
 @pytest.fixture(scope='session')
 def anyio_backend():
     return 'trio'
-
-@pytest.fixture(scope="session")
-def west_board(request):
-    if request.config.getoption("--west-board") is not None:
-        return request.config.getoption("--west-board")
-    else:
-        return os.environ['west_board']
-
 
 @pytest.fixture(scope="session")
 async def fw_info():
@@ -29,8 +16,8 @@ async def fw_info():
 
 
 @pytest.fixture(scope="module")
-async def blueprint_id(project, west_board):
-    bp_name = west_board.replace('/','_')
+async def blueprint_id(project, request):
+    bp_name = request.config.option.platform.replace('/','_')
     yield await project.blueprints.get_id(bp_name)
 
 
