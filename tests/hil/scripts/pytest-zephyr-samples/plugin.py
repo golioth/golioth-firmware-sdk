@@ -23,13 +23,6 @@ def wifi_psk(request):
         return os.environ.get('WIFI_PSK')
 
 @pytest.fixture(scope="session")
-def hil_board(request):
-    if request.config.getoption("--hil-board") is not None:
-        return request.config.getoption("--hil-board")
-    else:
-        return os.environ['hil_board']
-
-@pytest.fixture(scope="session")
 def runner_name(request):
     return request.config.getoption("--runner-name")
 
