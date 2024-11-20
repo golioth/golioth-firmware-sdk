@@ -31,15 +31,16 @@ static void on_client_event(struct golioth_client *client,
 }
 
 static void counter_observe_handler(struct golioth_client *client,
-                                    const struct golioth_response *response,
+                                    enum golioth_status status,
+                                    const struct golioth_coap_rsp_code *coap_rsp_code,
                                     const char *path,
                                     const uint8_t *payload,
                                     size_t payload_size,
                                     void *arg)
 {
-    if (response->status != GOLIOTH_OK)
+    if (status != GOLIOTH_OK)
     {
-        GLTH_LOGW(TAG, "Failed to receive observed payload: %d", response->status);
+        GLTH_LOGW(TAG, "Failed to receive observed payload: %d", status);
         return;
     }
 

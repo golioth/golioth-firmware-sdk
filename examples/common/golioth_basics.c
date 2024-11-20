@@ -85,16 +85,17 @@ static enum golioth_rpc_status on_multiply(zcbor_state_t *request_params_array,
 
 // Callback function for asynchronous get request of LightDB path "my_int"
 static void on_get_my_int(struct golioth_client *client,
-                          const struct golioth_response *response,
+                          enum golioth_status status,
+                          const struct golioth_coap_rsp_code *coap_rsp_code,
                           const char *path,
                           const uint8_t *payload,
                           size_t payload_size,
                           void *arg)
 {
     // It's a good idea to check the response status, to make sure the request didn't time out.
-    if (response->status != GOLIOTH_OK)
+    if (status != GOLIOTH_OK)
     {
-        GLTH_LOGE(TAG, "on_get_my_int status = %s", golioth_status_to_str(response->status));
+        GLTH_LOGE(TAG, "on_get_my_int status = %s", golioth_status_to_str(status));
         return;
     }
 
@@ -105,13 +106,14 @@ static void on_get_my_int(struct golioth_client *client,
 
 // Callback function for asynchronous observation of LightDB path "desired/my_config"
 static void on_my_config(struct golioth_client *client,
-                         const struct golioth_response *response,
+                         enum golioth_status status,
+                         const struct golioth_coap_rsp_code *coap_rsp_code,
                          const char *path,
                          const uint8_t *payload,
                          size_t payload_size,
                          void *arg)
 {
-    if (response->status != GOLIOTH_OK)
+    if (status != GOLIOTH_OK)
     {
         return;
     }

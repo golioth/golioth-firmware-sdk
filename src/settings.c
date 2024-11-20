@@ -364,19 +364,27 @@ static int settings_decode(zcbor_state_t *zsd, void *value)
 }
 
 static void on_settings(struct golioth_client *client,
-                        const struct golioth_response *response,
+                        enum golioth_status status,
+                        const struct golioth_coap_rsp_code *coap_rsp_code,
                         const char *path,
                         const uint8_t *payload,
                         size_t payload_size,
                         void *arg)
 {
-    if (GOLIOTH_OK != response->status)
+    if (GOLIOTH_OK != status)
     {
-        GLTH_LOGE(TAG,
-                  "Settings callback received status error: %d  CoAP error: %d.%02d",
-                  response->status,
-                  response->status_class,
-                  response->status_code);
+        char coap_code_str[16] = {0};
+        if (coap_rsp_code)
+        {
+            /* Mask class & detail (following RFC 7252) to silence truncation build warning */
+            snprintf(coap_code_str,
+                     sizeof(coap_code_str),
+                     "CoAP: %d.%02d",
+                     (coap_rsp_code->code_class & 0b111),
+                     (coap_rsp_code->code_detail & 0b11111));
+        }
+
+        GLTH_LOGE(TAG, "Settings callback received status error: %d  %s", status, coap_code_str);
         return;
     }
 

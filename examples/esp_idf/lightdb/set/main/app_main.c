@@ -34,13 +34,14 @@ static void on_client_event(struct golioth_client *client,
 }
 
 static void counter_set_handler(struct golioth_client *client,
-                                const struct golioth_response *response,
+                                enum golioth_status status,
+                                const struct golioth_coap_rsp_code *coap_rsp_code,
                                 const char *path,
                                 void *arg)
 {
-    if (response->status != GOLIOTH_OK)
+    if (status != GOLIOTH_OK)
     {
-        GLTH_LOGW(TAG, "Failed to set counter: %d", response->status);
+        GLTH_LOGW(TAG, "Failed to set counter: %d", status);
         return;
     }
 

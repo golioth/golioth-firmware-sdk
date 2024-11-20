@@ -10,6 +10,7 @@
 #include <time.h>
 #include <coap3/coap.h>
 #include <golioth/golioth_debug.h>
+#include <golioth/golioth_status.h>
 #include <golioth/golioth_sys.h>
 #include "coap_client.h"
 #include "golioth_util.h"
@@ -31,7 +32,8 @@ static void notify_observers(const coap_pdu_t *received,
                              struct golioth_client *client,
                              const uint8_t *data,
                              size_t data_len,
-                             const struct golioth_response *response)
+                             enum golioth_status status,
+                             const struct golioth_coap_rsp_code *coap_rsp_code)
 {
     // scan observations, check for token match
     for (int i = 0; i < CONFIG_GOLIOTH_MAX_NUM_OBSERVATIONS; i++)
@@ -50,7 +52,8 @@ static void notify_observers(const coap_pdu_t *received,
             && (0 == memcmp(rcvd_token.s, obs_info->req.token, obs_info->req.token_len)))
         {
             callback(client,
-                     response,
+                     status,
+                     coap_rsp_code,
                      obs_info->req.path,
                      data,
                      data_len,
@@ -66,8 +69,6 @@ static coap_response_t coap_response_handler(coap_session_t *session,
 {
     coap_pdu_code_t rcvd_code = coap_pdu_get_code(received);
     coap_pdu_type_t rcv_type = coap_pdu_get_type(received);
-    uint8_t class = rcvd_code >> 5;
-    uint8_t code = rcvd_code & 0x1F;
 
     if (rcv_type == COAP_MESSAGE_RST)
     {
@@ -75,11 +76,13 @@ static coap_response_t coap_response_handler(coap_session_t *session,
         return COAP_RESPONSE_OK;
     }
 
-    struct golioth_response response = {
-        .status = (class == 2 ? GOLIOTH_OK : GOLIOTH_ERR_COAP_RESPONSE),
-        .status_class = class,
-        .status_code = code,
+    struct golioth_coap_rsp_code coap_rsp_code = {
+        .code_class = rcvd_code >> 5,
+        .code_detail = rcvd_code & 0x1F,
     };
+
+    enum golioth_status status =
+        (coap_rsp_code.code_class == 2 ? GOLIOTH_OK : GOLIOTH_ERR_COAP_RESPONSE);
 
     assert(session);
     coap_context_t *coap_context = coap_session_get_context(session);
@@ -98,19 +101,23 @@ static coap_response_t coap_response_handler(coap_session_t *session,
     {
         if (req->status)
         {
-            *req->status = response.status;
+            *req->status = status;
         }
 
         if (req->type == GOLIOTH_COAP_REQUEST_EMPTY)
         {
-            GLTH_LOGD(TAG, "%d.%02d (empty req), len %" PRIu32, class, code, (uint32_t) data_len);
+            GLTH_LOGD(TAG,
+                      "%d.%02d (empty req), len %" PRIu32,
+                      coap_rsp_code.code_class,
+                      coap_rsp_code.code_detail,
+                      (uint32_t) data_len);
         }
-        else if (class != 2)
+        else if (coap_rsp_code.code_class != 2)
         {  // not 2.XX, i.e. not success
             GLTH_LOGW(TAG,
                       "%d.%02d (req type: %d, path: %s%s), len %" PRIu32,
-                      class,
-                      code,
+                      coap_rsp_code.code_class,
+                      coap_rsp_code.code_detail,
                       req->type,
                       req->path_prefix,
                       req->path,
@@ -123,8 +130,8 @@ static coap_response_t coap_response_handler(coap_session_t *session,
         {
             GLTH_LOGD(TAG,
                       "%d.%02d (req type: %d, path: %s%s), len %" PRIu32,
-                      class,
-                      code,
+                      coap_rsp_code.code_class,
+                      coap_rsp_code.code_detail,
                       req->type,
                       req->path_prefix,
                       req->path,
@@ -133,7 +140,11 @@ static coap_response_t coap_response_handler(coap_session_t *session,
     }
     else
     {
-        GLTH_LOGD(TAG, "%d.%02d (unsolicited), len %" PRIu32, class, code, (uint32_t) data_len);
+        GLTH_LOGD(TAG,
+                  "%d.%02d (unsolicited), len %" PRIu32,
+                  coap_rsp_code.code_class,
+                  coap_rsp_code.code_detail,
+                  (uint32_t) data_len);
     }
 
     if (req && token_matches_request(req, received))
@@ -158,7 +169,13 @@ static coap_response_t coap_response_handler(coap_session_t *session,
             {
                 if (req->get.callback)
                 {
-                    req->get.callback(client, &response, req->path, data, data_len, req->get.arg);
+                    req->get.callback(client,
+                                      status,
+                                      &coap_rsp_code,
+                                      req->path,
+                                      data,
+                                      data_len,
+                                      req->get.arg);
                 }
             }
             else if (req->type == GOLIOTH_COAP_REQUEST_GET_BLOCK)
@@ -186,7 +203,8 @@ static coap_response_t coap_response_handler(coap_session_t *session,
                 if (req->get_block.callback)
                 {
                     req->get_block.callback(client,
-                                            &response,
+                                            status,
+                                            &coap_rsp_code,
                                             req->path,
                                             data,
                                             data_len,
@@ -198,7 +216,7 @@ static coap_response_t coap_response_handler(coap_session_t *session,
             {
                 if (req->post.callback)
                 {
-                    req->post.callback(client, &response, req->path, req->post.arg);
+                    req->post.callback(client, status, &coap_rsp_code, req->path, req->post.arg);
                 }
             }
             else if (req->type == GOLIOTH_COAP_REQUEST_POST_BLOCK)
@@ -213,7 +231,8 @@ static coap_response_t coap_response_handler(coap_session_t *session,
                 if (req->post_block.callback)
                 {
                     req->post_block.callback(client,
-                                             &response,
+                                             status,
+                                             &coap_rsp_code,
                                              req->path,
                                              server_requested_szx,
                                              req->post_block.arg);
@@ -223,13 +242,17 @@ static coap_response_t coap_response_handler(coap_session_t *session,
             {
                 if (req->delete.callback)
                 {
-                    req->delete.callback(client, &response, req->path, req->delete.arg);
+                    req->delete.callback(client,
+                                         status,
+                                         &coap_rsp_code,
+                                         req->path,
+                                         req->delete.arg);
                 }
             }
         }
     }
 
-    notify_observers(received, client, data, data_len, &response);
+    notify_observers(received, client, data, data_len, status, &coap_rsp_code);
 
     return COAP_RESPONSE_OK;
 }
@@ -1080,18 +1103,19 @@ static enum golioth_status coap_io_loop_once(struct golioth_client *client,
 
         // Call user's callback with GOLIOTH_ERR_TIMEOUT
         // TODO - simplify, put callback directly in request which removes if/else branches
-        struct golioth_response response = {};
-        response.status = GOLIOTH_ERR_TIMEOUT;
+        enum golioth_status status = GOLIOTH_ERR_TIMEOUT;
+
         if (request_msg.type == GOLIOTH_COAP_REQUEST_GET && request_msg.get.callback)
         {
             request_msg.get
-                .callback(client, &response, request_msg.path, NULL, 0, request_msg.get.arg);
+                .callback(client, status, NULL, request_msg.path, NULL, 0, request_msg.get.arg);
         }
         else if (request_msg.type == GOLIOTH_COAP_REQUEST_GET_BLOCK
                  && request_msg.get_block.callback)
         {
             request_msg.get_block.callback(client,
-                                           &response,
+                                           status,
+                                           NULL,
                                            request_msg.path,
                                            NULL,
                                            0,
@@ -1100,13 +1124,14 @@ static enum golioth_status coap_io_loop_once(struct golioth_client *client,
         }
         else if (request_msg.type == GOLIOTH_COAP_REQUEST_POST && request_msg.post.callback)
         {
-            request_msg.post.callback(client, &response, request_msg.path, request_msg.post.arg);
+            request_msg.post.callback(client, status, NULL, request_msg.path, request_msg.post.arg);
         }
         else if (request_msg.type == GOLIOTH_COAP_REQUEST_POST_BLOCK
                  && request_msg.post_block.callback)
         {
             request_msg.post_block.callback(client,
-                                            &response,
+                                            status,
+                                            NULL,
                                             request_msg.path,
                                             request_msg.post_block.block_szx,
                                             request_msg.post_block.arg);
@@ -1114,7 +1139,8 @@ static enum golioth_status coap_io_loop_once(struct golioth_client *client,
         else if (request_msg.type == GOLIOTH_COAP_REQUEST_DELETE && request_msg.delete.callback)
         {
             request_msg.delete.callback(client,
-                                        &response,
+                                        status,
+                                        NULL,
                                         request_msg.path,
                                         request_msg.delete.arg);
         }

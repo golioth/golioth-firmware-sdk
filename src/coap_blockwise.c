@@ -33,13 +33,15 @@ struct blockwise_transfer
         read_block_cb read_cb;
         write_block_cb write_cb;
     } callback;
-    struct golioth_response response;
+    enum golioth_status status;
+    struct golioth_coap_rsp_code coap_rsp_code;
     void *callback_arg;
 };
 
 struct post_block_ctx
 {
-    struct golioth_response response;
+    enum golioth_status status;
+    struct golioth_coap_rsp_code coap_rsp_code;
     golioth_sys_sem_t sem;
     size_t negotiated_blocksize_szx;
 };
@@ -49,6 +51,7 @@ struct get_block_ctx
     uint8_t *buffer;
     size_t rcvd_bytes;
     enum golioth_status status;
+    struct golioth_coap_rsp_code coap_rsp_code;
     golioth_sys_sem_t sem;
     bool is_last;
 };
@@ -77,14 +80,17 @@ static void blockwise_upload_init(struct blockwise_transfer *ctx,
 
 // Blockwise upload's internal callback function that the COAP client calls
 static void on_block_sent(struct golioth_client *client,
-                          const struct golioth_response *response,
+                          enum golioth_status status,
+                          const struct golioth_coap_rsp_code *coap_rsp_code,
                           const char *path,
                           size_t block_szx,
                           void *arg)
 {
     assert(arg);
     struct post_block_ctx *ctx = arg;
-    ctx->response = *response;
+    ctx->status = status;
+    ctx->coap_rsp_code.code_class = coap_rsp_code->code_class;
+    ctx->coap_rsp_code.code_detail = coap_rsp_code->code_detail;
     ctx->negotiated_blocksize_szx = block_szx;
 
     golioth_sys_sem_give(ctx->sem);
@@ -137,7 +143,7 @@ static enum golioth_status upload_single_block(struct golioth_client *client,
     assert(block_size > 0 && block_size <= ctx->block_size);
 
     struct post_block_ctx arg = {
-        .response.status = GOLIOTH_ERR_FAIL,
+        .status = GOLIOTH_ERR_FAIL,
         .sem = ctx->sem,
         .negotiated_blocksize_szx = BLOCKSIZE_TO_SZX(ctx->block_size),
     };
@@ -158,7 +164,7 @@ static enum golioth_status upload_single_block(struct golioth_client *client,
     if (GOLIOTH_OK == err)
     {
         golioth_sys_sem_take(ctx->sem, GOLIOTH_SYS_WAIT_FOREVER);
-        err = arg.response.status;
+        err = arg.status;
 
         if (arg.negotiated_blocksize_szx < BLOCKSIZE_TO_SZX(ctx->block_size))
         {
@@ -174,8 +180,6 @@ static enum golioth_status upload_single_block(struct golioth_client *client,
             ctx->block_size = SZX_TO_BLOCKSIZE(arg.negotiated_blocksize_szx);
         }
     }
-
-    ctx->response = arg.response;
 
     return err;
 }
@@ -245,20 +249,20 @@ enum golioth_status golioth_blockwise_post(struct golioth_client *client,
 
     if (set_cb)
     {
-        /* Only call set_cb if the upload was successful or there was a **coap** error .
-         *
-         * These "local" error cases should skip the callback:
-         * - If block_idx == 0 the first block was not successfully uploaded
-         * - If the response.status is OK but the return status isn't, it means the user callback
-         *   returned an error or the blockwise-set timed out (never got a callback from the coap
-         *   thread).
-         */
-        bool local_error =
-            (status != GOLIOTH_OK && (ctx->block_idx == 0 || ctx->response.status == GOLIOTH_OK));
 
-        if (!local_error)
+        if (status != GOLIOTH_OK)
         {
-            set_cb(client, &ctx->response, path, callback_arg);
+            set_cb(client, status, NULL, path, callback_arg);
+        }
+        else
+        {
+            struct golioth_coap_rsp_code *rsp_code = NULL;
+
+            if (ctx->status == GOLIOTH_OK || ctx->status == GOLIOTH_ERR_COAP_RESPONSE)
+            {
+                rsp_code = &ctx->coap_rsp_code;
+            }
+            set_cb(client, ctx->status, rsp_code, path, callback_arg);
         }
     }
 
@@ -322,7 +326,8 @@ static enum golioth_status call_write_block_callback(struct blockwise_transfer *
 
 // Blockwise download's internal callback function that the COAP client calls
 static void on_block_rcvd(struct golioth_client *client,
-                          const struct golioth_response *response,
+                          enum golioth_status status,
+                          const struct golioth_coap_rsp_code *coap_rsp_code,
                           const char *path,
                           const uint8_t *payload,
                           size_t payload_size,
@@ -336,10 +341,10 @@ static void on_block_rcvd(struct golioth_client *client,
     assert(ctx->buffer);
 
     // copy blockwise download values returned by COAP client into ctx
+    ctx->status = status;
     ctx->is_last = is_last;
     memcpy(ctx->buffer, payload, payload_size);
     ctx->rcvd_bytes = payload_size;
-    ctx->status = response->status;
 
     golioth_sys_sem_give(ctx->sem);
 }

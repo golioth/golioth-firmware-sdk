@@ -79,15 +79,16 @@ static enum golioth_status golioth_fw_update_report_state_sync(struct golioth_cl
 }
 
 static void on_ota_manifest(struct golioth_client *client,
-                            const struct golioth_response *response,
+                            enum golioth_status status,
+                            const struct golioth_coap_rsp_code *coap_rsp_code,
                             const char *path,
                             const uint8_t *payload,
                             size_t payload_size,
                             void *arg)
 {
-    if (response->status != GOLIOTH_OK)
+    if (status != GOLIOTH_OK)
     {
-        GLTH_LOGE(TAG, "Error in OTA manifest observation: %d", response->status);
+        GLTH_LOGE(TAG, "Error in OTA manifest observation: %d", status);
         return;
     }
 
@@ -100,11 +101,11 @@ static void on_ota_manifest(struct golioth_client *client,
         return;
     }
 
-    enum golioth_status status =
+    enum golioth_status parse_status =
         golioth_ota_payload_as_manifest(payload, payload_size, &_ota_manifest);
-    if (status != GOLIOTH_OK)
+    if (parse_status != GOLIOTH_OK)
     {
-        GLTH_LOGE(TAG, "Failed to parse manifest: %s", golioth_status_to_str(status));
+        GLTH_LOGE(TAG, "Failed to parse manifest: %s", golioth_status_to_str(parse_status));
         return;
     }
     golioth_sys_sem_give(_manifest_rcvd);

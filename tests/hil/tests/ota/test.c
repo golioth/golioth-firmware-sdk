@@ -289,28 +289,29 @@ static void test_resume(struct golioth_ota_component *walrus)
 }
 
 static void on_manifest(struct golioth_client *client,
-                        const struct golioth_response *response,
+                        enum golioth_status status,
+                        const struct golioth_coap_rsp_code *coap_rsp_code,
                         const char *path,
                         const uint8_t *payload,
                         size_t payload_size,
                         void *arg)
 {
-    enum golioth_status status;
+    enum golioth_status parse_status;
     struct golioth_ota_manifest manifest;
     const struct golioth_ota_component *main;
 
-    if ((response->status != GOLIOTH_OK) || golioth_payload_is_null(payload, payload_size))
+    if ((status != GOLIOTH_OK) || golioth_payload_is_null(payload, payload_size))
     {
-        GLTH_LOGE(TAG, "Failed to get manifest (async): %d", response->status);
+        GLTH_LOGE(TAG, "Failed to get manifest (async): %d", status);
     }
     else
     {
         GLTH_LOGI(TAG, "Manifest received");
     }
 
-    status = golioth_ota_payload_as_manifest(payload, payload_size, &manifest);
+    parse_status = golioth_ota_payload_as_manifest(payload, payload_size, &manifest);
 
-    if (status != GOLIOTH_OK)
+    if (parse_status != GOLIOTH_OK)
     {
         GLTH_LOGE(TAG, "Failed to decode manifest");
     }

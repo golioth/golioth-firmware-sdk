@@ -17,6 +17,11 @@ and this project adheres to [Semantic Versioning](https://semver.org/spec/v2.0.0
   used along with 'block_idx' to calculate a byte offset).
 - `golioth_ota_component->hash` is now stored as an array of bytes
   instead of as a hex string.
+- All asynchronous callbacks now have both a `status` member and a
+  `coap_rsp_code` member to replace the `response` member. All of the
+  same information remains accessible. Update callback functions to
+  match the new declaration and change any `response->status` checks to
+  `status`.
 
 ### Removed:
 

@@ -29,15 +29,16 @@ struct obs_data
 static struct obs_data observed_data[MAX_OBSERVED_EVENTS];
 
 static void int_cb(struct golioth_client *client,
-                   const struct golioth_response *response,
+                   enum golioth_status status,
+                   const struct golioth_coap_rsp_code *coap_rsp_code,
                    const char *path,
                    const uint8_t *payload,
                    size_t payload_size,
                    void *arg)
 {
-    if (response->status != GOLIOTH_OK)
+    if (status != GOLIOTH_OK)
     {
-        GLTH_LOGE(TAG, "Failed to received observed int: %d", response->status);
+        GLTH_LOGE(TAG, "Failed to received observed int: %d", status);
     }
 
     int idx = observed_cbor_events_count + observed_json_events_count;
@@ -52,15 +53,16 @@ static void int_cb(struct golioth_client *client,
 }
 
 static void int_cbor_cb(struct golioth_client *client,
-                        const struct golioth_response *response,
+                        enum golioth_status status,
+                        const struct golioth_coap_rsp_code *coap_rsp_code,
                         const char *path,
                         const uint8_t *payload,
                         size_t payload_size,
                         void *arg)
 {
-    if (response->status != GOLIOTH_OK)
+    if (status != GOLIOTH_OK)
     {
-        GLTH_LOGE(TAG, "Failed to received observed int: %d", response->status);
+        GLTH_LOGE(TAG, "Failed to received observed int: %d", status);
     }
 
     int idx = observed_cbor_events_count + observed_json_events_count;
@@ -185,7 +187,8 @@ struct lightdb_get_rsp
 };
 
 static void get_cb(struct golioth_client *client,
-                   const struct golioth_response *response,
+                   enum golioth_status status,
+                   const struct golioth_coap_rsp_code *coap_rsp_code,
                    const char *path,
                    const uint8_t *payload,
                    size_t payload_size,
@@ -221,7 +224,8 @@ static void get_cb(struct golioth_client *client,
 }
 
 static void set_cb(struct golioth_client *client,
-                   const struct golioth_response *response,
+                   enum golioth_status status,
+                   const struct golioth_coap_rsp_code *coap_rsp_code,
                    const char *path,
                    void *arg)
 {

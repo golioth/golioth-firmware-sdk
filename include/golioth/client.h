@@ -48,20 +48,14 @@ enum golioth_content_type
     GOLIOTH_CONTENT_TYPE_OCTET_STREAM,
 };
 
-/// Response status and CoAP class/code
-struct golioth_response
+/// CoAP response code returned by server
+struct golioth_coap_rsp_code
 {
-    /// Status to indicate whether a response was received
-    ///
-    /// One of:
-    ///      GOLIOTH_ERR_TIMEOUT (no response received from server)
-    ///      GOLIOTH_OK (2.XX)
-    ///      GOLIOTH_ERR_FAIL (anything other than 2.XX)
-    enum golioth_status status;
+    /// CPP prohibits us from using `class` here so we use `code_class`
     /// the 2 in 2.XX
-    uint8_t status_class;
+    uint8_t code_class;
     /// the 03 in 4.03
-    uint8_t status_code;
+    uint8_t code_detail;
 };
 
 /// Authentication type
@@ -142,18 +136,28 @@ typedef void (*golioth_client_event_cb_fn)(struct golioth_client *client,
 
 /// Callback function type for all asynchronous get and observe requests
 ///
-/// Will be called when a response is received or on timeout (i.e. response never received).
-/// The callback function should check response->status to determine which case it is (response
-/// received or timeout).
+/// Will be called when a response is received, on timeout (i.e. response never received), or when
+/// the request is cancelled (e.g. when the Golioth client is stopped). The callback function should
+/// check \p status to determine which case triggered the callback.
+///
+/// The CoAP response code is available by reading code_class (2.xx) and code_detail (x.00) from \p
+/// coap_rsp_code:
+/// - When \p status is GOLIOTH_OK, \p coap_rsp_code->code_class will be a 2.XX success code.
+/// - When \p status is GOLIOTH_COAP_RESPONSE_CODE, check \p coap_rsp_code->code_class for a
+/// non-success code (4.XX, etc.)
+/// - All other \p status values indicate an error in which a response was not received. The \p
+/// coap_rsp_code is undefined and will be NULL.
 ///
 /// @param client The client handle from the original request.
-/// @param response Response status and class/code
+/// @param status Golioth status code.
+/// @param coap_rsp_code CoAP response code received from Golioth. Can be NULL.
 /// @param path The path from the original request
 /// @param payload The application layer payload in the response packet. Can be NULL.
 /// @param payload_size The size of payload, in bytes
 /// @param arg User argument, copied from the original request. Can be NULL.
 typedef void (*golioth_get_cb_fn)(struct golioth_client *client,
-                                  const struct golioth_response *response,
+                                  enum golioth_status status,
+                                  const struct golioth_coap_rsp_code *coap_rsp_code,
                                   const char *path,
                                   const uint8_t *payload,
                                   size_t payload_size,
@@ -161,19 +165,30 @@ typedef void (*golioth_get_cb_fn)(struct golioth_client *client,
 
 /// Callback for blockwise get requests
 ///
-/// Will be called repeatedly, once for each block received from the server or on timeout (i.e.
-/// response never received). The callback function should check response->status to determine which
-/// case it is (response received or timeout).
+/// Will be called repeatedly, once for each block received from the server, on timeout (i.e.
+/// response never received), or when the request is cancelled (e.g. when the Golioth client is
+/// stopped). The callback function should check \p status to determine which case triggered the
+/// callback.
+///
+/// The CoAP response code is available by reading code_class (2.xx) and code_detail (x.00) from \p
+/// coap_rsp_code:
+/// - When \p status is GOLIOTH_OK, \p coap_rsp_code->code_class will be a 2.XX success code.
+/// - When \p status is GOLIOTH_COAP_RESPONSE_CODE, check \p coap_rsp_code->code_class for a
+/// non-success code (4.XX, etc.)
+/// - All other \p status values indicate an error in which a response was not received. The \p
+/// coap_rsp_code is undefined and will be NULL.
 ///
 /// @param client The client handle from the original request.
-/// @param response Response status and class/code
+/// @param status Golioth status code.
+/// @param coap_rsp_code CoAP response code received from Golioth. Can be NULL.
 /// @param path The path from the original request
 /// @param payload The application layer payload in the response packet. Can be NULL.
 /// @param payload_size The size of payload, in bytes
 /// @param is_last True if this is the final block of the get request
 /// @param arg User argument, copied from the original request. Can be NULL.
 typedef void (*golioth_get_block_cb_fn)(struct golioth_client *client,
-                                        const struct golioth_response *response,
+                                        enum golioth_status status,
+                                        const struct golioth_coap_rsp_code *coap_rsp_code,
                                         const char *path,
                                         const uint8_t *payload,
                                         size_t payload_size,
@@ -183,17 +198,26 @@ typedef void (*golioth_get_block_cb_fn)(struct golioth_client *client,
 /// Callback function type for all asynchronous set and delete requests as well as
 /// blockwise uploads
 ///
-/// Will be called when a response is received or on timeout (i.e. response never received).
-/// The callback function should check response->status to determine which case it is (response
-/// received or timeout). If response->status is GOLIOTH_OK, then the set or delete request
-/// was successful.
+/// Will be called when a response is received, on timeout (i.e. response never received), or when
+/// the request is cancelled (e.g. when the Golioth client is stopped). The callback function should
+/// check \p status to determine which case triggered the callback.
+///
+/// The CoAP response code is available by reading code_class (2.xx) and code_detail (x.00) from \p
+/// coap_rsp_code:
+/// - When \p status is GOLIOTH_OK, \p coap_rsp_code->code_class will be a 2.XX success code.
+/// - When \p status is GOLIOTH_COAP_RESPONSE_CODE, check \p coap_rsp_code->code_class for a
+/// non-success code (4.XX, etc.)
+/// - All other \p status values indicate an error in which a response was not received. The \p
+/// coap_rsp_code is undefined and will be NULL.
 ///
 /// @param client The client handle from the original request.
-/// @param response Response status and class/code
+/// @param status Golioth status code.
+/// @param coap_rsp_code CoAP response code received from Golioth
 /// @param path The path from the original request
 /// @param arg User argument, copied from the original request. Can be NULL.
 typedef void (*golioth_set_cb_fn)(struct golioth_client *client,
-                                  const struct golioth_response *response,
+                                  enum golioth_status status,
+                                  const struct golioth_coap_rsp_code *coap_rsp_code,
                                   const char *path,
                                   void *arg);
 

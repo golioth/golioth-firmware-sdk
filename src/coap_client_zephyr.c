@@ -234,15 +234,21 @@ static int golioth_coap_cb(struct golioth_req_rsp *rsp)
         case GOLIOTH_COAP_REQUEST_GET:
             if (req->get.callback)
             {
-                req->get
-                    .callback(client, &rsp->codes, req->path, rsp->data, rsp->len, req->get.arg);
+                req->get.callback(client,
+                                  rsp->status,
+                                  golioth_ptr_to_rsp_code(rsp),
+                                  req->path,
+                                  rsp->data,
+                                  rsp->len,
+                                  req->get.arg);
             }
             break;
         case GOLIOTH_COAP_REQUEST_GET_BLOCK:
             if (req->get_block.callback)
             {
                 req->get_block.callback(client,
-                                        &rsp->codes,
+                                        rsp->status,
+                                        golioth_ptr_to_rsp_code(rsp),
                                         req->path,
                                         rsp->data,
                                         rsp->len,
@@ -253,14 +259,19 @@ static int golioth_coap_cb(struct golioth_req_rsp *rsp)
         case GOLIOTH_COAP_REQUEST_POST:
             if (req->post.callback)
             {
-                req->post.callback(client, &rsp->codes, req->path, req->post.arg);
+                req->post.callback(client,
+                                   rsp->status,
+                                   golioth_ptr_to_rsp_code(rsp),
+                                   req->path,
+                                   req->post.arg);
             }
             break;
         case GOLIOTH_COAP_REQUEST_POST_BLOCK:
             if (req->post_block.callback)
             {
                 req->post_block.callback(client,
-                                         &rsp->codes,
+                                         rsp->status,
+                                         golioth_ptr_to_rsp_code(rsp),
                                          req->path,
                                          req->post_block.block_szx,
                                          req->post_block.arg);
@@ -269,14 +280,19 @@ static int golioth_coap_cb(struct golioth_req_rsp *rsp)
         case GOLIOTH_COAP_REQUEST_DELETE:
             if (req->delete.callback)
             {
-                req->delete.callback(client, &rsp->codes, req->path, req->delete.arg);
+                req->delete.callback(client,
+                                     rsp->status,
+                                     golioth_ptr_to_rsp_code(rsp),
+                                     req->path,
+                                     req->delete.arg);
             }
             break;
         case GOLIOTH_COAP_REQUEST_OBSERVE:
             if (req->observe.callback)
             {
                 req->observe.callback(client,
-                                      &rsp->codes,
+                                      rsp->status,
+                                      golioth_ptr_to_rsp_code(rsp),
                                       req->path,
                                       rsp->data,
                                       rsp->len,
@@ -296,8 +312,7 @@ static int golioth_coap_cb(struct golioth_req_rsp *rsp)
     /* Handle synchronous calls */
     if (req->request_complete_event)
     {
-        *req->status = rsp->codes.status;
-
+        *req->status = rsp->status;
         golioth_event_group_set_bits(req->request_complete_event, RESPONSE_RECEIVED_EVENT_BIT);
 
         // Wait for user thread to receive the event.
@@ -314,7 +329,7 @@ static int golioth_coap_cb(struct golioth_req_rsp *rsp)
         free(req);
     }
 
-    return rsp->codes.status;
+    return rsp->status;
 }
 
 static int golioth_coap_get_block(golioth_coap_request_msg_t *req)
@@ -1565,6 +1580,16 @@ static void purge_request_mbox(golioth_mbox_t request_mbox)
             golioth_sys_free(request_msg.post_block.payload);
         }
     }
+}
+
+const struct golioth_coap_rsp_code *golioth_ptr_to_rsp_code(const struct golioth_req_rsp *rsp)
+{
+    if (rsp->status == GOLIOTH_OK || rsp->status == GOLIOTH_ERR_COAP_RESPONSE)
+    {
+        return &rsp->coap_rsp_code;
+    }
+
+    return NULL;
 }
 
 void golioth_client_destroy(struct golioth_client *client)
