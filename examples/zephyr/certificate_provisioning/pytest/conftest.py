@@ -12,14 +12,7 @@ from twister_harness.device.binary_adapter import NativeSimulatorAdapter
 
 WEST_TOPDIR = Path(west.configuration.west_dir()).parent
 
-def pytest_addoption(parser):
-    parser.addoption("--device-port", type=str,
-                     help="Device serial port path")
-
 def get_device_port(request):
-    if request.config.getoption("--device-port") is not None:
-        return request.config.getoption("--device-port")
-
     with suppress(KeyError):
         port_key = f"CI_{os.environ['hil_board'].upper()}_PORT"
         return os.environ[port_key]
