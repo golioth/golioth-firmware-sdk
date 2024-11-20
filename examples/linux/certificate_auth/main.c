@@ -35,12 +35,10 @@ int main(void)
     uint8_t client_cert_pem[MAX_PEM_FILE_SIZE];
     uint8_t root_ca_pem[MAX_PEM_FILE_SIZE];
 
-    size_t client_key_len =
-        read_file("certs/client.key.pem", client_key_pem, sizeof(client_key_pem));
-    size_t client_cert_len =
+    int client_key_len = read_file("certs/client.key.pem", client_key_pem, sizeof(client_key_pem));
+    int client_cert_len =
         read_file("certs/client.crt.pem", client_cert_pem, sizeof(client_cert_pem));
-    size_t root_ca_len =
-        read_file("isrgrootx1_goliothrootx1.pem", root_ca_pem, sizeof(root_ca_pem));
+    int root_ca_len = read_file("isrgrootx1_goliothrootx1.pem", root_ca_pem, sizeof(root_ca_pem));
     if ((client_key_len <= 0) || (client_cert_len <= 0) || (root_ca_len <= 0))
     {
         return 1;
