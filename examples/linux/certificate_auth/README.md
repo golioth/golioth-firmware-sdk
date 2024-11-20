@@ -70,18 +70,17 @@ cp <project_id>-<certificate_id>.crt.pem client.crt.pem
 cp <project_id>-<certificate_id>.key.pem client.key.pem
 ```
 
-## A note about root_ca.pem
+## Get server root CA certificate
 
-The file `root_ca.pem` is the public certificate of the root CA that was used
-to sign the server's certificate (which it presents to the device during DTLS
-handshake). This is required in order for the device to verify the authenticity
-of the Golioth server.
+In order to verify that you are communicating with Golioth servers, the
+CA certificate at the root of the trust chain that ends with the
+certificate presented by the server must be included. The CA certificate
+can be obtained from the SDK source and made accessible by copying it
+into this directory.
 
-It is not one of the generated files from the previous steps. This file should be left alone.
-
-The file was copied from the Let's Encrypt website (ISRG Root X1):
-
-https://letsencrypt.org/certificates/
+```
+cp ../../../src/isrgrootx1_goliothrootx1.pem .
+```
 
 ## Build and run
 
