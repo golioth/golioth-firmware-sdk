@@ -1,3 +1,8 @@
 coverage:
   status:
     project: true
+parsers:
+  gcov:
+    branch_detection:
+      conditional: no
+      loop: no
