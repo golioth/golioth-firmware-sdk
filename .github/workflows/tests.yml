@@ -620,7 +620,6 @@ jobs:
         uses: actions/upload-artifact@v4
         if: always()
         with:
-          secrets-json: ${{ toJson(secrets) }}
           name: coverage-native-sim
           path: coverage/*
 
