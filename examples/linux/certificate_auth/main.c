@@ -11,7 +11,7 @@
 
 #define TAG "main"
 
-#define MAX_PEM_FILE_SIZE 2048
+#define MAX_PEM_FILE_SIZE 4096
 
 static int read_file(const char *filepath, uint8_t *buffer, size_t buffer_size)
 {
