@@ -6,6 +6,7 @@ DUMMY_VER_OLDER = '1.2.2'
 DUMMY_VER_SAME = '1.2.3'
 DUMMY_VER_UPDATE = '1.2.4'
 DUMMY_VER_EXTRA = '1.2.5'
+DUMMY_VER_RESTART = '1.2.6'
 MULTI_PACKAGE = 'walrus'
 MULTI_PACKAGE_VER = '0.4.2'
 
@@ -81,8 +82,10 @@ async def artifacts(project):
                 artifacts["test_multiple"] = a
             elif a.version == MULTI_PACKAGE_VER and a.package == MULTI_PACKAGE:
                 artifacts["multi_artifact"] = a
+            elif a.version == DUMMY_VER_RESTART and a.package == UPDATE_PACKAGE:
+                artifacts["test_restart"] = a
 
-    assert len(artifacts) == 5
+    assert len(artifacts) == 6
 
     return artifacts
 
@@ -94,6 +97,7 @@ async def releases(project, artifacts, tag):
     releases["test_multiple"] = await project.releases.create([artifacts["test_multiple"].id, artifacts["multi_artifact"].id], [], [tag.id], False)
     releases["test_blocks"] = await project.releases.create([artifacts["test_blocks"].id], [], [tag.id], False)
     releases["test_reasons"] = await project.releases.create([artifacts["test_reasons"].id], [], [tag.id], False)
+    releases["test_restart"] = await project.releases.create([artifacts["test_restart"].id], [], [tag.id], False)
     yield releases
 
     # Clean Up
@@ -154,6 +158,14 @@ async def test_multiple_artifacts(artifacts, board, project, releases):
     # Test all parts of OTA component
 
     await verify_component_values(board, artifacts["multi_artifact"].info)
+
+async def test_restart(artifacts, board, project, releases):
+    await project.releases.rollout_set(releases["test_restart"].id, True)
+
+    assert None != board.wait_for_regex_in_line('Found main component', timeout_s=30)
+    assert None != board.wait_for_regex_in_line('Ending session', timeout_s=10)
+    assert None != board.wait_for_regex_in_line('Found main component', timeout_s=60)
+    assert None != board.wait_for_regex_in_line('Restart successful', timeout_s=2)
 
 async def test_block_operations(board, project, releases):
     await project.releases.rollout_set(releases["test_blocks"].id, True)
