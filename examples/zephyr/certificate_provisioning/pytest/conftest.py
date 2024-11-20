@@ -1,5 +1,3 @@
-from contextlib import suppress
-import os
 from pathlib import Path
 import random
 import string
@@ -12,13 +10,6 @@ from twister_harness.device.binary_adapter import NativeSimulatorAdapter
 
 WEST_TOPDIR = Path(west.configuration.west_dir()).parent
 
-def get_device_port(request):
-    with suppress(KeyError):
-        port_key = f"CI_{os.environ['hil_board'].upper()}_PORT"
-        return os.environ[port_key]
-
-    return request.config.option.device_serial
-
 @pytest.fixture
 def mcumgr_conn_args(request, dut):
     if isinstance(dut, NativeSimulatorAdapter):
@@ -29,7 +20,7 @@ def mcumgr_conn_args(request, dut):
 
     return [
         "--conntype=serial",
-        f"--connstring=dev={get_device_port(request)},baud=115200"
+        f"--connstring=dev={request.config.option.device_serial},baud=115200"
     ]
 
 @pytest.fixture(scope='session')
