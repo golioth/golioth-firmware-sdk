@@ -36,15 +36,16 @@ static void on_client_event(struct golioth_client *client,
 }
 
 static void counter_get_handler(struct golioth_client *client,
-                                const struct golioth_response *response,
+                                enum golioth_status status,
+                                const struct golioth_coap_rsp_code *coap_rsp_code,
                                 const char *path,
                                 const uint8_t *payload,
                                 size_t payload_size,
                                 void *arg)
 {
-    if ((response->status != GOLIOTH_OK) || golioth_payload_is_null(payload, payload_size))
+    if ((status != GOLIOTH_OK) || golioth_payload_is_null(payload, payload_size))
     {
-        LOG_WRN("Failed to get counter (async): %d", response->status);
+        LOG_WRN("Failed to get counter (async): %d", status);
     }
     else
     {
@@ -103,15 +104,16 @@ static void counter_get_json_sync(struct golioth_client *client)
 }
 
 static void counter_get_cbor_handler(struct golioth_client *client,
-                                     const struct golioth_response *response,
+                                     enum golioth_status status,
+                                     const struct golioth_coap_rsp_code *coap_rsp_code,
                                      const char *path,
                                      const uint8_t *payload,
                                      size_t payload_size,
                                      void *arg)
 {
-    if ((response->status != GOLIOTH_OK) || golioth_payload_is_null(payload, payload_size))
+    if ((status != GOLIOTH_OK) || golioth_payload_is_null(payload, payload_size))
     {
-        LOG_WRN("Failed to get counter (async): %d", response->status);
+        LOG_WRN("Failed to get counter (async): %d", status);
         return;
     }
 

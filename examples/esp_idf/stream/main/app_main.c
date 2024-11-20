@@ -50,13 +50,14 @@ static float get_temperature()
 }
 
 static void temperature_push_handler(struct golioth_client *client,
-                                     const struct golioth_response *response,
+                                     enum golioth_status status,
+                                     const struct golioth_coap_rsp_code *coap_rsp_code,
                                      const char *path,
                                      void *arg)
 {
-    if (response->status != GOLIOTH_OK)
+    if (status != GOLIOTH_OK)
     {
-        GLTH_LOGW(TAG, "Failed to push temperature: %d", response->status);
+        GLTH_LOGW(TAG, "Failed to push temperature: %d", status);
         return;
     }
 

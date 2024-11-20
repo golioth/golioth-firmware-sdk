@@ -48,8 +48,8 @@ struct golioth_req_rsp
 
     void *user_data;
 
-    /* codes == error/status codes; named to avoid "response" and "req_rsp" confusion */
-    struct golioth_response codes;
+    enum golioth_status status;
+    struct golioth_coap_rsp_code coap_rsp_code;
 };
 
 /**
@@ -103,6 +103,8 @@ struct golioth_client
 };
 
 int golioth_send_coap(struct golioth_client *client, struct coap_packet *packet);
+
+const struct golioth_coap_rsp_code *golioth_ptr_to_rsp_code(const struct golioth_req_rsp *rsp);
 
 void golioth_cancel_all_observations_by_prefix(struct golioth_client *client, const char *prefix);
 

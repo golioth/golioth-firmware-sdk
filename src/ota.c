@@ -305,7 +305,8 @@ enum golioth_status golioth_ota_payload_as_manifest(const uint8_t *payload,
 }
 
 static void on_block_rcvd(struct golioth_client *client,
-                          const struct golioth_response *response,
+                          enum golioth_status status,
+                          const struct golioth_coap_rsp_code *coap_rsp_code,
                           const char *path,
                           const uint8_t *payload,
                           size_t payload_size,
@@ -315,7 +316,7 @@ static void on_block_rcvd(struct golioth_client *client,
     assert(arg);
     assert(payload_size <= CONFIG_GOLIOTH_BLOCKWISE_DOWNLOAD_MAX_BLOCK_SIZE);
 
-    if (response->status != GOLIOTH_OK)
+    if (status != GOLIOTH_OK)
     {
         return;
     }

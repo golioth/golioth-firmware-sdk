@@ -312,7 +312,8 @@ enum golioth_status golioth_lightdb_set_sync(struct golioth_client *client,
 }
 
 static void on_payload(struct golioth_client *client,
-                       const struct golioth_response *response,
+                       enum golioth_status status,
+                       const struct golioth_coap_rsp_code *coap_rsp_code,
                        const char *path,
                        const uint8_t *payload,
                        size_t payload_size,
@@ -320,9 +321,9 @@ static void on_payload(struct golioth_client *client,
 {
     lightdb_get_response_t *ldb_response = (lightdb_get_response_t *) arg;
 
-    if (response->status != GOLIOTH_OK)
+    if (status != GOLIOTH_OK)
     {
-        GLTH_LOGE(TAG, "Error response from LightDB State: %d", response->status);
+        GLTH_LOGE(TAG, "Error response from LightDB State: %d", status);
         ldb_response->is_null = true;
         return;
     }

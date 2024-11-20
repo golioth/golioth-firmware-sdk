@@ -105,14 +105,14 @@ static int golioth_coap_req_reply_handler(struct golioth_coap_req *req,
     code = coap_header_get_code(response);
 
     struct golioth_req_rsp rsp = {
-        .codes.status_class = (uint8_t) (code >> 5),
-        .codes.status_code = (uint8_t) (code & 0x1f),
+        .coap_rsp_code.code_class = (uint8_t) (code >> 5),
+        .coap_rsp_code.code_detail = (uint8_t) (code & 0x1f),
     };
 
     LOG_DBG("CoAP response code: 0x%x (class %u detail %u)",
             (unsigned int) code,
-            rsp.codes.status_class,
-            rsp.codes.status_code);
+            rsp.coap_rsp_code.code_class,
+            rsp.coap_rsp_code.code_detail);
 
     if (code == COAP_RESPONSE_CODE_BAD_REQUEST)
     {
@@ -120,10 +120,10 @@ static int golioth_coap_req_reply_handler(struct golioth_coap_req *req,
     }
 
     /* Check for 2.xx style CoAP response success code */
-    if (rsp.codes.status_class != 2)
+    if (rsp.coap_rsp_code.code_class != 2)
     {
         rsp.user_data = req->user_data;
-        rsp.codes.status = GOLIOTH_ERR_COAP_RESPONSE;
+        rsp.status = GOLIOTH_ERR_COAP_RESPONSE;
 
         (void) req->cb(&rsp);
 
@@ -133,7 +133,7 @@ static int golioth_coap_req_reply_handler(struct golioth_coap_req *req,
     }
     else
     {
-        rsp.codes.status = GOLIOTH_OK;
+        rsp.status = GOLIOTH_OK;
     }
 
     payload = coap_packet_get_payload(response, &payload_len);
@@ -149,7 +149,7 @@ static int golioth_coap_req_reply_handler(struct golioth_coap_req *req,
         if (err)
         {
             rsp.user_data = req->user_data;
-            rsp.codes.status = GOLIOTH_ERR_FAIL;
+            rsp.status = GOLIOTH_ERR_FAIL;
 
             LOG_ERR("Failed to parse get response: %d", err);
 
@@ -173,7 +173,7 @@ static int golioth_coap_req_reply_handler(struct golioth_coap_req *req,
         if (new_offset < 0)
         {
             rsp.user_data = req->user_data;
-            rsp.codes.status = GOLIOTH_ERR_FAIL;
+            rsp.status = GOLIOTH_ERR_FAIL;
 
             LOG_ERR("Failed to move to next block: %zu", new_offset);
 
@@ -205,7 +205,7 @@ static int golioth_coap_req_reply_handler(struct golioth_coap_req *req,
             rsp.total = req->block_ctx.total_size;
             rsp.is_last = false;
             rsp.user_data = req->user_data;
-            rsp.codes.status = req->is_observe ? GOLIOTH_ERR_FAIL : GOLIOTH_OK;
+            rsp.status = req->is_observe ? GOLIOTH_ERR_FAIL : GOLIOTH_OK;
 
             err = req->cb(&rsp);
             if (err)
@@ -346,22 +346,19 @@ static int golioth_req_rsp_default_handler(struct golioth_req_rsp *rsp)
 {
     const char *info = rsp->user_data;
 
-    if (rsp->codes.status)
+    if (rsp->status)
     {
         char coap_ret_code[16] = {0};
-        if (rsp->codes.status == GOLIOTH_ERR_COAP_RESPONSE)
+        if (rsp->status == GOLIOTH_ERR_COAP_RESPONSE)
         {
             snprintk(coap_ret_code,
                      sizeof(coap_ret_code),
                      "CoAP: %u.%02u",
-                     rsp->codes.status_class,
-                     rsp->codes.status_code);
+                     rsp->coap_rsp_code.code_class,
+                     rsp->coap_rsp_code.code_detail);
         }
 
-        LOG_ERR("Error response (%s): %d %s",
-                info ? info : "app",
-                rsp->codes.status,
-                coap_ret_code);
+        LOG_ERR("Error response (%s): %d %s", info ? info : "app", rsp->status, coap_ret_code);
         return 0;
     }
 
@@ -657,7 +654,7 @@ static int64_t golioth_coap_req_poll_prepare(struct golioth_coap_req *req, uint3
         {
             struct golioth_req_rsp rsp = {
                 .user_data = req->user_data,
-                .codes.status = GOLIOTH_ERR_TIMEOUT,
+                .status = GOLIOTH_ERR_TIMEOUT,
             };
 
             LOG_WRN("Packet %p (reply %p) was not replied to", (void *) req, (void *) &req->reply);
@@ -742,7 +739,7 @@ static void golioth_coap_reqs_cancel_all_with_reason(struct golioth_client *clie
     {
         struct golioth_req_rsp rsp = {
             .user_data = req->user_data,
-            .codes.status = reason,
+            .status = reason,
         };
 
         if (!req->is_observe)

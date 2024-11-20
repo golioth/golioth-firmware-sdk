@@ -87,7 +87,8 @@ static int params_decode(zcbor_state_t *zsd, void *value)
 }
 
 static void on_rpc(struct golioth_client *client,
-                   const struct golioth_response *response,
+                   enum golioth_status status,
+                   const struct golioth_coap_rsp_code *coap_rsp_code,
                    const char *path,
                    const uint8_t *payload,
                    size_t payload_size,
@@ -104,9 +105,9 @@ static void on_rpc(struct golioth_client *client,
     int err;
     bool ok;
 
-    if (response->status != GOLIOTH_OK)
+    if (status != GOLIOTH_OK)
     {
-        GLTH_LOGE(TAG, "Error response on observed RPC: %d", response->status);
+        GLTH_LOGE(TAG, "Error response on observed RPC: %d", status);
         return;
     }
 
@@ -148,7 +149,7 @@ static void on_rpc(struct golioth_client *client,
     struct golioth_rpc *grpc = arg;
 
     const struct golioth_rpc_method *matching_rpc = NULL;
-    enum golioth_rpc_status status = GOLIOTH_RPC_UNKNOWN;
+    enum golioth_rpc_status rpc_status = GOLIOTH_RPC_UNKNOWN;
 
     for (int i = 0; i < grpc->num_rpcs; i++)
     {
@@ -183,9 +184,9 @@ static void on_rpc(struct golioth_client *client,
             return;
         }
 
-        status = matching_rpc->callback(&params_zsd, zse, matching_rpc->callback_arg);
+        rpc_status = matching_rpc->callback(&params_zsd, zse, matching_rpc->callback_arg);
 
-        GLTH_LOGD(TAG, "RPC status code %d for call id :%.*s", status, (int) id.len, id.value);
+        GLTH_LOGD(TAG, "RPC status code %d for call id :%.*s", rpc_status, (int) id.len, id.value);
 
         ok = zcbor_map_end_encode(zse, SIZE_MAX);
         if (!ok)
@@ -196,11 +197,11 @@ static void on_rpc(struct golioth_client *client,
     }
     else
     {
-        status = GOLIOTH_RPC_NOT_FOUND;
+        rpc_status = GOLIOTH_RPC_NOT_FOUND;
         GLTH_LOGW(TAG, "Method %.*s not registered", (int) method.len, method.value);
     }
 
-    ok = zcbor_tstr_put_lit(zse, "statusCode") && zcbor_uint64_put(zse, status);
+    ok = zcbor_tstr_put_lit(zse, "statusCode") && zcbor_uint64_put(zse, rpc_status);
     if (!ok)
     {
         GLTH_LOGE(TAG, "Failed to encode RPC '%s'", "statusCode");

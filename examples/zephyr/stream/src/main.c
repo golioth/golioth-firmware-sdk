@@ -91,13 +91,14 @@ static int get_temperature(struct sensor_value *val)
 #endif
 
 static void temperature_async_push_handler(struct golioth_client *client,
-                                           const struct golioth_response *response,
+                                           enum golioth_status status,
+                                           const struct golioth_coap_rsp_code *coap_rsp_code,
                                            const char *path,
                                            void *arg)
 {
-    if (response->status != GOLIOTH_OK)
+    if (status != GOLIOTH_OK)
     {
-        LOG_WRN("Failed to push temperature: %d", response->status);
+        LOG_WRN("Failed to push temperature: %d", status);
         return;
     }
 
