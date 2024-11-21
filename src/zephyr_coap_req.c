@@ -788,7 +788,10 @@ static void golioth_coap_reqs_cancel_all_with_reason(struct golioth_client *clie
             .err = reason,
         };
 
-        (void) req->cb(&rsp);
+        if (!req->is_observe)
+        {
+            (void) req->cb(&rsp);
+        }
 
         golioth_coap_req_cancel_and_free(req);
     }
