@@ -49,7 +49,7 @@ async def test_fw_update(shell, project, device, wifi_ssid, wifi_psk, fw_info, r
 
     # Test for board to run new firmware and report to Golioth
 
-    shell._device.readlines_until(regex=".*Current firmware version: main - 255.8.9.",
+    shell._device.readlines_until(regex=f".*Current firmware version: {fw_info['package']} - {fw_info['version']}.",
                                   timeout=120.0)
     LOGGER.info("Device reported expected update version")
 
