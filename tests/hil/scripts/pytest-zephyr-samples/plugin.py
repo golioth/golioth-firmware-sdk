@@ -30,8 +30,10 @@ def runner_name(request):
 def pytest_runtest_setup(item):
     if item.config.getoption("--hil-board") is not None:
         hil_board = item.config.getoption("--hil-board")
-    else:
+    elif 'hil_board' in os.environ:
         hil_board = os.environ['hil_board']
+    else:
+        hil_board = item.config.option.device_serial
 
     allure.dynamic.tag(hil_board)
     allure.dynamic.tag("zephyr")
