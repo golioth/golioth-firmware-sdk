@@ -313,6 +313,16 @@ static int golioth_coap_cb(struct golioth_req_rsp *rsp)
     if (req->request_complete_event)
     {
         *req->status = rsp->status;
+
+        if (rsp->status == GOLIOTH_ERR_COAP_RESPONSE)
+        {
+            /* Log the CoAP code as synchronous operations don't have access to it */
+            GLTH_LOGW(TAG,
+                      "CoAP Error: %u.%02u",
+                      rsp->coap_rsp_code.code_class,
+                      rsp->coap_rsp_code.code_detail);
+        }
+
         golioth_event_group_set_bits(req->request_complete_event, RESPONSE_RECEIVED_EVENT_BIT);
 
         // Wait for user thread to receive the event.
