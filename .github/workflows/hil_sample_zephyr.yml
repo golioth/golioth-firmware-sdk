@@ -160,11 +160,14 @@ jobs:
         run: |
           rm -rf zephyr
 
+          MANIFEST=${{ inputs.manifest }}
+          MANIFEST_TWISTER=${MANIFEST%.yml}-twister.yml
+
           mkdir -p .west
           cat <<EOF > .west/config
           [manifest]
           path = modules/lib/golioth-firmware-sdk
-          file = .ci-west-zephyr-twister.yml
+          file = ${MANIFEST_TWISTER}
           EOF
 
           west update -o=--depth=1 -n
