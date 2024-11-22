@@ -2,13 +2,14 @@ import golioth
 import os
 import pytest
 
-UPDATE_VERSION = '255.8.9'
-UPDATE_PACKAGE = 'main'
+UPDATE_VERSION = "255.8.9"
+UPDATE_PACKAGE = "main"
 
 
-@pytest.fixture(scope='session')
+@pytest.fixture(scope="session")
 def anyio_backend():
-    return 'trio'
+    return "trio"
+
 
 @pytest.fixture(scope="session")
 async def fw_info():
@@ -17,13 +18,15 @@ async def fw_info():
 
 @pytest.fixture(scope="module")
 async def blueprint_id(project, request):
-    bp_name = request.config.option.platform[0].replace('/','_')
+    bp_name = request.config.option.platform[0].replace("/", "_")
+    print(request.config.option.platform.replace("/", "_"))
+    print(request.config.option.platform[0].replace("/", "_"))
     yield await project.blueprints.get_id(bp_name)
 
 
 @pytest.fixture(scope="module")
 async def tag(project, device, blueprint_id):
-    tag_name = device.name.lower().replace('-','_')
+    tag_name = device.name.lower().replace("-", "_")
     tag = await project.tags.create(tag_name)
 
     await device.add_blueprint(blueprint_id)
@@ -46,9 +49,11 @@ async def artifact(project, blueprint_id):
     artifact = None
     all_artifacts = await project.artifacts.get_all()
     for a in all_artifacts:
-        if (a.blueprint == blueprint_id and
-            a.version == UPDATE_VERSION and
-            a.package == UPDATE_PACKAGE):
+        if (
+            a.blueprint == blueprint_id
+            and a.version == UPDATE_VERSION
+            and a.package == UPDATE_PACKAGE
+        ):
             artifact = a
 
     assert artifact != None
