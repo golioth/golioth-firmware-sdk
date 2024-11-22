@@ -1,0 +1,11 @@
+manifest:
+  self:
+    path: modules/lib/golioth-firmware-sdk
+    import:
+      file: west-ncs.yml
+      name-allowlist:
+        - nrf
+        - zephyr
+    userdata:
+      patches_dirs:
+        - patches/west-ncs
