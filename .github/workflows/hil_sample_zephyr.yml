@@ -206,6 +206,7 @@ jobs:
                 --device-serial ${!PORT_VAR}                                                      \
                 --test-only                                                                       \
                 ${{ inputs.extra_twister_args }}                                                  \
+                --pytest-args="-s"                                   \
                 --pytest-args="--api-url=${{ inputs.api-url }}"                                   \
                 --pytest-args="--api-key=${{ secrets[inputs.api-key-id] }}"                       \
                 --pytest-args="--wifi-ssid=${{ secrets[format('{0}_WIFI_SSID', runner.name)] }}"  \
