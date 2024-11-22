@@ -4,29 +4,76 @@ All notable changes to this project will be documented in this file.
 The format is based on [Keep a Changelog](https://keepachangelog.com/en/1.0.0/),
 and this project adheres to [Semantic Versioning](https://semver.org/spec/v2.0.0.html).
 
-## [Unreleased]
+## [0.16.0] 2024-11-25
 
 ### Breaking Changes:
 
+- All asynchronous callbacks now have both a `status` member and a
+  `coap_rsp_code` member to replace the `response` member. All of the
+  same information remains accessible. Update callback functions to
+  match the new declaration and change any `response->status` checks to
+  `status`.
 - `golioth_ota_download_component()` has a new `uint32_t
   *next_block_idx` parameter. Use this to resume block download. Set to
   `NULL` to use previous functionality in existing code.
 - The parameters for `ota_component_block_write_cb()` have changed to
   include `block_buffer_len` for the actual length of data and
   `negotiated_block_size` to indicate the maximum block size (may be
-  used along with 'block_idx' to calculate a byte offset).
+  used along with `block_idx` to calculate a byte offset).
 - `golioth_ota_component->hash` is now stored as an array of bytes
   instead of as a hex string.
-- All asynchronous callbacks now have both a `status` member and a
-  `coap_rsp_code` member to replace the `response` member. All of the
-  same information remains accessible. Update callback functions to
-  match the new declaration and change any `response->status` checks to
-  `status`.
+
+### Highlights:
+
+- Zephyr port updated to Zephyr v4.0
+- NCS port updated to NCS v2.8
+- Improved OTA stablility
+
+### Added:
+
+- ESP-IDF: optional ipv6 support enabled by
+  `CONFIG_LIBCOAP_ENABLE_IPV6_SUPPORT`
+- LightDB/OTA/RPC: log message when an error response is received from
+  server
+- CoAP: Server-negotiated block size for blockwise uploads
+- CoAP: optionally call a `set_cb` callback at the end of a blockwise
+  upload operation
+- OTA: ability to resume a component download
+- `golioth_sys_sha256_*()` API for calculating OTA component hash
+- `CONFIG_GOLIOTH_OTA` to enable OTA component separately from fw_update
+  component
+- Numerous hardware-in-the-loop (HIL) testing improvements for both code
+  samples and integration tests
+
+### Changed:
+
+- Certificates: Replace ISRG Root X2 CA certificate with Golioth
+  Root X1 CA certificate.
+- Zephyr: Samples: kconfig and devicetree settings common to an SoC
+  moved from `boards` directory to `socs` directory.
+
+### Fixed:
+
+- Zephyr: Golioth coap client log messages now honor changes to the
+  logging level.
+- Zephyr: Fixed off-by-one error in Golioth backend logging message
+  length limit.
+- Zephyr: Connection ID is now properly enabled by Kconfig setting.
+- Zephyr: Run user callbacks when cancelling requests.
+- Linux: Error checks and max PEM size for certificate_auth sample.
 
 ### Removed:
 
 - OTA compression was removed as the feature is currently unsupported on
   the servers side.
+- Golioth Basics sample removed from Zephyr and ESP-IDF. Existing
+  per-feature sample code for these platforms covers everything
+  demonstrated in that sample.
+
+### Known Issues:
+- [Zephyr only] examples won't build for esp32_devkitc_wrover with
+  support for certificates due to bugs in Zephyr that prevent all RAM
+  banks from being made available to the application.
 
 ## [0.15.0] 2024-09-04
 
