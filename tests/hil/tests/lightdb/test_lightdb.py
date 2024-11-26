@@ -53,7 +53,18 @@ async def setup(project, board, device):
 
 ##### Tests #####
 
+async def wait_for_lightdb(device):
+    # Retry until values are available
+    retry_count = 3
+    while retry_count:
+        if await device.lightdb.get('hil/lightdb/reported/sync/true') != None:
+            return;
+        retry_count -= 1
+        await trio.sleep(1)
+
 async def test_lightdb_reported(device):
+    await wait_for_lightdb(device)
+
     # Check if all values in desired state were replicated
     assert (await device.lightdb.get('hil/lightdb/reported/sync/true')) is True
     assert (await device.lightdb.get('hil/lightdb/reported/sync/false')) is False
@@ -73,6 +84,8 @@ async def test_lightdb_reported(device):
     assert (await device.lightdb.get('hil/lightdb/reported/async/obj')) == {'c': '26', 'd': -12}
 
 async def test_lightdb_deleted(device):
+    await wait_for_lightdb(device)
+
     assert (await device.lightdb.get('hil/lightdb/to_delete/sync/true')) is None
     assert (await device.lightdb.get('hil/lightdb/to_delete/sync/false')) is None
     assert (await device.lightdb.get('hil/lightdb/to_delete/sync/int')) is None
@@ -86,6 +99,8 @@ async def test_lightdb_deleted(device):
     assert (await device.lightdb.get('hil/lightdb/to_delete/async/obj')) is None
 
 async def test_lightdb_invalid(device):
+    await wait_for_lightdb(device)
+
     assert (await device.lightdb.get('hil/lightdb/invalid/sync/set_dot')) == 'GOLIOTH_ERR_COAP_RESPONSE'
 
 class Coap_Content_Type(Enum):
