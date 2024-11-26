@@ -131,9 +131,10 @@ config GOLIOTH_SAMPLE_PSK_ID_MAX_LEN
 config GOLIOTH_SAMPLE_PSK_MAX_LEN
 	int "Max length of PSK"
 	default MBEDTLS_PSK_MAX_LEN if MBEDTLS_BUILTIN
-	default 64
+	default 32
 	help
-	  Maximum length of PSK, in bytes.
+      Maximum length of PSK, in bytes. Modification may require also updating
+      MBEDTLS_PSK_MAX_LEN.
 
 endif # GOLIOTH_SAMPLE_SETTINGS
 
