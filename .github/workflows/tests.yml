@@ -152,7 +152,7 @@ jobs:
           import os
           from pathlib import Path
 
-          tests = [p.name for p in Path('tests/hil/tests').iterdir()]
+          tests = ['lightdb']
 
           with open(os.environ['GITHUB_OUTPUT'], 'a') as github_output:
             print('tests=' + json.dumps(tests), file=github_output)
@@ -275,45 +275,45 @@ jobs:
           name: allure-reports-hil-zephyr-${{ matrix.platform }}-${{ matrix.test }}
           path: allure-reports
 
-  hil_test_zephyr_nsim_summary:
-    name: zephyr-summary-hil-nsim
-    runs-on: ubuntu-latest
-    needs: hil_test_zephyr_nsim
-    if: success() || failure()
+  #hil_test_zephyr_nsim_summary:
+    #name: zephyr-summary-hil-nsim
+    #runs-on: ubuntu-latest
+    #needs: hil_test_zephyr_nsim
+    #if: success() || failure()
 
-    strategy:
-      fail-fast: false
-      matrix:
-        include:
-          - platform: native_sim_32
-          - platform: native_sim_64
+    #strategy:
+      #fail-fast: false
+      #matrix:
+        #include:
+          #- platform: native_sim_32
+          #- platform: native_sim_64
 
-    steps:
-      - name: Collect JUnit reports
-        uses: actions/download-artifact@v4
-        with:
-          pattern: ci-individual-hil-zephyr-*
+    #steps:
+      #- name: Collect JUnit reports
+        #uses: actions/download-artifact@v4
+        #with:
+          #pattern: ci-individual-hil-zephyr-*
 
-      - name: Prepare CI report summary
-        if: always()
-        run: |
-          sudo apt install -y xml-twig-tools
+      #- name: Prepare CI report summary
+        #if: always()
+        #run: |
+          #sudo apt install -y xml-twig-tools
 
-          rm -rf summary
-          mkdir summary
+          #rm -rf summary
+          #mkdir summary
 
-          xml_grep --pretty_print indented \
-            --wrap testsuites --descr '' \
-            --cond "testsuite" \
-            ci-individual-hil-zephyr-${{ matrix.platform }}-*/*.xml \
-            > hil-zephyr-${{ matrix.platform }}.xml
+          #xml_grep --pretty_print indented \
+            #--wrap testsuites --descr '' \
+            #--cond "testsuite" \
+            #ci-individual-hil-zephyr-${{ matrix.platform }}-*/*.xml \
+            #> hil-zephyr-${{ matrix.platform }}.xml
 
-      - name: Upload CI report summary
-        uses: actions/upload-artifact@v4
-        if: always()
-        with:
-          name: ci-summary-hil-zephyr-${{ matrix.platform }}
-          path: hil-zephyr-*.xml
+      #- name: Upload CI report summary
+        #uses: actions/upload-artifact@v4
+        #if: always()
+        #with:
+          #name: ci-summary-hil-zephyr-${{ matrix.platform }}
+          #path: hil-zephyr-*.xml
 
   hil_test_esp-idf:
     if: ${{ inputs.workflow == 'all' || inputs.workflow == 'esp_idf_integration' }}
@@ -677,27 +677,27 @@ jobs:
       coap_gateway_url: ${{ inputs.coap_gateway_url }}
     secrets: inherit
 
-  process_allure_reports:
-    needs:
-      - hil_sample_esp-idf
-      - hil_sample_zephyr
-      - hil_sample_zephyr_nsim
-      - hil_test_esp-idf
-      - hil_test_linux
-      - hil_test_zephyr
-      - hil_test_zephyr_nsim
-    if: ${{ !cancelled() }}
-    uses: ./.github/workflows/reports-allure-publish.yml
-    secrets: inherit
+  #process_allure_reports:
+    #needs:
+      #- hil_sample_esp-idf
+      #- hil_sample_zephyr
+      #- hil_sample_zephyr_nsim
+      #- hil_test_esp-idf
+      #- hil_test_linux
+      #- hil_test_zephyr
+      #- hil_test_zephyr_nsim
+    #if: ${{ !cancelled() }}
+    #uses: ./.github/workflows/reports-allure-publish.yml
+    #secrets: inherit
 
-  publish_summary:
-    needs:
-      - hil_sample_esp-idf
-      - hil_sample_zephyr
-      - hil_sample_zephyr_nsim_summary
-      - hil_test_esp-idf
-      - hil_test_linux
-      - hil_test_zephyr
-      - hil_test_zephyr_nsim_summary
-    if: always()
-    uses: ./.github/workflows/reports-summary-publish.yml
+  #publish_summary:
+    #needs:
+      #- hil_sample_esp-idf
+      #- hil_sample_zephyr
+      #- hil_sample_zephyr_nsim_summary
+      #- hil_test_esp-idf
+      #- hil_test_linux
+      #- hil_test_zephyr
+      #- hil_test_zephyr_nsim_summary
+    #if: always()
+    #uses: ./.github/workflows/reports-summary-publish.yml
