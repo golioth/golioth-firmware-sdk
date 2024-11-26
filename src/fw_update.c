@@ -25,6 +25,12 @@ static golioth_fw_update_state_change_callback _state_callback;
 static void *_state_callback_arg;
 static struct golioth_fw_update_config _config;
 
+struct download_progress_context
+{
+    size_t bytes_downloaded;
+    golioth_sys_sha256_t sha;
+};
+
 static enum golioth_status fw_write_block_cb(const struct golioth_ota_component *component,
                                              uint32_t block_idx,
                                              uint8_t *block_buffer,
@@ -34,7 +40,7 @@ static enum golioth_status fw_write_block_cb(const struct golioth_ota_component 
                                              void *arg)
 {
     assert(arg);
-    size_t *bytes_downloaded = (size_t *) arg;
+    struct download_progress_context *ctx = (struct download_progress_context *) arg;
 
     GLTH_LOGI(TAG,
               "Received block %" PRIu32 "/%zu",
@@ -46,7 +52,8 @@ static enum golioth_status fw_write_block_cb(const struct golioth_ota_component 
                                                         negotiated_block_size * block_idx,
                                                         component->size);
 
-    *bytes_downloaded += block_buffer_len;
+    ctx->bytes_downloaded += block_buffer_len;
+    golioth_sys_sha256_update(ctx->sha, block_buffer, block_buffer_len);
 
     if (is_last)
     {
@@ -222,6 +229,8 @@ static void fw_update_thread(void *arg)
 
     fw_report_and_observe();
 
+    struct download_progress_context download_ctx;
+
     while (1)
     {
         GLTH_LOGI(TAG, "Waiting to receive OTA manifest");
@@ -243,16 +252,41 @@ static void fw_update_thread(void *arg)
                                             GOLIOTH_SYS_WAIT_FOREVER);
 
         uint64_t start_time_ms = golioth_sys_now_ms();
-        size_t bytes_downloaded = 0;
+        download_ctx.bytes_downloaded = 0;
+        uint32_t next_block = 0;
+        download_ctx.sha = golioth_sys_sha256_create();
 
-        int err = golioth_ota_download_component(_client,
-                                                 _main_component,
-                                                 NULL,
-                                                 fw_write_block_cb,
-                                                 (void *) &bytes_downloaded);
-        if (err != GOLIOTH_OK)
+        int err = GOLIOTH_ERR_FAIL;
+        while (err)
         {
-            GLTH_LOGE(TAG, "Firmware download failed");
+            err = golioth_ota_download_component(_client,
+                                                 _main_component,
+                                                 &next_block,
+                                                 fw_write_block_cb,
+                                                 (void *) &download_ctx);
+            if (err != GOLIOTH_OK)
+            {
+                GLTH_LOGI(TAG,
+                          "Failed to download block idx: %" PRIu32 "; status: %s; retrying",
+                          next_block,
+                          golioth_status_to_str(err));
+            }
+        }
+
+        uint8_t calc_sha256[32];
+        golioth_sys_sha256_finish(download_ctx.sha, calc_sha256);
+
+        if (memcmp(_main_component->hash, calc_sha256, sizeof(calc_sha256)) != 0)
+        {
+            GLTH_LOGE(TAG,
+                      "Firmware download failed; Recieved %u bytes but sha256 doesn't match",
+                      download_ctx.bytes_downloaded);
+
+            GLTH_LOG_BUFFER_HEXDUMP(TAG,
+                                    calc_sha256,
+                                    sizeof(calc_sha256),
+                                    GOLIOTH_DEBUG_LOG_LEVEL_DEBUG);
+
             fw_update_end();
 
             GLTH_LOGI(TAG, "State = Idle");
@@ -264,11 +298,18 @@ static void fw_update_thread(void *arg)
                                                 _main_component->version,
                                                 GOLIOTH_SYS_WAIT_FOREVER);
 
+            golioth_sys_sha256_destroy(download_ctx.sha);
             continue;
         }
+        else
+        {
+            golioth_sys_sha256_destroy(download_ctx.sha);
+            GLTH_LOGD(TAG, "SHA256 matches server");
+        }
+
         GLTH_LOGI(TAG,
                   "Successfully downloaded %zu bytes in %" PRIu64 " ms",
-                  bytes_downloaded,
+                  download_ctx.bytes_downloaded,
                   golioth_sys_now_ms() - start_time_ms);
 
         if (fw_update_validate() != GOLIOTH_OK)
