@@ -31,6 +31,7 @@ struct download_progress_context
     golioth_sys_sha256_t sha;
 };
 
+#define FW_MAX_BLOCK_RESUME_BEFORE_FAIL 15
 #define FW_UPDATE_RESUME_DELAY_S 15
 
 static enum golioth_status fw_write_block_cb(const struct golioth_ota_component *component,
@@ -302,7 +303,17 @@ static void fw_update_thread(void *arg)
         uint32_t next_block = 0;
         download_ctx.sha = golioth_sys_sha256_create();
 
-        int err = GOLIOTH_ERR_FAIL;
+        int err;
+
+        struct block_retry_cnt
+        {
+            uint32_t idx;
+            int count;
+        } block_retries;
+
+        block_retries.idx = 0;
+        block_retries.count = 0;
+
         while (1)
         {
             err = golioth_ota_download_component(_client,
@@ -311,14 +322,32 @@ static void fw_update_thread(void *arg)
                                                  fw_write_block_cb,
                                                  (void *) &download_ctx);
 
+            if (err == GOLIOTH_OK)
+            {
+                break;
+            }
+
             if (err == GOLIOTH_ERR_IO)
             {
                 GLTH_LOGE(TAG, "Failed to store OTA component");
                 break;
             }
 
-            if (err == GOLIOTH_OK)
+            if (block_retries.idx == next_block)
             {
+                block_retries.count++;
+            }
+            else
+            {
+                block_retries.idx = next_block;
+                block_retries.count = 1;
+            }
+
+            if (block_retries.count >= FW_MAX_BLOCK_RESUME_BEFORE_FAIL)
+            {
+                GLTH_LOGE(TAG,
+                          "Max resume count of %i for single block reached; aborting download.",
+                          block_retries.count);
                 break;
             }
             else
