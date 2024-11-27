@@ -103,13 +103,15 @@ void fw_update_cancel_rollback(void);
 /// Handle a single block of a new firmware image (e.g. write to flash
 /// in the secondary firmware slot).
 ///
+/// This function must return GOLIOTH_ERR_IO when there is an issue storing the block.
+///
 /// @param block The block data buffer
 /// @param block_size The block data size, in bytes
 /// @param offset The offset of this block in the overall firmware image
 /// @param total_size The total firmware image size
 ///
 /// @return GOLIOTH_OK - Block handled
-/// @return Otherwise - error handling block, abort firmware update
+/// @return GOLIOTH_ERR_IO - error handling block, abort firmware update
 enum golioth_status fw_update_handle_block(const uint8_t *block,
                                            size_t block_size,
                                            size_t offset,
