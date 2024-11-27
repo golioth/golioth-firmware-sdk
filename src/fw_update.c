@@ -31,6 +31,8 @@ struct download_progress_context
     golioth_sys_sha256_t sha;
 };
 
+#define FW_UPDATE_RESUME_DELAY_S 15
+
 static enum golioth_status fw_write_block_cb(const struct golioth_ota_component *component,
                                              uint32_t block_idx,
                                              uint8_t *block_buffer,
@@ -52,12 +54,15 @@ static enum golioth_status fw_write_block_cb(const struct golioth_ota_component 
                                                         negotiated_block_size * block_idx,
                                                         component->size);
 
-    ctx->bytes_downloaded += block_buffer_len;
-    golioth_sys_sha256_update(ctx->sha, block_buffer, block_buffer_len);
-
-    if (is_last)
+    if (status == GOLIOTH_OK)
     {
-        fw_update_post_download();
+        ctx->bytes_downloaded += block_buffer_len;
+        golioth_sys_sha256_update(ctx->sha, block_buffer, block_buffer_len);
+
+        if (is_last)
+        {
+            fw_update_post_download();
+        }
     }
 
     return status;
@@ -180,6 +185,47 @@ static void fw_report_and_observe(void)
     }
 }
 
+static enum golioth_status fw_verify_component_hash(
+    struct download_progress_context *ctx,
+    const uint8_t server_sha256[GOLIOTH_OTA_COMPONENT_BIN_HASH_LEN])
+{
+    uint8_t calc_sha256[GOLIOTH_OTA_COMPONENT_BIN_HASH_LEN];
+    golioth_sys_sha256_finish(ctx->sha, calc_sha256);
+
+    if (memcmp(server_sha256, calc_sha256, sizeof(calc_sha256)) == 0)
+    {
+        return GOLIOTH_OK;
+    }
+    else
+    {
+        GLTH_LOGE(TAG,
+                  "Firmware download failed; Recieved %u bytes but sha256 doesn't match",
+                  ctx->bytes_downloaded);
+
+        GLTH_LOG_BUFFER_HEXDUMP(TAG,
+                                calc_sha256,
+                                sizeof(calc_sha256),
+                                GOLIOTH_DEBUG_LOG_LEVEL_DEBUG);
+    }
+
+    return GOLIOTH_ERR_FAIL;
+}
+
+static void fw_download_failed(enum golioth_ota_reason reason)
+{
+
+    fw_update_end();
+
+    GLTH_LOGI(TAG, "State = Idle");
+    golioth_fw_update_report_state_sync(_client,
+                                        GOLIOTH_OTA_STATE_IDLE,
+                                        reason,
+                                        _config.fw_package_name,
+                                        _config.current_version,
+                                        _main_component->version,
+                                        GOLIOTH_SYS_WAIT_FOREVER);
+}
+
 static void fw_update_thread(void *arg)
 {
     // If it's the first time booting a new OTA image,
@@ -257,47 +303,54 @@ static void fw_update_thread(void *arg)
         download_ctx.sha = golioth_sys_sha256_create();
 
         int err = GOLIOTH_ERR_FAIL;
-        while (err)
+        while (1)
         {
             err = golioth_ota_download_component(_client,
                                                  _main_component,
                                                  &next_block,
                                                  fw_write_block_cb,
                                                  (void *) &download_ctx);
-            if (err != GOLIOTH_OK)
+
+            if (err == GOLIOTH_ERR_IO)
+            {
+                GLTH_LOGE(TAG, "Failed to store OTA component");
+                break;
+            }
+
+            if (err == GOLIOTH_OK)
+            {
+                break;
+            }
+            else
             {
                 GLTH_LOGI(TAG,
                           "Failed to download block idx: %" PRIu32 "; status: %s; retrying",
                           next_block,
                           golioth_status_to_str(err));
+
+                golioth_sys_msleep(FW_UPDATE_RESUME_DELAY_S * 1000);
             }
         }
 
-        uint8_t calc_sha256[32];
-        golioth_sys_sha256_finish(download_ctx.sha, calc_sha256);
-
-        if (memcmp(_main_component->hash, calc_sha256, sizeof(calc_sha256)) != 0)
+        if (err != GOLIOTH_OK)
         {
-            GLTH_LOGE(TAG,
-                      "Firmware download failed; Recieved %u bytes but sha256 doesn't match",
-                      download_ctx.bytes_downloaded);
+            switch (err)
+            {
+                case GOLIOTH_ERR_IO:
+                    fw_download_failed(GOLIOTH_OTA_REASON_NOT_ENOUGH_FLASH_MEMORY);
+                    break;
+                default:
+                    fw_download_failed(GOLIOTH_OTA_REASON_FIRMWARE_UPDATE_FAILED);
+                    break;
+            }
 
-            GLTH_LOG_BUFFER_HEXDUMP(TAG,
-                                    calc_sha256,
-                                    sizeof(calc_sha256),
-                                    GOLIOTH_DEBUG_LOG_LEVEL_DEBUG);
+            golioth_sys_sha256_destroy(download_ctx.sha);
+            continue;
+        }
 
-            fw_update_end();
-
-            GLTH_LOGI(TAG, "State = Idle");
-            golioth_fw_update_report_state_sync(_client,
-                                                GOLIOTH_OTA_STATE_IDLE,
-                                                GOLIOTH_OTA_REASON_FIRMWARE_UPDATE_FAILED,
-                                                _config.fw_package_name,
-                                                _config.current_version,
-                                                _main_component->version,
-                                                GOLIOTH_SYS_WAIT_FOREVER);
-
+        if (GOLIOTH_OK != fw_verify_component_hash(&download_ctx, _main_component->hash))
+        {
+            fw_download_failed(GOLIOTH_OTA_REASON_INTEGRITY_CHECK_FAILURE);
             golioth_sys_sha256_destroy(download_ctx.sha);
             continue;
         }
