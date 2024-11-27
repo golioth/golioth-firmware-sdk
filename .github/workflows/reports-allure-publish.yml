@@ -46,7 +46,7 @@ jobs:
           fi
 
       - name: Build Allure report
-        uses: szczys/allure-report-action@fix-workflow-url-when-hosted-remotely
+        uses: simple-elf/allure-report-action@v1
         if: always()
         with:
           gh_pages: ${{ env.GHPAGES_LABEL }}
