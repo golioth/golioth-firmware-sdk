@@ -51,7 +51,7 @@ enum golioth_status fw_update_handle_block(
         const struct image_header* header = (const struct image_header*)block;
         if (header->ih_magic != IMAGE_MAGIC) {
             GLTH_LOGE(TAG, "Image header invalid, IMAGE_MAGIC not found");
-            return GOLIOTH_ERR_FAIL;
+            return GOLIOTH_ERR_IO;
         }
 
         // Open secondary flash area
@@ -59,7 +59,7 @@ enum golioth_status fw_update_handle_block(
         status = flash_area_open(secondary_id, &_secondary_flash_area);
         if (status != 0) {
             GLTH_LOGE(TAG, "flash_area_open error: %d", status);
-            return GOLIOTH_ERR_FAIL;
+            return GOLIOTH_ERR_IO;
         }
 
         GLTH_LOGD(TAG, "Secondary flash area:");
@@ -75,7 +75,7 @@ enum golioth_status fw_update_handle_block(
         GLTH_LOGI(TAG, "Done erasing flash");
         if (status != 0) {
             GLTH_LOGE(TAG, "flash_area_erase error: %d", status);
-            return GOLIOTH_ERR_FAIL;
+            return GOLIOTH_ERR_IO;
         }
     }
 
@@ -83,7 +83,7 @@ enum golioth_status fw_update_handle_block(
     status = flash_area_write(_secondary_flash_area, offset, block, block_size);
     if (status != 0) {
         GLTH_LOGE(TAG, "flash_area_write error: %d", status);
-        return GOLIOTH_ERR_FAIL;
+        return GOLIOTH_ERR_IO;
     }
 
     return GOLIOTH_OK;
