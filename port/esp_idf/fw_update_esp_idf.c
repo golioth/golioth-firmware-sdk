@@ -68,7 +68,7 @@ enum golioth_status fw_update_handle_block(const uint8_t *block,
         {
             GLTH_LOGE(TAG, "esp_ota_begin failed (%s)", esp_err_to_name(err));
             esp_ota_abort(_update_handle);
-            return GOLIOTH_ERR_FAIL;
+            return GOLIOTH_ERR_IO;
         }
     }
 
@@ -77,7 +77,7 @@ enum golioth_status fw_update_handle_block(const uint8_t *block,
     {
         GLTH_LOGE(TAG, "esp_ota_write failed (%s)", esp_err_to_name(err));
         esp_ota_abort(_update_handle);
-        return GOLIOTH_ERR_FAIL;
+        return GOLIOTH_ERR_IO;
     }
 
     return GOLIOTH_OK;

@@ -207,7 +207,7 @@ enum golioth_status fw_update_handle_block(const uint8_t *block,
         err = flash_img_prepare(&_flash_img_context);
         if (err)
         {
-            return GOLIOTH_ERR_FAIL;
+            return GOLIOTH_ERR_IO;
         }
     }
 
@@ -215,7 +215,7 @@ enum golioth_status fw_update_handle_block(const uint8_t *block,
     if (err)
     {
         LOG_ERR("Failed to write to flash: %d", err);
-        return GOLIOTH_ERR_FAIL;
+        return GOLIOTH_ERR_IO;
     }
 
     return GOLIOTH_OK;
