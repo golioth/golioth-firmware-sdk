@@ -181,18 +181,22 @@ static bool received_new_target_component(const struct golioth_ota_manifest *man
             return true;
         }
     }
+    else
+    {
+        GLTH_LOGI(TAG,
+                  "Manifest does not contain target component: %s",
+                  ctx->config.fw_package_name);
+        /* TODO: Report state/reason here.
+         *  This can't be done directly because it would call a sync func from a callback
+         *  Consider adding a new reason code: GOLIOTH_OTA_REASON_COMPONENT_NOT_FOUND
+         */
+    }
+
     return false;
 }
 
-static void fw_report_and_observe(void)
+static void fw_register_observe(void)
 {
-    golioth_fw_update_report_state_sync(&_component_ctx,
-                                        GOLIOTH_OTA_STATE_IDLE,
-                                        GOLIOTH_OTA_REASON_READY,
-                                        true,
-                                        true,
-                                        false);
-
     enum golioth_status status = GOLIOTH_ERR_NULL;
     uint32_t retry_delay_s = 5;
 
@@ -294,9 +298,8 @@ static void fw_update_thread(void *arg)
             GLTH_LOGI(TAG, "Firmware updated successfully!");
             fw_update_cancel_rollback();
 
-            GLTH_LOGI(TAG, "State = Idle");
-            golioth_fw_update_report_state_sync(&_component_ctx,
-                                                GOLIOTH_OTA_STATE_IDLE,
+           golioth_fw_update_report_state_sync(&_component_ctx,
+                                                GOLIOTH_OTA_STATE_UPDATING,
                                                 GOLIOTH_OTA_REASON_FIRMWARE_UPDATED_SUCCESSFULLY,
                                                 true,
                                                 true,
@@ -304,12 +307,20 @@ static void fw_update_thread(void *arg)
         }
     }
 
-    fw_report_and_observe();
+    fw_register_observe();
 
     struct download_progress_context download_ctx;
 
     while (1)
     {
+        GLTH_LOGI(TAG, "State = Idle");
+        golioth_fw_update_report_state_sync(&_component_ctx,
+                                            GOLIOTH_OTA_STATE_IDLE,
+                                            GOLIOTH_OTA_REASON_READY,
+                                            true,
+                                            true,
+                                            true);
+
         GLTH_LOGI(TAG, "Waiting to receive OTA manifest");
         golioth_sys_sem_take(_manifest_rcvd, GOLIOTH_SYS_WAIT_FOREVER);
         GLTH_LOGI(TAG, "Received OTA manifest");
@@ -388,11 +399,25 @@ static void fw_update_thread(void *arg)
             else
             {
                 GLTH_LOGI(TAG,
-                          "Failed to download block idx: %" PRIu32 "; status: %s; retrying",
+                          "Block download failed at block idx: %" PRIu32 "; status: %s; resuming",
                           next_block,
                           golioth_status_to_str(err));
 
+                golioth_fw_update_report_state_sync(&_component_ctx,
+                                                    GOLIOTH_OTA_STATE_DOWNLOADING,
+                                                    GOLIOTH_OTA_REASON_BLOCK_FAILED,
+                                                    true,
+                                                    true,
+                                                    true);
+
                 golioth_sys_msleep(FW_UPDATE_RESUME_DELAY_S * 1000);
+
+                golioth_fw_update_report_state_sync(&_component_ctx,
+                                                    GOLIOTH_OTA_STATE_DOWNLOADING,
+                                                    GOLIOTH_OTA_REASON_RESUMING,
+                                                    true,
+                                                    true,
+                                                    true);
             }
         }
 
@@ -401,7 +426,7 @@ static void fw_update_thread(void *arg)
             switch (err)
             {
                 case GOLIOTH_ERR_IO:
-                    fw_download_failed(GOLIOTH_OTA_REASON_NOT_ENOUGH_FLASH_MEMORY);
+                    fw_download_failed(GOLIOTH_OTA_REASON_IO);
                     break;
                 default:
                     fw_download_failed(GOLIOTH_OTA_REASON_FIRMWARE_UPDATE_FAILED);
