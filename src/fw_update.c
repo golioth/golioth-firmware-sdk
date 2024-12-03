@@ -30,6 +30,7 @@ struct download_progress_context
 };
 
 static struct golioth_client *_client;
+static golioth_sys_mutex_t _manifest_update_mut;
 static golioth_sys_sem_t _manifest_rcvd;
 static struct golioth_ota_manifest _ota_manifest;
 static golioth_fw_update_state_change_callback _state_callback;
@@ -112,15 +113,11 @@ static void on_ota_manifest(struct golioth_client *client,
 
     GLTH_LOGD(TAG, "Received OTA manifest: %.*s", (int) payload_size, payload);
 
-    enum golioth_ota_state state = golioth_ota_get_state();
-    if (state == GOLIOTH_OTA_STATE_DOWNLOADING)
-    {
-        GLTH_LOGW(TAG, "Ignoring manifest while download in progress");
-        return;
-    }
-
+    golioth_sys_mutex_lock(_manifest_update_mut, GOLIOTH_SYS_WAIT_FOREVER);
     enum golioth_status parse_status =
         golioth_ota_payload_as_manifest(payload, payload_size, &_ota_manifest);
+    golioth_sys_mutex_unlock(_manifest_update_mut);
+
     if (parse_status != GOLIOTH_OK)
     {
         GLTH_LOGE(TAG, "Failed to parse manifest: %s", golioth_status_to_str(parse_status));
@@ -293,7 +290,12 @@ static void fw_update_thread(void *arg)
         golioth_sys_sem_take(_manifest_rcvd, GOLIOTH_SYS_WAIT_FOREVER);
         GLTH_LOGI(TAG, "Received OTA manifest");
 
-        if (!received_new_target_component(&_ota_manifest, &_component_ctx))
+        golioth_sys_mutex_lock(_manifest_update_mut, GOLIOTH_SYS_WAIT_FOREVER);
+        bool new_component_received =
+            received_new_target_component(&_ota_manifest, &_component_ctx);
+        golioth_sys_mutex_unlock(_manifest_update_mut);
+
+        if (!new_component_received)
         {
             GLTH_LOGI(TAG, "Manifest does not contain different firmware version. Nothing to do.");
             continue;
@@ -474,7 +476,8 @@ void golioth_fw_update_init_with_config(struct golioth_client *client,
 
     _client = client;
     _component_ctx.config = *config;
-    _manifest_rcvd = golioth_sys_sem_create(1, 0);  // never destroyed
+    _manifest_update_mut = golioth_sys_mutex_create();  // never destroyed
+    _manifest_rcvd = golioth_sys_sem_create(1, 0);      // never destroyed
 
     GLTH_LOGI(TAG,
               "Current firmware version: %s - %s",
