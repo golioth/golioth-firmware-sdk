@@ -223,9 +223,8 @@ static void fw_download_failed(enum golioth_ota_reason reason)
 
     fw_update_end();
 
-    GLTH_LOGI(TAG, "State = Idle");
     golioth_fw_update_report_state_sync(_client,
-                                        GOLIOTH_OTA_STATE_IDLE,
+                                        GOLIOTH_OTA_STATE_DOWNLOADING,
                                         reason,
                                         _component_ctx.config.fw_package_name,
                                         _component_ctx.config.current_version,
