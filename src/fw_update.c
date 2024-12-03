@@ -17,7 +17,8 @@
 
 LOG_TAG_DEFINE(golioth_fw_update);
 
-struct fw_update_component_context {
+struct fw_update_component_context
+{
     struct golioth_fw_update_config config;
     struct golioth_ota_component target_component;
 };
@@ -222,9 +223,8 @@ static void fw_download_failed(enum golioth_ota_reason reason)
 
     fw_update_end();
 
-    GLTH_LOGI(TAG, "State = Idle");
     golioth_fw_update_report_state_sync(_client,
-                                        GOLIOTH_OTA_STATE_IDLE,
+                                        GOLIOTH_OTA_STATE_DOWNLOADING,
                                         reason,
                                         _component_ctx.config.fw_package_name,
                                         _component_ctx.config.current_version,
@@ -476,7 +476,7 @@ void golioth_fw_update_init_with_config(struct golioth_client *client,
     _client = client;
     _component_ctx.config = *config;
     _manifest_update_mut = golioth_sys_mutex_create();  // never destroyed
-    _manifest_rcvd = golioth_sys_sem_create(1, 0);  // never destroyed
+    _manifest_rcvd = golioth_sys_sem_create(1, 0);      // never destroyed
 
     GLTH_LOGI(TAG,
               "Current firmware version: %s - %s",
