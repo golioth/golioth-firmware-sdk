@@ -68,6 +68,14 @@ enum golioth_ota_reason
     GOLIOTH_OTA_REASON_FIRMWARE_UPDATE_FAILED,
     /// Protocol not supported
     GOLIOTH_OTA_REASON_UNSUPPORTED_PROTOCOL,
+    /// IO error while trying to store component
+    GOLIOTH_OTA_REASON_IO,
+    /// Failure to download block
+    GOLIOTH_OTA_REASON_BLOCK_FAILED,
+    /// Resuming the interrupted download
+    GOLIOTH_OTA_REASON_RESUMING,
+    /// Will restart download (awaiting backoff delay)
+    GOLIOTH_OTA_REASON_AWAIT_RETRY,
 };
 
 /// A component/artifact within an OTA manifest
