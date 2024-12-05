@@ -51,8 +51,13 @@ struct golioth_coap_post_params
     uint8_t *payload;
     // Size of payload, in bytes
     size_t payload_size;
-    golioth_set_cb_fn callback;
+    union
+    {
+        golioth_set_cb_fn callback_set;
+        golioth_post_cb_fn callback_post;
+    };
     void *arg;
+    bool callback_is_post;
 };
 
 struct golioth_coap_post_block_params
@@ -173,6 +178,18 @@ void golioth_coap_next_token(uint8_t token[GOLIOTH_COAP_TOKEN_LEN]);
 enum golioth_status golioth_coap_client_empty(struct golioth_client *client,
                                               bool is_synchronous,
                                               int32_t timeout_s);
+
+enum golioth_status golioth_coap_client_post(struct golioth_client *client,
+                                             const uint8_t token[GOLIOTH_COAP_TOKEN_LEN],
+                                             const char *path_prefix,
+                                             const char *path,
+                                             enum golioth_content_type content_type,
+                                             const uint8_t *payload,
+                                             size_t payload_size,
+                                             golioth_post_cb_fn callback,
+                                             void *callback_arg,
+                                             bool is_synchronous,
+                                             int32_t timeout_s);
 
 enum golioth_status golioth_coap_client_set(struct golioth_client *client,
                                             const uint8_t token[GOLIOTH_COAP_TOKEN_LEN],

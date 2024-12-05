@@ -212,9 +212,26 @@ static coap_response_t coap_response_handler(coap_session_t *session,
             }
             else if (req->type == GOLIOTH_COAP_REQUEST_POST)
             {
-                if (req->post.callback)
+                if (req->post.callback_post)
                 {
-                    req->post.callback(client, status, &coap_rsp_code, req->path, req->post.arg);
+                    if (req->post.callback_is_post)
+                    {
+                        req->post.callback_post(client,
+                                                status,
+                                                &coap_rsp_code,
+                                                req->path,
+                                                data,
+                                                data_len,
+                                                req->post.arg);
+                    }
+                    else
+                    {
+                        req->post.callback_set(client,
+                                               status,
+                                               &coap_rsp_code,
+                                               req->path,
+                                               req->post.arg);
+                    }
                 }
             }
             else if (req->type == GOLIOTH_COAP_REQUEST_POST_BLOCK)
@@ -1076,9 +1093,26 @@ static enum golioth_status coap_io_loop_once(struct golioth_client *client,
                                            false,
                                            request_msg.get_block.arg);
         }
-        else if (request_msg.type == GOLIOTH_COAP_REQUEST_POST && request_msg.post.callback)
+        else if (request_msg.type == GOLIOTH_COAP_REQUEST_POST && request_msg.post.callback_post)
         {
-            request_msg.post.callback(client, status, NULL, request_msg.path, request_msg.post.arg);
+            if (request_msg.post.callback_is_post)
+            {
+                request_msg.post.callback_post(client,
+                                               status,
+                                               NULL,
+                                               request_msg.path,
+                                               NULL,
+                                               0,
+                                               request_msg.post.arg);
+            }
+            else
+            {
+                request_msg.post.callback_set(client,
+                                              status,
+                                              NULL,
+                                              request_msg.path,
+                                              request_msg.post.arg);
+            }
         }
         else if (request_msg.type == GOLIOTH_COAP_REQUEST_POST_BLOCK
                  && request_msg.post_block.callback)
