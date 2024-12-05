@@ -16,8 +16,7 @@ struct golioth_client
     golioth_coap_request_msg_t *pending_req;
     golioth_coap_observe_info_t observations[CONFIG_GOLIOTH_MAX_NUM_OBSERVATIONS];
     // token to use for block GETs (must use same token for all blocks)
-    uint8_t block_token[8];
-    size_t block_token_len;
+    uint64_t block_token;
     golioth_client_event_cb_fn event_callback;
     void *event_callback_arg;
 };

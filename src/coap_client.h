@@ -117,8 +117,7 @@ typedef struct
     // Assumption: path_prefix is a string literal (i.e. we don't need to strcpy).
     const char *path_prefix;
     char path[CONFIG_GOLIOTH_COAP_MAX_PATH_LEN + 1];
-    uint8_t token[8];
-    size_t token_len;
+    uint64_t token;
     golioth_coap_request_type_t type;
     union
     {
@@ -229,8 +228,7 @@ enum golioth_status golioth_coap_client_observe_release(struct golioth_client *c
                                                         const char *path_prefix,
                                                         const char *path,
                                                         enum golioth_content_type content_type,
-                                                        uint8_t *token,
-                                                        size_t token_len,
+                                                        uint64_t token,
                                                         void *arg);
 
 void golioth_coap_client_cancel_all_observations(struct golioth_client *client);
