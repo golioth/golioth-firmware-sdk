@@ -1,0 +1,14 @@
+sample:
+  description: Location WiFi
+  name: location wifi
+common:
+  build_only: true
+  tags:
+    - golioth
+    - location
+    - socket
+tests:
+  sample.golioth.location_wifi:
+    platform_allow:
+      - esp32_devkitc_wrover/esp32/procpu
+      - nrf52840dk/nrf52840
