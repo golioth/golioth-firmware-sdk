@@ -257,13 +257,26 @@ static int golioth_coap_cb(struct golioth_req_rsp *rsp)
             }
             break;
         case GOLIOTH_COAP_REQUEST_POST:
-            if (req->post.callback)
+            if (req->post.callback_post)
             {
-                req->post.callback(client,
-                                   rsp->status,
-                                   golioth_ptr_to_rsp_code(rsp),
-                                   req->path,
-                                   req->post.arg);
+                if (req->post.callback_is_post)
+                {
+                    req->post.callback_post(client,
+                                            rsp->status,
+                                            golioth_ptr_to_rsp_code(rsp),
+                                            req->path,
+                                            rsp->data,
+                                            rsp->len,
+                                            req->post.arg);
+                }
+                else
+                {
+                    req->post.callback_set(client,
+                                           rsp->status,
+                                           golioth_ptr_to_rsp_code(rsp),
+                                           req->path,
+                                           req->post.arg);
+                }
             }
             break;
         case GOLIOTH_COAP_REQUEST_POST_BLOCK:
