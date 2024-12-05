@@ -148,7 +148,7 @@ int main(void)
 {
     LOG_DBG("Start LightDB get sample");
 
-    IF_ENABLED(CONFIG_GOLIOTH_SAMPLE_COMMON, (net_connect();))
+    net_connect();
 
     /* Note: In production, you would provision unique credentials onto each
      * device. For simplicity, we provide a utility to hardcode credentials as
