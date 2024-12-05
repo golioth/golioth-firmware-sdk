@@ -366,12 +366,14 @@ static int golioth_coap_get_block(golioth_coap_request_msg_t *req)
     if (first)
     {
         /* Save token for subsequent block requests */
-        client->block_token_len = coap_header_get_token(&coap_req->request, client->block_token);
+        coap_header_get_token(&coap_req->request, (uint8_t *) &client->block_token);
     }
     else
     {
         /* Override tokeń with the one geenrated in first block request */
-        memcpy(&coap_req->request.data[4], client->block_token, client->block_token_len);
+        memcpy(&coap_req->request.data[4],
+               (uint8_t *) &client->block_token,
+               sizeof(client->block_token));
     }
 
     err = coap_packet_append_uri_path_from_pathv(&coap_req->request, pathv);
@@ -431,12 +433,14 @@ static int golioth_coap_post_block(golioth_coap_request_msg_t *req)
     if (first)
     {
         /* Save token for subsequent block requests */
-        client->block_token_len = coap_header_get_token(&coap_req->request, client->block_token);
+        coap_header_get_token(&coap_req->request, (uint8_t *) &client->block_token);
     }
     else
     {
         /* Override token with the one geenrated in first block request */
-        memcpy(&coap_req->request.data[4], client->block_token, client->block_token_len);
+        memcpy(&coap_req->request.data[4],
+               (uint8_t *) &client->block_token,
+               sizeof(client->block_token));
     }
 
     err = coap_packet_append_uri_path_from_pathv(&coap_req->request, pathv);
@@ -595,8 +599,8 @@ static int golioth_deregister_observation(golioth_coap_request_msg_t *req,
                            sizeof(buffer),
                            COAP_VERSION_1,
                            COAP_TYPE_CON,
-                           req->token_len,
-                           req->token,
+                           sizeof(req->token),
+                           (uint8_t *) &req->token,
                            COAP_METHOD_GET,
                            coap_next_id());
     if (err)

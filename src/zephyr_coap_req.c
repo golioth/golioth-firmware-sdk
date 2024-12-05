@@ -762,8 +762,8 @@ static int __golioth_coap_req_find_and_cancel_observation(
         if ((req->user_data == cancel_req_msg) && (req->is_observe))
         {
             int err;
-            uint8_t coap_token[COAP_TOKEN_MAX_LEN];
-            size_t coap_token_len = coap_header_get_token(&req->request, coap_token);
+            uint64_t coap_token;
+            size_t coap_token_len = coap_header_get_token(&req->request, (uint8_t *) &coap_token);
             int coap_content_format = coap_get_option_int(&req->request, COAP_OPTION_ACCEPT);
 
             if (coap_token_len == 0)
@@ -788,7 +788,6 @@ static int __golioth_coap_req_find_and_cancel_observation(
                                                       req_msg->path,
                                                       coap_content_format,
                                                       coap_token,
-                                                      coap_token_len,
                                                       NULL);
             if (err)
             {

@@ -24,8 +24,7 @@ static bool _initialized;
 static bool token_matches_request(const golioth_coap_request_msg_t *req, const coap_pdu_t *pdu)
 {
     coap_bin_const_t rcvd_token = coap_pdu_get_token(pdu);
-    bool len_matches = (rcvd_token.length == req->token_len);
-    return (len_matches && (0 == memcmp(rcvd_token.s, req->token, req->token_len)));
+    return (0 == (memcmp(rcvd_token.s, (uint8_t *) &req->token, rcvd_token.length)));
 }
 
 static void notify_observers(const coap_pdu_t *received,
@@ -47,9 +46,7 @@ static void notify_observers(const coap_pdu_t *received,
         }
 
         coap_bin_const_t rcvd_token = coap_pdu_get_token(received);
-        bool len_matches = (rcvd_token.length == obs_info->req.token_len);
-        if (len_matches
-            && (0 == memcmp(rcvd_token.s, obs_info->req.token, obs_info->req.token_len)))
+        if (0 == (memcmp(rcvd_token.s, (uint8_t *) &obs_info->req.token, rcvd_token.length)))
         {
             callback(client,
                      status,
@@ -372,8 +369,9 @@ static void golioth_coap_add_token(coap_pdu_t *req_pdu,
                                    golioth_coap_request_msg_t *req,
                                    coap_session_t *session)
 {
-    coap_session_new_token(session, &req->token_len, req->token);
-    coap_add_token(req_pdu, req->token_len, req->token);
+    size_t len;
+    coap_session_new_token(session, &len, (uint8_t *) &req->token);
+    coap_add_token(req_pdu, len, (uint8_t *) &req->token);
 }
 
 static void golioth_coap_add_path(coap_pdu_t *request, const char *path_prefix, const char *path)
@@ -525,17 +523,15 @@ static void golioth_coap_get_block(golioth_coap_request_msg_t *req,
     {
         // Save this token for further blocks
         golioth_coap_add_token(req_pdu, req, session);
-        memcpy(client->block_token, req->token, req->token_len);
-        client->block_token_len = req->token_len;
+        client->block_token = req->token;
     }
     else
     {
-        coap_add_token(req_pdu, client->block_token_len, client->block_token);
+        coap_add_token(req_pdu, sizeof(client->block_token), (uint8_t *) &client->block_token);
 
         // Copy block token into the current req_pdu token, since this is what
         // is checked in coap_response_handler to verify the response has been received.
-        memcpy(req->token, client->block_token, client->block_token_len);
-        req->token_len = client->block_token_len;
+        req->token = client->block_token;
     }
 
     golioth_coap_add_path(req_pdu, req->path_prefix, req->path);
@@ -575,17 +571,15 @@ static void golioth_coap_post_block(golioth_coap_request_msg_t *req,
     {
         // Save this token for further blocks
         golioth_coap_add_token(req_pdu, req, session);
-        memcpy(client->block_token, req->token, req->token_len);
-        client->block_token_len = req->token_len;
+        client->block_token = req->token;
     }
     else
     {
-        coap_add_token(req_pdu, client->block_token_len, client->block_token);
+        coap_add_token(req_pdu, sizeof(client->block_token), (uint8_t *) &client->block_token);
 
         // Copy block token into the current req_pdu token, since this is what
         // is checked in coap_response_handler to verify the response has been received.
-        memcpy(req->token, client->block_token, client->block_token_len);
-        req->token_len = client->block_token_len;
+        req->token = client->block_token;
     }
 
     golioth_coap_add_path(req_pdu, req->path_prefix, req->path);
@@ -629,7 +623,7 @@ static enum golioth_status golioth_coap_observe(golioth_coap_request_msg_t *req,
 
     if (eager_release)
     {
-        coap_add_token(req_pdu, req->token_len, req->token);
+        coap_add_token(req_pdu, sizeof(req->token), (uint8_t *) &req->token);
 
         coap_add_option(req_pdu,
                         COAP_OPTION_OBSERVE,
@@ -718,7 +712,6 @@ void golioth_cancel_all_observations_by_prefix(struct golioth_client *client, co
                                                 obs_info->req.path,
                                                 obs_info->req.observe.content_type,
                                                 obs_info->req.token,
-                                                obs_info->req.token_len,
                                                 NULL);
         }
     }

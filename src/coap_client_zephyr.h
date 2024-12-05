@@ -77,8 +77,7 @@ struct golioth_client
     struct golioth_client_config config;
     golioth_coap_observe_info_t observations[CONFIG_GOLIOTH_MAX_NUM_OBSERVATIONS];
     // token to use for block GETs (must use same token for all blocks)
-    uint8_t block_token[8];
-    size_t block_token_len;
+    uint64_t block_token;
 
     struct golioth_tls tls;
     uint8_t *rx_buffer;

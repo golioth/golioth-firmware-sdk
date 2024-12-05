@@ -639,8 +639,7 @@ enum golioth_status golioth_coap_client_observe_release(struct golioth_client *c
                                                         const char *path_prefix,
                                                         const char *path,
                                                         enum golioth_content_type content_type,
-                                                        uint8_t *token,
-                                                        size_t token_len,
+                                                        uint64_t token,
                                                         void *arg)
 {
     if (!client || !path)
@@ -675,9 +674,7 @@ enum golioth_status golioth_coap_client_observe_release(struct golioth_client *c
     }
     strncpy(request_msg.path, path, sizeof(request_msg.path) - 1);
 
-    size_t t_len = min(token_len, sizeof(request_msg.token));
-    memcpy(request_msg.token, token, t_len);
-    request_msg.token_len = t_len;
+    request_msg.token = token;
 
     bool sent = golioth_mbox_try_send(client->request_queue, &request_msg);
     if (!sent)
