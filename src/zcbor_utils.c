@@ -52,6 +52,19 @@ int zcbor_map_int64_decode(zcbor_state_t *zsd, void *value)
     return 0;
 }
 
+int zcbor_map_float_decode(zcbor_state_t *zsd, void *value)
+{
+    bool ok;
+
+    ok = zcbor_float_decode(zsd, value);
+    if (!ok)
+    {
+        return -EBADMSG;
+    }
+
+    return 0;
+}
+
 int zcbor_map_tstr_decode(zcbor_state_t *zsd, void *value)
 {
     bool ok;
