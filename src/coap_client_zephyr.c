@@ -263,6 +263,8 @@ static int golioth_coap_cb(struct golioth_req_rsp *rsp)
                                    rsp->status,
                                    golioth_ptr_to_rsp_code(rsp),
                                    req->path,
+                                   rsp->data,
+                                   rsp->len,
                                    req->post.arg);
             }
             break;
@@ -284,6 +286,8 @@ static int golioth_coap_cb(struct golioth_req_rsp *rsp)
                                      rsp->status,
                                      golioth_ptr_to_rsp_code(rsp),
                                      req->path,
+                                     rsp->data,
+                                     rsp->len,
                                      req->delete.arg);
             }
             break;

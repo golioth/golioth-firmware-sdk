@@ -252,7 +252,7 @@ enum golioth_status golioth_blockwise_post(struct golioth_client *client,
 
         if (status != GOLIOTH_OK)
         {
-            set_cb(client, status, NULL, path, callback_arg);
+            set_cb(client, status, NULL, path, NULL, 0, callback_arg);
         }
         else
         {
@@ -262,7 +262,7 @@ enum golioth_status golioth_blockwise_post(struct golioth_client *client,
             {
                 rsp_code = &ctx->coap_rsp_code;
             }
-            set_cb(client, ctx->status, rsp_code, path, callback_arg);
+            set_cb(client, ctx->status, rsp_code, path, NULL, 0, callback_arg);
         }
     }
 

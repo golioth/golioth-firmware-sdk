@@ -219,6 +219,8 @@ typedef void (*golioth_set_cb_fn)(struct golioth_client *client,
                                   enum golioth_status status,
                                   const struct golioth_coap_rsp_code *coap_rsp_code,
                                   const char *path,
+                                  const uint8_t *payload,
+                                  size_t payload_size,
                                   void *arg);
 
 /// Create a Golioth client
