@@ -117,7 +117,7 @@ static enum golioth_status golioth_coap_client_set_internal(struct golioth_clien
                                                             const char *path,
                                                             const uint8_t *payload,
                                                             size_t payload_size,
-                                                            golioth_coap_request_type_t type,
+                                                            enum golioth_coap_request_type type,
                                                             void *request_params,
                                                             bool is_synchronous,
                                                             int32_t timeout_s)
@@ -431,7 +431,7 @@ enum golioth_status golioth_coap_client_delete(struct golioth_client *client,
 static enum golioth_status golioth_coap_client_get_internal(struct golioth_client *client,
                                                             const char *path_prefix,
                                                             const char *path,
-                                                            golioth_coap_request_type_t type,
+                                                            enum golioth_coap_request_type type,
                                                             void *request_params,
                                                             bool is_synchronous,
                                                             int32_t timeout_s)
