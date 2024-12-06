@@ -96,8 +96,16 @@ int main(void)
 
     k_sem_take(&connected, K_FOREVER);
 
+
+    // This is required for the demo, but might not be required long term and the callback 
+    // is captured by the SDK
     golioth_rpc_register(rpc, "query", on_query, NULL);
+
+
+    // Register the rpc itself and the parameters individually
     int err = golioth_rpc_register(rpc, "multiply", on_multiply, NULL);
+    golioth_rpc_add_param_info(rpc,"multiply", "int_a",GOLIOTH_RPC_PARAM_TYPE_NUM);
+    golioth_rpc_add_param_info(rpc,"multiply", "int_b",GOLIOTH_RPC_PARAM_TYPE_NUM);
 
     if (err)
     {

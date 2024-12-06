@@ -199,23 +199,42 @@ static void on_rpc(struct golioth_client *client,
 
         if (strncmp(matching_rpc->method, QUERY_METHOD, strlen(QUERY_METHOD)) == 0)
         {
-            GLTH_LOGW(TAG, "Found query");
+            GLTH_LOGW(TAG, "Found query from SDK");
 
             for (int i = 0; i < grpc->num_rpcs; i++)
             {
                 const struct golioth_rpc_method *rpc = &grpc->rpcs[i];
-                if (rpc->params)
-                {
-                    GLTH_LOGW(TAG, "param_name: %s", rpc->params->name);
-                }
+
+                // Open the map
+
                 ok = zcbor_tstr_encode_ptr(zse, rpc->method, strlen(rpc->method))
-                    && zcbor_map_start_encode(zse, SIZE_MAX)
-                    /* TODO: Develop a way to add parameter information */
-                    /*&& zcbor_tstr_put_lit(zse, "int_a")*/
-                    /*&& zcbor_uint64_put(zse, 2)*/
-                    /*&& zcbor_tstr_put_lit(zse, "int_b")*/
-                    /*&& zcbor_uint64_put(zse, 2)*/
-                    && zcbor_map_end_encode(zse, SIZE_MAX);
+                    && zcbor_map_start_encode(zse, SIZE_MAX);
+
+                if (!ok)
+                {
+                    GLTH_LOGE(TAG, "Did not encode CBOR method entry");
+                    return;
+                }
+
+                // Crawl the params and add to zcbor map
+
+                struct golioth_rpc_method_param *cur_node = rpc->params;
+
+                // Cycle through cur_node until you find one with a null 'next'
+                while(cur_node)
+                {
+                    GLTH_LOGW(TAG, "param_name: %s", cur_node->name);
+                    ok = zcbor_tstr_encode_ptr(zse, cur_node->name,strlen(cur_node->name))
+                    && zcbor_uint64_put(zse, cur_node->type);
+                    if (!ok)
+                    {
+                        GLTH_LOGE(TAG, "Did not encode CBOR method entry");
+                        return;
+                    }
+                    cur_node = cur_node->next;
+                }
+
+                ok = zcbor_map_end_encode(zse, SIZE_MAX);
 
                 if (!ok)
                 {
@@ -339,23 +358,69 @@ enum golioth_status golioth_rpc_add_param_info(struct golioth_rpc *grpc,
                                                const enum golioth_rpc_param_type p_type)
 {
 
+    struct golioth_rpc_method *matching_rpc = NULL;
+
     /* crawl grpc and find the method */
+    for (int i = 0; i < grpc->num_rpcs; i++)
+    {
+        const struct golioth_rpc_method *rpc = &grpc->rpcs[i];
+        // GLTH_LOGW(TAG, "RPC add param: %s", rpc->method);
+        // GLTH_LOGD(TAG, "RPC add param: %s", method);
+        if (strncmp(rpc->method, method, strlen(method)) == 0)
+        {
+            GLTH_LOGW(TAG, "Found RPC: %s", rpc->method);
+            GLTH_LOGW(TAG, "Loop: %d", i);
+            matching_rpc = rpc;
+            break;
+        }
+    }
 
-    /* golioth_sys_malloc() a golioth_rpc_method_param struct */
-    struct golioth_rpc_method_param *param =
-        golioth_sys_malloc(sizeof(struct golioth_rpc_method_param));
+    if (matching_rpc)
+    {
 
-    param->name = param_name;
+        /* golioth_sys_malloc() a golioth_rpc_method_param struct */
+        struct golioth_rpc_method_param *param =
+            golioth_sys_malloc(sizeof(struct golioth_rpc_method_param));
 
-    /* set the members of your newly allocated stuct */
+        param->name = param_name;
 
+        /* set the members of your newly allocated stuct 
+            struct golioth_rpc_method_param
+            {
+                const char *name;
+                enum golioth_rpc_param_type type;
+                struct golioth_rpc_method_param *next;
+            };
+        */
+        param->type = p_type;
+        param->next = NULL;
 
-    /* Assign the pointer to the struct
-     *    if the method has a null pointer to param, assign it there
-     *    otherwise, crawl the linked list and assign it to the last one.
-     */
+        if(!matching_rpc->params)
+        {   
+            // If matching_rpc doesn't have param created above
+            matching_rpc->params = param;
+        }
+        else
+        {
+            // If matching_rpc does have param, find an empty slot at the end
+            struct golioth_rpc_method_param *cur_node = matching_rpc->params;
 
-    return GOLIOTH_OK;
+            // Cycle through cur_node until you find one with a null 'next'
+            while(cur_node->next)
+            {
+                cur_node = cur_node->next;
+            }
+            // Now that you've found the end of the linked list, put param at the back
+            cur_node->next = param;
+        }
+        return GOLIOTH_OK;
+    }
+    else
+    {
+        GLTH_LOGW(TAG, "Method not recognized: %s",method);
+        return GOLIOTH_ERR_INVALID_FORMAT;
+    }
+
 }
 
 #endif  // CONFIG_GOLIOTH_RPC

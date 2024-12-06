@@ -48,8 +48,15 @@ enum golioth_rpc_param_type {
     GOLIOTH_RPC_PARAM_TYPE_NONE = 0,
     GOLIOTH_RPC_PARAM_TYPE_BOOL = 1,
     GOLIOTH_RPC_PARAM_TYPE_NUM = 2,
-    GOLIOTH_RPC_PARAM_TYPE_INT = 3,
+    GOLIOTH_RPC_PARAM_TYPE_STR = 3,
 };
+
+// Prototype for add param info
+enum golioth_status golioth_rpc_add_param_info(struct golioth_rpc *grpc,
+                                               const char *method,
+                                               const char *param_name,
+                                               const enum golioth_rpc_param_type p_type);
+
 
 /// Callback function type for remote procedure call
 ///
