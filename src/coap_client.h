@@ -97,7 +97,7 @@ struct golioth_coap_observe_params
     void *arg;
 };
 
-typedef enum
+enum golioth_coap_request_type
 {
     GOLIOTH_COAP_REQUEST_EMPTY,
     GOLIOTH_COAP_REQUEST_GET,
@@ -107,7 +107,7 @@ typedef enum
     GOLIOTH_COAP_REQUEST_DELETE,
     GOLIOTH_COAP_REQUEST_OBSERVE,
     GOLIOTH_COAP_REQUEST_OBSERVE_RELEASE,
-} golioth_coap_request_type_t;
+};
 
 struct golioth_coap_request_msg
 {
@@ -119,7 +119,7 @@ struct golioth_coap_request_msg
     char path[CONFIG_GOLIOTH_COAP_MAX_PATH_LEN + 1];
     uint8_t token[8];
     size_t token_len;
-    golioth_coap_request_type_t type;
+    enum golioth_coap_request_type type;
     union
     {
         struct golioth_coap_get_params get;
