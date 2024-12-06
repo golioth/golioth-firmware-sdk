@@ -518,7 +518,7 @@ static int golioth_coap_observe(struct golioth_coap_request_msg *req, struct gol
 static int add_observation(struct golioth_coap_request_msg *req, struct golioth_client *client)
 {
     // scan for available (not used) observation slot
-    golioth_coap_observe_info_t *obs_info = NULL;
+    struct golioth_coap_observe_info *obs_info = NULL;
     bool found_slot = false;
     for (int i = 0; i < CONFIG_GOLIOTH_MAX_NUM_OBSERVATIONS; i++)
     {
@@ -557,7 +557,7 @@ void golioth_cancel_all_observations_by_prefix(struct golioth_client *client, co
 {
     for (int i = 0; i < CONFIG_GOLIOTH_MAX_NUM_OBSERVATIONS; i++)
     {
-        golioth_coap_observe_info_t *obs_info = &client->observations[i];
+        struct golioth_coap_observe_info *obs_info = &client->observations[i];
         if (obs_info->in_use)
         {
             if ((prefix != NULL) && (strcmp(prefix, obs_info->req.path_prefix) != 0))
@@ -638,7 +638,7 @@ static int golioth_deregister_observation(struct golioth_coap_request_msg *req,
 
 static void reestablish_observations(struct golioth_client *client)
 {
-    golioth_coap_observe_info_t *obs_info = NULL;
+    struct golioth_coap_observe_info *obs_info = NULL;
     for (int i = 0; i < CONFIG_GOLIOTH_MAX_NUM_OBSERVATIONS; i++)
     {
         obs_info = &client->observations[i];
