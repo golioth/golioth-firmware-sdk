@@ -36,6 +36,8 @@ LOG_TAG_DEFINE(golioth_rpc);
 
 #define GOLIOTH_RPC_PATH_PREFIX ".rpc/"
 
+#define QUERY_METHOD "query"
+
 /// Private struct to contain data about a single registered method
 struct golioth_rpc_method
 {
@@ -130,7 +132,7 @@ static void on_rpc(struct golioth_client *client,
 
     /* Start encoding response */
     static uint8_t response_buf[CONFIG_GOLIOTH_RPC_MAX_RESPONSE_LEN];
-    ZCBOR_STATE_E(zse, 1, response_buf, sizeof(response_buf), 1);
+    ZCBOR_STATE_E(zse, 2, response_buf, sizeof(response_buf), 1);
 
     ok = zcbor_map_start_encode(zse, 1);
     if (!ok)
@@ -154,11 +156,11 @@ static void on_rpc(struct golioth_client *client,
     for (int i = 0; i < grpc->num_rpcs; i++)
     {
         const struct golioth_rpc_method *rpc = &grpc->rpcs[i];
+        GLTH_LOGW(TAG, "RPC: %s", rpc->method);
         if (strlen(rpc->method) == method.len
             && strncmp(rpc->method, (char *) method.value, method.len) == 0)
         {
             matching_rpc = rpc;
-            break;
         }
     }
 
@@ -184,7 +186,35 @@ static void on_rpc(struct golioth_client *client,
             return;
         }
 
-        rpc_status = matching_rpc->callback(&params_zsd, zse, matching_rpc->callback_arg);
+        if (strncmp(matching_rpc->method, QUERY_METHOD, strlen(QUERY_METHOD)) == 0)
+        {
+            GLTH_LOGW(TAG, "Found query");
+
+            for (int i = 0; i < grpc->num_rpcs; i++)
+            {
+                const struct golioth_rpc_method *rpc = &grpc->rpcs[i];
+                ok = zcbor_tstr_encode_ptr(zse, rpc->method, strlen(rpc->method))
+                    && zcbor_map_start_encode(zse, SIZE_MAX)
+                    /* TODO: Develop a way to add parameter information */
+                    /*&& zcbor_tstr_put_lit(zse, "int_a")*/
+                    /*&& zcbor_uint64_put(zse, 2)*/
+                    /*&& zcbor_tstr_put_lit(zse, "int_b")*/
+                    /*&& zcbor_uint64_put(zse, 2)*/
+                    && zcbor_map_end_encode(zse, SIZE_MAX);
+
+                if (!ok)
+                {
+                    GLTH_LOGE(TAG, "Did not encode CBOR method entry");
+                    return;
+                }
+            }
+
+            rpc_status = GOLIOTH_RPC_OK;
+        }
+        else
+        {
+            rpc_status = matching_rpc->callback(&params_zsd, zse, matching_rpc->callback_arg);
+        }
 
         GLTH_LOGD(TAG, "RPC status code %d for call id :%.*s", rpc_status, (int) id.len, id.value);
 
