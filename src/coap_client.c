@@ -203,14 +203,14 @@ static enum golioth_status golioth_coap_client_set_internal(struct golioth_clien
 
     if (type == GOLIOTH_COAP_REQUEST_POST_BLOCK)
     {
-        request_msg.post_block = *(golioth_coap_post_block_params_t *) request_params;
+        request_msg.post_block = *(struct golioth_coap_post_block_params *) request_params;
         request_msg.post_block.payload = request_payload;
         request_msg.post_block.payload_size = payload_size;
     }
     else
     {
         assert(type == GOLIOTH_COAP_REQUEST_POST);
-        request_msg.post = *(golioth_coap_post_params_t *) request_params;
+        request_msg.post = *(struct golioth_coap_post_params *) request_params;
         request_msg.post.payload = request_payload;
         request_msg.post.payload_size = payload_size;
     }
@@ -272,7 +272,7 @@ enum golioth_status golioth_coap_client_set(struct golioth_client *client,
                                             bool is_synchronous,
                                             int32_t timeout_s)
 {
-    golioth_coap_post_params_t params = {
+    struct golioth_coap_post_params params = {
         .content_type = content_type,
         .callback = callback,
         .arg = callback_arg,
@@ -302,7 +302,7 @@ enum golioth_status golioth_coap_client_set_block(struct golioth_client *client,
                                                   bool is_synchronous,
                                                   int32_t timeout_s)
 {
-    golioth_coap_post_block_params_t params = {
+    struct golioth_coap_post_block_params params = {
         .is_last = is_last,
         .content_type = content_type,
         .block_index = block_index,
@@ -489,12 +489,12 @@ static enum golioth_status golioth_coap_client_get_internal(struct golioth_clien
     request_msg.ageout_ms = ageout_ms;
     if (type == GOLIOTH_COAP_REQUEST_GET_BLOCK)
     {
-        request_msg.get_block = *(golioth_coap_get_block_params_t *) request_params;
+        request_msg.get_block = *(struct golioth_coap_get_block_params *) request_params;
     }
     else
     {
         assert(type == GOLIOTH_COAP_REQUEST_GET);
-        request_msg.get = *(golioth_coap_get_params_t *) request_params;
+        request_msg.get = *(struct golioth_coap_get_params *) request_params;
     }
 
     bool sent = golioth_mbox_try_send(client->request_queue, &request_msg);
@@ -544,7 +544,7 @@ enum golioth_status golioth_coap_client_get(struct golioth_client *client,
                                             bool is_synchronous,
                                             int32_t timeout_s)
 {
-    golioth_coap_get_params_t params = {
+    struct golioth_coap_get_params params = {
         .content_type = content_type,
         .callback = callback,
         .arg = arg,
@@ -569,7 +569,7 @@ enum golioth_status golioth_coap_client_get_block(struct golioth_client *client,
                                                   bool is_synchronous,
                                                   int32_t timeout_s)
 {
-    golioth_coap_get_block_params_t params = {
+    struct golioth_coap_get_block_params params = {
         .content_type = content_type,
         .block_index = block_index,
         .block_size = block_size,
