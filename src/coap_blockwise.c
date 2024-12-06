@@ -22,6 +22,7 @@ struct blockwise_transfer
     bool is_last;
     enum golioth_content_type content_type;
     golioth_sys_sem_t sem;
+    uint8_t token[GOLIOTH_COAP_TOKEN_LEN];
     uint32_t block_idx;
     /* Negotiated block size */
     size_t block_size;
@@ -76,6 +77,7 @@ static void blockwise_upload_init(struct blockwise_transfer *ctx,
     ctx->block_buffer = data_buf;
     ctx->callback_arg = callback_arg;
     ctx->callback.read_cb = cb;
+    golioth_coap_next_token(ctx->token);
 }
 
 // Blockwise upload's internal callback function that the COAP client calls
@@ -149,6 +151,7 @@ static enum golioth_status upload_single_block(struct golioth_client *client,
     };
 
     enum golioth_status err = golioth_coap_client_set_block(client,
+                                                            ctx->token,
                                                             ctx->path_prefix,
                                                             ctx->path,
                                                             ctx->is_last,
@@ -301,6 +304,7 @@ static void blockwise_download_init(struct blockwise_transfer *ctx,
     ctx->block_buffer = data_buf;
     ctx->callback_arg = callback_arg;
     ctx->callback.write_cb = cb;
+    golioth_coap_next_token(ctx->token);
 }
 
 // Function to call the application's write block callback after a successful
@@ -363,6 +367,7 @@ static enum golioth_status download_single_block(struct golioth_client *client,
     };
 
     enum golioth_status err = golioth_coap_client_get_block(client,
+                                                            ctx->token,
                                                             ctx->path_prefix,
                                                             ctx->path,
                                                             ctx->content_type,

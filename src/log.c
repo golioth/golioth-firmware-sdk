@@ -77,7 +77,11 @@ static enum golioth_status golioth_log_internal(struct golioth_client *client,
         goto cleanup;
     }
 
+    uint8_t token[GOLIOTH_COAP_TOKEN_LEN];
+    golioth_coap_next_token(token);
+
     status = golioth_coap_client_set(client,
+                                     token,
                                      "",  // path-prefix unused
                                      "logs",
                                      GOLIOTH_CONTENT_TYPE_CBOR,

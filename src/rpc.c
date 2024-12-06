@@ -40,6 +40,7 @@ LOG_TAG_DEFINE(golioth_rpc);
 struct golioth_rpc_method
 {
     const char *method;
+    uint8_t token[GOLIOTH_COAP_TOKEN_LEN];
     golioth_rpc_cb_fn callback;
     void *callback_arg;
 };
@@ -216,7 +217,11 @@ static void on_rpc(struct golioth_client *client,
         return;
     }
 
+    uint8_t token[GOLIOTH_COAP_TOKEN_LEN];
+    golioth_coap_next_token(token);
+
     golioth_coap_client_set(client,
+                            token,
                             GOLIOTH_RPC_PATH_PREFIX,
                             "status",
                             GOLIOTH_CONTENT_TYPE_CBOR,
@@ -273,11 +278,13 @@ enum golioth_status golioth_rpc_register(struct golioth_rpc *grpc,
     rpc->method = method;
     rpc->callback = callback;
     rpc->callback_arg = callback_arg;
+    golioth_coap_next_token(rpc->token);
 
     grpc->num_rpcs++;
     if (grpc->num_rpcs == 1)
     {
         return golioth_coap_client_observe(grpc->client,
+                                           rpc->token,
                                            GOLIOTH_RPC_PATH_PREFIX,
                                            "",
                                            GOLIOTH_CONTENT_TYPE_CBOR,

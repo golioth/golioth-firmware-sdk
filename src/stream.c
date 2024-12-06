@@ -19,7 +19,11 @@ enum golioth_status golioth_stream_set_async(struct golioth_client *client,
                                              golioth_set_cb_fn callback,
                                              void *callback_arg)
 {
+    uint8_t token[GOLIOTH_COAP_TOKEN_LEN];
+    golioth_coap_next_token(token);
+
     return golioth_coap_client_set(client,
+                                   token,
                                    GOLIOTH_STREAM_PATH_PREFIX,
                                    path,
                                    content_type,
@@ -38,7 +42,11 @@ enum golioth_status golioth_stream_set_sync(struct golioth_client *client,
                                             size_t buf_len,
                                             int32_t timeout_s)
 {
+    uint8_t token[GOLIOTH_COAP_TOKEN_LEN];
+    golioth_coap_next_token(token);
+
     return golioth_coap_client_set(client,
+                                   token,
                                    GOLIOTH_STREAM_PATH_PREFIX,
                                    path,
                                    content_type,

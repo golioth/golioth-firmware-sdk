@@ -346,13 +346,13 @@ static int golioth_coap_get_block(golioth_coap_request_msg_t *req)
 {
     const uint8_t **pathv = PATHV(req->path_prefix, req->path);
     size_t path_len = coap_pathv_estimate_alloc_len(pathv);
-    bool first = req->get_block.block_index == 0;
     struct golioth_coap_req *coap_req;
     struct golioth_client *client = req->client;
     int err;
 
     err = golioth_coap_req_new(&coap_req,
                                client,
+                               req->token,
                                COAP_METHOD_GET,
                                COAP_TYPE_CON,
                                GOLIOTH_COAP_MAX_NON_PAYLOAD_LEN + path_len,
@@ -361,17 +361,6 @@ static int golioth_coap_get_block(golioth_coap_request_msg_t *req)
     if (err)
     {
         return err;
-    }
-
-    if (first)
-    {
-        /* Save token for subsequent block requests */
-        client->block_token_len = coap_header_get_token(&coap_req->request, client->block_token);
-    }
-    else
-    {
-        /* Override tokeń with the one geenrated in first block request */
-        memcpy(&coap_req->request.data[4], client->block_token, client->block_token_len);
     }
 
     err = coap_packet_append_uri_path_from_pathv(&coap_req->request, pathv);
@@ -410,7 +399,6 @@ static int golioth_coap_post_block(golioth_coap_request_msg_t *req)
 {
     const uint8_t **pathv = PATHV(req->path_prefix, req->path);
     size_t path_len = coap_pathv_estimate_alloc_len(pathv);
-    bool first = req->post_block.block_index == 0;
     struct golioth_coap_req *coap_req;
     struct golioth_client *client = req->client;
     int err;
@@ -418,6 +406,7 @@ static int golioth_coap_post_block(golioth_coap_request_msg_t *req)
 
     err = golioth_coap_req_new(&coap_req,
                                client,
+                               req->token,
                                COAP_METHOD_POST,
                                COAP_TYPE_CON,
                                buffer_len,
@@ -426,17 +415,6 @@ static int golioth_coap_post_block(golioth_coap_request_msg_t *req)
     if (err)
     {
         return err;
-    }
-
-    if (first)
-    {
-        /* Save token for subsequent block requests */
-        client->block_token_len = coap_header_get_token(&coap_req->request, client->block_token);
-    }
-    else
-    {
-        /* Override token with the one geenrated in first block request */
-        memcpy(&coap_req->request.data[4], client->block_token, client->block_token_len);
     }
 
     err = coap_packet_append_uri_path_from_pathv(&coap_req->request, pathv);
@@ -498,6 +476,7 @@ free_req:
 static int golioth_coap_observe(golioth_coap_request_msg_t *req, struct golioth_client *client)
 {
     int err = golioth_coap_req_cb(req->client,
+                                  req->token,
                                   COAP_METHOD_GET,
                                   PATHV(req->path_prefix, req->path),
                                   golioth_content_type_to_coap_format(req->observe.content_type),
@@ -595,7 +574,7 @@ static int golioth_deregister_observation(golioth_coap_request_msg_t *req,
                            sizeof(buffer),
                            COAP_VERSION_1,
                            COAP_TYPE_CON,
-                           req->token_len,
+                           GOLIOTH_COAP_TOKEN_LEN,
                            req->token,
                            COAP_METHOD_GET,
                            coap_next_id());
@@ -708,6 +687,7 @@ static enum golioth_status coap_io_loop_once(struct golioth_client *client)
         case GOLIOTH_COAP_REQUEST_GET:
             LOG_DBG("Handle GET %s", req->path);
             err = golioth_coap_req_cb(req->client,
+                                      req->token,
                                       COAP_METHOD_GET,
                                       PATHV(req->path_prefix, req->path),
                                       golioth_content_type_to_coap_format(req->get.content_type),
@@ -724,6 +704,7 @@ static enum golioth_status coap_io_loop_once(struct golioth_client *client)
         case GOLIOTH_COAP_REQUEST_POST:
             LOG_DBG("Handle POST %s", req->path);
             err = golioth_coap_req_cb(req->client,
+                                      req->token,
                                       COAP_METHOD_POST,
                                       PATHV(req->path_prefix, req->path),
                                       golioth_content_type_to_coap_format(req->post.content_type),
@@ -742,6 +723,7 @@ static enum golioth_status coap_io_loop_once(struct golioth_client *client)
         case GOLIOTH_COAP_REQUEST_DELETE:
             LOG_DBG("Handle DELETE %s", req->path);
             err = golioth_coap_req_cb(req->client,
+                                      req->token,
                                       COAP_METHOD_DELETE,
                                       PATHV(req->path_prefix, req->path),
                                       COAP_CONTENT_FORMAT_APP_OCTET_STREAM /* not used */,
@@ -1510,6 +1492,8 @@ struct golioth_client *golioth_client_create(const struct golioth_client_config 
                       K_POLL_TYPE_SEM_AVAILABLE,
                       K_POLL_MODE_NOTIFY_ONLY,
                       &new_client->run_sem);
+
+    golioth_coap_token_mutex_create();
 
     new_client->request_queue = golioth_mbox_create(CONFIG_GOLIOTH_COAP_REQUEST_QUEUE_MAX_ITEMS,
                                                     sizeof(golioth_coap_request_msg_t));

@@ -4,6 +4,7 @@
  * SPDX-License-Identifier: Apache-2.0
  */
 
+#include "coap_client.h"
 #include <assert.h>
 #include <string.h>
 #include <golioth/golioth_debug.h>
@@ -17,6 +18,8 @@
 
 LOG_TAG_DEFINE(golioth_coap_client);
 
+static golioth_sys_mutex_t token_mut;
+
 bool golioth_client_is_connected(struct golioth_client *client)
 {
     if (!client)
@@ -24,6 +27,59 @@ bool golioth_client_is_connected(struct golioth_client *client)
         return false;
     }
     return client->session_connected;
+}
+
+void golioth_coap_token_mutex_create(void)
+{
+    /* Called by golioth_client_create(); created once, never destroyed */
+    if (!token_mut)
+    {
+        token_mut = golioth_sys_mutex_create();
+        assert(token_mut);
+    }
+}
+
+void golioth_coap_next_token(uint8_t token[GOLIOTH_COAP_TOKEN_LEN])
+{
+    static uint8_t stored_token[GOLIOTH_COAP_TOKEN_LEN] = {0};
+    static bool token_is_initialized = false;
+
+    golioth_sys_mutex_lock(token_mut, GOLIOTH_SYS_WAIT_FOREVER);
+
+    /* Systems without a hardware-backed random source need to seed rand. Waiting until now
+     * introduces the variability of the network connection time to receive a different ms count on
+     * each power cycle to use as the seed. */
+    if (!token_is_initialized)
+    {
+        uint32_t rnd = 0;
+        golioth_sys_srand(golioth_sys_now_ms());
+
+        for (int i = 0; i < GOLIOTH_COAP_TOKEN_LEN; i++)
+        {
+            if (i % 4 == 0)
+            {
+                rnd = golioth_sys_rand();
+            }
+
+            stored_token[i] = (uint8_t) (rnd >> (i % 4));
+        }
+
+        token_is_initialized = true;
+    }
+
+    for (int i = 0; i < GOLIOTH_COAP_TOKEN_LEN; i++)
+    {
+        stored_token[i]++;
+
+        if (stored_token[i] != 0)
+        {
+            break;
+        }
+    }
+
+    memcpy(token, stored_token, GOLIOTH_COAP_TOKEN_LEN);
+
+    golioth_sys_mutex_unlock(token_mut);
 }
 
 enum golioth_status golioth_coap_client_empty(struct golioth_client *client,
@@ -112,17 +168,19 @@ enum golioth_status golioth_coap_client_empty(struct golioth_client *client,
     return GOLIOTH_OK;
 }
 
-static enum golioth_status golioth_coap_client_set_internal(struct golioth_client *client,
-                                                            const char *path_prefix,
-                                                            const char *path,
-                                                            const uint8_t *payload,
-                                                            size_t payload_size,
-                                                            golioth_coap_request_type_t type,
-                                                            void *request_params,
-                                                            bool is_synchronous,
-                                                            int32_t timeout_s)
+static enum golioth_status golioth_coap_client_set_internal(
+    struct golioth_client *client,
+    const uint8_t token[GOLIOTH_COAP_TOKEN_LEN],
+    const char *path_prefix,
+    const char *path,
+    const uint8_t *payload,
+    size_t payload_size,
+    golioth_coap_request_type_t type,
+    void *request_params,
+    bool is_synchronous,
+    int32_t timeout_s)
 {
-    if (!client || !path)
+    if (!client || !token || !path)
     {
         return GOLIOTH_ERR_NULL;
     }
@@ -130,6 +188,8 @@ static enum golioth_status golioth_coap_client_set_internal(struct golioth_clien
     golioth_coap_request_msg_t request_msg = {};
     enum golioth_status status = GOLIOTH_OK;
     uint8_t *request_payload = NULL;
+
+    memcpy(request_msg.token, token, GOLIOTH_COAP_TOKEN_LEN);
 
     if (!client->is_running)
     {
@@ -262,6 +322,7 @@ static enum golioth_status golioth_coap_client_set_internal(struct golioth_clien
 }
 
 enum golioth_status golioth_coap_client_set(struct golioth_client *client,
+                                            const uint8_t token[GOLIOTH_COAP_TOKEN_LEN],
                                             const char *path_prefix,
                                             const char *path,
                                             enum golioth_content_type content_type,
@@ -278,6 +339,7 @@ enum golioth_status golioth_coap_client_set(struct golioth_client *client,
         .arg = callback_arg,
     };
     return golioth_coap_client_set_internal(client,
+                                            token,
                                             path_prefix,
                                             path,
                                             payload,
@@ -289,6 +351,7 @@ enum golioth_status golioth_coap_client_set(struct golioth_client *client,
 }
 
 enum golioth_status golioth_coap_client_set_block(struct golioth_client *client,
+                                                  const uint8_t token[GOLIOTH_COAP_TOKEN_LEN],
                                                   const char *path_prefix,
                                                   const char *path,
                                                   bool is_last,
@@ -311,6 +374,7 @@ enum golioth_status golioth_coap_client_set_block(struct golioth_client *client,
         .arg = callback_arg,
     };
     return golioth_coap_client_set_internal(client,
+                                            token,
                                             path_prefix,
                                             path,
                                             payload,
@@ -428,15 +492,17 @@ enum golioth_status golioth_coap_client_delete(struct golioth_client *client,
     return GOLIOTH_OK;
 }
 
-static enum golioth_status golioth_coap_client_get_internal(struct golioth_client *client,
-                                                            const char *path_prefix,
-                                                            const char *path,
-                                                            golioth_coap_request_type_t type,
-                                                            void *request_params,
-                                                            bool is_synchronous,
-                                                            int32_t timeout_s)
+static enum golioth_status golioth_coap_client_get_internal(
+    struct golioth_client *client,
+    const uint8_t token[GOLIOTH_COAP_TOKEN_LEN],
+    const char *path_prefix,
+    const char *path,
+    golioth_coap_request_type_t type,
+    void *request_params,
+    bool is_synchronous,
+    int32_t timeout_s)
 {
-    if (!client || !path)
+    if (!client || !token || !path)
     {
         return GOLIOTH_ERR_NULL;
     }
@@ -457,6 +523,8 @@ static enum golioth_status golioth_coap_client_get_internal(struct golioth_clien
     enum golioth_status status = GOLIOTH_OK;
     request_msg.type = type;
     request_msg.path_prefix = path_prefix;
+
+    memcpy(request_msg.token, token, GOLIOTH_COAP_TOKEN_LEN);
 
     if (strlen(path) > sizeof(request_msg.path) - 1)
     {
@@ -536,6 +604,7 @@ static enum golioth_status golioth_coap_client_get_internal(struct golioth_clien
 }
 
 enum golioth_status golioth_coap_client_get(struct golioth_client *client,
+                                            const uint8_t token[GOLIOTH_COAP_TOKEN_LEN],
                                             const char *path_prefix,
                                             const char *path,
                                             enum golioth_content_type content_type,
@@ -550,6 +619,7 @@ enum golioth_status golioth_coap_client_get(struct golioth_client *client,
         .arg = arg,
     };
     return golioth_coap_client_get_internal(client,
+                                            token,
                                             path_prefix,
                                             path,
                                             GOLIOTH_COAP_REQUEST_GET,
@@ -559,6 +629,7 @@ enum golioth_status golioth_coap_client_get(struct golioth_client *client,
 }
 
 enum golioth_status golioth_coap_client_get_block(struct golioth_client *client,
+                                                  const uint8_t token[GOLIOTH_COAP_TOKEN_LEN],
                                                   const char *path_prefix,
                                                   const char *path,
                                                   enum golioth_content_type content_type,
@@ -577,6 +648,7 @@ enum golioth_status golioth_coap_client_get_block(struct golioth_client *client,
         .arg = arg,
     };
     return golioth_coap_client_get_internal(client,
+                                            token,
                                             path_prefix,
                                             path,
                                             GOLIOTH_COAP_REQUEST_GET_BLOCK,
@@ -586,13 +658,14 @@ enum golioth_status golioth_coap_client_get_block(struct golioth_client *client,
 }
 
 enum golioth_status golioth_coap_client_observe(struct golioth_client *client,
+                                                const uint8_t token[GOLIOTH_COAP_TOKEN_LEN],
                                                 const char *path_prefix,
                                                 const char *path,
                                                 enum golioth_content_type content_type,
                                                 golioth_get_cb_fn callback,
                                                 void *arg)
 {
-    if (!client || !path)
+    if (!client || !token || !path)
     {
         return GOLIOTH_ERR_NULL;
     }
@@ -618,6 +691,8 @@ enum golioth_status golioth_coap_client_observe(struct golioth_client *client,
             },
     };
 
+    memcpy(request_msg.token, token, GOLIOTH_COAP_TOKEN_LEN);
+
     if (strlen(path) > sizeof(request_msg.path) - 1)
     {
         GLTH_LOGE(TAG, "Path too long: %zu > %zu", strlen(path), sizeof(request_msg.path) - 1);
@@ -636,11 +711,10 @@ enum golioth_status golioth_coap_client_observe(struct golioth_client *client,
 }
 
 enum golioth_status golioth_coap_client_observe_release(struct golioth_client *client,
+                                                        const uint8_t token[GOLIOTH_COAP_TOKEN_LEN],
                                                         const char *path_prefix,
                                                         const char *path,
                                                         enum golioth_content_type content_type,
-                                                        uint8_t *token,
-                                                        size_t token_len,
                                                         void *arg)
 {
     if (!client || !path)
@@ -674,10 +748,7 @@ enum golioth_status golioth_coap_client_observe_release(struct golioth_client *c
         return GOLIOTH_ERR_INVALID_FORMAT;
     }
     strncpy(request_msg.path, path, sizeof(request_msg.path) - 1);
-
-    size_t t_len = min(token_len, sizeof(request_msg.token));
-    memcpy(request_msg.token, token, t_len);
-    request_msg.token_len = t_len;
+    memcpy(request_msg.token, token, GOLIOTH_COAP_TOKEN_LEN);
 
     bool sent = golioth_mbox_try_send(client->request_queue, &request_msg);
     if (!sent)

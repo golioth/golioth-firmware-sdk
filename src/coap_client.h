@@ -14,6 +14,8 @@
 #define RESPONSE_RECEIVED_EVENT_BIT (1 << 0)
 #define RESPONSE_TIMEOUT_EVENT_BIT (1 << 1)
 
+#define GOLIOTH_COAP_TOKEN_LEN 8
+
 #define BLOCKSIZE_TO_SZX(blockSize) \
     ((blockSize == 16)         ? 0  \
          : (blockSize == 32)   ? 1  \
@@ -117,8 +119,7 @@ typedef struct
     // Assumption: path_prefix is a string literal (i.e. we don't need to strcpy).
     const char *path_prefix;
     char path[CONFIG_GOLIOTH_COAP_MAX_PATH_LEN + 1];
-    uint8_t token[8];
-    size_t token_len;
+    uint8_t token[GOLIOTH_COAP_TOKEN_LEN];
     golioth_coap_request_type_t type;
     union
     {
@@ -161,11 +162,20 @@ typedef struct
     golioth_coap_request_msg_t req;
 } golioth_coap_observe_info_t;
 
+/// Create the mutex that makes CoAP token generation thread-safe.
+void golioth_coap_token_mutex_create(void);
+
+/// Generate a unique CoAP token.
+///
+/// @param token byte array where new token will be stored.
+void golioth_coap_next_token(uint8_t token[GOLIOTH_COAP_TOKEN_LEN]);
+
 enum golioth_status golioth_coap_client_empty(struct golioth_client *client,
                                               bool is_synchronous,
                                               int32_t timeout_s);
 
 enum golioth_status golioth_coap_client_set(struct golioth_client *client,
+                                            const uint8_t token[GOLIOTH_COAP_TOKEN_LEN],
                                             const char *path_prefix,
                                             const char *path,
                                             enum golioth_content_type content_type,
@@ -177,6 +187,7 @@ enum golioth_status golioth_coap_client_set(struct golioth_client *client,
                                             int32_t timeout_s);
 
 enum golioth_status golioth_coap_client_set_block(struct golioth_client *client,
+                                                  const uint8_t token[GOLIOTH_COAP_TOKEN_LEN],
                                                   const char *path_prefix,
                                                   const char *path,
                                                   bool is_last,
@@ -199,6 +210,7 @@ enum golioth_status golioth_coap_client_delete(struct golioth_client *client,
                                                int32_t timeout_s);
 
 enum golioth_status golioth_coap_client_get(struct golioth_client *client,
+                                            const uint8_t token[GOLIOTH_COAP_TOKEN_LEN],
                                             const char *path_prefix,
                                             const char *path,
                                             enum golioth_content_type content_type,
@@ -208,6 +220,7 @@ enum golioth_status golioth_coap_client_get(struct golioth_client *client,
                                             int32_t timeout_s);
 
 enum golioth_status golioth_coap_client_get_block(struct golioth_client *client,
+                                                  const uint8_t token[GOLIOTH_COAP_TOKEN_LEN],
                                                   const char *path_prefix,
                                                   const char *path,
                                                   enum golioth_content_type content_type,
@@ -219,6 +232,7 @@ enum golioth_status golioth_coap_client_get_block(struct golioth_client *client,
                                                   int32_t timeout_s);
 
 enum golioth_status golioth_coap_client_observe(struct golioth_client *client,
+                                                const uint8_t token[GOLIOTH_COAP_TOKEN_LEN],
                                                 const char *path_prefix,
                                                 const char *path,
                                                 enum golioth_content_type content_type,
@@ -226,11 +240,10 @@ enum golioth_status golioth_coap_client_observe(struct golioth_client *client,
                                                 void *callback_arg);
 
 enum golioth_status golioth_coap_client_observe_release(struct golioth_client *client,
+                                                        const uint8_t token[GOLIOTH_COAP_TOKEN_LEN],
                                                         const char *path_prefix,
                                                         const char *path,
                                                         enum golioth_content_type content_type,
-                                                        uint8_t *token,
-                                                        size_t token_len,
                                                         void *arg);
 
 void golioth_coap_client_cancel_all_observations(struct golioth_client *client);

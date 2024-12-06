@@ -88,7 +88,11 @@ enum golioth_status golioth_ota_observe_manifest_async(struct golioth_client *cl
                                                        golioth_get_cb_fn callback,
                                                        void *arg)
 {
+    uint8_t token[GOLIOTH_COAP_TOKEN_LEN];
+    golioth_coap_next_token(token);
+
     return golioth_coap_client_observe(client,
+                                       token,
                                        "",
                                        GOLIOTH_OTA_MANIFEST_PATH,
                                        GOLIOTH_CONTENT_TYPE_CBOR,
@@ -156,8 +160,12 @@ enum golioth_status golioth_ota_report_state_sync(struct golioth_client *client,
         return GOLIOTH_ERR_MEM_ALLOC;
     }
 
+    uint8_t token[GOLIOTH_COAP_TOKEN_LEN];
+    golioth_coap_next_token(token);
+
     _state = state;
     return golioth_coap_client_set(client,
+                                   token,
                                    GOLIOTH_OTA_COMPONENT_PATH_PREFIX,
                                    package,
                                    GOLIOTH_CONTENT_TYPE_CBOR,
@@ -397,8 +405,12 @@ enum golioth_status golioth_ota_get_block_sync(struct golioth_client *client,
         .is_last = is_last,
     };
 
+    uint8_t token[GOLIOTH_COAP_TOKEN_LEN];
+    golioth_coap_next_token(token);
+
     enum golioth_status status = GOLIOTH_OK;
     status = golioth_coap_client_get_block(client,
+                                           token,
                                            GOLIOTH_OTA_COMPONENT_PATH_PREFIX,
                                            path,
                                            GOLIOTH_CONTENT_TYPE_JSON,
