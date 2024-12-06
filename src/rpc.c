@@ -38,12 +38,23 @@ LOG_TAG_DEFINE(golioth_rpc);
 
 #define QUERY_METHOD "query"
 
+/// Private struct to provide information of RPC input param name and type
+///
+/// This is only used to provide hints to the cloud on how to use the method
+struct golioth_rpc_method_param
+{
+    const char *name;
+    enum golioth_rpc_param_type type;
+    struct golioth_rpc_method_param *next;
+};
+
 /// Private struct to contain data about a single registered method
 struct golioth_rpc_method
 {
     const char *method;
     golioth_rpc_cb_fn callback;
     void *callback_arg;
+    struct golioth_rpc_method_param *params;
 };
 
 /// Private struct to contain RPC state data
@@ -193,6 +204,10 @@ static void on_rpc(struct golioth_client *client,
             for (int i = 0; i < grpc->num_rpcs; i++)
             {
                 const struct golioth_rpc_method *rpc = &grpc->rpcs[i];
+                if (rpc->params)
+                {
+                    GLTH_LOGW(TAG, "param_name: %s", rpc->params->name);
+                }
                 ok = zcbor_tstr_encode_ptr(zse, rpc->method, strlen(rpc->method))
                     && zcbor_map_start_encode(zse, SIZE_MAX)
                     /* TODO: Develop a way to add parameter information */
@@ -303,6 +318,7 @@ enum golioth_status golioth_rpc_register(struct golioth_rpc *grpc,
     rpc->method = method;
     rpc->callback = callback;
     rpc->callback_arg = callback_arg;
+    rpc->params = NULL;
 
     grpc->num_rpcs++;
     if (grpc->num_rpcs == 1)
@@ -314,6 +330,31 @@ enum golioth_status golioth_rpc_register(struct golioth_rpc *grpc,
                                            on_rpc,
                                            grpc);
     }
+    return GOLIOTH_OK;
+}
+
+enum golioth_status golioth_rpc_add_param_info(struct golioth_rpc *grpc,
+                                               const char *method,
+                                               const char *param_name,
+                                               const enum golioth_rpc_param_type p_type)
+{
+
+    /* crawl grpc and find the method */
+
+    /* golioth_sys_malloc() a golioth_rpc_method_param struct */
+    struct golioth_rpc_method_param *param =
+        golioth_sys_malloc(sizeof(struct golioth_rpc_method_param));
+
+    param->name = param_name;
+
+    /* set the members of your newly allocated stuct */
+
+
+    /* Assign the pointer to the struct
+     *    if the method has a null pointer to param, assign it there
+     *    otherwise, crawl the linked list and assign it to the last one.
+     */
+
     return GOLIOTH_OK;
 }
 

@@ -44,6 +44,13 @@ enum golioth_rpc_status
     GOLIOTH_RPC_UNAUTHENTICATED = 16,
 };
 
+enum golioth_rpc_param_type {
+    GOLIOTH_RPC_PARAM_TYPE_NONE = 0,
+    GOLIOTH_RPC_PARAM_TYPE_BOOL = 1,
+    GOLIOTH_RPC_PARAM_TYPE_NUM = 2,
+    GOLIOTH_RPC_PARAM_TYPE_INT = 3,
+};
+
 /// Callback function type for remote procedure call
 ///
 /// Example of a callback function that implements the "multiply" method, which
