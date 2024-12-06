@@ -137,7 +137,7 @@ int golioth_coap_req_schedule(struct golioth_coap_req *req);
  * @retval <0 On failure
  */
 int golioth_coap_req_find_and_cancel_observation(struct golioth_client *client,
-                                                 golioth_coap_request_msg_t *cancel_req_msg);
+                                                 struct golioth_coap_request_msg *cancel_req_msg);
 
 /**
  * @brief Create and schedule CoAP request for sending

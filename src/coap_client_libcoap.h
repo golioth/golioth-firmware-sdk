@@ -13,7 +13,7 @@ struct golioth_client
     bool end_session;
     bool session_connected;
     struct golioth_client_config config;
-    golioth_coap_request_msg_t *pending_req;
+    struct golioth_coap_request_msg *pending_req;
     golioth_coap_observe_info_t observations[CONFIG_GOLIOTH_MAX_NUM_OBSERVATIONS];
     // token to use for block GETs (must use same token for all blocks)
     uint8_t block_token[8];

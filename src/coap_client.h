@@ -109,7 +109,7 @@ typedef enum
     GOLIOTH_COAP_REQUEST_OBSERVE_RELEASE,
 } golioth_coap_request_type_t;
 
-typedef struct
+struct golioth_coap_request_msg
 {
     struct golioth_client *client;
 
@@ -153,12 +153,12 @@ typedef struct
     /// Used by the coap thread to know when it's safe
     /// to delete request_complete_event and this semaphore.
     golioth_sys_sem_t request_complete_ack_sem;
-} golioth_coap_request_msg_t;
+};
 
 typedef struct
 {
     bool in_use;
-    golioth_coap_request_msg_t req;
+    struct golioth_coap_request_msg req;
 } golioth_coap_observe_info_t;
 
 enum golioth_status golioth_coap_client_empty(struct golioth_client *client,
