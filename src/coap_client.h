@@ -41,7 +41,7 @@ typedef void (*golioth_set_block_cb_fn)(struct golioth_client *client,
                                         size_t block_szx,
                                         void *arg);
 
-typedef struct
+struct golioth_coap_post_params
 {
     enum golioth_content_type content_type;
     // CoAP payload assumed to be dynamically allocated before enqueue
@@ -51,9 +51,9 @@ typedef struct
     size_t payload_size;
     golioth_set_cb_fn callback;
     void *arg;
-} golioth_coap_post_params_t;
+};
 
-typedef struct
+struct golioth_coap_post_block_params
 {
     bool is_last;
     enum golioth_content_type content_type;
@@ -66,36 +66,36 @@ typedef struct
     size_t payload_size;
     golioth_set_block_cb_fn callback;
     void *arg;
-} golioth_coap_post_block_params_t;
+};
 
-typedef struct
+struct golioth_coap_get_params
 {
     enum golioth_content_type content_type;
     golioth_get_cb_fn callback;
     void *arg;
-} golioth_coap_get_params_t;
+};
 
-typedef struct
+struct golioth_coap_get_block_params
 {
     enum golioth_content_type content_type;
     size_t block_index;
     size_t block_size;
     golioth_get_block_cb_fn callback;
     void *arg;
-} golioth_coap_get_block_params_t;
+};
 
-typedef struct
+struct golioth_coap_delete_params
 {
     golioth_set_cb_fn callback;
     void *arg;
-} golioth_coap_delete_params_t;
+};
 
-typedef struct
+struct golioth_coap_observe_params
 {
     enum golioth_content_type content_type;
     golioth_get_cb_fn callback;
     void *arg;
-} golioth_coap_observe_params_t;
+};
 
 typedef enum
 {
@@ -122,12 +122,12 @@ struct golioth_coap_request_msg
     golioth_coap_request_type_t type;
     union
     {
-        golioth_coap_get_params_t get;
-        golioth_coap_get_block_params_t get_block;
-        golioth_coap_post_params_t post;
-        golioth_coap_post_block_params_t post_block;
-        golioth_coap_delete_params_t delete;
-        golioth_coap_observe_params_t observe;
+        struct golioth_coap_get_params get;
+        struct golioth_coap_get_block_params get_block;
+        struct golioth_coap_post_params post;
+        struct golioth_coap_post_block_params post_block;
+        struct golioth_coap_delete_params delete;
+        struct golioth_coap_observe_params observe;
     };
     /// Time (since boot) in milliseconds when request is no longer valid.
     /// This is checked when reqeusts are pulled out of the queue and when responses are received.
