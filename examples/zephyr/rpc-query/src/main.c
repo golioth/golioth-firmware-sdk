@@ -47,6 +47,24 @@ static enum golioth_rpc_status on_multiply(zcbor_state_t *request_params_array,
     return GOLIOTH_RPC_OK;
 }
 
+static enum golioth_rpc_status on_query(zcbor_state_t *request_params_array,
+                                        zcbor_state_t *response_detail_map,
+                                        void *callback_arg)
+{
+    bool ok = zcbor_tstr_put_lit(response_detail_map, "multiply")
+        && zcbor_float64_put(response_detail_map, 0x321)
+        && zcbor_tstr_put_lit(response_detail_map, "reboot")
+        && zcbor_float64_put(response_detail_map, 0x0);
+
+    if (!ok)
+    {
+        LOG_ERR("Failed to encode value");
+        return GOLIOTH_RPC_RESOURCE_EXHAUSTED;
+    }
+
+    return GOLIOTH_RPC_OK;
+}
+
 static void on_client_event(struct golioth_client *client,
                             enum golioth_client_event event,
                             void *arg)
@@ -78,6 +96,7 @@ int main(void)
 
     k_sem_take(&connected, K_FOREVER);
 
+    golioth_rpc_register(rpc, "query", on_query, NULL);
     int err = golioth_rpc_register(rpc, "multiply", on_multiply, NULL);
 
     if (err)
