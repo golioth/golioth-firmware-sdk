@@ -229,7 +229,7 @@ static int golioth_coap_req_reply_handler(struct golioth_coap_req *req,
             /* This response has block1 */
             if (coap_update_from_block(response, &req->block_ctx) == 0)
             {
-                golioth_coap_request_msg_t *rmsg = req->user_data;
+                struct golioth_coap_request_msg *rmsg = req->user_data;
 
                 if (req->block_ctx.block_size < rmsg->post_block.block_szx)
                 {
@@ -753,7 +753,7 @@ static void golioth_coap_reqs_cancel_all_with_reason(struct golioth_client *clie
 
 static int __golioth_coap_req_find_and_cancel_observation(
     struct golioth_client *client,
-    golioth_coap_request_msg_t *cancel_req_msg)
+    struct golioth_coap_request_msg *cancel_req_msg)
 {
     struct golioth_coap_req *req, *next;
 
@@ -780,7 +780,7 @@ static int __golioth_coap_req_find_and_cancel_observation(
                 goto remove_from_coap_reqs_and_free;
             }
 
-            golioth_coap_request_msg_t *req_msg = req->user_data;
+            struct golioth_coap_request_msg *req_msg = req->user_data;
 
             /* Enqueue an "eager release" request for this observation */
             err = golioth_coap_client_observe_release(client,
@@ -805,7 +805,7 @@ static int __golioth_coap_req_find_and_cancel_observation(
 }
 
 int golioth_coap_req_find_and_cancel_observation(struct golioth_client *client,
-                                                 golioth_coap_request_msg_t *cancel_req_msg)
+                                                 struct golioth_coap_request_msg *cancel_req_msg)
 {
     k_mutex_lock(&client->coap_reqs_lock, K_FOREVER);
     int err = __golioth_coap_req_find_and_cancel_observation(client, cancel_req_msg);

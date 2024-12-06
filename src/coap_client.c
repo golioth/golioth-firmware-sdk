@@ -47,7 +47,7 @@ enum golioth_status golioth_coap_client_empty(struct golioth_client *client,
         ageout_ms = golioth_sys_now_ms() + (1000 * timeout_s);
     }
 
-    golioth_coap_request_msg_t request_msg = {
+    struct golioth_coap_request_msg request_msg = {
         .type = GOLIOTH_COAP_REQUEST_EMPTY,
         .ageout_ms = ageout_ms,
     };
@@ -127,7 +127,7 @@ static enum golioth_status golioth_coap_client_set_internal(struct golioth_clien
         return GOLIOTH_ERR_NULL;
     }
 
-    golioth_coap_request_msg_t request_msg = {};
+    struct golioth_coap_request_msg request_msg = {};
     enum golioth_status status = GOLIOTH_OK;
     uint8_t *request_payload = NULL;
 
@@ -349,7 +349,7 @@ enum golioth_status golioth_coap_client_delete(struct golioth_client *client,
         ageout_ms = golioth_sys_now_ms() + (1000 * timeout_s);
     }
 
-    golioth_coap_request_msg_t request_msg = {
+    struct golioth_coap_request_msg request_msg = {
         .type = GOLIOTH_COAP_REQUEST_DELETE,
         .path_prefix = path_prefix,
         .delete =
@@ -453,7 +453,7 @@ static enum golioth_status golioth_coap_client_get_internal(struct golioth_clien
         ageout_ms = golioth_sys_now_ms() + (1000 * timeout_s);
     }
 
-    golioth_coap_request_msg_t request_msg = {};
+    struct golioth_coap_request_msg request_msg = {};
     enum golioth_status status = GOLIOTH_OK;
     request_msg.type = type;
     request_msg.path_prefix = path_prefix;
@@ -606,7 +606,7 @@ enum golioth_status golioth_coap_client_observe(struct golioth_client *client,
         return GOLIOTH_ERR_INVALID_STATE;
     }
 
-    golioth_coap_request_msg_t request_msg = {
+    struct golioth_coap_request_msg request_msg = {
         .type = GOLIOTH_COAP_REQUEST_OBSERVE,
         .path_prefix = path_prefix,
         .ageout_ms = GOLIOTH_SYS_WAIT_FOREVER,
@@ -657,7 +657,7 @@ enum golioth_status golioth_coap_client_observe_release(struct golioth_client *c
         return GOLIOTH_ERR_INVALID_STATE;
     }
 
-    golioth_coap_request_msg_t request_msg = {
+    struct golioth_coap_request_msg request_msg = {
         .type = GOLIOTH_COAP_REQUEST_OBSERVE_RELEASE,
         .path_prefix = path_prefix,
         .ageout_ms = GOLIOTH_SYS_WAIT_FOREVER,

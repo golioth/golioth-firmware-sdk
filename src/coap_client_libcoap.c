@@ -21,7 +21,7 @@ LOG_TAG_DEFINE(golioth_coap_client_libcoap);
 
 static bool _initialized;
 
-static bool token_matches_request(const golioth_coap_request_msg_t *req, const coap_pdu_t *pdu)
+static bool token_matches_request(const struct golioth_coap_request_msg *req, const coap_pdu_t *pdu)
 {
     coap_bin_const_t rcvd_token = coap_pdu_get_token(pdu);
     bool len_matches = (rcvd_token.length == req->token_len);
@@ -95,7 +95,7 @@ static coap_response_t coap_response_handler(coap_session_t *session,
     coap_get_data(received, &data_len, &data);
 
     // Get the original/pending request info
-    golioth_coap_request_msg_t *req = client->pending_req;
+    struct golioth_coap_request_msg *req = client->pending_req;
 
     if (req)
     {
@@ -277,7 +277,7 @@ static void nack_handler(coap_session_t *session,
 {
     coap_context_t *context = coap_session_get_context(session);
     struct golioth_client *client = coap_get_app_data(context);
-    golioth_coap_request_msg_t *req = client->pending_req;
+    struct golioth_coap_request_msg *req = client->pending_req;
 
     switch (reason)
     {
@@ -369,7 +369,7 @@ static enum golioth_status get_coap_dst_address(const coap_uri_t *host_uri,
 }
 
 static void golioth_coap_add_token(coap_pdu_t *req_pdu,
-                                   golioth_coap_request_msg_t *req,
+                                   struct golioth_coap_request_msg *req,
                                    coap_session_t *session)
 {
     coap_session_new_token(session, &req->token_len, req->token);
@@ -475,7 +475,7 @@ static void golioth_coap_add_block2(coap_pdu_t *request, size_t block_index, siz
     coap_add_option(request, COAP_OPTION_BLOCK2, opt_length, buf);
 }
 
-static void golioth_coap_empty(golioth_coap_request_msg_t *req, coap_session_t *session)
+static void golioth_coap_empty(struct golioth_coap_request_msg *req, coap_session_t *session)
 {
     // Note: libcoap has keepalive functionality built in, but we're not using because
     // it doesn't seem to work correctly. The server responds to the keepalive message,
@@ -495,7 +495,7 @@ static void golioth_coap_empty(golioth_coap_request_msg_t *req, coap_session_t *
     coap_send(session, req_pdu);
 }
 
-static void golioth_coap_get(golioth_coap_request_msg_t *req, coap_session_t *session)
+static void golioth_coap_get(struct golioth_coap_request_msg *req, coap_session_t *session)
 {
     coap_pdu_t *req_pdu = coap_new_pdu(COAP_MESSAGE_CON, COAP_REQUEST_CODE_GET, session);
     if (!req_pdu)
@@ -510,7 +510,7 @@ static void golioth_coap_get(golioth_coap_request_msg_t *req, coap_session_t *se
     coap_send(session, req_pdu);
 }
 
-static void golioth_coap_get_block(golioth_coap_request_msg_t *req,
+static void golioth_coap_get_block(struct golioth_coap_request_msg *req,
                                    struct golioth_client *client,
                                    coap_session_t *session)
 {
@@ -544,7 +544,7 @@ static void golioth_coap_get_block(golioth_coap_request_msg_t *req,
     coap_send(session, req_pdu);
 }
 
-static void golioth_coap_post(golioth_coap_request_msg_t *req, coap_session_t *session)
+static void golioth_coap_post(struct golioth_coap_request_msg *req, coap_session_t *session)
 {
     coap_pdu_t *req_pdu = coap_new_pdu(COAP_MESSAGE_CON, COAP_REQUEST_CODE_POST, session);
     if (!req_pdu)
@@ -560,7 +560,7 @@ static void golioth_coap_post(golioth_coap_request_msg_t *req, coap_session_t *s
     coap_send(session, req_pdu);
 }
 
-static void golioth_coap_post_block(golioth_coap_request_msg_t *req,
+static void golioth_coap_post_block(struct golioth_coap_request_msg *req,
                                     struct golioth_client *client,
                                     coap_session_t *session)
 {
@@ -598,7 +598,7 @@ static void golioth_coap_post_block(golioth_coap_request_msg_t *req,
     coap_send(session, req_pdu);
 }
 
-static void golioth_coap_delete(golioth_coap_request_msg_t *req, coap_session_t *session)
+static void golioth_coap_delete(struct golioth_coap_request_msg *req, coap_session_t *session)
 {
     coap_pdu_t *req_pdu = coap_new_pdu(COAP_MESSAGE_CON, COAP_REQUEST_CODE_DELETE, session);
     if (!req_pdu)
@@ -612,7 +612,7 @@ static void golioth_coap_delete(golioth_coap_request_msg_t *req, coap_session_t 
     coap_send(session, req_pdu);
 }
 
-static enum golioth_status golioth_coap_observe(golioth_coap_request_msg_t *req,
+static enum golioth_status golioth_coap_observe(struct golioth_coap_request_msg *req,
                                                 struct golioth_client *client,
                                                 coap_session_t *session,
                                                 bool eager_release)
@@ -663,7 +663,7 @@ static enum golioth_status golioth_coap_observe(golioth_coap_request_msg_t *req,
     }
 }
 
-static enum golioth_status add_observation(golioth_coap_request_msg_t *req,
+static enum golioth_status add_observation(struct golioth_coap_request_msg *req,
                                            struct golioth_client *client,
                                            coap_session_t *session)
 {
@@ -878,7 +878,7 @@ static enum golioth_status coap_io_loop_once(struct golioth_client *client,
                                              coap_context_t *context,
                                              coap_session_t *session)
 {
-    golioth_coap_request_msg_t request_msg = {};
+    struct golioth_coap_request_msg request_msg = {};
     int mbox_fd = golioth_sys_sem_get_fd(client->request_queue->fill_count_sem);
 
     if (mbox_fd >= 0)
@@ -1329,7 +1329,7 @@ struct golioth_client *golioth_client_create(const struct golioth_client_config 
     golioth_sys_sem_give(new_client->run_sem);
 
     new_client->request_queue = golioth_mbox_create(CONFIG_GOLIOTH_COAP_REQUEST_QUEUE_MAX_ITEMS,
-                                                    sizeof(golioth_coap_request_msg_t));
+                                                    sizeof(struct golioth_coap_request_msg));
     if (!new_client->request_queue)
     {
         GLTH_LOGE(TAG, "Failed to create request queue");
@@ -1386,7 +1386,7 @@ error:
 
 static void purge_request_mbox(golioth_mbox_t request_mbox)
 {
-    golioth_coap_request_msg_t request_msg = {};
+    struct golioth_coap_request_msg request_msg = {};
     size_t num_messages = golioth_mbox_num_messages(request_mbox);
 
     for (size_t i = 0; i < num_messages; i++)

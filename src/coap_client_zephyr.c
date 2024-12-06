@@ -101,7 +101,7 @@ static enum coap_content_format golioth_content_type_to_coap_format(
     }
 }
 
-static int golioth_coap_req_append_block1_option(golioth_coap_request_msg_t *req_msg,
+static int golioth_coap_req_append_block1_option(struct golioth_coap_request_msg *req_msg,
                                                  struct golioth_coap_req *req)
 {
     unsigned int val = 0;
@@ -223,7 +223,7 @@ static enum golioth_status golioth_err_to_status(int err)
 
 static int golioth_coap_cb(struct golioth_req_rsp *rsp)
 {
-    golioth_coap_request_msg_t *req = rsp->user_data;
+    struct golioth_coap_request_msg *req = rsp->user_data;
     struct golioth_client *client = req->client;
 
     switch (req->type)
@@ -342,7 +342,7 @@ static int golioth_coap_cb(struct golioth_req_rsp *rsp)
     return rsp->status;
 }
 
-static int golioth_coap_get_block(golioth_coap_request_msg_t *req)
+static int golioth_coap_get_block(struct golioth_coap_request_msg *req)
 {
     const uint8_t **pathv = PATHV(req->path_prefix, req->path);
     size_t path_len = coap_pathv_estimate_alloc_len(pathv);
@@ -406,7 +406,7 @@ free_req:
     return err;
 }
 
-static int golioth_coap_post_block(golioth_coap_request_msg_t *req)
+static int golioth_coap_post_block(struct golioth_coap_request_msg *req)
 {
     const uint8_t **pathv = PATHV(req->path_prefix, req->path);
     size_t path_len = coap_pathv_estimate_alloc_len(pathv);
@@ -495,7 +495,7 @@ free_req:
     return err;
 }
 
-static int golioth_coap_observe(golioth_coap_request_msg_t *req, struct golioth_client *client)
+static int golioth_coap_observe(struct golioth_coap_request_msg *req, struct golioth_client *client)
 {
     int err = golioth_coap_req_cb(req->client,
                                   COAP_METHOD_GET,
@@ -515,7 +515,7 @@ static int golioth_coap_observe(golioth_coap_request_msg_t *req, struct golioth_
     return err;
 }
 
-static int add_observation(golioth_coap_request_msg_t *req, struct golioth_client *client)
+static int add_observation(struct golioth_coap_request_msg *req, struct golioth_client *client)
 {
     // scan for available (not used) observation slot
     golioth_coap_observe_info_t *obs_info = NULL;
@@ -580,7 +580,7 @@ void golioth_cancel_all_observations(struct golioth_client *client)
     golioth_cancel_all_observations_by_prefix(client, NULL);
 }
 
-static int golioth_deregister_observation(golioth_coap_request_msg_t *req,
+static int golioth_deregister_observation(struct golioth_coap_request_msg *req,
                                           struct golioth_client *client)
 {
     struct coap_packet packet;
@@ -651,7 +651,7 @@ static void reestablish_observations(struct golioth_client *client)
 
 static enum golioth_status coap_io_loop_once(struct golioth_client *client)
 {
-    golioth_coap_request_msg_t *req;
+    struct golioth_coap_request_msg *req;
     int err = 0;
 
     req = calloc(1, sizeof(*req));
@@ -1512,7 +1512,7 @@ struct golioth_client *golioth_client_create(const struct golioth_client_config 
                       &new_client->run_sem);
 
     new_client->request_queue = golioth_mbox_create(CONFIG_GOLIOTH_COAP_REQUEST_QUEUE_MAX_ITEMS,
-                                                    sizeof(golioth_coap_request_msg_t));
+                                                    sizeof(struct golioth_coap_request_msg));
     if (!new_client->request_queue)
     {
         LOG_ERR("Failed to create request queue");
@@ -1569,7 +1569,7 @@ error:
 
 static void purge_request_mbox(golioth_mbox_t request_mbox)
 {
-    golioth_coap_request_msg_t request_msg = {};
+    struct golioth_coap_request_msg request_msg = {};
     size_t num_messages = golioth_mbox_num_messages(request_mbox);
 
     for (size_t i = 0; i < num_messages; i++)
