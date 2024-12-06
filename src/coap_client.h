@@ -41,7 +41,7 @@ typedef void (*golioth_set_block_cb_fn)(struct golioth_client *client,
                                         size_t block_szx,
                                         void *arg);
 
-typedef struct
+struct golioth_coap_post_params
 {
     enum golioth_content_type content_type;
     // CoAP payload assumed to be dynamically allocated before enqueue
@@ -51,9 +51,9 @@ typedef struct
     size_t payload_size;
     golioth_set_cb_fn callback;
     void *arg;
-} golioth_coap_post_params_t;
+};
 
-typedef struct
+struct golioth_coap_post_block_params
 {
     bool is_last;
     enum golioth_content_type content_type;
@@ -66,38 +66,38 @@ typedef struct
     size_t payload_size;
     golioth_set_block_cb_fn callback;
     void *arg;
-} golioth_coap_post_block_params_t;
+};
 
-typedef struct
+struct golioth_coap_get_params
 {
     enum golioth_content_type content_type;
     golioth_get_cb_fn callback;
     void *arg;
-} golioth_coap_get_params_t;
+};
 
-typedef struct
+struct golioth_coap_get_block_params
 {
     enum golioth_content_type content_type;
     size_t block_index;
     size_t block_size;
     golioth_get_block_cb_fn callback;
     void *arg;
-} golioth_coap_get_block_params_t;
+};
 
-typedef struct
+struct golioth_coap_delete_params
 {
     golioth_set_cb_fn callback;
     void *arg;
-} golioth_coap_delete_params_t;
+};
 
-typedef struct
+struct golioth_coap_observe_params
 {
     enum golioth_content_type content_type;
     golioth_get_cb_fn callback;
     void *arg;
-} golioth_coap_observe_params_t;
+};
 
-typedef enum
+enum golioth_coap_request_type
 {
     GOLIOTH_COAP_REQUEST_EMPTY,
     GOLIOTH_COAP_REQUEST_GET,
@@ -107,9 +107,9 @@ typedef enum
     GOLIOTH_COAP_REQUEST_DELETE,
     GOLIOTH_COAP_REQUEST_OBSERVE,
     GOLIOTH_COAP_REQUEST_OBSERVE_RELEASE,
-} golioth_coap_request_type_t;
+};
 
-typedef struct
+struct golioth_coap_request_msg
 {
     struct golioth_client *client;
 
@@ -119,15 +119,15 @@ typedef struct
     char path[CONFIG_GOLIOTH_COAP_MAX_PATH_LEN + 1];
     uint8_t token[8];
     size_t token_len;
-    golioth_coap_request_type_t type;
+    enum golioth_coap_request_type type;
     union
     {
-        golioth_coap_get_params_t get;
-        golioth_coap_get_block_params_t get_block;
-        golioth_coap_post_params_t post;
-        golioth_coap_post_block_params_t post_block;
-        golioth_coap_delete_params_t delete;
-        golioth_coap_observe_params_t observe;
+        struct golioth_coap_get_params get;
+        struct golioth_coap_get_block_params get_block;
+        struct golioth_coap_post_params post;
+        struct golioth_coap_post_block_params post_block;
+        struct golioth_coap_delete_params delete;
+        struct golioth_coap_observe_params observe;
     };
     /// Time (since boot) in milliseconds when request is no longer valid.
     /// This is checked when reqeusts are pulled out of the queue and when responses are received.
@@ -153,13 +153,13 @@ typedef struct
     /// Used by the coap thread to know when it's safe
     /// to delete request_complete_event and this semaphore.
     golioth_sys_sem_t request_complete_ack_sem;
-} golioth_coap_request_msg_t;
+};
 
-typedef struct
+struct golioth_coap_observe_info
 {
     bool in_use;
-    golioth_coap_request_msg_t req;
-} golioth_coap_observe_info_t;
+    struct golioth_coap_request_msg req;
+};
 
 enum golioth_status golioth_coap_client_empty(struct golioth_client *client,
                                               bool is_synchronous,
