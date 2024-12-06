@@ -38,7 +38,7 @@ static void notify_observers(const coap_pdu_t *received,
     // scan observations, check for token match
     for (int i = 0; i < CONFIG_GOLIOTH_MAX_NUM_OBSERVATIONS; i++)
     {
-        const golioth_coap_observe_info_t *obs_info = &client->observations[i];
+        const struct golioth_coap_observe_info *obs_info = &client->observations[i];
         golioth_get_cb_fn callback = obs_info->req.observe.callback;
 
         if (!obs_info->in_use || !callback)
@@ -668,7 +668,7 @@ static enum golioth_status add_observation(struct golioth_coap_request_msg *req,
                                            coap_session_t *session)
 {
     // scan for available (not used) observation slot
-    golioth_coap_observe_info_t *obs_info = NULL;
+    struct golioth_coap_observe_info *obs_info = NULL;
     bool found_slot = false;
     for (int i = 0; i < CONFIG_GOLIOTH_MAX_NUM_OBSERVATIONS; i++)
     {
@@ -701,7 +701,7 @@ static enum golioth_status add_observation(struct golioth_coap_request_msg *req,
 
 void golioth_cancel_all_observations_by_prefix(struct golioth_client *client, const char *prefix)
 {
-    golioth_coap_observe_info_t *obs_info = NULL;
+    struct golioth_coap_observe_info *obs_info = NULL;
     for (int i = 0; i < CONFIG_GOLIOTH_MAX_NUM_OBSERVATIONS; i++)
     {
         obs_info = &client->observations[i];
@@ -731,7 +731,7 @@ void golioth_cancel_all_observations(struct golioth_client *client)
 
 static void reestablish_observations(struct golioth_client *client, coap_session_t *session)
 {
-    golioth_coap_observe_info_t *obs_info = NULL;
+    struct golioth_coap_observe_info *obs_info = NULL;
     for (int i = 0; i < CONFIG_GOLIOTH_MAX_NUM_OBSERVATIONS; i++)
     {
         obs_info = &client->observations[i];
