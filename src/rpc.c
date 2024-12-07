@@ -374,67 +374,47 @@ enum golioth_status golioth_rpc_add_param_info(struct golioth_rpc *grpc,
 
     struct golioth_rpc_method *matching_rpc = NULL;
 
-    /* crawl grpc and find the method */
     for (int i = 0; i < grpc->num_rpcs; i++)
     {
-        const struct golioth_rpc_method *rpc = &grpc->rpcs[i];
-        // GLTH_LOGW(TAG, "RPC add param: %s", rpc->method);
-        // GLTH_LOGD(TAG, "RPC add param: %s", method);
+        struct golioth_rpc_method *rpc = &grpc->rpcs[i];
+
         if (strncmp(rpc->method, method, strlen(method)) == 0)
         {
-            GLTH_LOGW(TAG, "Found RPC: %s", rpc->method);
-            GLTH_LOGW(TAG, "Loop: %d", i);
             matching_rpc = rpc;
             break;
         }
     }
 
-    if (matching_rpc)
+    if (!matching_rpc)
     {
-
-        /* golioth_sys_malloc() a golioth_rpc_method_param struct */
-        struct golioth_rpc_method_param *param =
-            golioth_sys_malloc(sizeof(struct golioth_rpc_method_param));
-
-        param->name = param_name;
-
-        /* set the members of your newly allocated stuct 
-            struct golioth_rpc_method_param
-            {
-                const char *name;
-                enum golioth_rpc_param_type type;
-                struct golioth_rpc_method_param *next;
-            };
-        */
-        param->type = p_type;
-        param->next = NULL;
-
-        if(!matching_rpc->params)
-        {   
-            // If matching_rpc doesn't have param created above
-            matching_rpc->params = param;
-        }
-        else
-        {
-            // If matching_rpc does have param, find an empty slot at the end
-            struct golioth_rpc_method_param *cur_node = matching_rpc->params;
-
-            // Cycle through cur_node until you find one with a null 'next'
-            while(cur_node->next)
-            {
-                cur_node = cur_node->next;
-            }
-            // Now that you've found the end of the linked list, put param at the back
-            cur_node->next = param;
-        }
-        return GOLIOTH_OK;
-    }
-    else
-    {
-        GLTH_LOGW(TAG, "Method not recognized: %s",method);
+        GLTH_LOGE(TAG, "Method not recognized: %s", method);
         return GOLIOTH_ERR_INVALID_FORMAT;
     }
 
+    struct golioth_rpc_method_param *param =
+        golioth_sys_malloc(sizeof(struct golioth_rpc_method_param));
+
+    param->name = param_name;
+    param->type = p_type;
+    param->next = NULL;
+
+    if (!matching_rpc->params)
+    {
+        matching_rpc->params = param;
+    }
+    else
+    {
+        struct golioth_rpc_method_param *cur_node = matching_rpc->params;
+
+        while (cur_node->next)
+        {
+            cur_node = cur_node->next;
+        }
+
+        cur_node->next = param;
+    }
+
+    return GOLIOTH_OK;
 }
 
 #endif  // CONFIG_GOLITOH_RPC_QUERY_METHOD
