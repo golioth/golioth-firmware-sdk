@@ -171,6 +171,14 @@ static void on_rpc(struct golioth_client *client,
     const struct golioth_rpc_method *matching_rpc = NULL;
     enum golioth_rpc_status rpc_status = GOLIOTH_RPC_UNKNOWN;
 
+
+    if (CONFIG_GOLIOTH_RPC_QUERY_METHOD
+        && strncmp(QUERY_METHOD, (char *) method.value, method.len) == 0)
+    {
+        rpc_status = add_param_info_to_cbor(grpc, zse);
+        goto add_status_and_return;
+    }
+
     for (int i = 0; i < grpc->num_rpcs; i++)
     {
         const struct golioth_rpc_method *rpc = &grpc->rpcs[i];
@@ -204,15 +212,7 @@ static void on_rpc(struct golioth_client *client,
             return;
         }
 
-        if (CONFIG_GOLIOTH_RPC_QUERY_METHOD
-            && strncmp(matching_rpc->method, QUERY_METHOD, strlen(QUERY_METHOD)) == 0)
-        {
-            rpc_status = add_param_info_to_cbor(grpc, zse);
-        }
-        else
-        {
-            rpc_status = matching_rpc->callback(&params_zsd, zse, matching_rpc->callback_arg);
-        }
+        rpc_status = matching_rpc->callback(&params_zsd, zse, matching_rpc->callback_arg);
 
         GLTH_LOGD(TAG, "RPC status code %d for call id :%.*s", rpc_status, (int) id.len, id.value);
 
@@ -229,6 +229,7 @@ static void on_rpc(struct golioth_client *client,
         GLTH_LOGW(TAG, "Method %.*s not registered", (int) method.len, method.value);
     }
 
+add_status_and_return:
     ok = zcbor_tstr_put_lit(zse, "statusCode") && zcbor_uint64_put(zse, rpc_status);
     if (!ok)
     {
@@ -320,20 +321,27 @@ enum golioth_status golioth_rpc_register(struct golioth_rpc *grpc,
 
 static enum golioth_rpc_status add_param_info_to_cbor(struct golioth_rpc *grpc, zcbor_state_t *zse)
 {
-    GLTH_LOGW(TAG, "Found query from SDK");
+    GLTH_LOGD(TAG, "query rpc: returning method names and parameters");
     bool ok;
+
+    ok = zcbor_tstr_put_lit(zse, "detail") && zcbor_map_start_encode(zse, SIZE_MAX);
+
+    if (!ok)
+    {
+        GLTH_LOGE(TAG, "Did not start CBOR map correctly");
+        return GOLIOTH_RPC_RESOURCE_EXHAUSTED;
+    }
 
     for (int i = 0; i < grpc->num_rpcs; i++)
     {
         const struct golioth_rpc_method *rpc = &grpc->rpcs[i];
-
 
         ok = zcbor_tstr_encode_ptr(zse, rpc->method, strlen(rpc->method))
             && zcbor_map_start_encode(zse, SIZE_MAX);
 
         if (!ok)
         {
-            GLTH_LOGE(TAG, "Did not encode CBOR method entry");
+            GLTH_LOGE(TAG, "Could not start method map");
             return GOLIOTH_RPC_RESOURCE_EXHAUSTED;
         }
 
@@ -341,14 +349,12 @@ static enum golioth_rpc_status add_param_info_to_cbor(struct golioth_rpc *grpc, 
 
         while (cur_node)
         {
-            GLTH_LOGW(TAG, "param_name: %s", cur_node->name);
-
             ok = zcbor_tstr_encode_ptr(zse, cur_node->name, strlen(cur_node->name))
                 && zcbor_uint64_put(zse, cur_node->type);
 
             if (!ok)
             {
-                GLTH_LOGE(TAG, "Did not encode CBOR method entry");
+                GLTH_LOGE(TAG, "Could not encode param");
                 return GOLIOTH_RPC_RESOURCE_EXHAUSTED;
             }
 
@@ -359,10 +365,17 @@ static enum golioth_rpc_status add_param_info_to_cbor(struct golioth_rpc *grpc, 
 
         if (!ok)
         {
-            GLTH_LOGE(TAG, "Did not encode CBOR method entry");
+            GLTH_LOGE(TAG, "Failed to close method map");
             return GOLIOTH_RPC_RESOURCE_EXHAUSTED;
         }
     }
+
+    ok = zcbor_map_end_encode(zse, SIZE_MAX);
+    if (!ok)
+    {
+        GLTH_LOGE(TAG, "Failed to close '%s'", "detail");
+    }
+
     return GOLIOTH_RPC_OK;
 }
 
