@@ -105,6 +105,16 @@ config GOLIOTH_RPC_MAX_RESPONSE_LEN
         This value determines the memory available for the response_detail_map passed to the RPC
         callback.
 
+config GOLIOTH_RPC_QUERY_METHOD
+    bool "Enable the 'query' RPC method"
+    default n
+    help
+        Enable the "query" RPC method to return a list of available RPCs to the cloud.
+
+        Optionally use the "golioth_rpc_add_param_info()" after registering an RPC to add parameter
+        name and type information. When the "query" method is called, each method name registered,
+        along with parameter information, is passed to cloud by the device.
+
 endif # GOLIOTH_RPC
 
 config GOLIOTH_SETTINGS

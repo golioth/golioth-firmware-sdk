@@ -36,7 +36,14 @@ LOG_TAG_DEFINE(golioth_rpc);
 
 #define GOLIOTH_RPC_PATH_PREFIX ".rpc/"
 
+#if defined(CONFIG_GOLIOTH_RPC_QUERY_METHOD)
+
+// Forward declaration
+static enum golioth_rpc_status add_param_info_to_cbor(struct golioth_rpc *grpc, zcbor_state_t *zse);
+
 #define QUERY_METHOD "query"
+
+#endif  // CONFIG_GOLIOTH_RPC_QUERY_METHOD
 
 /// Private struct to provide information of RPC input param name and type
 ///
@@ -197,53 +204,10 @@ static void on_rpc(struct golioth_client *client,
             return;
         }
 
-        if (strncmp(matching_rpc->method, QUERY_METHOD, strlen(QUERY_METHOD)) == 0)
+        if (CONFIG_GOLIOTH_RPC_QUERY_METHOD
+            && strncmp(matching_rpc->method, QUERY_METHOD, strlen(QUERY_METHOD)) == 0)
         {
-            GLTH_LOGW(TAG, "Found query from SDK");
-
-            for (int i = 0; i < grpc->num_rpcs; i++)
-            {
-                const struct golioth_rpc_method *rpc = &grpc->rpcs[i];
-
-                // Open the map
-
-                ok = zcbor_tstr_encode_ptr(zse, rpc->method, strlen(rpc->method))
-                    && zcbor_map_start_encode(zse, SIZE_MAX);
-
-                if (!ok)
-                {
-                    GLTH_LOGE(TAG, "Did not encode CBOR method entry");
-                    return;
-                }
-
-                // Crawl the params and add to zcbor map
-
-                struct golioth_rpc_method_param *cur_node = rpc->params;
-
-                // Cycle through cur_node until you find one with a null 'next'
-                while(cur_node)
-                {
-                    GLTH_LOGW(TAG, "param_name: %s", cur_node->name);
-                    ok = zcbor_tstr_encode_ptr(zse, cur_node->name,strlen(cur_node->name))
-                    && zcbor_uint64_put(zse, cur_node->type);
-                    if (!ok)
-                    {
-                        GLTH_LOGE(TAG, "Did not encode CBOR method entry");
-                        return;
-                    }
-                    cur_node = cur_node->next;
-                }
-
-                ok = zcbor_map_end_encode(zse, SIZE_MAX);
-
-                if (!ok)
-                {
-                    GLTH_LOGE(TAG, "Did not encode CBOR method entry");
-                    return;
-                }
-            }
-
-            rpc_status = GOLIOTH_RPC_OK;
+            rpc_status = add_param_info_to_cbor(grpc, zse);
         }
         else
         {
@@ -352,6 +316,56 @@ enum golioth_status golioth_rpc_register(struct golioth_rpc *grpc,
     return GOLIOTH_OK;
 }
 
+#if defined(CONFIG_GOLIOTH_RPC_QUERY_METHOD)
+
+static enum golioth_rpc_status add_param_info_to_cbor(struct golioth_rpc *grpc, zcbor_state_t *zse)
+{
+    GLTH_LOGW(TAG, "Found query from SDK");
+    bool ok;
+
+    for (int i = 0; i < grpc->num_rpcs; i++)
+    {
+        const struct golioth_rpc_method *rpc = &grpc->rpcs[i];
+
+
+        ok = zcbor_tstr_encode_ptr(zse, rpc->method, strlen(rpc->method))
+            && zcbor_map_start_encode(zse, SIZE_MAX);
+
+        if (!ok)
+        {
+            GLTH_LOGE(TAG, "Did not encode CBOR method entry");
+            return GOLIOTH_RPC_RESOURCE_EXHAUSTED;
+        }
+
+        struct golioth_rpc_method_param *cur_node = rpc->params;
+
+        while (cur_node)
+        {
+            GLTH_LOGW(TAG, "param_name: %s", cur_node->name);
+
+            ok = zcbor_tstr_encode_ptr(zse, cur_node->name, strlen(cur_node->name))
+                && zcbor_uint64_put(zse, cur_node->type);
+
+            if (!ok)
+            {
+                GLTH_LOGE(TAG, "Did not encode CBOR method entry");
+                return GOLIOTH_RPC_RESOURCE_EXHAUSTED;
+            }
+
+            cur_node = cur_node->next;
+        }
+
+        ok = zcbor_map_end_encode(zse, SIZE_MAX);
+
+        if (!ok)
+        {
+            GLTH_LOGE(TAG, "Did not encode CBOR method entry");
+            return GOLIOTH_RPC_RESOURCE_EXHAUSTED;
+        }
+    }
+    return GOLIOTH_RPC_OK;
+}
+
 enum golioth_status golioth_rpc_add_param_info(struct golioth_rpc *grpc,
                                                const char *method,
                                                const char *param_name,
@@ -423,4 +437,5 @@ enum golioth_status golioth_rpc_add_param_info(struct golioth_rpc *grpc,
 
 }
 
+#endif  // CONFIG_GOLITOH_RPC_QUERY_METHOD
 #endif  // CONFIG_GOLIOTH_RPC

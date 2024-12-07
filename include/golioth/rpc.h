@@ -44,6 +44,8 @@ enum golioth_rpc_status
     GOLIOTH_RPC_UNAUTHENTICATED = 16,
 };
 
+#if defined(CONFIG_GOLIOTH_RPC_QUERY_METHOD)
+
 enum golioth_rpc_param_type {
     GOLIOTH_RPC_PARAM_TYPE_NONE = 0,
     GOLIOTH_RPC_PARAM_TYPE_BOOL = 1,
@@ -56,6 +58,8 @@ enum golioth_status golioth_rpc_add_param_info(struct golioth_rpc *grpc,
                                                const char *method,
                                                const char *param_name,
                                                const enum golioth_rpc_param_type p_type);
+
+#endif // CONFIG_GOLIOTH_RPC_QUERY_METHOD
 
 
 /// Callback function type for remote procedure call
