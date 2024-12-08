@@ -114,7 +114,7 @@ static void on_rpc(struct golioth_client *client,
                    size_t payload_size,
                    void *arg)
 {
-    ZCBOR_STATE_D(zsd, 2, payload, payload_size, 1, 0);
+    ZCBOR_STATE_D(zsd, 3, payload, payload_size, 1, 0);
     zcbor_state_t params_zsd;
     struct zcbor_string id, method;
     struct zcbor_map_entry map_entries[] = {
@@ -337,7 +337,7 @@ static enum golioth_rpc_status add_param_info_to_cbor(struct golioth_rpc *grpc, 
         const struct golioth_rpc_method *rpc = &grpc->rpcs[i];
 
         ok = zcbor_tstr_encode_ptr(zse, rpc->method, strlen(rpc->method))
-            && zcbor_map_start_encode(zse, SIZE_MAX);
+            && zcbor_list_start_encode(zse, SIZE_MAX);
 
         if (!ok)
         {
@@ -349,8 +349,10 @@ static enum golioth_rpc_status add_param_info_to_cbor(struct golioth_rpc *grpc, 
 
         while (cur_node)
         {
-            ok = zcbor_tstr_encode_ptr(zse, cur_node->name, strlen(cur_node->name))
-                && zcbor_uint64_put(zse, cur_node->type);
+            ok = zcbor_map_start_encode(zse, SIZE_MAX)
+                && zcbor_tstr_encode_ptr(zse, cur_node->name, strlen(cur_node->name))
+                && zcbor_uint64_put(zse, cur_node->type)
+                && zcbor_map_end_encode(zse, SIZE_MAX);
 
             if (!ok)
             {
@@ -361,7 +363,7 @@ static enum golioth_rpc_status add_param_info_to_cbor(struct golioth_rpc *grpc, 
             cur_node = cur_node->next;
         }
 
-        ok = zcbor_map_end_encode(zse, SIZE_MAX);
+        ok = zcbor_list_end_encode(zse, SIZE_MAX);
 
         if (!ok)
         {
