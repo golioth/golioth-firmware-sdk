@@ -337,7 +337,7 @@ static enum golioth_rpc_status add_param_info_to_cbor(struct golioth_rpc *grpc, 
         const struct golioth_rpc_method *rpc = &grpc->rpcs[i];
 
         ok = zcbor_tstr_encode_ptr(zse, rpc->method, strlen(rpc->method))
-            && zcbor_map_start_encode(zse, SIZE_MAX);
+            && zcbor_list_start_encode(zse, SIZE_MAX);
 
         if (!ok)
         {
@@ -361,7 +361,7 @@ static enum golioth_rpc_status add_param_info_to_cbor(struct golioth_rpc *grpc, 
             cur_node = cur_node->next;
         }
 
-        ok = zcbor_map_end_encode(zse, SIZE_MAX);
+        ok = zcbor_list_end_encode(zse, SIZE_MAX);
 
         if (!ok)
         {
