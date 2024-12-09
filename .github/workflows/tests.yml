@@ -58,7 +58,7 @@ on:
 
 jobs:
   unit_tests:
-    runs-on: ubuntu-latest
+    runs-on: ubuntu-24.04
 
     steps:
       - name: Checkout repository and submodules
@@ -134,7 +134,7 @@ jobs:
     secrets: inherit
 
   hil_test_zephyr_nsim_matrix:
-    runs-on: ubuntu-latest
+    runs-on: ubuntu-24.04
     name: zephyr-native_sim-matrix-generate
 
     outputs:
@@ -159,7 +159,7 @@ jobs:
 
   hil_test_zephyr_nsim:
     if: ${{ inputs.workflow == 'all' || inputs.workflow == 'zephyr_integration_native_sim' }}
-    runs-on: ubuntu-latest
+    runs-on: ubuntu-24.04
     needs: hil_test_zephyr_nsim_matrix
     container:
       image: golioth/golioth-zephyr-base:0.16.8-SDK-v0
@@ -277,7 +277,7 @@ jobs:
 
   hil_test_zephyr_nsim_summary:
     name: zephyr-summary-hil-nsim
-    runs-on: ubuntu-latest
+    runs-on: ubuntu-24.04
     needs: hil_test_zephyr_nsim
     if: success() || failure()
 
@@ -410,7 +410,7 @@ jobs:
 
   hil_sample_zephyr_nsim:
     if: ${{ inputs.workflow == 'all' || inputs.workflow == 'zephyr_sample_native_sim' }}
-    runs-on: ubuntu-latest
+    runs-on: ubuntu-24.04
     container:
       image: golioth/golioth-zephyr-base:0.16.8-SDK-v0
     env:
@@ -499,7 +499,7 @@ jobs:
 
   hil_sample_zephyr_nsim_summary:
     name: zephyr-summary-twister
-    runs-on: ubuntu-latest
+    runs-on: ubuntu-24.04
     needs: hil_sample_zephyr_nsim
     if: success() || failure()
 
@@ -538,7 +538,7 @@ jobs:
           path: samples-zephyr-*.xml
 
   coverage:
-    runs-on: ubuntu-latest
+    runs-on: ubuntu-24.04
     needs:
       - hil_sample_zephyr_nsim
       - hil_test_linux

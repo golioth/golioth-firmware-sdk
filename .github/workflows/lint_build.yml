@@ -8,7 +8,7 @@ on:
 
 jobs:
   lint:
-    runs-on: ubuntu-latest
+    runs-on: ubuntu-24.04
 
     steps:
       - name: Checkout repository
@@ -39,7 +39,7 @@ jobs:
           git clang-format-17 --verbose --extensions c,h --diff --diffstat $BASE
 
   linux_build:
-    runs-on: ubuntu-latest
+    runs-on: ubuntu-24.04
     steps:
       - name: Checkout repository and submodules
         uses: actions/checkout@v4
@@ -68,7 +68,7 @@ jobs:
           ./build.sh
 
   esp_idf_build:
-    runs-on: ubuntu-latest
+    runs-on: ubuntu-24.04
     steps:
       - name: Checkout repository and submodules
         uses: actions/checkout@v4
@@ -101,7 +101,7 @@ jobs:
           path: 'examples/esp_idf/certificate_auth'
 
   modus_toolbox_build:
-    runs-on: ubuntu-latest
+    runs-on: ubuntu-24.04
     env:
       MTB_VERSION: 2.4.0.5972
       MTB_TOOLS_VERSION: 2.4
