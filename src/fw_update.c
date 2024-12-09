@@ -208,6 +208,10 @@ static int32_t backoff_ms_before_expiration(struct fw_update_component_context *
 static bool received_new_target_component(const struct golioth_ota_manifest *manifest,
                                           struct fw_update_component_context *ctx)
 {
+    golioth_sys_mutex_lock(_manifest_update_mut, GOLIOTH_SYS_WAIT_FOREVER);
+
+    bool found_new = false;
+
     const struct golioth_ota_component *new_component =
         golioth_ota_find_component(manifest, ctx->config.fw_package_name);
     if (new_component)
@@ -217,10 +221,20 @@ static bool received_new_target_component(const struct golioth_ota_manifest *man
                   ctx->config.current_version,
                   new_component->version);
 
-        if (0 != strcmp(ctx->config.current_version, new_component->version))
+        if (0 == strcmp(ctx->config.current_version, new_component->version))
+        {
+            GLTH_LOGI(TAG, "Current version matches target version.");
+        }
+        else if (ctx->backoff_duration_ms
+                 && 0 == strcmp(ctx->target_component.version, new_component->version))
+        {
+            GLTH_LOGI(TAG, "Update to target version already in progress.");
+        }
+        else
         {
             memcpy(&ctx->target_component, new_component, sizeof(struct golioth_ota_component));
-            return true;
+            backoff_reset(ctx);
+            found_new = true;
         }
     }
     else
@@ -234,7 +248,9 @@ static bool received_new_target_component(const struct golioth_ota_manifest *man
          */
     }
 
-    return false;
+    golioth_sys_mutex_unlock(_manifest_update_mut);
+
+    return found_new;
 }
 
 static void fw_observe_manifest(void)
@@ -364,10 +380,8 @@ static void fw_update_thread(void *arg)
         golioth_sys_sem_take(_manifest_rcvd, GOLIOTH_SYS_WAIT_FOREVER);
         GLTH_LOGI(TAG, "Received OTA manifest");
 
-        golioth_sys_mutex_lock(_manifest_update_mut, GOLIOTH_SYS_WAIT_FOREVER);
         bool new_component_received =
             received_new_target_component(&_ota_manifest, &_component_ctx);
-        golioth_sys_mutex_unlock(_manifest_update_mut);
 
         if (!new_component_received)
         {
