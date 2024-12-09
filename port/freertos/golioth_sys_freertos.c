@@ -234,7 +234,7 @@ enum golioth_status golioth_sys_sha256_update(golioth_sys_sha256_t sha_ctx,
     }
 
     mbedtls_sha256_context *hash = sha_ctx;
-    int err = mbedtls_sha256_update(hash, input, len);
+    int err = mbedtls_sha256_update_ret(hash, input, len);
     if (err)
     {
         return GOLIOTH_ERR_FAIL;
@@ -251,7 +251,7 @@ enum golioth_status golioth_sys_sha256_finish(golioth_sys_sha256_t sha_ctx, uint
     }
 
     mbedtls_sha256_context *hash = sha_ctx;
-    int err = mbedtls_sha256_finish(hash, output);
+    int err = mbedtls_sha256_finish_ret(hash, output);
     if (err)
     {
         return GOLIOTH_ERR_FAIL;
