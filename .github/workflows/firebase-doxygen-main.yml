@@ -5,7 +5,7 @@ name: Deploy Doxygen to Firebase Hosting on Main
       - main
 jobs:
   deploy_doxygen_prod:
-    runs-on: ubuntu-latest
+    runs-on: ubuntu-24.04
     steps:
       - uses: actions/checkout@v4
       - name: Install Doxygen
