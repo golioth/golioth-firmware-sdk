@@ -335,16 +335,33 @@ static void fw_update_thread(void *arg)
     while (1)
     {
         GLTH_LOGI(TAG, "Waiting to receive OTA manifest");
-        golioth_sys_sem_take(_manifest_rcvd, GOLIOTH_SYS_WAIT_FOREVER);
-        GLTH_LOGI(TAG, "Received OTA manifest");
 
-        bool new_component_received =
-            received_new_target_component(&_ota_manifest, &_component_ctx);
-
-        if (!new_component_received)
+        while (1)
         {
-            GLTH_LOGI(TAG, "Manifest does not contain different firmware version. Nothing to do.");
-            continue;
+            int32_t manifest_timeout = (_component_ctx.backoff_duration_ms == 0)
+                ? GOLIOTH_SYS_WAIT_FOREVER
+                : backoff_ms_before_expiration(&_component_ctx);
+
+            if (!golioth_sys_sem_take(_manifest_rcvd, manifest_timeout))
+            {
+                GLTH_LOGI(TAG,
+                          "Retry component download: %s",
+                          _component_ctx.config.fw_package_name);
+                break;
+            }
+
+            GLTH_LOGI(TAG, "Received OTA manifest");
+
+            bool new_component_received =
+                received_new_target_component(&_ota_manifest, &_component_ctx);
+
+            if (!new_component_received)
+            {
+                GLTH_LOGI(TAG, "Manifest does not contain different firmware version. Nothing to do.");
+                continue;
+            }
+
+            break;
         }
 
         GLTH_LOGI(TAG, "State = Downloading");
@@ -418,6 +435,9 @@ static void fw_update_thread(void *arg)
                 golioth_sys_msleep(FW_UPDATE_RESUME_DELAY_S * 1000);
             }
         }
+
+        /* Download finished, prepare backoff in case needed */
+        backoff_increment(&_component_ctx);
 
         if (err != GOLIOTH_OK)
         {
@@ -495,6 +515,9 @@ static void fw_update_thread(void *arg)
             continue;
         }
 
+        /* Download successful. Reset backoff */
+        backoff_reset(&_component_ctx);
+
         int countdown = 5;
         while (countdown > 0)
         {
@@ -521,7 +544,10 @@ void golioth_fw_update_init_with_config(struct golioth_client *client,
     static bool initialized = false;
 
     _client = client;
+
     _component_ctx.config = *config;
+    backoff_reset(&_component_ctx);
+
     _manifest_update_mut = golioth_sys_mutex_create();  // never destroyed
     _manifest_rcvd = golioth_sys_sem_create(1, 0);      // never destroyed
 
