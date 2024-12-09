@@ -21,6 +21,8 @@ struct fw_update_component_context
 {
     struct golioth_fw_update_config config;
     struct golioth_ota_component target_component;
+    uint32_t backoff_duration_ms;
+    uint32_t last_fail_ts;
 };
 
 struct download_progress_context
@@ -42,6 +44,8 @@ static struct fw_update_component_context _component_ctx;
 #define FW_REPORT_BACKOFF_MAX_S 180
 #define FW_REPORT_MAX_RETRIES 5
 #define FW_REPORT_RETRIES_INITAL_DELAY_S 5
+#define BACKOFF_DURATION_INITIAL_MS 60 * 1000
+#define BACKOFF_DURATION_MAX_MS 24 * 60 * 60 * 1000
 
 #define FW_REPORT_COMPONENT_NAME 1 << 0
 #define FW_REPORT_TARGET_VERSION 1 << 1
@@ -162,6 +166,43 @@ static void on_ota_manifest(struct golioth_client *client,
         return;
     }
     golioth_sys_sem_give(_manifest_rcvd);
+}
+
+static void backoff_reset(struct fw_update_component_context *ctx)
+{
+    ctx->backoff_duration_ms = 0;
+    ctx->last_fail_ts = 0;
+}
+
+static void backoff_increment(struct fw_update_component_context *ctx)
+{
+    if (ctx->backoff_duration_ms == 0)
+    {
+        ctx->backoff_duration_ms = BACKOFF_DURATION_INITIAL_MS;
+    }
+    else
+    {
+        ctx->backoff_duration_ms = ctx->backoff_duration_ms * 2;
+
+        if (ctx->backoff_duration_ms > BACKOFF_DURATION_MAX_MS)
+        {
+            ctx->backoff_duration_ms = BACKOFF_DURATION_MAX_MS;
+        }
+    }
+
+    ctx->last_fail_ts = (uint32_t) golioth_sys_now_ms();
+}
+
+static int32_t backoff_ms_before_expiration(struct fw_update_component_context *ctx)
+{
+    uint32_t actual_duration = ((uint32_t) golioth_sys_now_ms()) - ctx->last_fail_ts;
+
+    if (actual_duration < ctx->backoff_duration_ms)
+    {
+        return (int32_t) (ctx->backoff_duration_ms - actual_duration);
+    }
+
+    return 0;
 }
 
 static bool received_new_target_component(const struct golioth_ota_manifest *manifest,
