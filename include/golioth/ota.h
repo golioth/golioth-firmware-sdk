@@ -68,6 +68,10 @@ enum golioth_ota_reason
     GOLIOTH_OTA_REASON_FIRMWARE_UPDATE_FAILED,
     /// Protocol not supported
     GOLIOTH_OTA_REASON_UNSUPPORTED_PROTOCOL,
+    /// IO error while trying to store component
+    GOLIOTH_OTA_REASON_IO,
+    /// Awaiting retry
+    GOLIOTH_OTA_REASON_AWAIT_RETRY,
 };
 
 /// A component/artifact within an OTA manifest
