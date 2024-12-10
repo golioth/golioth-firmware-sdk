@@ -171,13 +171,12 @@ static enum golioth_status golioth_coap_client_set_internal(struct golioth_clien
         return GOLIOTH_ERR_INVALID_FORMAT;
     }
 
-    if (payload_size > 0)
+    if (payload_size > 0 && !is_synchronous)
     {
-        // We will allocate memory and copy the payload
-        // to avoid payload lifetime and thread-safety issues.
+        // If this is an asynchronous request, We will allocate memory and copy the
+        // payload to avoid payload lifetime and thread-safety issues.
         //
-        // This memory will be free'd by the CoAP thread after handling the request,
-        // or in this function if we fail to enqueue the request.
+        // This memory will be free'd by the CoAP thread after handling the request.
         request_payload = (uint8_t *) golioth_sys_malloc(payload_size);
         if (!request_payload)
         {
@@ -186,6 +185,11 @@ static enum golioth_status golioth_coap_client_set_internal(struct golioth_clien
         }
         memset(request_payload, 0, payload_size);
         memcpy(request_payload, payload, payload_size);
+    }
+    else
+    {
+        // If this is a synchronous request, just use the payload pointer directly
+        request_payload = (uint8_t *) payload;
     }
 
     uint64_t ageout_ms = GOLIOTH_SYS_WAIT_FOREVER;
@@ -206,10 +210,6 @@ static enum golioth_status golioth_coap_client_set_internal(struct golioth_clien
 
         if (status != GOLIOTH_OK)
         {
-            if (request_payload)
-            {
-                golioth_sys_free(request_payload);
-            }
             goto finish;
         }
 
@@ -238,7 +238,7 @@ static enum golioth_status golioth_coap_client_set_internal(struct golioth_clien
          *       the mbox is full, so coap_client writes a log, which the
          *       logging thread attempts to send to the cloud, and so on.
          */
-        if (request_payload)
+        if (!is_synchronous)
         {
             golioth_sys_free(request_payload);
         }
