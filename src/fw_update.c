@@ -370,14 +370,6 @@ static void fw_update_thread(void *arg)
 
     while (1)
     {
-        GLTH_LOGI(TAG, "State = Idle");
-        golioth_fw_update_report_state_sync(&_component_ctx,
-                                            GOLIOTH_OTA_STATE_IDLE,
-                                            GOLIOTH_OTA_REASON_READY,
-                                            true,
-                                            true,
-                                            true);
-
         GLTH_LOGI(TAG, "Waiting to receive OTA manifest");
 
         while (1)
@@ -385,6 +377,27 @@ static void fw_update_thread(void *arg)
             int32_t manifest_timeout = (_component_ctx.backoff_duration_ms == 0)
                 ? GOLIOTH_SYS_WAIT_FOREVER
                 : backoff_ms_before_expiration(&_component_ctx);
+
+            GLTH_LOGI(TAG, "State = Idle");
+
+            if (manifest_timeout == GOLIOTH_SYS_WAIT_FOREVER)
+            {
+                golioth_fw_update_report_state_sync(&_component_ctx,
+                                                    GOLIOTH_OTA_STATE_IDLE,
+                                                    GOLIOTH_OTA_REASON_READY,
+                                                    true,
+                                                    true,
+                                                    false);
+            }
+            else
+            {
+                golioth_fw_update_report_state_sync(&_component_ctx,
+                                                    GOLIOTH_OTA_STATE_IDLE,
+                                                    GOLIOTH_OTA_REASON_AWAIT_RETRY,
+                                                    true,
+                                                    true,
+                                                    true);
+            }
 
             if (!golioth_sys_sem_take(_manifest_rcvd, manifest_timeout))
             {
