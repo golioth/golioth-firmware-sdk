@@ -183,7 +183,6 @@ static enum golioth_status golioth_coap_client_set_internal(struct golioth_clien
             GLTH_LOGE(TAG, "Payload alloc failure");
             return GOLIOTH_ERR_MEM_ALLOC;
         }
-        memset(request_payload, 0, payload_size);
         memcpy(request_payload, payload, payload_size);
     }
     else
