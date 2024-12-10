@@ -384,6 +384,26 @@ static void fw_update_thread(void *arg)
                 ? GOLIOTH_SYS_WAIT_FOREVER
                 : backoff_ms_before_expiration(&_component_ctx);
 
+            GLTH_LOGI(TAG, "State = Idle");
+
+            if (manifest_timeout == GOLIOTH_SYS_WAIT_FOREVER)
+            {
+                golioth_fw_update_report_state_sync(&_component_ctx,
+                                                    GOLIOTH_OTA_STATE_IDLE,
+                                                    GOLIOTH_OTA_REASON_READY,
+                                                    FW_REPORT_COMPONENT_NAME
+                                                        | FW_REPORT_CURRENT_VERSION);
+            }
+            else
+            {
+                golioth_fw_update_report_state_sync(&_component_ctx,
+                                                    GOLIOTH_OTA_STATE_IDLE,
+                                                    GOLIOTH_OTA_REASON_AWAIT_RETRY,
+                                                    FW_REPORT_COMPONENT_NAME
+                                                        | FW_REPORT_CURRENT_VERSION
+                                                        | FW_REPORT_TARGET_VERSION);
+            }
+
             if (!golioth_sys_sem_take(_manifest_rcvd, manifest_timeout))
             {
                 GLTH_LOGI(TAG,
