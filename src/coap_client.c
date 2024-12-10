@@ -63,6 +63,57 @@ static enum golioth_status wait_for_synchronous(struct golioth_coap_request_msg 
     return GOLIOTH_OK;
 }
 
+static enum golioth_status enqueue_request(struct golioth_client *client,
+                                           struct golioth_coap_request_msg *request_msg,
+                                           bool is_synchronous,
+                                           int32_t timeout_s)
+{
+    enum golioth_status status = GOLIOTH_OK;
+    enum golioth_status request_result = GOLIOTH_OK;
+
+    if (is_synchronous)
+    {
+        status = setup_synchronous(request_msg);
+
+        if (status != GOLIOTH_OK)
+        {
+            goto finish;
+        }
+
+        request_msg->status = &request_result;
+    }
+
+    bool sent = golioth_mbox_try_send(client->request_queue, request_msg);
+    if (!sent)
+    {
+        /* NOTE: Logging a message here when cloud logging is enabled can cause
+         *       a loop where the logging thread attempts to enqueue a message,
+         *       the mbox is full, so coap_client writes a log, which the
+         *       logging thread attempts to send to the cloud, and so on.
+         */
+        if (is_synchronous)
+        {
+            golioth_event_group_destroy(request_msg->request_complete_event);
+            golioth_sys_sem_destroy(request_msg->request_complete_ack_sem);
+        }
+        status = GOLIOTH_ERR_QUEUE_FULL;
+        goto finish;
+    }
+
+    if (is_synchronous)
+    {
+        status = wait_for_synchronous(request_msg, timeout_s);
+
+        if (status == GOLIOTH_OK)
+        {
+            status = request_result;
+        }
+    }
+
+finish:
+    return status;
+}
+
 bool golioth_client_is_connected(struct golioth_client *client)
 {
     if (!client)
@@ -76,8 +127,6 @@ enum golioth_status golioth_coap_client_empty(struct golioth_client *client,
                                               bool is_synchronous,
                                               int32_t timeout_s)
 {
-    enum golioth_status status = GOLIOTH_OK;
-
     if (!client)
     {
         return GOLIOTH_ERR_NULL;
@@ -99,44 +148,8 @@ enum golioth_status golioth_coap_client_empty(struct golioth_client *client,
         .type = GOLIOTH_COAP_REQUEST_EMPTY,
         .ageout_ms = ageout_ms,
     };
-    enum golioth_status request_result = GOLIOTH_OK;
 
-    if (is_synchronous)
-    {
-        status = setup_synchronous(&request_msg);
-
-        if (status != GOLIOTH_OK)
-        {
-            goto finish;
-        }
-
-        request_msg.status = &request_result;
-    }
-
-    bool sent = golioth_mbox_try_send(client->request_queue, &request_msg);
-    if (!sent)
-    {
-        GLTH_LOGW(TAG, "Failed to enqueue request, queue full");
-        if (is_synchronous)
-        {
-            golioth_event_group_destroy(request_msg.request_complete_event);
-            golioth_sys_sem_destroy(request_msg.request_complete_ack_sem);
-        }
-        return GOLIOTH_ERR_QUEUE_FULL;
-    }
-
-    if (is_synchronous)
-    {
-        status = wait_for_synchronous(&request_msg, timeout_s);
-
-        if (status == GOLIOTH_OK)
-        {
-            status = request_result;
-        }
-    }
-
-finish:
-    return status;
+    return enqueue_request(client, &request_msg, is_synchronous, timeout_s);
 }
 
 static enum golioth_status golioth_coap_client_set_internal(struct golioth_client *client,
@@ -155,8 +168,6 @@ static enum golioth_status golioth_coap_client_set_internal(struct golioth_clien
     }
 
     struct golioth_coap_request_msg request_msg = {};
-    enum golioth_status status = GOLIOTH_OK;
-    enum golioth_status request_result = GOLIOTH_OK;
     uint8_t *request_payload = NULL;
 
     if (!client->is_running)
@@ -200,22 +211,6 @@ static enum golioth_status golioth_coap_client_set_internal(struct golioth_clien
 
     strncpy(request_msg.path, path, sizeof(request_msg.path) - 1);
 
-    if (is_synchronous)
-    {
-        status = setup_synchronous(&request_msg);
-
-        if (status != GOLIOTH_OK)
-        {
-            if (request_payload)
-            {
-                golioth_sys_free(request_payload);
-            }
-            goto finish;
-        }
-
-        request_msg.status = &request_result;
-    }
-
     if (type == GOLIOTH_COAP_REQUEST_POST_BLOCK)
     {
         request_msg.post_block = *(struct golioth_coap_post_block_params *) request_params;
@@ -230,37 +225,12 @@ static enum golioth_status golioth_coap_client_set_internal(struct golioth_clien
         request_msg.post.payload_size = payload_size;
     }
 
-    bool sent = golioth_mbox_try_send(client->request_queue, &request_msg);
-    if (!sent)
+    enum golioth_status status = enqueue_request(client, &request_msg, is_synchronous, timeout_s);
+    if (status == GOLIOTH_ERR_QUEUE_FULL)
     {
-        /* NOTE: Logging a message here when cloud logging is enabled can cause
-         *       a loop where the logging thread attempts to enqueue a message,
-         *       the mbox is full, so coap_client writes a log, which the
-         *       logging thread attempts to send to the cloud, and so on.
-         */
-        if (request_payload)
-        {
-            golioth_sys_free(request_payload);
-        }
-        if (is_synchronous)
-        {
-            golioth_event_group_destroy(request_msg.request_complete_event);
-            golioth_sys_sem_destroy(request_msg.request_complete_ack_sem);
-        }
-        return GOLIOTH_ERR_QUEUE_FULL;
+        golioth_sys_free(request_payload);
     }
 
-    if (is_synchronous)
-    {
-        status = wait_for_synchronous(&request_msg, timeout_s);
-
-        if (status == GOLIOTH_OK)
-        {
-            status = request_result;
-        }
-    }
-
-finish:
     return status;
 }
 
@@ -332,8 +302,6 @@ enum golioth_status golioth_coap_client_delete(struct golioth_client *client,
                                                bool is_synchronous,
                                                int32_t timeout_s)
 {
-    enum golioth_status status = GOLIOTH_OK;
-
     if (!client || !path)
     {
         return GOLIOTH_ERR_NULL;
@@ -371,44 +339,8 @@ enum golioth_status golioth_coap_client_delete(struct golioth_client *client,
         return GOLIOTH_ERR_INVALID_FORMAT;
     }
     strncpy(request_msg.path, path, sizeof(request_msg.path) - 1);
-    enum golioth_status request_result = GOLIOTH_OK;
 
-    if (is_synchronous)
-    {
-        status = setup_synchronous(&request_msg);
-
-        if (status != GOLIOTH_OK)
-        {
-            goto finish;
-        }
-
-        request_msg.status = &request_result;
-    }
-
-    bool sent = golioth_mbox_try_send(client->request_queue, &request_msg);
-    if (!sent)
-    {
-        GLTH_LOGW(TAG, "Failed to enqueue request, queue full");
-        if (is_synchronous)
-        {
-            golioth_event_group_destroy(request_msg.request_complete_event);
-            golioth_sys_sem_destroy(request_msg.request_complete_ack_sem);
-        }
-        return GOLIOTH_ERR_QUEUE_FULL;
-    }
-
-    if (is_synchronous)
-    {
-        status = wait_for_synchronous(&request_msg, timeout_s);
-
-        if (status == GOLIOTH_OK)
-        {
-            status = request_result;
-        }
-    }
-
-finish:
-    return status;
+    return enqueue_request(client, &request_msg, is_synchronous, timeout_s);
 }
 
 static enum golioth_status golioth_coap_client_get_internal(struct golioth_client *client,
@@ -419,8 +351,6 @@ static enum golioth_status golioth_coap_client_get_internal(struct golioth_clien
                                                             bool is_synchronous,
                                                             int32_t timeout_s)
 {
-    enum golioth_status status = GOLIOTH_OK;
-
     if (!client || !path)
     {
         return GOLIOTH_ERR_NULL;
@@ -448,21 +378,7 @@ static enum golioth_status golioth_coap_client_get_internal(struct golioth_clien
         return GOLIOTH_ERR_INVALID_FORMAT;
     }
     strncpy(request_msg.path, path, sizeof(request_msg.path) - 1);
-    enum golioth_status request_result = GOLIOTH_OK;
 
-    if (is_synchronous)
-    {
-        status = setup_synchronous(&request_msg);
-
-        if (status != GOLIOTH_OK)
-        {
-            goto finish;
-        }
-
-        request_msg.status = &request_result;
-    }
-
-    request_msg.ageout_ms = ageout_ms;
     if (type == GOLIOTH_COAP_REQUEST_GET_BLOCK)
     {
         request_msg.get_block = *(struct golioth_coap_get_block_params *) request_params;
@@ -473,30 +389,7 @@ static enum golioth_status golioth_coap_client_get_internal(struct golioth_clien
         request_msg.get = *(struct golioth_coap_get_params *) request_params;
     }
 
-    bool sent = golioth_mbox_try_send(client->request_queue, &request_msg);
-    if (!sent)
-    {
-        GLTH_LOGE(TAG, "Failed to enqueue request, queue full");
-        if (is_synchronous)
-        {
-            golioth_event_group_destroy(request_msg.request_complete_event);
-            golioth_sys_sem_destroy(request_msg.request_complete_ack_sem);
-        }
-        return GOLIOTH_ERR_QUEUE_FULL;
-    }
-
-    if (is_synchronous)
-    {
-        status = wait_for_synchronous(&request_msg, timeout_s);
-
-        if (status == GOLIOTH_OK)
-        {
-            status = request_result;
-        }
-    }
-
-finish:
-    return status;
+    return enqueue_request(client, &request_msg, is_synchronous, timeout_s);
 }
 
 enum golioth_status golioth_coap_client_get(struct golioth_client *client,
@@ -589,14 +482,7 @@ enum golioth_status golioth_coap_client_observe(struct golioth_client *client,
     }
     strncpy(request_msg.path, path, sizeof(request_msg.path) - 1);
 
-    bool sent = golioth_mbox_try_send(client->request_queue, &request_msg);
-    if (!sent)
-    {
-        GLTH_LOGW(TAG, "Failed to enqueue request, queue full");
-        return GOLIOTH_ERR_QUEUE_FULL;
-    }
-
-    return GOLIOTH_OK;
+    return enqueue_request(client, &request_msg, false, -1);
 }
 
 enum golioth_status golioth_coap_client_observe_release(struct golioth_client *client,
@@ -643,14 +529,7 @@ enum golioth_status golioth_coap_client_observe_release(struct golioth_client *c
     memcpy(request_msg.token, token, t_len);
     request_msg.token_len = t_len;
 
-    bool sent = golioth_mbox_try_send(client->request_queue, &request_msg);
-    if (!sent)
-    {
-        GLTH_LOGE(TAG, "Failed to enqueue request, queue full");
-        return GOLIOTH_ERR_QUEUE_FULL;
-    }
-
-    return GOLIOTH_OK;
+    return enqueue_request(client, &request_msg, false, -1);
 }
 
 void golioth_coap_client_cancel_all_observations(struct golioth_client *client)
