@@ -564,7 +564,7 @@ static int wifi_manager_init(void)
     struct wifi_manager_data *wifi_mgmt = &wifi_manager_data;
     const struct wifi_manager_config *config = &wifi_manager_config;
 
-    wifi_mgmt->iface = net_if_get_default();
+    wifi_mgmt->iface = net_if_get_first_wifi();
     __ASSERT_NO_MSG(wifi_mgmt->iface);
 
     k_work_queue_start(&wifi_mgmt->workq,
