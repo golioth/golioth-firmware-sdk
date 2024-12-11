@@ -356,6 +356,7 @@ static void fw_update_thread(void *arg)
 
         block_retries.idx = 0;
         block_retries.count = 0;
+        bool block_retries_reported = false;
 
         while (1)
         {
@@ -400,21 +401,29 @@ static void fw_update_thread(void *arg)
                           next_block,
                           golioth_status_to_str(err));
 
-                golioth_fw_update_report_state_sync(&_component_ctx,
-                                                    GOLIOTH_OTA_STATE_DOWNLOADING,
-                                                    GOLIOTH_OTA_REASON_CONNECTION_LOST,
-                                                    FW_REPORT_COMPONENT_NAME
-                                                        | FW_REPORT_CURRENT_VERSION
-                                                        | FW_REPORT_TARGET_VERSION);
+                if (!block_retries_reported)
+                {
+                    golioth_fw_update_report_state_sync(&_component_ctx,
+                                                        GOLIOTH_OTA_STATE_DOWNLOADING,
+                                                        GOLIOTH_OTA_REASON_CONNECTION_LOST,
+                                                        FW_REPORT_COMPONENT_NAME
+                                                            | FW_REPORT_CURRENT_VERSION
+                                                            | FW_REPORT_TARGET_VERSION);
+                }
 
                 golioth_sys_msleep(FW_UPDATE_RESUME_DELAY_S * 1000);
 
-                golioth_fw_update_report_state_sync(&_component_ctx,
-                                                    GOLIOTH_OTA_STATE_DOWNLOADING,
-                                                    GOLIOTH_OTA_REASON_READY,
-                                                    FW_REPORT_COMPONENT_NAME
-                                                        | FW_REPORT_CURRENT_VERSION
-                                                        | FW_REPORT_TARGET_VERSION);
+                if (!block_retries_reported)
+                {
+                    golioth_fw_update_report_state_sync(&_component_ctx,
+                                                        GOLIOTH_OTA_STATE_DOWNLOADING,
+                                                        GOLIOTH_OTA_REASON_READY,
+                                                        FW_REPORT_COMPONENT_NAME
+                                                            | FW_REPORT_CURRENT_VERSION
+                                                            | FW_REPORT_TARGET_VERSION);
+
+                    block_retries_reported = true;
+                }
             }
         }
 
