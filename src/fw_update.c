@@ -39,6 +39,9 @@ static struct fw_update_component_context _component_ctx;
 
 #define FW_MAX_BLOCK_RESUME_BEFORE_FAIL 15
 #define FW_UPDATE_RESUME_DELAY_S 15
+#define FW_REPORT_BACKOFF_MAX_S 180
+#define FW_REPORT_MAX_RETRIES 5
+#define FW_REPORT_RETRIES_INITAL_DELAY_S 5
 
 static enum golioth_status fw_write_block_cb(const struct golioth_ota_component *component,
                                              uint32_t block_idx,
@@ -75,26 +78,60 @@ static enum golioth_status fw_write_block_cb(const struct golioth_ota_component 
     return status;
 }
 
-static enum golioth_status golioth_fw_update_report_state_sync(struct golioth_client *client,
-                                                               enum golioth_ota_state state,
-                                                               enum golioth_ota_reason reason,
-                                                               const char *package,
-                                                               const char *current_version,
-                                                               const char *target_version,
-                                                               int32_t timeout_s)
+enum golioth_status golioth_fw_update_report_state_sync(struct fw_update_component_context *ctx,
+                                                        enum golioth_ota_state state,
+                                                        enum golioth_ota_reason reason,
+                                                        bool report_component_name,
+                                                        bool report_current_version,
+                                                        bool report_target_version)
 {
+    if (!ctx)
+    {
+        return GOLIOTH_ERR_NULL;
+    }
+
     if (_state_callback)
     {
         _state_callback(state, reason, _state_callback_arg);
     }
 
-    return golioth_ota_report_state_sync(client,
-                                         state,
-                                         reason,
-                                         package,
-                                         current_version,
-                                         target_version,
-                                         timeout_s);
+    enum golioth_status status;
+    uint32_t backoff_s = FW_REPORT_RETRIES_INITAL_DELAY_S;
+    int retries_remaining = FW_REPORT_MAX_RETRIES;
+
+retry_report:
+    status = golioth_ota_report_state_sync(
+        _client,
+        state,
+        reason,
+        (report_component_name) ? ctx->config.fw_package_name : NULL,
+        (report_current_version) ? _component_ctx.config.current_version : NULL,
+        (report_target_version) ? _component_ctx.target_component.version : NULL,
+        GOLIOTH_SYS_WAIT_FOREVER);
+
+    if (status == GOLIOTH_OK)
+    {
+        GLTH_LOGD(TAG, "State/Reason sent to server");
+        return status;
+    }
+    else if (retries_remaining)
+    {
+        GLTH_LOGE(TAG, "Failed to report fw status: %d; retry in %" PRIu32 "s", status, backoff_s);
+
+        golioth_sys_msleep(backoff_s * 1000);
+
+        retries_remaining--;
+        backoff_s *= 2;
+        if (backoff_s > FW_REPORT_BACKOFF_MAX_S)
+        {
+            backoff_s = FW_REPORT_BACKOFF_MAX_S;
+        }
+
+        goto retry_report;
+    }
+
+    GLTH_LOGE(TAG, "Failed to report fw status: %u", status);
+    return status;
 }
 
 static void on_ota_manifest(struct golioth_client *client,
@@ -144,27 +181,23 @@ static bool received_new_target_component(const struct golioth_ota_manifest *man
             return true;
         }
     }
+    else
+    {
+        GLTH_LOGI(TAG,
+                  "Manifest does not contain target component: %s",
+                  ctx->config.fw_package_name);
+        /* TODO: Report state/reason here.
+         *  This can't be done directly because it would call a sync func from a callback
+         *  Consider adding a new reason code: GOLIOTH_OTA_REASON_COMPONENT_NOT_FOUND
+         */
+    }
+
     return false;
 }
 
-static void fw_report_and_observe(void)
+static void fw_register_observe(void)
 {
-    enum golioth_status status;
-
-    status = golioth_fw_update_report_state_sync(_client,
-                                                 GOLIOTH_OTA_STATE_IDLE,
-                                                 GOLIOTH_OTA_REASON_READY,
-                                                 _component_ctx.config.fw_package_name,
-                                                 _component_ctx.config.current_version,
-                                                 NULL,
-                                                 GOLIOTH_SYS_WAIT_FOREVER);
-
-    if (status != GOLIOTH_OK)
-    {
-        GLTH_LOGE(TAG, "Failed to report firmware state: %d", status);
-    }
-
-    status = GOLIOTH_ERR_NULL;
+    enum golioth_status status = GOLIOTH_ERR_NULL;
     uint32_t retry_delay_s = 5;
 
     while (status != GOLIOTH_OK)
@@ -220,16 +253,13 @@ static enum golioth_status fw_verify_component_hash(
 
 static void fw_download_failed(enum golioth_ota_reason reason)
 {
-
     fw_update_end();
-
-    golioth_fw_update_report_state_sync(_client,
+    golioth_fw_update_report_state_sync(&_component_ctx,
                                         GOLIOTH_OTA_STATE_DOWNLOADING,
                                         reason,
-                                        _component_ctx.config.fw_package_name,
-                                        _component_ctx.config.current_version,
-                                        _component_ctx.target_component.version,
-                                        GOLIOTH_SYS_WAIT_FOREVER);
+                                        true,
+                                        true,
+                                        true);
 }
 
 static void fw_update_thread(void *arg)
@@ -268,23 +298,29 @@ static void fw_update_thread(void *arg)
             GLTH_LOGI(TAG, "Firmware updated successfully!");
             fw_update_cancel_rollback();
 
-            GLTH_LOGI(TAG, "State = Idle");
-            golioth_fw_update_report_state_sync(_client,
+            golioth_fw_update_report_state_sync(&_component_ctx,
                                                 GOLIOTH_OTA_STATE_UPDATING,
                                                 GOLIOTH_OTA_REASON_FIRMWARE_UPDATED_SUCCESSFULLY,
-                                                _component_ctx.config.fw_package_name,
-                                                _component_ctx.config.current_version,
-                                                NULL,
-                                                GOLIOTH_SYS_WAIT_FOREVER);
+                                                true,
+                                                true,
+                                                false);
         }
     }
 
-    fw_report_and_observe();
+    fw_register_observe();
 
     struct download_progress_context download_ctx;
 
     while (1)
     {
+        GLTH_LOGI(TAG, "State = Idle");
+        golioth_fw_update_report_state_sync(&_component_ctx,
+                                            GOLIOTH_OTA_STATE_IDLE,
+                                            GOLIOTH_OTA_REASON_READY,
+                                            true,
+                                            true,
+                                            true);
+
         GLTH_LOGI(TAG, "Waiting to receive OTA manifest");
         golioth_sys_sem_take(_manifest_rcvd, GOLIOTH_SYS_WAIT_FOREVER);
         GLTH_LOGI(TAG, "Received OTA manifest");
@@ -301,13 +337,12 @@ static void fw_update_thread(void *arg)
         }
 
         GLTH_LOGI(TAG, "State = Downloading");
-        golioth_fw_update_report_state_sync(_client,
+        golioth_fw_update_report_state_sync(&_component_ctx,
                                             GOLIOTH_OTA_STATE_DOWNLOADING,
                                             GOLIOTH_OTA_REASON_READY,
-                                            _component_ctx.config.fw_package_name,
-                                            _component_ctx.config.current_version,
-                                            _component_ctx.target_component.version,
-                                            GOLIOTH_SYS_WAIT_FOREVER);
+                                            true,
+                                            true,
+                                            true);
 
         uint64_t start_time_ms = golioth_sys_now_ms();
         download_ctx.bytes_downloaded = 0;
@@ -324,6 +359,7 @@ static void fw_update_thread(void *arg)
 
         block_retries.idx = 0;
         block_retries.count = 0;
+        bool block_retries_reported = false;
 
         while (1)
         {
@@ -364,11 +400,33 @@ static void fw_update_thread(void *arg)
             else
             {
                 GLTH_LOGI(TAG,
-                          "Failed to download block idx: %" PRIu32 "; status: %s; retrying",
+                          "Block download failed at block idx: %" PRIu32 "; status: %s; resuming",
                           next_block,
                           golioth_status_to_str(err));
 
+                if (!block_retries_reported)
+                {
+                    golioth_fw_update_report_state_sync(&_component_ctx,
+                                                        GOLIOTH_OTA_STATE_DOWNLOADING,
+                                                        GOLIOTH_OTA_REASON_CONNECTION_LOST,
+                                                        true,
+                                                        true,
+                                                        true);
+                }
+
                 golioth_sys_msleep(FW_UPDATE_RESUME_DELAY_S * 1000);
+
+                if (!block_retries_reported)
+                {
+                    golioth_fw_update_report_state_sync(&_component_ctx,
+                                                        GOLIOTH_OTA_STATE_DOWNLOADING,
+                                                        GOLIOTH_OTA_REASON_READY,
+                                                        true,
+                                                        true,
+                                                        true);
+
+                    block_retries_reported = true;
+                }
             }
         }
 
@@ -377,7 +435,7 @@ static void fw_update_thread(void *arg)
             switch (err)
             {
                 case GOLIOTH_ERR_IO:
-                    fw_download_failed(GOLIOTH_OTA_REASON_NOT_ENOUGH_FLASH_MEMORY);
+                    fw_download_failed(GOLIOTH_OTA_REASON_IO);
                     break;
                 default:
                     fw_download_failed(GOLIOTH_OTA_REASON_FIRMWARE_UPDATE_FAILED);
@@ -412,34 +470,31 @@ static void fw_update_thread(void *arg)
             fw_update_end();
 
             GLTH_LOGI(TAG, "State = Idle");
-            golioth_fw_update_report_state_sync(_client,
+            golioth_fw_update_report_state_sync(&_component_ctx,
                                                 GOLIOTH_OTA_STATE_IDLE,
                                                 GOLIOTH_OTA_REASON_INTEGRITY_CHECK_FAILURE,
-                                                _component_ctx.config.fw_package_name,
-                                                _component_ctx.config.current_version,
-                                                _component_ctx.target_component.version,
-                                                GOLIOTH_SYS_WAIT_FOREVER);
+                                                true,
+                                                true,
+                                                true);
 
             continue;
         }
 
         GLTH_LOGI(TAG, "State = Downloaded");
-        golioth_fw_update_report_state_sync(_client,
+        golioth_fw_update_report_state_sync(&_component_ctx,
                                             GOLIOTH_OTA_STATE_DOWNLOADED,
                                             GOLIOTH_OTA_REASON_READY,
-                                            _component_ctx.config.fw_package_name,
-                                            _component_ctx.config.current_version,
-                                            _component_ctx.target_component.version,
-                                            GOLIOTH_SYS_WAIT_FOREVER);
+                                            true,
+                                            true,
+                                            true);
 
         GLTH_LOGI(TAG, "State = Updating");
-        golioth_fw_update_report_state_sync(_client,
+        golioth_fw_update_report_state_sync(&_component_ctx,
                                             GOLIOTH_OTA_STATE_UPDATING,
                                             GOLIOTH_OTA_REASON_READY,
-                                            _component_ctx.config.fw_package_name,
-                                            _component_ctx.config.current_version,
-                                            _component_ctx.target_component.version,
-                                            GOLIOTH_SYS_WAIT_FOREVER);
+                                            true,
+                                            true,
+                                            true);
 
         if (fw_update_change_boot_image() != GOLIOTH_OK)
         {
