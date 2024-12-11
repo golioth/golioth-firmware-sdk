@@ -42,6 +42,8 @@ zephyr_library_sources(
     ../../src/fw_update.c
     ../../src/coap_blockwise.c
     ../../src/lightdb_state.c
+    ../../src/location.c
+    ../../src/location_wifi.c
     ../../src/stream.c
     ../../src/log.c
     ../../src/mbox.c
