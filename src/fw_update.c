@@ -21,6 +21,8 @@ struct fw_update_component_context
 {
     struct golioth_fw_update_config config;
     struct golioth_ota_component target_component;
+    uint64_t backoff_duration_ms;
+    uint64_t last_fail_ts;
 };
 
 struct download_progress_context
@@ -42,6 +44,8 @@ static struct fw_update_component_context _component_ctx;
 #define FW_REPORT_BACKOFF_MAX_S 180
 #define FW_REPORT_MAX_RETRIES 5
 #define FW_REPORT_RETRIES_INITAL_DELAY_S 5
+#define BACKOFF_DURATION_INITIAL_MS 60 * 1000
+#define BACKOFF_DURATION_MAX_MS 24 * 60 * 60 * 1000
 
 static enum golioth_status fw_write_block_cb(const struct golioth_ota_component *component,
                                              uint32_t block_idx,
@@ -163,9 +167,50 @@ static void on_ota_manifest(struct golioth_client *client,
     golioth_sys_sem_give(_manifest_rcvd);
 }
 
+static void backoff_reset(struct fw_update_component_context *ctx)
+{
+    ctx->backoff_duration_ms = 0;
+    ctx->last_fail_ts = 0;
+}
+
+static void backoff_increment(struct fw_update_component_context *ctx)
+{
+    if (ctx->backoff_duration_ms == 0)
+    {
+        ctx->backoff_duration_ms = BACKOFF_DURATION_INITIAL_MS;
+    }
+    else
+    {
+        ctx->backoff_duration_ms = ctx->backoff_duration_ms * 2;
+
+        if (ctx->backoff_duration_ms > BACKOFF_DURATION_MAX_MS)
+        {
+            ctx->backoff_duration_ms = BACKOFF_DURATION_MAX_MS;
+        }
+    }
+
+    ctx->last_fail_ts = golioth_sys_now_ms();
+}
+
+static int32_t backoff_ms_before_expiration(struct fw_update_component_context *ctx)
+{
+    uint64_t actual_duration = golioth_sys_now_ms() - ctx->last_fail_ts;
+
+    if (actual_duration < ctx->backoff_duration_ms)
+    {
+        return (int32_t) (ctx->backoff_duration_ms - actual_duration);
+    }
+
+    return 0;
+}
+
 static bool received_new_target_component(const struct golioth_ota_manifest *manifest,
                                           struct fw_update_component_context *ctx)
 {
+    golioth_sys_mutex_lock(_manifest_update_mut, GOLIOTH_SYS_WAIT_FOREVER);
+
+    bool found_new = false;
+
     const struct golioth_ota_component *new_component =
         golioth_ota_find_component(manifest, ctx->config.fw_package_name);
     if (new_component)
@@ -175,10 +220,20 @@ static bool received_new_target_component(const struct golioth_ota_manifest *man
                   ctx->config.current_version,
                   new_component->version);
 
-        if (0 != strcmp(ctx->config.current_version, new_component->version))
+        if (0 == strcmp(ctx->config.current_version, new_component->version))
+        {
+            GLTH_LOGI(TAG, "Current version matches target version.");
+        }
+        else if (ctx->backoff_duration_ms
+                 && 0 == strcmp(ctx->target_component.version, new_component->version))
+        {
+            GLTH_LOGI(TAG, "Update to target version already in progress.");
+        }
+        else
         {
             memcpy(&ctx->target_component, new_component, sizeof(struct golioth_ota_component));
-            return true;
+            backoff_reset(ctx);
+            found_new = true;
         }
     }
     else
@@ -192,7 +247,9 @@ static bool received_new_target_component(const struct golioth_ota_manifest *man
          */
     }
 
-    return false;
+    golioth_sys_mutex_unlock(_manifest_update_mut);
+
+    return found_new;
 }
 
 static void fw_register_observe(void)
@@ -313,27 +370,56 @@ static void fw_update_thread(void *arg)
 
     while (1)
     {
-        GLTH_LOGI(TAG, "State = Idle");
-        golioth_fw_update_report_state_sync(&_component_ctx,
-                                            GOLIOTH_OTA_STATE_IDLE,
-                                            GOLIOTH_OTA_REASON_READY,
-                                            true,
-                                            true,
-                                            true);
-
         GLTH_LOGI(TAG, "Waiting to receive OTA manifest");
-        golioth_sys_sem_take(_manifest_rcvd, GOLIOTH_SYS_WAIT_FOREVER);
-        GLTH_LOGI(TAG, "Received OTA manifest");
 
-        golioth_sys_mutex_lock(_manifest_update_mut, GOLIOTH_SYS_WAIT_FOREVER);
-        bool new_component_received =
-            received_new_target_component(&_ota_manifest, &_component_ctx);
-        golioth_sys_mutex_unlock(_manifest_update_mut);
-
-        if (!new_component_received)
+        while (1)
         {
-            GLTH_LOGI(TAG, "Manifest does not contain different firmware version. Nothing to do.");
-            continue;
+            int32_t manifest_timeout = (_component_ctx.backoff_duration_ms == 0)
+                ? GOLIOTH_SYS_WAIT_FOREVER
+                : backoff_ms_before_expiration(&_component_ctx);
+
+            GLTH_LOGI(TAG, "State = Idle");
+
+            if (manifest_timeout == GOLIOTH_SYS_WAIT_FOREVER)
+            {
+                golioth_fw_update_report_state_sync(&_component_ctx,
+                                                    GOLIOTH_OTA_STATE_IDLE,
+                                                    GOLIOTH_OTA_REASON_READY,
+                                                    true,
+                                                    true,
+                                                    false);
+            }
+            else
+            {
+                golioth_fw_update_report_state_sync(&_component_ctx,
+                                                    GOLIOTH_OTA_STATE_IDLE,
+                                                    GOLIOTH_OTA_REASON_AWAIT_RETRY,
+                                                    true,
+                                                    true,
+                                                    true);
+            }
+
+            if (!golioth_sys_sem_take(_manifest_rcvd, manifest_timeout))
+            {
+                GLTH_LOGI(TAG,
+                          "Retry component download: %s",
+                          _component_ctx.config.fw_package_name);
+                break;
+            }
+
+            GLTH_LOGI(TAG, "Received OTA manifest");
+
+            bool new_component_received =
+                received_new_target_component(&_ota_manifest, &_component_ctx);
+
+            if (!new_component_received)
+            {
+                GLTH_LOGI(TAG,
+                          "Manifest does not contain different firmware version. Nothing to do.");
+                continue;
+            }
+
+            break;
         }
 
         GLTH_LOGI(TAG, "State = Downloading");
@@ -430,6 +516,9 @@ static void fw_update_thread(void *arg)
             }
         }
 
+        /* Download finished, prepare backoff in case needed */
+        backoff_increment(&_component_ctx);
+
         if (err != GOLIOTH_OK)
         {
             switch (err)
@@ -503,6 +592,9 @@ static void fw_update_thread(void *arg)
             continue;
         }
 
+        /* Download successful. Reset backoff */
+        backoff_reset(&_component_ctx);
+
         int countdown = 5;
         while (countdown > 0)
         {
@@ -529,7 +621,10 @@ void golioth_fw_update_init_with_config(struct golioth_client *client,
     static bool initialized = false;
 
     _client = client;
+
     _component_ctx.config = *config;
+    backoff_reset(&_component_ctx);
+
     _manifest_update_mut = golioth_sys_mutex_create();  // never destroyed
     _manifest_rcvd = golioth_sys_sem_create(1, 0);      // never destroyed
 
