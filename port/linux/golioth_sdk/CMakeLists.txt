@@ -26,6 +26,8 @@ set(sdk_srcs
     "${sdk_src}/coap_client_libcoap.c"
     "${sdk_src}/log.c"
     "${sdk_src}/lightdb_state.c"
+    "${sdk_src}/location.c"
+    "${sdk_src}/location_wifi.c"
     "${sdk_src}/stream.c"
     "${sdk_src}/rpc.c"
     "${sdk_src}/ota.c"

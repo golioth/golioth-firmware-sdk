@@ -85,6 +85,25 @@ config GOLIOTH_LIGHTDB_STATE_FLOAT_HELPERS
 
 endif # GOLIOTH_LIGHTDB_STATE
 
+config GOLIOTH_LOCATION
+    bool "Golioth Location service"
+
+if GOLIOTH_LOCATION
+
+config GOLIOTH_LOCATION_REQUEST_BUFFER_SIZE
+    int "Golioth Location request buffer size"
+    default 2048
+    help
+        Size of request buffer for Golioth Location service. It determines how much information
+        (like WiFi Access Points) might be provided in the request.
+
+config GOLIOTH_LOCATION_WIFI
+    bool "Golioth Location WiFi service"
+    help
+        Location service using WiFi scanning.
+
+endif # GOLIOTH_LOCATION
+
 config GOLIOTH_STREAM
     bool "Golioth Stream service"
     help
