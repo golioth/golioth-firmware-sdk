@@ -7,6 +7,7 @@
 
 #include <sdkconfig.h>
 #include <esp_log.h>
+#include <esp_random.h>
 
 #define GLTH_LOG_BUFFER_HEXDUMP(TAG, payload, size, level)                   \
     do                                                                       \
@@ -67,3 +68,9 @@
             golioth_debug_printf(now_ms, LEVEL, TAG, __VA_ARGS__); \
         }                                                          \
     } while (0)
+
+
+/* Use ESP-IDF random number generator, which has support for HW RNGs and HW entropy sources.
+ * Seeding is taken care of by the second stage bootloader automatically, so make srand() a noop. */
+#define golioth_sys_srand(seed) (void) (seed)
+#define golioth_sys_rand() esp_random()
