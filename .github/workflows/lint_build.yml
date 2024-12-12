@@ -22,10 +22,7 @@ jobs:
       - name: Install clang-format
         shell: bash
         run: |
-          wget https://apt.llvm.org/llvm.sh
-          chmod +x llvm.sh
-          sudo ./llvm.sh 17
-          sudo apt install clang-format-17
+          pip install clang-format
 
       - name: Check code formatting
         shell: bash
@@ -36,7 +33,7 @@ jobs:
           else
               BASE=origin/$GITHUB_BASE_REF
           fi
-          git clang-format-17 --verbose --extensions c,h --diff --diffstat $BASE
+          git clang-format --verbose --extensions c,h --diff --diffstat $BASE
 
   linux_build:
     runs-on: ubuntu-latest
