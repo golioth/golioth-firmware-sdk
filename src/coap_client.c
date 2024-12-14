@@ -41,6 +41,12 @@ static enum golioth_status setup_synchronous(struct golioth_coap_request_msg *re
     return GOLIOTH_OK;
 }
 
+static void cleanup_synchronous(struct golioth_coap_request_msg *request_msg)
+{
+    golioth_event_group_destroy(request_msg->request_complete_event);
+    golioth_sys_sem_destroy(request_msg->request_complete_ack_sem);
+}
+
 static enum golioth_status wait_for_synchronous(struct golioth_coap_request_msg *request_msg,
                                                 int32_t timeout_s)
 {
@@ -96,8 +102,7 @@ static enum golioth_status enqueue_request(struct golioth_client *client,
          */
         if (is_synchronous)
         {
-            golioth_event_group_destroy(request_msg->request_complete_event);
-            golioth_sys_sem_destroy(request_msg->request_complete_ack_sem);
+            cleanup_synchronous(request_msg);
         }
         status = GOLIOTH_ERR_QUEUE_FULL;
         goto finish;
