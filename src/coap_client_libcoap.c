@@ -38,9 +38,8 @@ static void notify_observers(const coap_pdu_t *received,
     for (int i = 0; i < CONFIG_GOLIOTH_MAX_NUM_OBSERVATIONS; i++)
     {
         const struct golioth_coap_observe_info *obs_info = &client->observations[i];
-        golioth_get_cb_fn callback = obs_info->req.observe.callback;
 
-        if (!obs_info->in_use || !callback)
+        if (!obs_info->in_use)
         {
             continue;
         }
@@ -49,13 +48,16 @@ static void notify_observers(const coap_pdu_t *received,
         bool len_matches = (rcvd_token.length == GOLIOTH_COAP_TOKEN_LEN);
         if (len_matches && (0 == memcmp(rcvd_token.s, obs_info->req.token, GOLIOTH_COAP_TOKEN_LEN)))
         {
-            callback(client,
-                     status,
-                     coap_rsp_code,
-                     obs_info->req.path,
-                     data,
-                     data_len,
-                     obs_info->req.observe.arg);
+            obs_info->req.callback(client,
+                                   GOLIOTH_COAP_REQUEST_OBSERVE,
+                                   status,
+                                   coap_rsp_code,
+                                   obs_info->req.path,
+                                   data,
+                                   data_len,
+                                   true,
+                                   0,
+                                   obs_info->req.callback_arg);
         }
     }
 }
@@ -163,20 +165,9 @@ static coap_response_t coap_response_handler(coap_session_t *session,
         }
         else
         {
-            if (req->type == GOLIOTH_COAP_REQUEST_GET)
-            {
-                if (req->get.callback)
-                {
-                    req->get.callback(client,
-                                      status,
-                                      &coap_rsp_code,
-                                      req->path,
-                                      data,
-                                      data_len,
-                                      req->get.arg);
-                }
-            }
-            else if (req->type == GOLIOTH_COAP_REQUEST_GET_BLOCK)
+            bool is_last = true;
+            size_t server_requested_szx = 0;
+            if (req->type == GOLIOTH_COAP_REQUEST_GET_BLOCK)
             {
                 coap_opt_iterator_t opt_iter;
                 coap_opt_t *block_opt = coap_check_option(received, COAP_OPTION_BLOCK2, &opt_iter);
@@ -185,7 +176,7 @@ static coap_response_t coap_response_handler(coap_session_t *session,
                 // option in the response. So block_opt may be NULL here.
 
                 uint32_t opt_block_index = block_opt ? coap_opt_block_num(block_opt) : 0;
-                bool is_last = block_opt ? (COAP_OPT_BLOCK_MORE(block_opt) == 0) : true;
+                is_last = block_opt ? (COAP_OPT_BLOCK_MORE(block_opt) == 0) : true;
 
                 GLTH_LOGD(TAG,
                           "Request block index = %" PRIu32 ", response block index = %" PRIu32
@@ -197,25 +188,6 @@ static coap_response_t coap_response_handler(coap_session_t *session,
                                         data,
                                         min(32, data_len),
                                         GOLIOTH_DEBUG_LOG_LEVEL_DEBUG);
-
-                if (req->get_block.callback)
-                {
-                    req->get_block.callback(client,
-                                            status,
-                                            &coap_rsp_code,
-                                            req->path,
-                                            data,
-                                            data_len,
-                                            is_last,
-                                            req->get_block.arg);
-                }
-            }
-            else if (req->type == GOLIOTH_COAP_REQUEST_POST)
-            {
-                if (req->post.callback)
-                {
-                    req->post.callback(client, status, &coap_rsp_code, req->path, req->post.arg);
-                }
             }
             else if (req->type == GOLIOTH_COAP_REQUEST_POST_BLOCK)
             {
@@ -223,30 +195,20 @@ static coap_response_t coap_response_handler(coap_session_t *session,
                 coap_opt_t *block_opt = coap_check_option(received, COAP_OPTION_BLOCK1, &opt_iter);
 
                 /* Get block1 szx value from server; use stored value if block1 is not preset */
-                size_t server_requested_szx =
+                server_requested_szx =
                     block_opt ? COAP_OPT_BLOCK_SZX(block_opt) : req->post_block.block_szx;
+            }
 
-                if (req->post_block.callback)
-                {
-                    req->post_block.callback(client,
-                                             status,
-                                             &coap_rsp_code,
-                                             req->path,
-                                             server_requested_szx,
-                                             req->post_block.arg);
-                }
-            }
-            else if (req->type == GOLIOTH_COAP_REQUEST_DELETE)
-            {
-                if (req->delete.callback)
-                {
-                    req->delete.callback(client,
-                                         status,
-                                         &coap_rsp_code,
-                                         req->path,
-                                         req->delete.arg);
-                }
-            }
+            req->callback(client,
+                          req->type,
+                          status,
+                          &coap_rsp_code,
+                          req->path,
+                          data,
+                          data_len,
+                          is_last,
+                          server_requested_szx,
+                          req->callback_arg);
         }
     }
 
@@ -1059,45 +1021,16 @@ static enum golioth_status coap_io_loop_once(struct golioth_client *client,
         // TODO - simplify, put callback directly in request which removes if/else branches
         enum golioth_status status = GOLIOTH_ERR_TIMEOUT;
 
-        if (request_msg.type == GOLIOTH_COAP_REQUEST_GET && request_msg.get.callback)
-        {
-            request_msg.get
-                .callback(client, status, NULL, request_msg.path, NULL, 0, request_msg.get.arg);
-        }
-        else if (request_msg.type == GOLIOTH_COAP_REQUEST_GET_BLOCK
-                 && request_msg.get_block.callback)
-        {
-            request_msg.get_block.callback(client,
-                                           status,
-                                           NULL,
-                                           request_msg.path,
-                                           NULL,
-                                           0,
-                                           false,
-                                           request_msg.get_block.arg);
-        }
-        else if (request_msg.type == GOLIOTH_COAP_REQUEST_POST && request_msg.post.callback)
-        {
-            request_msg.post.callback(client, status, NULL, request_msg.path, request_msg.post.arg);
-        }
-        else if (request_msg.type == GOLIOTH_COAP_REQUEST_POST_BLOCK
-                 && request_msg.post_block.callback)
-        {
-            request_msg.post_block.callback(client,
-                                            status,
-                                            NULL,
-                                            request_msg.path,
-                                            request_msg.post_block.block_szx,
-                                            request_msg.post_block.arg);
-        }
-        else if (request_msg.type == GOLIOTH_COAP_REQUEST_DELETE && request_msg.delete.callback)
-        {
-            request_msg.delete.callback(client,
-                                        status,
-                                        NULL,
-                                        request_msg.path,
-                                        request_msg.delete.arg);
-        }
+        request_msg.callback(client,
+                             request_msg.type,
+                             status,
+                             NULL,
+                             request_msg.path,
+                             NULL,
+                             0,
+                             true,
+                             0,
+                             request_msg.callback_arg);
 
         golioth_sys_client_disconnected(client);
         if (client->event_callback && client->session_connected)

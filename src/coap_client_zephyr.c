@@ -226,80 +226,38 @@ static int golioth_coap_cb(struct golioth_req_rsp *rsp)
     struct golioth_coap_request_msg *req = rsp->user_data;
     struct golioth_client *client = req->client;
 
+    const uint8_t *payload = NULL;
+    size_t payload_size = 0;
+    bool is_last = true;
+    size_t block_szx = 0;
+
     switch (req->type)
     {
-        case GOLIOTH_COAP_REQUEST_EMPTY:
-        case GOLIOTH_COAP_REQUEST_OBSERVE_RELEASE:
-            break;
-        case GOLIOTH_COAP_REQUEST_GET:
-            if (req->get.callback)
-            {
-                req->get.callback(client,
-                                  rsp->status,
-                                  golioth_ptr_to_rsp_code(rsp),
-                                  req->path,
-                                  rsp->data,
-                                  rsp->len,
-                                  req->get.arg);
-            }
-            break;
         case GOLIOTH_COAP_REQUEST_GET_BLOCK:
-            if (req->get_block.callback)
-            {
-                req->get_block.callback(client,
-                                        rsp->status,
-                                        golioth_ptr_to_rsp_code(rsp),
-                                        req->path,
-                                        rsp->data,
-                                        rsp->len,
-                                        rsp->is_last,
-                                        req->get_block.arg);
-            }
-            break;
-        case GOLIOTH_COAP_REQUEST_POST:
-            if (req->post.callback)
-            {
-                req->post.callback(client,
-                                   rsp->status,
-                                   golioth_ptr_to_rsp_code(rsp),
-                                   req->path,
-                                   req->post.arg);
-            }
+            is_last = rsp->is_last;
+            // fallthrough
+        case GOLIOTH_COAP_REQUEST_GET:
+        case GOLIOTH_COAP_REQUEST_OBSERVE:
+            payload = rsp->data;
+            payload_size = rsp->len;
             break;
         case GOLIOTH_COAP_REQUEST_POST_BLOCK:
-            if (req->post_block.callback)
-            {
-                req->post_block.callback(client,
-                                         rsp->status,
-                                         golioth_ptr_to_rsp_code(rsp),
-                                         req->path,
-                                         req->post_block.block_szx,
-                                         req->post_block.arg);
-            }
+            block_szx = req->post_block.block_szx;
             break;
-        case GOLIOTH_COAP_REQUEST_DELETE:
-            if (req->delete.callback)
-            {
-                req->delete.callback(client,
-                                     rsp->status,
-                                     golioth_ptr_to_rsp_code(rsp),
-                                     req->path,
-                                     req->delete.arg);
-            }
-            break;
-        case GOLIOTH_COAP_REQUEST_OBSERVE:
-            if (req->observe.callback)
-            {
-                req->observe.callback(client,
-                                      rsp->status,
-                                      golioth_ptr_to_rsp_code(rsp),
-                                      req->path,
-                                      rsp->data,
-                                      rsp->len,
-                                      req->observe.arg);
-            }
+        default:
             break;
     }
+
+    req->callback(client,
+                  req->type,
+                  rsp->status,
+                  golioth_ptr_to_rsp_code(rsp),
+                  req->path,
+                  payload,
+                  payload_size,
+                  is_last,
+                  block_szx,
+                  req->callback_arg);
 
     if (CONFIG_GOLIOTH_COAP_KEEPALIVE_INTERVAL_S > 0)
     {

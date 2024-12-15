@@ -20,6 +20,86 @@ LOG_TAG_DEFINE(golioth_coap_client);
 
 static golioth_sys_mutex_t token_mut;
 
+struct user_callback
+{
+    union {
+        golioth_get_cb_fn get_cb;
+        golioth_get_block_cb_fn get_block_cb;
+        golioth_set_cb_fn set_cb;
+        golioth_set_block_cb_fn set_block_cb;
+    };
+    void *arg;
+};
+
+static void coap_client_callback(struct golioth_client *client,
+                                 enum golioth_coap_request_type type,
+                                 enum golioth_status status,
+                                 const struct golioth_coap_rsp_code *coap_rsp_code,
+                                 const char *path,
+                                 const uint8_t *payload,
+                                 size_t payload_size,
+                                 bool is_last,
+                                 size_t block_szx,
+                                 void *arg)
+{
+    struct user_callback *user_cb = arg;
+
+    if (NULL == user_cb)
+    {
+        return;
+    }
+
+    switch (type)
+    {
+        case GOLIOTH_COAP_REQUEST_GET:
+        case GOLIOTH_COAP_REQUEST_OBSERVE:
+            if (user_cb->get_cb)
+            {
+                user_cb->get_cb(client,
+                                status,
+                                coap_rsp_code,
+                                path,
+                                payload,
+                                payload_size,
+                                user_cb->arg);
+            }
+            break;
+        case GOLIOTH_COAP_REQUEST_GET_BLOCK:
+            if (user_cb->get_block_cb)
+            {
+                user_cb->get_block_cb(client,
+                                      status,
+                                      coap_rsp_code,
+                                      path,
+                                      payload,
+                                      payload_size,
+                                      is_last,
+                                      user_cb->arg);
+            }
+            break;
+        case GOLIOTH_COAP_REQUEST_POST:
+        case GOLIOTH_COAP_REQUEST_DELETE:
+            if (user_cb->set_cb)
+            {
+                user_cb->set_cb(client, status, coap_rsp_code, path, user_cb->arg);
+            }
+            break;
+        case GOLIOTH_COAP_REQUEST_POST_BLOCK:
+            if (user_cb->set_block_cb)
+            {
+                user_cb->set_block_cb(client, status, coap_rsp_code, path, block_szx, user_cb->arg);
+            }
+            break;
+        default:
+            break;
+    }
+
+    if (GOLIOTH_COAP_REQUEST_OBSERVE != type)
+    {
+        golioth_sys_free(user_cb);
+    }
+}
+
 static enum golioth_status setup_synchronous(struct golioth_coap_request_msg *request_msg)
 {
     // Created here, deleted by coap thread (or here if fail to create or enqueue)
@@ -75,7 +155,8 @@ static enum golioth_status wait_for_synchronous(struct golioth_coap_request_msg 
 static enum golioth_status enqueue_request(struct golioth_client *client,
                                            struct golioth_coap_request_msg *request_msg,
                                            bool is_synchronous,
-                                           int32_t timeout_s)
+                                           int32_t timeout_s,
+                                           struct user_callback *user_cb)
 {
     enum golioth_status status = GOLIOTH_OK;
     enum golioth_status request_result = GOLIOTH_OK;
@@ -90,6 +171,13 @@ static enum golioth_status enqueue_request(struct golioth_client *client,
         }
 
         request_msg->status = &request_result;
+    }
+
+    request_msg->callback = coap_client_callback;
+    if (NULL != user_cb)
+    {
+        request_msg->callback_arg = golioth_sys_malloc(sizeof(struct user_callback));
+        memcpy(request_msg->callback_arg, user_cb, sizeof(struct user_callback));
     }
 
     bool sent = golioth_mbox_try_send(client->request_queue, request_msg);
@@ -204,7 +292,7 @@ enum golioth_status golioth_coap_client_empty(struct golioth_client *client,
         .ageout_ms = ageout_ms,
     };
 
-    return enqueue_request(client, &request_msg, is_synchronous, timeout_s);
+    return enqueue_request(client, &request_msg, is_synchronous, timeout_s, NULL);
 }
 
 static enum golioth_status golioth_coap_client_set_internal(
@@ -217,7 +305,8 @@ static enum golioth_status golioth_coap_client_set_internal(
     enum golioth_coap_request_type type,
     void *request_params,
     bool is_synchronous,
-    int32_t timeout_s)
+    int32_t timeout_s,
+    struct user_callback *user_cb)
 {
     if (!client || !token || !path)
     {
@@ -284,7 +373,11 @@ static enum golioth_status golioth_coap_client_set_internal(
         request_msg.post.payload_size = payload_size;
     }
 
-    enum golioth_status status = enqueue_request(client, &request_msg, is_synchronous, timeout_s);
+    enum golioth_status status = enqueue_request(client,
+                                                 &request_msg,
+                                                 is_synchronous,
+                                                 timeout_s,
+                                                 user_cb);
     if (status == GOLIOTH_ERR_QUEUE_FULL)
     {
         golioth_sys_free(request_payload);
@@ -307,7 +400,9 @@ enum golioth_status golioth_coap_client_set(struct golioth_client *client,
 {
     struct golioth_coap_post_params params = {
         .content_type = content_type,
-        .callback = callback,
+    };
+    struct user_callback user_cb = {
+        .set_cb = callback,
         .arg = callback_arg,
     };
     return golioth_coap_client_set_internal(client,
@@ -319,7 +414,8 @@ enum golioth_status golioth_coap_client_set(struct golioth_client *client,
                                             GOLIOTH_COAP_REQUEST_POST,
                                             &params,
                                             is_synchronous,
-                                            timeout_s);
+                                            timeout_s,
+                                            &user_cb);
 }
 
 enum golioth_status golioth_coap_client_set_block(struct golioth_client *client,
@@ -342,7 +438,9 @@ enum golioth_status golioth_coap_client_set_block(struct golioth_client *client,
         .content_type = content_type,
         .block_index = block_index,
         .block_szx = block_szx,
-        .callback = callback,
+    };
+    struct user_callback user_cb = {
+        .set_block_cb = callback,
         .arg = callback_arg,
     };
     return golioth_coap_client_set_internal(client,
@@ -354,7 +452,8 @@ enum golioth_status golioth_coap_client_set_block(struct golioth_client *client,
                                             GOLIOTH_COAP_REQUEST_POST_BLOCK,
                                             &params,
                                             is_synchronous,
-                                            timeout_s);
+                                            timeout_s,
+                                            &user_cb);
 }
 
 enum golioth_status golioth_coap_client_delete(struct golioth_client *client,
@@ -388,12 +487,11 @@ enum golioth_status golioth_coap_client_delete(struct golioth_client *client,
     struct golioth_coap_request_msg request_msg = {
         .type = GOLIOTH_COAP_REQUEST_DELETE,
         .path_prefix = path_prefix,
-        .delete =
-            {
-                .callback = callback,
-                .arg = callback_arg,
-            },
         .ageout_ms = ageout_ms,
+    };
+    struct user_callback user_cb = {
+        .set_cb = callback,
+        .arg = callback_arg,
     };
 
     if (strlen(path) > sizeof(request_msg.path) - 1)
@@ -403,7 +501,7 @@ enum golioth_status golioth_coap_client_delete(struct golioth_client *client,
     }
     strncpy(request_msg.path, path, sizeof(request_msg.path) - 1);
 
-    return enqueue_request(client, &request_msg, is_synchronous, timeout_s);
+    return enqueue_request(client, &request_msg, is_synchronous, timeout_s, &user_cb);
 }
 
 static enum golioth_status golioth_coap_client_get_internal(
@@ -414,7 +512,8 @@ static enum golioth_status golioth_coap_client_get_internal(
     enum golioth_coap_request_type type,
     void *request_params,
     bool is_synchronous,
-    int32_t timeout_s)
+    int32_t timeout_s,
+    struct user_callback *user_cb)
 {
     if (!client || !token || !path)
     {
@@ -450,7 +549,7 @@ static enum golioth_status golioth_coap_client_get_internal(
         request_msg.get = *(struct golioth_coap_get_params *) request_params;
     }
 
-    return enqueue_request(client, &request_msg, is_synchronous, timeout_s);
+    return enqueue_request(client, &request_msg, is_synchronous, timeout_s, user_cb);
 }
 
 enum golioth_status golioth_coap_client_get(struct golioth_client *client,
@@ -465,7 +564,9 @@ enum golioth_status golioth_coap_client_get(struct golioth_client *client,
 {
     struct golioth_coap_get_params params = {
         .content_type = content_type,
-        .callback = callback,
+    };
+    struct user_callback user_cb = {
+        .get_cb = callback,
         .arg = arg,
     };
     return golioth_coap_client_get_internal(client,
@@ -475,7 +576,8 @@ enum golioth_status golioth_coap_client_get(struct golioth_client *client,
                                             GOLIOTH_COAP_REQUEST_GET,
                                             &params,
                                             is_synchronous,
-                                            timeout_s);
+                                            timeout_s,
+                                            &user_cb);
 }
 
 enum golioth_status golioth_coap_client_get_block(struct golioth_client *client,
@@ -494,7 +596,9 @@ enum golioth_status golioth_coap_client_get_block(struct golioth_client *client,
         .content_type = content_type,
         .block_index = block_index,
         .block_size = block_size,
-        .callback = callback,
+    };
+    struct user_callback user_cb = {
+        .get_block_cb = callback,
         .arg = arg,
     };
     return golioth_coap_client_get_internal(client,
@@ -504,7 +608,8 @@ enum golioth_status golioth_coap_client_get_block(struct golioth_client *client,
                                             GOLIOTH_COAP_REQUEST_GET_BLOCK,
                                             &params,
                                             is_synchronous,
-                                            timeout_s);
+                                            timeout_s,
+                                            &user_cb);
 }
 
 enum golioth_status golioth_coap_client_observe(struct golioth_client *client,
@@ -536,9 +641,11 @@ enum golioth_status golioth_coap_client_observe(struct golioth_client *client,
         .observe =
             {
                 .content_type = content_type,
-                .callback = callback,
-                .arg = arg,
             },
+    };
+    struct user_callback user_cb = {
+        .get_cb = callback,
+        .arg = arg,
     };
 
     memcpy(request_msg.token, token, GOLIOTH_COAP_TOKEN_LEN);
@@ -550,7 +657,7 @@ enum golioth_status golioth_coap_client_observe(struct golioth_client *client,
     }
     strncpy(request_msg.path, path, sizeof(request_msg.path) - 1);
 
-    return enqueue_request(client, &request_msg, false, -1);
+    return enqueue_request(client, &request_msg, false, -1, &user_cb);
 }
 
 enum golioth_status golioth_coap_client_observe_release(struct golioth_client *client,
@@ -581,7 +688,6 @@ enum golioth_status golioth_coap_client_observe_release(struct golioth_client *c
         .observe =
             {
                 .content_type = content_type,
-                .arg = arg,
             },
     };
 
@@ -593,7 +699,7 @@ enum golioth_status golioth_coap_client_observe_release(struct golioth_client *c
     strncpy(request_msg.path, path, sizeof(request_msg.path) - 1);
     memcpy(request_msg.token, token, GOLIOTH_COAP_TOKEN_LEN);
 
-    return enqueue_request(client, &request_msg, false, -1);
+    return enqueue_request(client, &request_msg, false, -1, NULL);
 }
 
 void golioth_coap_client_cancel_all_observations(struct golioth_client *client)

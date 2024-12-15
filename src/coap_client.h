@@ -28,6 +28,18 @@
 
 #define SZX_TO_BLOCKSIZE(szx) ((size_t) (1 << (szx + 4)))
 
+enum golioth_coap_request_type
+{
+    GOLIOTH_COAP_REQUEST_EMPTY,
+    GOLIOTH_COAP_REQUEST_GET,
+    GOLIOTH_COAP_REQUEST_GET_BLOCK,
+    GOLIOTH_COAP_REQUEST_POST,
+    GOLIOTH_COAP_REQUEST_POST_BLOCK,
+    GOLIOTH_COAP_REQUEST_DELETE,
+    GOLIOTH_COAP_REQUEST_OBSERVE,
+    GOLIOTH_COAP_REQUEST_OBSERVE_RELEASE,
+};
+
 /// Callback function type for blockwise uploads that also returns the blocksize in szx format
 ///
 /// @param client The client handle from the original request.
@@ -43,6 +55,17 @@ typedef void (*golioth_set_block_cb_fn)(struct golioth_client *client,
                                         size_t block_szx,
                                         void *arg);
 
+typedef void (*golioth_coap_cb_fn)(struct golioth_client *client,
+                                   enum golioth_coap_request_type type,
+                                   enum golioth_status status,
+                                   const struct golioth_coap_rsp_code *coap_rsp_code,
+                                   const char *path,
+                                   const uint8_t *payload,
+                                   size_t payload_size,
+                                   bool is_last,
+                                   size_t block_szx,
+                                   void *arg);
+
 struct golioth_coap_post_params
 {
     enum golioth_content_type content_type;
@@ -51,8 +74,6 @@ struct golioth_coap_post_params
     uint8_t *payload;
     // Size of payload, in bytes
     size_t payload_size;
-    golioth_set_cb_fn callback;
-    void *arg;
 };
 
 struct golioth_coap_post_block_params
@@ -73,8 +94,6 @@ struct golioth_coap_post_block_params
 struct golioth_coap_get_params
 {
     enum golioth_content_type content_type;
-    golioth_get_cb_fn callback;
-    void *arg;
 };
 
 struct golioth_coap_get_block_params
@@ -82,33 +101,16 @@ struct golioth_coap_get_block_params
     enum golioth_content_type content_type;
     size_t block_index;
     size_t block_size;
-    golioth_get_block_cb_fn callback;
-    void *arg;
 };
 
 struct golioth_coap_delete_params
 {
-    golioth_set_cb_fn callback;
-    void *arg;
+    void *unused;
 };
 
 struct golioth_coap_observe_params
 {
     enum golioth_content_type content_type;
-    golioth_get_cb_fn callback;
-    void *arg;
-};
-
-enum golioth_coap_request_type
-{
-    GOLIOTH_COAP_REQUEST_EMPTY,
-    GOLIOTH_COAP_REQUEST_GET,
-    GOLIOTH_COAP_REQUEST_GET_BLOCK,
-    GOLIOTH_COAP_REQUEST_POST,
-    GOLIOTH_COAP_REQUEST_POST_BLOCK,
-    GOLIOTH_COAP_REQUEST_DELETE,
-    GOLIOTH_COAP_REQUEST_OBSERVE,
-    GOLIOTH_COAP_REQUEST_OBSERVE_RELEASE,
 };
 
 struct golioth_coap_request_msg
@@ -137,6 +139,9 @@ struct golioth_coap_request_msg
     bool got_response;
     bool got_nack;
     enum golioth_status *status;
+
+    golioth_coap_cb_fn callback;
+    void *callback_arg;
 
     /// (sync request only) Notification from coap thread to user sync function that
     /// request is completed.
