@@ -614,16 +614,6 @@ static enum golioth_status coap_io_loop_once(struct golioth_client *client)
                 req->type,
                 (req->path ? req->path : "N/A"));
 
-        if (req->type == GOLIOTH_COAP_REQUEST_POST && req->post.payload_size > 0)
-        {
-            golioth_sys_free(req->post.payload);
-        }
-
-        if (req->type == GOLIOTH_COAP_REQUEST_POST_BLOCK && req->post_block.payload_size > 0)
-        {
-            golioth_sys_free(req->post_block.payload);
-        }
-
         if (req->request_complete_event)
         {
             golioth_event_group_destroy(req->request_complete_event);
@@ -671,12 +661,10 @@ static enum golioth_status coap_io_loop_once(struct golioth_client *client)
                                       golioth_coap_cb,
                                       req,
                                       0);
-            golioth_sys_free(req->post.payload);
             break;
         case GOLIOTH_COAP_REQUEST_POST_BLOCK:
             LOG_DBG("Handle POST_BLOCK %s", req->path);
             err = golioth_coap_post_block(req);
-            golioth_sys_free(req->post_block.payload);
             break;
         case GOLIOTH_COAP_REQUEST_DELETE:
             LOG_DBG("Handle DELETE %s", req->path);
@@ -1520,17 +1508,6 @@ static void purge_request_mbox(golioth_mbox_t request_mbox)
 
         assert(ok);
         (void) ok;
-
-        if (request_msg.type == GOLIOTH_COAP_REQUEST_POST)
-        {
-            // free dynamically allocated user payload copy
-            golioth_sys_free(request_msg.post.payload);
-        }
-        else if (request_msg.type == GOLIOTH_COAP_REQUEST_POST_BLOCK)
-        {
-            // free dynamically allocated user payload copy
-            golioth_sys_free(request_msg.post_block.payload);
-        }
     }
 }
 

@@ -842,17 +842,6 @@ static enum golioth_status coap_io_loop_once(struct golioth_client *client,
                   request_msg.type,
                   (request_msg.path ? request_msg.path : "N/A"));
 
-        if (request_msg.type == GOLIOTH_COAP_REQUEST_POST && request_msg.post.payload_size > 0)
-        {
-            golioth_sys_free(request_msg.post.payload);
-        }
-
-        if (request_msg.type == GOLIOTH_COAP_REQUEST_POST_BLOCK
-            && request_msg.post_block.payload_size > 0)
-        {
-            golioth_sys_free(request_msg.post_block.payload);
-        }
-
         if (request_msg.request_complete_event)
         {
             assert(request_msg.request_complete_ack_sem);
@@ -882,14 +871,10 @@ static enum golioth_status coap_io_loop_once(struct golioth_client *client,
         case GOLIOTH_COAP_REQUEST_POST:
             GLTH_LOGD(TAG, "Handle POST %s", request_msg.path);
             golioth_coap_post(&request_msg, session);
-            assert(request_msg.post.payload);
-            golioth_sys_free(request_msg.post.payload);
             break;
         case GOLIOTH_COAP_REQUEST_POST_BLOCK:
             GLTH_LOGD(TAG, "Handle POST_BLOCK %s", request_msg.path);
             golioth_coap_post_block(&request_msg, client, session);
-            assert(request_msg.post_block.payload);
-            golioth_sys_free(request_msg.post_block.payload);
             break;
         case GOLIOTH_COAP_REQUEST_DELETE:
             GLTH_LOGD(TAG, "Handle DELETE %s", request_msg.path);
@@ -1294,17 +1279,6 @@ static void purge_request_mbox(golioth_mbox_t request_mbox)
 
         assert(ok);
         (void) ok;
-
-        if (request_msg.type == GOLIOTH_COAP_REQUEST_POST)
-        {
-            // free dynamically allocated user payload copy
-            golioth_sys_free(request_msg.post.payload);
-        }
-        else if (request_msg.type == GOLIOTH_COAP_REQUEST_POST_BLOCK)
-        {
-            // free dynamically allocated user payload copy
-            golioth_sys_free(request_msg.post_block.payload);
-        }
     }
 }
 
