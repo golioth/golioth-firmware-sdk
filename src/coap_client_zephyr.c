@@ -267,30 +267,6 @@ static int golioth_coap_cb(struct golioth_req_rsp *rsp)
         }
     }
 
-    /* Handle synchronous calls */
-    if (req->request_complete_event)
-    {
-        *req->status = rsp->status;
-
-        if (rsp->status == GOLIOTH_ERR_COAP_RESPONSE)
-        {
-            /* Log the CoAP code as synchronous operations don't have access to it */
-            GLTH_LOGW(TAG,
-                      "CoAP Error: %u.%02u",
-                      rsp->coap_rsp_code.code_class,
-                      rsp->coap_rsp_code.code_detail);
-        }
-
-        golioth_event_group_set_bits(req->request_complete_event, RESPONSE_RECEIVED_EVENT_BIT);
-
-        // Wait for user thread to receive the event.
-        golioth_sys_sem_take(req->request_complete_ack_sem, GOLIOTH_SYS_WAIT_FOREVER);
-
-        // Now it's safe to delete the event and semaphore.
-        golioth_event_group_destroy(req->request_complete_event);
-        golioth_sys_sem_destroy(req->request_complete_ack_sem);
-    }
-
     if (req->type != GOLIOTH_COAP_REQUEST_OBSERVE)
     {
         /* don't free observations so we can reestablish later */
@@ -613,12 +589,6 @@ static enum golioth_status coap_io_loop_once(struct golioth_client *client)
         LOG_WRN("Ignoring request that has aged out, type %d, path %s",
                 req->type,
                 (req->path ? req->path : "N/A"));
-
-        if (req->request_complete_event)
-        {
-            golioth_event_group_destroy(req->request_complete_event);
-            golioth_sys_sem_destroy(req->request_complete_ack_sem);
-        }
 
         goto free_req;
     }

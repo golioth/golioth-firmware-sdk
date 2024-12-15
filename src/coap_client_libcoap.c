@@ -842,12 +842,6 @@ static enum golioth_status coap_io_loop_once(struct golioth_client *client,
                   request_msg.type,
                   (request_msg.path ? request_msg.path : "N/A"));
 
-        if (request_msg.request_complete_event)
-        {
-            assert(request_msg.request_complete_ack_sem);
-            golioth_event_group_destroy(request_msg.request_complete_event);
-            golioth_sys_sem_destroy(request_msg.request_complete_ack_sem);
-        }
         return GOLIOTH_OK;
     }
 
@@ -957,29 +951,6 @@ static enum golioth_status coap_io_loop_once(struct golioth_client *client,
         }
     }
     client->pending_req = NULL;
-
-    if (request_msg.request_complete_event)
-    {
-        assert(request_msg.request_complete_ack_sem);
-
-        if (request_msg.got_response)
-        {
-            golioth_event_group_set_bits(request_msg.request_complete_event,
-                                         RESPONSE_RECEIVED_EVENT_BIT);
-        }
-        else
-        {
-            golioth_event_group_set_bits(request_msg.request_complete_event,
-                                         RESPONSE_TIMEOUT_EVENT_BIT);
-        }
-
-        // Wait for user thread to receive the event.
-        golioth_sys_sem_take(request_msg.request_complete_ack_sem, GOLIOTH_SYS_WAIT_FOREVER);
-
-        // Now it's safe to delete the event and semaphore.
-        golioth_event_group_destroy(request_msg.request_complete_event);
-        golioth_sys_sem_destroy(request_msg.request_complete_ack_sem);
-    }
 
     if (io_error)
     {
