@@ -1,0 +1,6 @@
+/ {
+	wifi-playback {
+		compatible = "golioth,wifi-playback";
+		status = "okay";
+	};
+};

@@ -6,3 +6,4 @@ find_package(Zephyr REQUIRED HINTS $ENV{ZEPHYR_BASE})
 project(location_wifi)
 
 target_sources(app PRIVATE src/main.c)
+target_sources_ifdef(CONFIG_GOLIOTH_WIFI_PLAYBACK app PRIVATE src/wifi_playback.c)
