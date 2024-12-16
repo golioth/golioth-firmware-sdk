@@ -7,7 +7,7 @@ on:
 
 jobs:
   gitlint:
-    runs-on: ubuntu-latest
+    runs-on: ubuntu-24.04
 
     container:
       image: jorisroovers/gitlint:0.19.1

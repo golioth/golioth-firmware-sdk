@@ -27,7 +27,7 @@ on:
 jobs:
   hil-matrix:
     name: linux-hil-matrix
-    runs-on: ubuntu-latest
+    runs-on: ubuntu-24.04
 
     outputs:
       tests: ${{ steps.output-tests.outputs.tests }}
@@ -51,7 +51,7 @@ jobs:
 
   hil:
     name: linux-hil-tests
-    runs-on: ubuntu-latest
+    runs-on: ubuntu-24.04
     needs: hil-matrix
 
     strategy:
@@ -134,7 +134,7 @@ jobs:
 
   hil-summary:
     name: linux-hil-tests-summary
-    runs-on: ubuntu-latest
+    runs-on: ubuntu-24.04
     needs: hil
 
     steps:
