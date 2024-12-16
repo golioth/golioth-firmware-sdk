@@ -3,4 +3,23 @@
 
 source "${ZEPHYR_GOLIOTH_FIRMWARE_SDK_MODULE_DIR}/examples/zephyr/common/Kconfig.defconfig"
 
+config GOLIOTH_WIFI_PLAYBACK
+    bool
+    default y
+    depends on DT_HAS_GOLIOTH_WIFI_PLAYBACK_ENABLED
+
+if GOLIOTH_WIFI_PLAYBACK
+
+config GOLIOTH_WIFI_PLAYBACK_SPEED_FACTOR
+	int "Speed factor"
+    default 1000
+    help
+      Speed of playback.
+
+      1000 means 1x (normal) speed.
+      3000 means 3x speed.
+      500 means 0.5x speed.
+
+endif # GOLIOTH_WIFI_PLAYBACK
+
 source "Kconfig.zephyr"

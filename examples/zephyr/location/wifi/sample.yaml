@@ -11,4 +11,6 @@ tests:
   sample.golioth.location_wifi:
     platform_allow:
       - esp32_devkitc_wrover/esp32/procpu
+      - native_sim
+      - native_sim/native/64
       - nrf52840dk/nrf52840
