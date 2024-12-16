@@ -112,7 +112,7 @@ static int wifi_scan_and_get_location(struct net_if *iface)
         }
 
         LOG_ERR("Failed to encode location data");
-        return 0;
+        return -ENOMEM;
     }
 
     status = golioth_location_get_sync(client, &location_req, &location_rsp, APP_TIMEOUT_S);
