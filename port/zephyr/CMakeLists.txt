@@ -58,6 +58,13 @@ zephyr_library_sources(
 zephyr_library_sources_ifdef(CONFIG_GOLIOTH_FW_UPDATE golioth_fw_zephyr.c)
 zephyr_library_sources_ifdef(CONFIG_NET_L2_OPENTHREAD golioth_openthread.c)
 
+if(EXISTS "${CMAKE_CURRENT_LIST_DIR}/../../VERSION.txt")
+    include(${CMAKE_CURRENT_LIST_DIR}/golioth_version.cmake)
+    zephyr_library_sources_ifdef(CONFIG_GOLIOTH_SHOW_VERSION_BOOT_MSG golioth_version_boot_msg.c)
+else()
+    message(STATUS "Unable to find Golioth Firmware SDK VERSION.txt file")
+endif()
+
 if(CONFIG_GOLIOTH_AUTH_METHOD_CERT)
   include_cert(CONFIG_GOLIOTH_HARDCODED_CA_CRT_PATH ca_crt)
   if(CONFIG_GOLIOTH_SECONDARY_CA_CRT)

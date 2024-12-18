@@ -226,4 +226,20 @@ config GOLIOTH_ZEPHYR_THREAD_STACK_SIZE
 	help
 	  Threads stacks sizes for the use in golioth_sys_thread_create().
 
+menuconfig GOLIOTH_SHOW_VERSION_BOOT_MSG
+	bool "Show the Golioth Firmware SDK version at boot"
+	default y
+    help
+      Automatically display the Golioth Firmware SDK version in the device's console output during
+      boot.
+
+if GOLIOTH_SHOW_VERSION_BOOT_MSG
+
+config GOLIOTH_VERSION_INCLUDE_COMMIT
+    bool "Include the commit hash in the version message"
+    default y
+    help
+      Show the commit has in addition to the SDK version (eg: 0.16.0-34-ga4e5523debf1)
+
+endif # GOLIOTH_SHOW_VERSION_BOOT_MSG
 endif # GOLIOTH_FIRMWARE_SDK
