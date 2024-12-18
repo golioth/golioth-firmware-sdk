@@ -43,6 +43,13 @@ config GOLIOTH_FW_UPDATE
 
 if GOLIOTH_FW_UPDATE
 
+config GOLIOTH_FW_UPDATE_PACKAGE_NAME
+    string "Package name of the main firmware component"
+    default "main"
+    help
+      The Package Name used by the Golioth Cloud to indicate the binary to use for device firmware
+      update. This name must be no more than GOLIOTH_OTA_MAX_PACKAGE_NAME_LEN characters in length.
+
 config GOLIOTH_FW_UPDATE_OBSERVATION_RETRY_MAX_DELAY_S
     int "Golioth maximum delay before retrying firmware OTA manifest observation"
     default 300 # 5 minutes

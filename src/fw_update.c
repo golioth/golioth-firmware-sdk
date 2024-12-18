@@ -13,6 +13,11 @@
 #include <golioth/fw_update.h>
 #include "golioth/ota.h"
 
+_Static_assert(sizeof(CONFIG_GOLIOTH_FW_UPDATE_PACKAGE_NAME)
+                   <= CONFIG_GOLIOTH_OTA_MAX_PACKAGE_NAME_LEN + 1,
+               "GOLIOTH_FW_UPDATE_PACKAGE_NAME may be no longer than "
+               "GOLIOTH_OTA_MAX_PACKAGE_NAME_LEN");
+
 #if defined(CONFIG_GOLIOTH_FW_UPDATE)
 
 LOG_TAG_DEFINE(golioth_fw_update);
@@ -611,7 +616,7 @@ void golioth_fw_update_init(struct golioth_client *client, const char *current_v
 {
     struct golioth_fw_update_config config = {
         .current_version = current_version,
-        .fw_package_name = GOLIOTH_FW_UPDATE_DEFAULT_PACKAGE_NAME,
+        .fw_package_name = CONFIG_GOLIOTH_FW_UPDATE_PACKAGE_NAME,
     };
     golioth_fw_update_init_with_config(client, &config);
 }
