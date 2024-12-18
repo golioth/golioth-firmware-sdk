@@ -611,7 +611,7 @@ void golioth_fw_update_init(struct golioth_client *client, const char *current_v
 {
     struct golioth_fw_update_config config = {
         .current_version = current_version,
-        .fw_package_name = GOLIOTH_FW_UPDATE_DEFAULT_PACKAGE_NAME,
+        .fw_package_name = CONFIG_GOLIOTH_FW_UPDATE_PACKAGE_NAME,
     };
     golioth_fw_update_init_with_config(client, &config);
 }

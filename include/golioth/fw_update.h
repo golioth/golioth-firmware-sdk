@@ -15,8 +15,6 @@ extern "C"
 #include <golioth/ota.h>
 #include <stdbool.h>
 
-#define GOLIOTH_FW_UPDATE_DEFAULT_PACKAGE_NAME "main"
-
 struct golioth_fw_update_config
 {
     /// The current firmware version, NULL-terminated, shallow-copied from user. (e.g. "1.2.3")
