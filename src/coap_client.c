@@ -315,6 +315,36 @@ static enum golioth_status golioth_coap_client_set_internal(
     return GOLIOTH_OK;
 }
 
+enum golioth_status golioth_coap_client_post(struct golioth_client *client,
+                                             const uint8_t token[GOLIOTH_COAP_TOKEN_LEN],
+                                             const char *path_prefix,
+                                             const char *path,
+                                             enum golioth_content_type content_type,
+                                             const uint8_t *payload,
+                                             size_t payload_size,
+                                             golioth_post_cb_fn callback,
+                                             void *callback_arg,
+                                             bool is_synchronous,
+                                             int32_t timeout_s)
+{
+    struct golioth_coap_post_params params = {
+        .content_type = content_type,
+        .callback_post = callback,
+        .arg = callback_arg,
+        .callback_is_post = true,
+    };
+    return golioth_coap_client_set_internal(client,
+                                            token,
+                                            path_prefix,
+                                            path,
+                                            payload,
+                                            payload_size,
+                                            GOLIOTH_COAP_REQUEST_POST,
+                                            &params,
+                                            is_synchronous,
+                                            timeout_s);
+}
+
 enum golioth_status golioth_coap_client_set(struct golioth_client *client,
                                             const uint8_t token[GOLIOTH_COAP_TOKEN_LEN],
                                             const char *path_prefix,
@@ -329,7 +359,7 @@ enum golioth_status golioth_coap_client_set(struct golioth_client *client,
 {
     struct golioth_coap_post_params params = {
         .content_type = content_type,
-        .callback = callback,
+        .callback_set = callback,
         .arg = callback_arg,
     };
     return golioth_coap_client_set_internal(client,

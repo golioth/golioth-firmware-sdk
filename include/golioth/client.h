@@ -221,6 +221,35 @@ typedef void (*golioth_set_cb_fn)(struct golioth_client *client,
                                   const char *path,
                                   void *arg);
 
+/// Callback function type for all asynchronous post requests
+///
+/// Will be called when a response is received, on timeout (i.e. response never received), or when
+/// the request is cancelled (e.g. when the Golioth client is stopped). The callback function should
+/// check \p status to determine which case triggered the callback.
+///
+/// The CoAP response code is available by reading code_class (2.xx) and code_detail (x.00) from \p
+/// coap_rsp_code:
+/// - When \p status is GOLIOTH_OK, \p coap_rsp_code->code_class will be a 2.XX success code.
+/// - When \p status is GOLIOTH_COAP_RESPONSE_CODE, check \p coap_rsp_code->code_class for a
+/// non-success code (4.XX, etc.)
+/// - All other \p status values indicate an error in which a response was not received. The \p
+/// coap_rsp_code is undefined and will be NULL.
+///
+/// @param client The client handle from the original request.
+/// @param status Golioth status code.
+/// @param coap_rsp_code CoAP response code received from Golioth
+/// @param path The path from the original request
+/// @param payload The application layer payload in the response packet. Can be NULL.
+/// @param payload_size The size of payload, in bytes
+/// @param arg User argument, copied from the original request. Can be NULL.
+typedef void (*golioth_post_cb_fn)(struct golioth_client *client,
+                                   enum golioth_status status,
+                                   const struct golioth_coap_rsp_code *coap_rsp_code,
+                                   const char *path,
+                                   const uint8_t *payload,
+                                   size_t payload_size,
+                                   void *arg);
+
 /// Create a Golioth client
 ///
 /// Dynamically creates a client and returns an opaque handle to the client.
