@@ -1,0 +1,32 @@
+# Copyright (c) 2021-2024 Golioth, Inc.
+# SPDX-License-Identifier: Apache-2.0
+
+source "${ZEPHYR_GOLIOTH_FIRMWARE_SDK_MODULE_DIR}/examples/zephyr/common/Kconfig.defconfig"
+
+config APP_LOCATION_GET_INTERVAL
+    int "Interval (msec)"
+    default 0 if GOLIOTH_CELLULAR_PLAYBACK
+    default 5000
+    help
+      Interval (msec) between requests of location information using cellular data.
+
+config GOLIOTH_CELLULAR_PLAYBACK
+    bool
+    default y
+    depends on DT_HAS_GOLIOTH_CELLULAR_PLAYBACK_ENABLED
+
+if GOLIOTH_CELLULAR_PLAYBACK
+
+config GOLIOTH_CELLULAR_PLAYBACK_SPEED_FACTOR
+    int "Speed factor"
+    default 1000
+    help
+      Speed of playback.
+
+      1000 means 1x (normal) speed.
+      3000 means 3x speed.
+      500 means 0.5x speed.
+
+endif # GOLIOTH_CELLULAR_PLAYBACK
+
+source "Kconfig.zephyr"

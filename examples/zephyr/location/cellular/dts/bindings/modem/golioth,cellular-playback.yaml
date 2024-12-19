@@ -1,0 +1,8 @@
+# Copyright (c) 2024 Golioth, Inc.
+# SPDX-License-Identifier: Apache-2.0
+
+description: Cellular driver with playback of scanned cellular networks
+
+compatible: "golioth,cellular-playback"
+
+include: base.yaml

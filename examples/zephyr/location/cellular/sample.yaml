@@ -1,0 +1,14 @@
+sample:
+  description: Location Cellular
+  name: location cellular
+common:
+  build_only: true
+  tags:
+    - golioth
+    - location
+    - socket
+tests:
+  sample.golioth.location_cellular:
+    platform_allow:
+      - native_sim
+      - native_sim/native/64
