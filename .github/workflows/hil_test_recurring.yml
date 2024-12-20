@@ -1,0 +1,14 @@
+name: Run Recurring HIL Tests
+
+on:
+  schedule:
+    # Run workflow every 4 hours
+    - cron: "00 */4 * * *"
+
+jobs:
+  tests:
+    uses: ./.github/workflows/tests.yml
+    secrets: inherit
+    with:
+      workflow: zephyr_integration_native_sim
+      allure_branch: recurring
