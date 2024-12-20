@@ -2,6 +2,12 @@ name: Publish Allure Reports to GitHub Pages
 
 on:
   workflow_call:
+    inputs:
+      allure_branch:
+        description: "Override the branch selected to store Allure reports"
+        required: false
+        type: string
+        default: 'auto'
 
 env:
   GHPAGES_LABEL: "gh-pages"
@@ -39,7 +45,9 @@ jobs:
       - name: Setup Allure Branch Awareness
         id: vars
         run: |
-          if [[ $GITHUB_REF_NAME == 'main' ]]; then
+          if [[ '${{ inputs.allure_branch }}' != 'auto' ]]; then
+            echo "allure_subdir=${{ inputs.allure_branch }}" >> $GITHUB_OUTPUT
+          elif [[ $GITHUB_REF_NAME == 'main' ]]; then
             echo "allure_subdir=main" >> $GITHUB_OUTPUT
           else
             echo "allure_subdir=branch" >> $GITHUB_OUTPUT
