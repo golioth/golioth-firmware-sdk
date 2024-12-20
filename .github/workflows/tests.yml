@@ -31,6 +31,17 @@ on:
           - esp_idf_integration
           - esp_idf_sample
           - linux_integration
+      allure_branch:
+        description: "Override the branch selected to store Allure reports"
+        required: false
+        type: choice
+        default: 'auto'
+        options:
+          - auto
+          - main
+          - branch
+          - recurring
+
   workflow_call:
     inputs:
       api-url:
@@ -55,6 +66,11 @@ on:
         required: false
         type: string
         default: 'all'
+      allure_branch:
+        description: "Override the branch selected to store Allure reports"
+        required: false
+        type: string
+        default: 'auto'
 
 jobs:
   unit_tests:
@@ -419,6 +435,8 @@ jobs:
     if: ${{ !cancelled() }}
     uses: ./.github/workflows/reports-allure-publish.yml
     secrets: inherit
+    with:
+      allure_branch: ${{ inputs.allure_branch }}
 
   publish_summary:
     needs:
