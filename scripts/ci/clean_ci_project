@@ -1,0 +1,202 @@
+#!/usr/bin/env python3
+
+__author__ = "Golioth, Inc."
+__copyright__ = "Copyright (c) 2024 Golioth, Inc."
+__license__ = "Apache-2.0"
+
+import argparse, sys
+
+from golioth import Client, Project, Device, Certificate, Cohort, Release, Tag
+import asyncio
+
+from datetime import datetime, timedelta, timezone
+from typing import Callable, Any, Awaitable
+
+RemFunc = Callable[[Any], Awaitable[Any]]
+
+EXPIRY_AGE = timedelta(days=1)
+
+class OrphanCleaner:
+    def __init__(self, api_url, api_key, default_delta: timedelta | None = None, verbose: bool = False):
+        self.client = Client(api_url, api_key)
+        self.project = None
+
+        self.certificates = None
+        self.cohorts = None
+        self.devices = None
+        self.tags = None
+
+        self.default_delta = default_delta or EXPIRY_AGE
+        self.verbose = verbose
+
+    async def fetch_all_project_info(self):
+        self.project = (await self.client.get_projects())[0]
+        if self.project is None:
+            if self.verbose:
+                print("No project found")
+            return
+
+        self.devices = await self.project.get_devices()
+        self.certificates = await self.project.certificates.get_all()
+        self.cohorts = await self.project.cohorts.get_all()
+        self.releases = await self.project.releases.get_all()
+        self.tags = await self.project.tags.get_all()
+
+    def get_age(self, ts: str) -> timedelta | None:
+        try:
+            created_dt = datetime.fromisoformat(ts)
+        except:
+            if self.verbose:
+                print(f"Error processing timestamp: {ts}")
+            return None
+
+        return datetime.now(timezone.utc) - created_dt
+
+    async def remove_expired_ids(self,
+                                 member: Certificate | Cohort | Device | Release | Tag,
+                                 remove: RemFunc,
+                                 delta: timedelta | None = None) -> str | None:
+            age = self.get_age(member.info['createdAt'])
+            if age and age > (delta or self.default_delta):
+                print("Removing:", member.id, "Age:", age)
+                try:
+                    await remove(member.id)
+                    return member.id
+                except:
+                    print(f"Unable to remove: {member.id}")
+                    return None
+
+    async def cull_certificates(self,
+                                project: Project | None,
+                                delta: timedelta | None = None) -> int:
+        if not (project and self.certificates):
+            return -1;
+
+        removal_count = 0;
+        print("Processing Certificates:")
+        for c in self.certificates:
+            id = await self.remove_expired_ids(c, project.certificates.delete, delta)
+            if id:
+                removal_count += 1
+        print("Complete.\n")
+        return removal_count
+
+    async def cull_cohorts(self, project: Project | None, delta: timedelta | None = None):
+        if not (project and self.cohorts):
+            if self.verbose:
+                print("No cohorts found.")
+            return -1;
+
+        removal_count = 0;
+        print("Processing Cohorts:")
+        for c in self.cohorts:
+            id = await self.remove_expired_ids(c, project.cohorts.delete, delta)
+            if id:
+                removal_count += 1
+        print("Complete.\n")
+        return removal_count
+
+    async def cull_devices(self, project: Project | None, delta: timedelta | None = None):
+        if not (project and self.devices):
+            if self.verbose:
+                print("No devices found.")
+            return -1;
+
+        removal_count = 0;
+        print("Processing Devices:")
+        for d in self.devices:
+            id = await self.remove_expired_ids(d, project.delete_device_by_id, delta)
+            if id:
+                removal_count += 1
+        print("Complete.\n")
+        return removal_count
+
+    async def cull_releases(self, project: Project | None, delta: timedelta | None = None):
+        if not (project and self.releases):
+            if self.verbose:
+                print("No releases found.")
+            return -1;
+
+        removal_count = 0;
+        print("Processing Releases:")
+        for r in self.releases:
+            id = await self.remove_expired_ids(r, project.releases.delete, delta)
+            if id:
+                removal_count += 1
+        print("Complete.\n")
+        return removal_count
+
+    async def cull_tags(self, project: Project | None, delta: timedelta | None = None):
+        if not (project and self.tags):
+            if self.verbose:
+                print("No tags found.")
+            return -1;
+
+        removal_count = 0;
+        print("Processing Tags:")
+        for t in self.tags:
+            id = await self.remove_expired_ids(t, project.tags.delete, delta)
+            if id:
+                removal_count += 1
+        print("Complete.\n")
+        return removal_count
+
+async def main(api_url: str, api_key: str, days_old: int, verbose: bool) -> int:
+    oc = OrphanCleaner(api_url , api_key, timedelta(days=days_old), verbose)
+    await oc.fetch_all_project_info()
+    if not oc.project:
+        print("Unable to initialize project.")
+        return -1;
+
+    print("\nStarting removal process.")
+    print(f"  Org: {oc.project.organization}")
+    print(f"  Proj: {oc.project.id}")
+    print("")
+
+    device_count = 0
+    if oc.devices:
+        device_count = await oc.cull_devices(oc.project, timedelta(days=days_old))
+
+    release_count = 0
+    if oc.releases:
+        release_count = await oc.cull_releases(oc.project, timedelta(days=days_old))
+
+    cohorts_count = 0
+    if oc.cohorts:
+        cohorts_count = await oc.cull_cohorts(oc.project, timedelta(days=days_old))
+
+    tag_count = 0
+    if oc.tags:
+        tag_count = await oc.cull_tags(oc.project, timedelta(days=days_old))
+
+    certificate_count = 0
+    if oc.certificates:
+        certificate_count = await oc.cull_certificates(oc.project, timedelta(days=days_old))
+
+    print(f"Devices removed: {device_count}")
+    print(f"Releases removed: {release_count}")
+    print(f"Cohorts removed: {cohorts_count}")
+    print(f"Tags removed: {tag_count}")
+    print(f"Certificates removed: {certificate_count}")
+
+    print("\nFinished removal process.\n")
+    return 0
+
+if __name__ == '__main__':
+    parser = argparse.ArgumentParser(description = "Remove older assets from Golioth project.")
+    parser.add_argument("api_key", type=str,
+                        help="Golioth project API key")
+    parser.add_argument("--api-url", type=str,
+                        default="https://api.golioth.io",
+                        help="URL to use for the Golioth REST API")
+    parser.add_argument("--days-old", type=float,
+                        default=7,
+                        help="Assets older than this number of days will be removed")
+    parser.add_argument("-v", "--verbose",
+                        help="increase output verbosity",
+                        action="store_true")
+
+    args = parser.parse_args()
+
+    exit_code = asyncio.run(main(args.api_url, args.api_key, args.days_old, args.verbose))
+    sys.exit(exit_code)
