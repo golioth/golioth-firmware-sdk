@@ -1,0 +1,35 @@
+name: Clean CI Project
+
+on:
+  schedule:
+    # Run workflow at the start of every day (11 PM UTC)
+    - cron: "0 23 * * *"
+
+jobs:
+  check_versions:
+    runs-on: ubuntu-latest
+
+    steps:
+      - name: Checkout repository
+        uses: actions/checkout@v4
+
+      - name: Setup python
+        uses: actions/setup-python@v5
+        with:
+          python-version: '3.11' # >=3.11 for datetime.fromisoformat()
+
+      - name: Install Golioth Python Tools
+        run: |
+          pip install git+https://github.com/golioth/python-golioth-tools@v0.6.5
+
+      - name: Remove old asset from Prod
+        run: |
+          python3 scripts/ci/clean_ci_project "${{ secrets.PROD_CI_PROJECT_API_KEY }}" \
+                  --api-url "https://api.golioth.io"                                   \
+                  --days-old 1
+
+      - name: Remove old asset from Dev
+        run: |
+          python3 scripts/ci/clean_ci_project "${{ secrets.DEV_CI_PROJECT_API_KEY }}"  \
+                  --api-url "https://api.golioth.dev"                                  \
+                  --days-old 1
