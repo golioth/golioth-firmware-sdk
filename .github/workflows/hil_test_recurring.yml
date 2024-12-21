@@ -1,0 +1,74 @@
+name: Run Recurring HIL Tests
+
+on:
+  schedule:
+    # Run workflow every 4 hours
+    - cron: "00 */4 * * *"
+
+jobs:
+  hil_test_zephyr_nsim:
+    strategy:
+      fail-fast: false
+      matrix:
+        platform:
+          - native_sim_32
+          - native_sim_64
+        include:
+          - platform: native_sim_32
+            west_board: native_sim
+          - platform: native_sim_64
+            west_board: native_sim/native/64
+    uses: ./.github/workflows/hil_test_zephyr_nsim.yml
+    with:
+      api-url: "https://api.golioth.io"
+      api-key-id: "PROD_CI_PROJECT_API_KEY"
+      coap_gateway_url: "coaps://coap.golioth.io"
+      platform: ${{ matrix.platform }}
+      west_board: ${{ matrix.west_board }}
+    secrets: inherit
+
+  hil_test_linux:
+    uses: ./.github/workflows/hil_test_linux.yml
+    with:
+      api-url: "https://api.golioth.io"
+      api-key-id: "PROD_CI_PROJECT_API_KEY"
+      coap_gateway_url: "coaps://coap.golioth.io"
+    secrets: inherit
+
+  hil_sample_zephyr_nsim:
+    name: zephyr-${{ matrix.platform }}-twister
+    strategy:
+      fail-fast: false
+      matrix:
+        include:
+          - west_board: native_sim
+            platform: native_sim_32
+          - west_board: native_sim/native/64
+            platform: native_sim_64
+    uses: ./.github/workflows/hil_sample_zephyr_nsim.yml
+    with:
+      api-url: "https://api.golioth.io"
+      api-key-id: "PROD_CI_PROJECT_API_KEY"
+      coap_gateway_url: "coaps://coap.golioth.io"
+      platform: ${{ matrix.platform }}
+      west_board: ${{ matrix.west_board }}
+    secrets: inherit
+
+  process_allure_reports:
+    needs:
+      - hil_sample_zephyr_nsim
+      - hil_test_linux
+      - hil_test_zephyr_nsim
+    if: ${{ !cancelled() }}
+    uses: ./.github/workflows/reports-allure-publish.yml
+    secrets: inherit
+    with:
+      allure_branch: recurring
+
+  publish_summary:
+    needs:
+      - hil_sample_zephyr_nsim
+      - hil_test_linux
+      - hil_test_zephyr_nsim
+    if: always()
+    uses: ./.github/workflows/reports-summary-publish.yml
