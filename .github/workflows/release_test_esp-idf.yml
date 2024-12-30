@@ -1,0 +1,44 @@
+name: Release test ESP-IDF
+
+on:
+  push:
+
+jobs:
+  rand_name:
+    runs-on: ubuntu-latest
+    name: esp-idf-device-name
+
+    outputs:
+      device_name: ${{ steps.generate-name.outputs.device_name }}
+
+    steps:
+      - name: Generate device name
+        id: generate-name
+        shell: python
+        run: |
+          import random
+          import os
+          import string
+
+          random_string = ''.join(random.choice(string.ascii_lowercase + string.digits)
+                                  for _ in range(16))
+
+          device_name = f'esp-idf-{random_string}'
+          print(f"Device name is: {device_name}")
+
+          with open(os.environ['GITHUB_OUTPUT'], 'a') as github_output:
+            print(f'device_name={device_name}', file=github_output)
+
+  show_name:
+    runs-on: ubuntu-latest
+    name: show_random_name
+    needs: rand_name
+
+    steps:
+      - name: Show random name
+        env:
+          DEVICE_NAME: ${{ needs.rand_name.outputs.device_name }}
+        shell: bash
+        run: |
+          echo "Device name is: $DEVICE_NAME"
+
