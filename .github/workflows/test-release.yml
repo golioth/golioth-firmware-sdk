@@ -17,7 +17,6 @@ jobs:
             idf_target: esp32c3
     uses: ./.github/workflows/release_test_esp-idf.yml
     with:
+      hil_board: ${{ matrix.hil_board }}
       idf_target: ${{ matrix.idf_target }}
-      #coap_gateway_url: ${{ inputs.coap_gateway_url }}
-      coap_gateway_url: "coaps://coap.golioth.io"
     secrets: inherit
