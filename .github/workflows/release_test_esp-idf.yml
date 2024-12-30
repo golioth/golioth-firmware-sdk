@@ -1,7 +1,14 @@
 name: Release test ESP-IDF
 
 on:
-  push:
+  workflow_call:
+    inputs:
+      idf_target:
+        required: true
+        type: string
+      coap_gateway_url:
+        required: true
+        type: string
 
 jobs:
   rand_name:
@@ -29,16 +36,73 @@ jobs:
           with open(os.environ['GITHUB_OUTPUT'], 'a') as github_output:
             print(f'device_name={device_name}', file=github_output)
 
-  show_name:
+  generate_certs:
+    name: Generate root and device certificates
     runs-on: ubuntu-latest
-    name: show_random_name
     needs: rand_name
 
     steps:
-      - name: Show random name
+      - name: Generate certificates
         env:
           DEVICE_NAME: ${{ needs.rand_name.outputs.device_name }}
         shell: bash
         run: |
-          echo "Device name is: $DEVICE_NAME"
+          scripts/certificates/generate_root_certificate.sh
+          scripts/certificates/generate_device_certificate.sh "ci" "$DEVICE_NAME" pem
+
+      - name: Save certificates
+        uses: actions/upload-artifact@v4
+        with:
+          name: device-${{ needs.rand_name.outputs.device_name }}
+          path: |
+            *.pem
+            *.der
+
+  build:
+    name: Build ESP-IDF certificate-auth
+    runs-on: ubuntu-latest
+    needs: generate_certs
+
+    steps:
+      - name: Checkout Repository and Submodules
+        uses: actions/checkout@v4
+        with:
+          submodules: 'recursive'
+
+      - name: Prep for build
+        id: build_prep
+        run: |
+          rm -rf test_binaries
+          mkdir test_binaries
+
+      - name: Download build
+        uses: actions/download-artifact@v4
+        with:
+          name: device-${{ needs.rand_name.outputs.device_name }}
+          path: .
+
+      - name: Stage certificates
+        run: |
+          mkdir examples/esp_idf/certificate_auth/main/certs
+          cp golioth.crt.pem examples/esp_idf/certificate_auth/main/certs/.
+          cp golioth.key.pem examples/esp_idf/certificate_auth/main/certs/.
+          cp *.crt.pem examples/esp_idf/certificate_auth/main/certs/client.crt.pem
+          cp *.key.pem examples/esp_idf/certificate_auth/main/certs/client.key.pem
+
+      - name: Build Samples
+        uses: espressif/esp-idf-ci-action@v1
+        with:
+          esp_idf_version: v5.3
+          target: ${{ inputs.idf_target }}
+          command: |
+            echo CONFIG_GOLIOTH_COAP_HOST_URI=\"${{ inputs.coap_gateway_url }}\" \
+              >> examples/esp_idf/certificate_auth/sdkconfig.defaults && \
+              idf.py -C examples/esp_idf/certificate_auth/ build
+            done
+
+      - name: Save Artifacts
+        uses: actions/upload-artifact@v4
+        with:
+          name: test-binary-${{ inputs.idf_target }}
+          path: examples/esp_idf/certificate_auth/build/merged.bin
 
