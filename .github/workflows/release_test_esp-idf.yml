@@ -78,11 +78,13 @@ jobs:
             echo CONFIG_GOLIOTH_COAP_HOST_URI=\"${{ inputs.coap_gateway_url }}\" \
               >> examples/esp_idf/certificate_auth/sdkconfig.defaults && \
               idf.py -C examples/esp_idf/certificate_auth/ build
-            done
 
       - name: Save Artifacts
         uses: actions/upload-artifact@v4
         with:
           name: test-binary-${{ inputs.idf_target }}
-          path: examples/esp_idf/certificate_auth/build/merged.bin
+          path: |
+            examples/esp_idf/certificate_auth/build/merged.bin
+            examples/esp_idf/certificate_auth/main/certs/golioth.crt.pem
+
 
