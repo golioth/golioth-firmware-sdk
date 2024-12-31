@@ -106,7 +106,7 @@ enum golioth_status golioth_fw_update_report_state_sync(struct fw_update_compone
         _state_callback(state, reason, _state_callback_arg);
     }
 
-    enum golioth_status status;
+    enum golioth_status status = GOLIOTH_ERR_FAIL;
     uint32_t backoff_s = FW_REPORT_RETRIES_INITAL_DELAY_S;
     int retries_remaining = FW_REPORT_MAX_RETRIES;
 
