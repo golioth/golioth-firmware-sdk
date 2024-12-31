@@ -18,6 +18,11 @@ on:
       coap_gateway_url:
         required: true
         type: string
+      ci_project_name:
+        description: "The name of the Golioth Project to use for certificate generation"
+        required: false
+        type: string
+        default: "firmware_ci"
   workflow_call:
     inputs:
       hil_board:
@@ -35,16 +40,48 @@ on:
       coap_gateway_url:
         required: true
         type: string
+      ci_project_name:
+        description: "The name of the Golioth Project to use for certificate generation"
+        required: false
+        type: string
+        default: "firmware_ci"
 
 jobs:
+  rand_name:
+    runs-on: ubuntu-latest
+    name: esp-idf-device-name
+
+    outputs:
+      device_name: ${{ steps.generate-name.outputs.device_name }}
+
+    steps:
+      - name: Generate device name
+        id: generate-name
+        shell: python
+        run: |
+          import random
+          import os
+          import string
+
+          random_string = ''.join(random.choice(string.ascii_lowercase + string.digits)
+                                  for _ in range(16))
+
+          device_name = f'esp-idf-{random_string}'
+          print(f"Device name is: {device_name}")
+
+          with open(os.environ['GITHUB_OUTPUT'], 'a') as github_output:
+            print(f'device_name={device_name}', file=github_output)
+
   build:
     name: esp-idf-${{ inputs.hil_board }}-sample-build
     runs-on: ubuntu-24.04
+    needs: rand_name
     steps:
       - name: Checkout Repository and Submodules
         uses: actions/checkout@v4
         with:
           submodules: 'recursive'
+
       - name: Prep for build
         id: build_prep
         run: |
@@ -52,6 +89,22 @@ jobs:
           mkdir test_binaries
           echo sample_list=$(find examples/esp_idf -type d -name pytest -exec dirname "{}" \;) \
             >> "$GITHUB_OUTPUT"
+
+      - name: Generate certificates
+        env:
+          DEVICE_NAME: ${{ needs.rand_name.outputs.device_name }}
+        shell: bash
+        run: |
+          scripts/certificates/generate_root_certificate.sh
+          scripts/certificates/generate_device_certificate.sh "${{ inputs.ci_project_name }}" \
+            "$DEVICE_NAME" pem
+
+          mkdir examples/esp_idf/certificate_auth/main/certs
+          mv golioth.crt.pem test_binaries/.
+          rm golioth.key.pem
+          mv *.crt.pem examples/esp_idf/certificate_auth/main/certs/client.crt.pem
+          mv *.key.pem examples/esp_idf/certificate_auth/main/certs/client.key.pem
+
       - name: Build Samples
         uses: espressif/esp-idf-ci-action@v1
         with:
@@ -65,6 +118,7 @@ jobs:
               idf.py -C $sample build && \
               mv ${sample}/build/merged.bin test_binaries/$(basename $sample).bin
             done
+
       - name: Save Artifacts
         uses: actions/upload-artifact@v4
         with:
@@ -73,7 +127,9 @@ jobs:
 
   test:
     name: esp-idf-${{ inputs.hil_board }}-sample-test
-    needs: build
+    needs:
+      - build
+      - rand_name
     runs-on:
       - is_active
       - has_${{ inputs.hil_board }}
@@ -107,13 +163,15 @@ jobs:
         shell: bash
         env:
           hil_board: ${{ inputs.hil_board }}
+          GOLIOTH_DEVICE_CERT_NAME: ${{ needs.rand_name.outputs.device_name }}
+          GOLIOTH_ROOT_CERTIFICATE: "golioth.crt.pem"
         run: |
           rm -rf allure-reports
           source /opt/credentials/runner_env.sh
           PORT_VAR=CI_${hil_board^^}_PORT
           for sample in $(find examples/esp_idf -type d -name pytest -exec dirname "{}" \;)
           do
-            pytest --rootdir . $sample                                          \
+            pytest --rootdir . $sample/pytest                                   \
               --board ${{ inputs.hil_board }}_espidf                            \
               --port ${!PORT_VAR}                                               \
               --fw-image $(basename $sample).bin                                \
