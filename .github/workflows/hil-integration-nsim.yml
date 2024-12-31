@@ -1,4 +1,4 @@
-name: Zephyr Hardware-in-the-Loop Tests
+name: "HIL: nsim Integration"
 
 on:
   workflow_dispatch:
