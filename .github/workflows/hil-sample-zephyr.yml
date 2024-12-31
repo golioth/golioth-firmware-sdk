@@ -1,4 +1,4 @@
-name: Zephyr Sample Tests
+name: "HIL: Zephyr Samples"
 
 on:
   workflow_dispatch:

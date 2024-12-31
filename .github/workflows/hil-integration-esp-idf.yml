@@ -1,4 +1,4 @@
-name: ESP-IDF Hardware-in-the-Loop Sample Tests
+name: "HIL: ESP-IDF Integration"
 
 on:
   workflow_dispatch:
@@ -38,7 +38,7 @@ on:
 
 jobs:
   build:
-    name: esp-idf-${{ inputs.hil_board }}-sample-build
+    name: esp-idf-${{ inputs.hil_board }}-build
     runs-on: ubuntu-latest
     steps:
       - name: Checkout Repository and Submodules
@@ -48,31 +48,33 @@ jobs:
       - name: Prep for build
         id: build_prep
         run: |
+          echo CONFIG_GOLIOTH_COAP_HOST_URI=\"${{ inputs.coap_gateway_url }}\" \
+            >> tests/hil/platform/esp-idf/sdkconfig.defaults
+
           rm -rf test_binaries
           mkdir test_binaries
-          echo sample_list=$(find examples/esp_idf -type d -name pytest -exec dirname "{}" \;) \
-            >> "$GITHUB_OUTPUT"
-      - name: Build Samples
+          echo test_list=$(ls tests/hil/tests) >> "$GITHUB_OUTPUT"
+      - name: Build Test Firmware
         uses: espressif/esp-idf-ci-action@v1
         with:
           esp_idf_version: v5.3
           target: ${{ inputs.idf_target }}
+          path: 'tests/hil/platform/esp-idf'
           command: |
-            for sample in ${{ steps.build_prep.outputs.sample_list }};
-            do
-              echo CONFIG_GOLIOTH_COAP_HOST_URI=\"${{ inputs.coap_gateway_url }}\" \
-                >> ${sample}/sdkconfig.defaults && \
-              idf.py -C $sample build && \
-              mv ${sample}/build/merged.bin test_binaries/$(basename $sample).bin
+            for test in ${{ steps.build_prep.outputs.test_list }}; do
+              idf.py -DGOLIOTH_HIL_TEST=$test build && \
+                mv build/merged.bin ../../../../test_binaries/${test}.bin || \
+                EXITCODE=$?
             done
+            exit $EXITCODE
       - name: Save Artifacts
         uses: actions/upload-artifact@v4
         with:
-          name: ${{ inputs.hil_board }}-sample-esp-idf
+          name: ${{ inputs.hil_board }}-esp-idf
           path: test_binaries/*
 
   test:
-    name: esp-idf-${{ inputs.hil_board }}-sample-test
+    name: esp-idf-${{ inputs.hil_board }}-test
     needs: build
     runs-on:
       - is_active
@@ -95,48 +97,77 @@ jobs:
             pytest \
             pytest-timeout \
             tests/hil/scripts/pytest-hil \
-            git+https://github.com/golioth/python-golioth-tools@v0.6.3
+            git+https://github.com/golioth/python-golioth-tools@v0.6.4
       - name: Power On USB Hub
         run: python3 /opt/golioth-scripts/usb_hub_power.py on
       - name: Download build
         uses: actions/download-artifact@v4
         with:
-          name: ${{ inputs.hil_board }}-sample-esp-idf
+          name: ${{ inputs.hil_board }}-esp-idf
           path: .
       - name: Run test
         shell: bash
         env:
           hil_board: ${{ inputs.hil_board }}
         run: |
+          rm -rf summary
+          mkdir summary
           rm -rf allure-reports
           source /opt/credentials/runner_env.sh
           PORT_VAR=CI_${hil_board^^}_PORT
-          for sample in $(find examples/esp_idf -type d -name pytest -exec dirname "{}" \;)
+          for test in $(ls tests/hil/tests)
           do
-            pytest --rootdir . $sample                                          \
+            pytest --rootdir . tests/hil/tests/$test                            \
               --board ${{ inputs.hil_board }}_espidf                            \
               --port ${!PORT_VAR}                                               \
-              --fw-image $(basename $sample).bin                                \
+              --fw-image ${test}.bin                                            \
               --api-url ${{ inputs.api-url }}                                   \
               --api-key ${{ secrets[inputs.api-key-id] }}                       \
               --wifi-ssid ${{ secrets[format('{0}_WIFI_SSID', runner.name)] }}  \
               --wifi-psk ${{ secrets[format('{0}_WIFI_PSK', runner.name)] }}    \
               --mask-secrets                                                    \
               --timeout=600                                                     \
+              --junitxml=summary/hil-espidf-${{ inputs.hil_board }}-${test}.xml \
               --alluredir=allure-reports                                        \
-              --platform=esp-idf                                                \
+              --platform esp-idf                                                \
               --runner-name ${{ runner.name }}                                  \
-              --custom-suitename=sample                                         \
               || EXITCODE=$?
           done
           exit $EXITCODE
+
+      - name: Prepare summary
+        if: always()
+        shell: bash
+        run: |
+          if ! command -v sudo; then
+            # Self-hosted runner docker images don't have sudo installed
+            mkdir -p -m 777 /tmp && apt update && apt install -y xml-twig-tools
+          else
+            sudo apt install -y xml-twig-tools
+          fi
+
+          xml_grep \
+            --pretty_print indented \
+            --wrap testsuites \
+            --descr '' \
+            --cond "testsuite" \
+            summary/*.xml \
+            > combined.xml
+          mv combined.xml summary/hil-espidf-${{ inputs.hil_board }}.xml
+
+      - name: Safe upload CI report summary
+        uses: ./.github/actions/safe-upload-artifacts
+        if: always()
+        with:
+          name: ci-summary-hil-espidf-${{ inputs.hil_board }}
+          path: summary/hil-espidf-${{ inputs.hil_board }}.xml
 
       - name: Safe upload Allure reports
         if: always()
         uses: ./.github/actions/safe-upload-artifacts
         with:
           secrets-json: ${{ toJson(secrets) }}
-          name: allure-reports-samples-espidf-${{ inputs.hil_board }}
+          name: allure-reports-hil-espidf-${{ inputs.hil_board }}
           path: allure-reports
 
       - name: Erase flash

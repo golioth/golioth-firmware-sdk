@@ -1,4 +1,4 @@
-name: Deploy Doxygen to Firebase Hosting on PR
+name: "Doc: Doxygen to Firebase (PR)"
 on: pull_request
 jobs:
   deploy_doxygen_dev:

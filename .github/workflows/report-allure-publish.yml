@@ -1,4 +1,4 @@
-name: Publish Allure Reports to GitHub Pages
+name: "Report: Publish Allure"
 
 on:
   workflow_call:
