@@ -1,4 +1,4 @@
-name: Publish Summary of all test to Checks section
+name: "Report: Publish Summary"
 
 on:
   workflow_call:

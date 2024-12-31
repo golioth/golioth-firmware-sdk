@@ -1,4 +1,4 @@
-name: Linux "Hardware-in-the-Loop" Tests
+name: "HIL: Linux Integration"
 
 on:
   workflow_dispatch:
