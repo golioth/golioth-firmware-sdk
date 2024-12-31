@@ -1,4 +1,4 @@
-name: Tests
+name: "Test: Comprehensive"
 
 on:
   workflow_dispatch:
@@ -137,7 +137,7 @@ jobs:
             west_board: rak5010/nrf52840
             manifest: .ci-west-zephyr.yml
             binary_name: zephyr.hex
-    uses: ./.github/workflows/hil_test_zephyr.yml
+    uses: ./.github/workflows/hil-integration-zephyr.yml
     with:
       hil_board: ${{ matrix.hil_board }}
       west_board: ${{ matrix.west_board }}
@@ -162,7 +162,7 @@ jobs:
             west_board: native_sim
           - platform: native_sim_64
             west_board: native_sim/native/64
-    uses: ./.github/workflows/hil_test_zephyr_nsim.yml
+    uses: ./.github/workflows/hil-integration-nsim.yml
     with:
       api-url: ${{ inputs.api-url }}
       api-key-id: ${{ inputs.api-key-id }}
@@ -183,7 +183,7 @@ jobs:
             idf_target: esp32
           - hil_board: esp32c3_devkitm
             idf_target: esp32c3
-    uses: ./.github/workflows/hil_test_esp-idf.yml
+    uses: ./.github/workflows/hil-integration-esp-idf.yml
     with:
       hil_board: ${{ matrix.hil_board }}
       idf_target: ${{ matrix.idf_target }}
@@ -194,7 +194,7 @@ jobs:
 
   hil_test_linux:
     if: ${{ inputs.workflow == 'all' || inputs.workflow == 'linux_integration' }}
-    uses: ./.github/workflows/hil_test_linux.yml
+    uses: ./.github/workflows/hil-integration-linux.yml
     with:
       api-url: ${{ inputs.api-url }}
       api-key-id: ${{ inputs.api-key-id }}
@@ -251,7 +251,7 @@ jobs:
             west_board: qemu_x86
             manifest: .ci-west-zephyr.yml
             run_tests: false
-    uses: ./.github/workflows/hil_sample_zephyr.yml
+    uses: ./.github/workflows/hil-sample-zephyr.yml
     with:
       hil_board: ${{ matrix.hil_board }}
       west_board: ${{ matrix.west_board }}
@@ -274,7 +274,7 @@ jobs:
             platform: native_sim_32
           - west_board: native_sim/native/64
             platform: native_sim_64
-    uses: ./.github/workflows/hil_sample_zephyr_nsim.yml
+    uses: ./.github/workflows/hil-sample-nsim.yml
     with:
       api-url: ${{ inputs.api-url }}
       api-key-id: ${{ inputs.api-key-id }}
@@ -414,7 +414,7 @@ jobs:
             idf_target: esp32
           - hil_board: esp32c3_devkitm
             idf_target: esp32c3
-    uses: ./.github/workflows/hil_sample_esp-idf.yml
+    uses: ./.github/workflows/hil-sample-esp-idf.yml
     with:
       hil_board: ${{ matrix.hil_board }}
       idf_target: ${{ matrix.idf_target }}
@@ -433,7 +433,7 @@ jobs:
       - hil_test_zephyr
       - hil_test_zephyr_nsim
     if: ${{ !cancelled() }}
-    uses: ./.github/workflows/reports-allure-publish.yml
+    uses: ./.github/workflows/report-allure-publish.yml
     secrets: inherit
     with:
       allure_branch: ${{ inputs.allure_branch }}
@@ -448,4 +448,4 @@ jobs:
       - hil_test_zephyr
       - hil_test_zephyr_nsim
     if: always()
-    uses: ./.github/workflows/reports-summary-publish.yml
+    uses: ./.github/workflows/report-summary-publish.yml

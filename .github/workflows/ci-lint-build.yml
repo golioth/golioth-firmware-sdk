@@ -1,4 +1,4 @@
-name: Firmware Build
+name: "CI: Firmware Build"
 
 on:
   push:

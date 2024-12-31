@@ -1,4 +1,4 @@
-name: Tests Trigger (push and schedule)
+name: "Trigger: Push and Schedule"
 
 on:
   push:
@@ -15,5 +15,5 @@ concurrency:
 
 jobs:
   tests:
-    uses: ./.github/workflows/tests.yml
+    uses: ./.github/workflows/test-comprehensive.yml
     secrets: inherit

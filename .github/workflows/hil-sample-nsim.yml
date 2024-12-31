@@ -1,4 +1,4 @@
-name: Zephyr Samples Test Native_sim
+name: "HIL: nsim Samples"
 
 on:
   workflow_dispatch:

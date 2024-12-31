@@ -1,4 +1,4 @@
-name: Deploy Doxygen to Firebase Hosting on Main
+name: "Doc: Doxygen to Firebase (Main)"
 'on':
   push:
     branches:

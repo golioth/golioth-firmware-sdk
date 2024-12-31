@@ -1,4 +1,4 @@
-name: yamllint
+name: "CI: yamllint"
 
 on:
   pull_request:

@@ -1,4 +1,4 @@
-name: Clean CI Project
+name: "CI: Clean Project"
 
 on:
   schedule:
