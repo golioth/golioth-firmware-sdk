@@ -98,7 +98,7 @@ jobs:
           path: 'examples/esp_idf/certificate_auth'
 
   modus_toolbox_build:
-    runs-on: ubuntu-latest
+    runs-on: ubuntu-22.04
     env:
       MTB_VERSION: 2.4.0.5972
       MTB_TOOLS_VERSION: 2.4
