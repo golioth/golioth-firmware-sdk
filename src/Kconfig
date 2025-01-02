@@ -97,6 +97,11 @@ config GOLIOTH_LOCATION_REQUEST_BUFFER_SIZE
         Size of request buffer for Golioth Location service. It determines how much information
         (like WiFi Access Points) might be provided in the request.
 
+config GOLIOTH_LOCATION_CELLULAR
+    bool "Golioth Location cellular service"
+    help
+        Location service using cellular network.
+
 config GOLIOTH_LOCATION_WIFI
     bool "Golioth Location WiFi service"
     help
