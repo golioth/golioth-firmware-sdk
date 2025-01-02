@@ -34,6 +34,7 @@ idf_component_register(
         "${sdk_src}/log.c"
         "${sdk_src}/lightdb_state.c"
         "${sdk_src}/location.c"
+        "${sdk_src}/location_cellular.c"
         "${sdk_src}/location_wifi.c"
         "${sdk_src}/stream.c"
         "${sdk_src}/rpc.c"

@@ -28,6 +28,7 @@ struct golioth_location_rsp
 };
 
 #define GOLIOTH_LOCATION_FLAG_WIFI (1 << 0)
+#define GOLIOTH_LOCATION_FLAG_CELLULAR (1 << 1)
 
 /**
  * @brief Wi-Fi location request, used with golioth_location_init(), golioth_location_finish() and

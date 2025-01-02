@@ -1,0 +1,6 @@
+/ {
+	cellular-playback {
+		compatible = "golioth,cellular-playback";
+		status = "okay";
+	};
+};
