@@ -40,7 +40,7 @@ on:
 jobs:
   build_and_test:
     name: zephyr-${{ inputs.west_board }}-twister
-    runs-on: ubuntu-latest
+    runs-on: ubuntu-24.04
     container:
       image: golioth/golioth-zephyr-base:0.16.8-SDK-v0
     env:
@@ -120,7 +120,7 @@ jobs:
 
   hil_sample_zephyr_nsim_summary:
     name: zephyr-${{ inputs.platform }}-twister-summary
-    runs-on: ubuntu-latest
+    runs-on: ubuntu-24.04
     needs: build_and_test
     if: success() || failure()
 

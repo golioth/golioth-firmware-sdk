@@ -2,7 +2,7 @@ name: "Doc: Doxygen to Firebase (PR)"
 on: pull_request
 jobs:
   deploy_doxygen_dev:
-    runs-on: ubuntu-latest
+    runs-on: ubuntu-24.04
     steps:
       - uses: actions/checkout@v4
       - name: Install Doxygen
