@@ -13,6 +13,11 @@
 #include <golioth/fw_update.h>
 #include "golioth/ota.h"
 
+_Static_assert(sizeof(CONFIG_GOLIOTH_FW_UPDATE_PACKAGE_NAME)
+                   <= CONFIG_GOLIOTH_OTA_MAX_PACKAGE_NAME_LEN + 1,
+               "GOLIOTH_FW_UPDATE_PACKAGE_NAME may be no longer than "
+               "GOLIOTH_OTA_MAX_PACKAGE_NAME_LEN");
+
 #if defined(CONFIG_GOLIOTH_FW_UPDATE)
 
 LOG_TAG_DEFINE(golioth_fw_update);
@@ -101,7 +106,7 @@ enum golioth_status golioth_fw_update_report_state_sync(struct fw_update_compone
         _state_callback(state, reason, _state_callback_arg);
     }
 
-    enum golioth_status status;
+    enum golioth_status status = GOLIOTH_ERR_FAIL;
     uint32_t backoff_s = FW_REPORT_RETRIES_INITAL_DELAY_S;
     int retries_remaining = FW_REPORT_MAX_RETRIES;
 
@@ -611,7 +616,7 @@ void golioth_fw_update_init(struct golioth_client *client, const char *current_v
 {
     struct golioth_fw_update_config config = {
         .current_version = current_version,
-        .fw_package_name = GOLIOTH_FW_UPDATE_DEFAULT_PACKAGE_NAME,
+        .fw_package_name = CONFIG_GOLIOTH_FW_UPDATE_PACKAGE_NAME,
     };
     golioth_fw_update_init_with_config(client, &config);
 }
