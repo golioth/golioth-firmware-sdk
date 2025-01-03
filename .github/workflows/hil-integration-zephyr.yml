@@ -290,7 +290,7 @@ jobs:
         uses: actions/download-artifact@v4
         with:
           path: summary
-          pattern: ci-individual-hil-zephyr-*
+          pattern: ci-individual-hil-zephyr-${{ inputs.hil_board }}-*
           merge-multiple: true
 
       - name: Prepare CI report summary
