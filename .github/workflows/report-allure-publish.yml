@@ -14,7 +14,7 @@ env:
 
 jobs:
   allure-collect-and-publish:
-    runs-on: ubuntu-latest
+    runs-on: ubuntu-24.04
     concurrency:
       group: publish_allure_to_gh_pages
       cancel-in-progress: false

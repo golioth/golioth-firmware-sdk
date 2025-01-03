@@ -39,7 +39,7 @@ on:
 
 jobs:
   matrix:
-    runs-on: ubuntu-latest
+    runs-on: ubuntu-24.04
     name: zephyr-native_sim-matrix-generate
 
     outputs:
@@ -63,7 +63,7 @@ jobs:
             print('tests=' + json.dumps(tests), file=github_output)
 
   build_and_test:
-    runs-on: ubuntu-latest
+    runs-on: ubuntu-24.04
     needs: matrix
     container:
       image: golioth/golioth-zephyr-base:0.16.8-SDK-v0
@@ -168,7 +168,7 @@ jobs:
 
   hil_test_zephyr_nsim_summary:
     name: zephyr-${{ inputs.platform }}-test-summary
-    runs-on: ubuntu-latest
+    runs-on: ubuntu-24.04
     needs: build_and_test
     if: success() || failure()
 

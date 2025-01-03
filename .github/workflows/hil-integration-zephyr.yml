@@ -57,7 +57,7 @@ on:
 jobs:
   matrix:
     name: zephyr-${{ inputs.hil_board }}-matrix
-    runs-on: ubuntu-latest
+    runs-on: ubuntu-24.04
 
     outputs:
       tests: ${{ steps.output-tests.outputs.tests }}
@@ -89,7 +89,7 @@ jobs:
         test: ${{ fromJSON(needs.matrix.outputs.tests) }}
     env:
       ZEPHYR_SDK_INSTALL_DIR: /opt/toolchains/zephyr-sdk-0.16.8
-    runs-on: ubuntu-latest
+    runs-on: ubuntu-24.04
     steps:
       - name: Checkout repository and submodules
         uses: actions/checkout@v4
@@ -282,7 +282,7 @@ jobs:
 
   summary:
     name: zephyr-${{ inputs.hil_board }}-summary
-    runs-on: ubuntu-latest
+    runs-on: ubuntu-24.04
     needs: test
 
     steps:

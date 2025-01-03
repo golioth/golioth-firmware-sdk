@@ -74,7 +74,7 @@ on:
 
 jobs:
   unit_tests:
-    runs-on: ubuntu-latest
+    runs-on: ubuntu-24.04
 
     steps:
       - name: Checkout repository and submodules
@@ -284,7 +284,7 @@ jobs:
     secrets: inherit
 
   coverage:
-    runs-on: ubuntu-latest
+    runs-on: ubuntu-24.04
     needs:
       - hil_sample_zephyr_nsim
       - hil_test_linux
