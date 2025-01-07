@@ -201,16 +201,45 @@ void golioth_sys_client_disconnected(void *client);
 #include <stdio.h>
 #include "golioth_debug.h"
 
+#ifndef LOG_COLOR_RED
 #define LOG_COLOR_RED "31"
+#endif
+
+#ifndef LOG_COLOR_GREEN
 #define LOG_COLOR_GREEN "32"
+#endif
+
+#ifndef LOG_COLOR_BROWN
 #define LOG_COLOR_BROWN "33"
+#endif
+
+#ifndef LOG_COLOR
 #define LOG_COLOR(COLOR) "\033[0;" COLOR "m"
+#endif
+
+#ifndef LOG_RESET_COLOR
 #define LOG_RESET_COLOR "\033[0m"
+#endif
+
+#ifndef LOG_COLOR_E
 #define LOG_COLOR_E LOG_COLOR(LOG_COLOR_RED)
+#endif
+
+#ifndef LOG_COLOR_W
 #define LOG_COLOR_W LOG_COLOR(LOG_COLOR_BROWN)
+#endif
+
+#ifndef LOG_COLOR_I
 #define LOG_COLOR_I LOG_COLOR(LOG_COLOR_GREEN)
+#endif
+
+#ifndef LOG_COLOR_D
 #define LOG_COLOR_D
+#endif
+
+#ifndef LOG_COLOR_V
 #define LOG_COLOR_V
+#endif
 
 #ifndef GLTH_LOGX
 #define GLTH_LOGX(COLOR, LEVEL, LEVEL_STR, TAG, ...)                       \
