@@ -40,9 +40,12 @@ struct in6_pktinfo {
     struct in6_addr ipi6_addr; /* src/dst IPv6 address */
     unsigned int ipi6_ifindex; /* send/recv interface index */
 };
+
+#ifndef IN6_IS_ADDR_V4MAPPED
 #define IN6_IS_ADDR_V4MAPPED(a) \
     ((((__const uint32_t*)(a))[0] == 0) && (((__const uint32_t*)(a))[1] == 0) \
      && (((__const uint32_t*)(a))[2] == htonl(0xffff)))
+#endif
 
 /* As not defined, just need to define is as something innocuous */
 #define IPV6_PKTINFO IPV6_CHECKSUM
