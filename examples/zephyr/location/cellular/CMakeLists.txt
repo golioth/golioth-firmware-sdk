@@ -7,3 +7,4 @@ project(location_cellular)
 
 target_sources(app PRIVATE src/main.c)
 target_sources_ifdef(CONFIG_GOLIOTH_CELLULAR_PLAYBACK app PRIVATE src/cellular_playback.c)
+target_sources_ifdef(CONFIG_SOC_SERIES_NRF91X app PRIVATE src/cellular_nrf91.c)
