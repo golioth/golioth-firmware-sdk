@@ -172,6 +172,16 @@ $ west build -b nrf52840dk/nrf52840 examples/zephyr/location
 $ west flash
 ```
 
+#### nRF9160 DK
+
+On your host computer open a terminal window, locate the source code of
+this sample application (i.e., `examples/zephyr/location`) and type:
+
+```console
+$ west build -b nrf9160dk/nrf9160/ns examples/zephyr/location
+$ west flash
+```
+
 ### Sample output
 
 This is the output from the serial console:
