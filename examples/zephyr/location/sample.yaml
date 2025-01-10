@@ -2,13 +2,13 @@ sample:
   description: Location example
   name: location
 common:
-  build_only: true
   tags:
     - golioth
     - location
     - socket
 tests:
   sample.golioth.location:
+    build_only: true
     platform_allow:
       - esp32_devkitc_wrover/esp32/procpu
       - native_sim
@@ -16,14 +16,32 @@ tests:
       - nrf52840dk/nrf52840
       - nrf9151dk/nrf9151/ns
       - nrf9160dk/nrf9160/ns
-  sample.golioth.location.wifi_only:
+  sample.golioth.location.playback:
+    timeout: 100
+    harness: pytest
+    extra_args: EXTRA_CONF_FILE="../common/runtime_settings.conf"
     extra_configs:
+      - CONFIG_GOLIOTH_SAMPLE_TWISTER_TEST=y
+      - arch:posix:CONFIG_NATIVE_UART_0_ON_STDINOUT=y
+    platform_allow:
+      - native_sim
+      - native_sim/native/64
+  sample.golioth.location.playback.wifi:
+    harness: pytest
+    extra_args: EXTRA_CONF_FILE="../common/runtime_settings.conf"
+    extra_configs:
+      - CONFIG_GOLIOTH_SAMPLE_TWISTER_TEST=y
+      - arch:posix:CONFIG_NATIVE_UART_0_ON_STDINOUT=y
       - CONFIG_GOLIOTH_CELLULAR_PLAYBACK=n
     platform_allow:
       - native_sim
       - native_sim/native/64
-  sample.golioth.location.cellular_only:
+  sample.golioth.location.playback.cellular:
+    harness: pytest
+    extra_args: EXTRA_CONF_FILE="../common/runtime_settings.conf"
     extra_configs:
+      - CONFIG_GOLIOTH_SAMPLE_TWISTER_TEST=y
+      - arch:posix:CONFIG_NATIVE_UART_0_ON_STDINOUT=y
       - CONFIG_GOLIOTH_WIFI_PLAYBACK=n
     platform_allow:
       - native_sim
