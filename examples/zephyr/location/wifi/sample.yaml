@@ -2,15 +2,22 @@ sample:
   description: Location WiFi
   name: location wifi
 common:
-  build_only: true
   tags:
     - golioth
     - location
     - socket
 tests:
   sample.golioth.location_wifi:
+    build_only: true
     platform_allow:
       - esp32_devkitc_wrover/esp32/procpu
+      - nrf52840dk/nrf52840
+  sample.golioth.location_wifi.playback:
+    harness: pytest
+    extra_args: EXTRA_CONF_FILE="../../common/runtime_settings.conf"
+    extra_configs:
+      - CONFIG_GOLIOTH_SAMPLE_TWISTER_TEST=y
+      - arch:posix:CONFIG_NATIVE_UART_0_ON_STDINOUT=y
+    platform_allow:
       - native_sim
       - native_sim/native/64
-      - nrf52840dk/nrf52840
