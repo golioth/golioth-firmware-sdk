@@ -1,5 +1,11 @@
-# Copyright (c) 2021-2024 Golioth, Inc.
+# Copyright (c) 2021-2025 Golioth, Inc.
 # SPDX-License-Identifier: Apache-2.0
+
+configdefault GOLIOTH_LOCATION_WIFI
+    default y if WIFI
+
+configdefault WIFI
+    default y if GOLIOTH_WIFI_PLAYBACK
 
 source "${ZEPHYR_GOLIOTH_FIRMWARE_SDK_MODULE_DIR}/examples/zephyr/common/Kconfig.defconfig"
 
