@@ -1,6 +1,6 @@
 sample:
-  description: Location WiFi
-  name: location wifi
+  description: Location example
+  name: location
 common:
   build_only: true
   tags:
@@ -8,7 +8,7 @@ common:
     - location
     - socket
 tests:
-  sample.golioth.location_wifi:
+  sample.golioth.location:
     platform_allow:
       - esp32_devkitc_wrover/esp32/procpu
       - native_sim

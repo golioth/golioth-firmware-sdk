@@ -5,7 +5,7 @@
  */
 
 #include <zephyr/logging/log.h>
-LOG_MODULE_REGISTER(location_wifi_main, LOG_LEVEL_DBG);
+LOG_MODULE_REGISTER(location_main, LOG_LEVEL_DBG);
 
 #include <golioth/client.h>
 #include <golioth/location/wifi.h>
@@ -137,7 +137,7 @@ int main(void)
 {
     struct net_if *iface = net_if_get_first_wifi();
 
-    LOG_DBG("Start WiFi location sample");
+    LOG_DBG("Start location sample");
 
     net_mgmt_init_event_callback(&wifi_mgmt_cb,
                                  wifi_mgmt_event_handler,
