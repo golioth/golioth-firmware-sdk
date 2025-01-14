@@ -85,13 +85,9 @@ static void wifi_mgmt_event_handler(struct net_mgmt_event_callback *cb,
     }
 }
 
-static int wifi_scan_and_get_location(struct net_if *iface)
+static int wifi_scan_and_encode_info(struct net_if *iface)
 {
-    struct golioth_location_rsp location_rsp;
-    enum golioth_status status;
     int err;
-
-    golioth_location_init(&location_req);
 
     err = net_mgmt(NET_REQUEST_WIFI_SCAN, iface, NULL, 0);
     if (err)
@@ -102,32 +98,6 @@ static int wifi_scan_and_get_location(struct net_if *iface)
 
     k_sem_take(&scan_sem, K_FOREVER);
 
-    status = golioth_location_finish(&location_req);
-    if (status != GOLIOTH_OK)
-    {
-        if (status == GOLIOTH_ERR_NULL)
-        {
-            LOG_WRN("No location data to be provided");
-            return 0;
-        }
-
-        LOG_ERR("Failed to encode location data");
-        return -ENOMEM;
-    }
-
-    status = golioth_location_get_sync(client, &location_req, &location_rsp, APP_TIMEOUT_S);
-    if (status == GOLIOTH_OK)
-    {
-        LOG_INF("%s%lld.%09lld %s%lld.%09lld (%lld)",
-                location_rsp.latitude < 0 ? "-" : "",
-                llabs(location_rsp.latitude) / 1000000000,
-                llabs(location_rsp.latitude) % 1000000000,
-                location_rsp.longitude < 0 ? "-" : "",
-                llabs(location_rsp.longitude) / 1000000000,
-                llabs(location_rsp.longitude) % 1000000000,
-                (long long int) location_rsp.accuracy);
-    }
-
     return 0;
 }
 
@@ -135,7 +105,10 @@ static struct net_mgmt_event_callback wifi_mgmt_cb;
 
 int main(void)
 {
-    struct net_if *iface = net_if_get_first_wifi();
+    struct net_if *wifi_iface = net_if_get_first_wifi();
+    struct golioth_location_rsp location_rsp;
+    enum golioth_status status;
+    int err;
 
     LOG_DBG("Start location sample");
 
@@ -159,7 +132,39 @@ int main(void)
 
     while (true)
     {
-        wifi_scan_and_get_location(iface);
+        golioth_location_init(&location_req);
+
+        err = wifi_scan_and_encode_info(wifi_iface);
+        if (err)
+        {
+            continue;
+        }
+
+        status = golioth_location_finish(&location_req);
+        if (status != GOLIOTH_OK)
+        {
+            if (status == GOLIOTH_ERR_NULL)
+            {
+                LOG_WRN("No location data to be provided");
+                return 0;
+            }
+
+            LOG_ERR("Failed to encode location data");
+            return -ENOMEM;
+        }
+
+        status = golioth_location_get_sync(client, &location_req, &location_rsp, APP_TIMEOUT_S);
+        if (status == GOLIOTH_OK)
+        {
+            LOG_INF("%s%lld.%09lld %s%lld.%09lld (%lld)",
+                    location_rsp.latitude < 0 ? "-" : "",
+                    llabs(location_rsp.latitude) / 1000000000,
+                    llabs(location_rsp.latitude) % 1000000000,
+                    location_rsp.longitude < 0 ? "-" : "",
+                    llabs(location_rsp.longitude) / 1000000000,
+                    llabs(location_rsp.longitude) % 1000000000,
+                    (long long int) location_rsp.accuracy);
+        }
     }
 
     return 0;
