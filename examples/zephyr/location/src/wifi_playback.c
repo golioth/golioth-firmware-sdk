@@ -98,7 +98,7 @@ static int wifi_playback_mgmt_scan(const struct device *dev,
     k_work_schedule_for_queue(
         &scan_work_queue,
         &data->scan_work,
-        K_TIMEOUT_ABS_MS(scan->ts * 1000 / CONFIG_GOLIOTH_WIFI_PLAYBACK_SPEED_FACTOR));
+        K_TIMEOUT_ABS_MS(scan->ts * 1000 / CONFIG_GOLIOTH_PLAYBACK_SPEED_FACTOR));
 
     return 0;
 }
