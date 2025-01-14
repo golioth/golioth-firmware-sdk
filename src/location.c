@@ -9,6 +9,7 @@
 #include <zcbor_decode.h>
 
 #include "coap_client.h"
+#include "location.h"
 
 #if defined(CONFIG_GOLIOTH_LOCATION)
 
@@ -19,6 +20,51 @@ struct golioth_location_get_sync_data
     enum golioth_status status;
     struct golioth_location_rsp *rsp;
 };
+
+enum golioth_status golioth_location_append(struct golioth_location_req *req,
+                                            int flag,
+                                            const char *name)
+{
+    int started = req->flags & GOLIOTH_LOCATION_STARTED_MASK;
+    int finished = req->flags >> GOLIOTH_LOCATION_SHIFT_FINISHED;
+    bool ok;
+
+    if (finished & flag)
+    {
+        LOG_ERR("Interchangably calling different golioth_location_*_append() is not supported");
+        return GOLIOTH_ERR_NOT_ALLOWED;
+    }
+
+    if (started & flag)
+    {
+        return GOLIOTH_OK;
+    }
+
+    if (started)
+    {
+        ok = zcbor_list_end_encode(req->zse, 1);
+        if (!ok)
+        {
+            LOG_ERR("Failed to close location group");
+            return -ENOMEM;
+        }
+    }
+
+    /* Mark all STARTED as FINISHED */
+    req->flags |= started << GOLIOTH_LOCATION_SHIFT_FINISHED;
+
+    /* Mark new flag as STARTED */
+    req->flags |= flag;
+
+    /* Start encoding new list */
+    ok = zcbor_tstr_put_term(req->zse, name, 8) && zcbor_list_start_encode(req->zse, 1);
+    if (!ok)
+    {
+        return GOLIOTH_ERR_MEM_ALLOC;
+    }
+
+    return GOLIOTH_OK;
+}
 
 static enum golioth_status location_decode(struct golioth_location_rsp *rsp,
                                            const uint8_t *payload,
@@ -77,6 +123,8 @@ static void location_cb(struct golioth_client *client,
 void golioth_location_init(struct golioth_location_req *req)
 {
     zcbor_new_encode_state(req->zse, ZCBOR_ARRAY_SIZE(req->zse), req->buf, sizeof(req->buf), 1);
+
+    zcbor_map_start_encode(req->zse, 1);
 
     req->flags = 0;
 }

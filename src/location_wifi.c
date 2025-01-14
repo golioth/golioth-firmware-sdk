@@ -16,18 +16,13 @@ enum golioth_status golioth_location_wifi_append(struct golioth_location_req *re
                                                  const struct golioth_wifi_scan_result *result)
 {
     char mac_str[6 * 3];
+    enum golioth_status status;
     bool ok;
 
-    if (!(req->flags & GOLIOTH_LOCATION_FLAG_WIFI))
+    status = golioth_location_append(req, GOLIOTH_LOCATION_FLAG_WIFI, "wifi");
+    if (status != GOLIOTH_OK)
     {
-        req->flags |= GOLIOTH_LOCATION_FLAG_WIFI;
-
-        ok = zcbor_map_start_encode(req->zse, 1) && zcbor_tstr_put_lit(req->zse, "wifi")
-            && zcbor_list_start_encode(req->zse, 1);
-        if (!ok)
-        {
-            return GOLIOTH_ERR_MEM_ALLOC;
-        }
+        return status;
     }
 
     sprintf(mac_str,
