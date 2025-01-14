@@ -165,6 +165,8 @@ int main(void)
                     llabs(location_rsp.longitude) % 1000000000,
                     (long long int) location_rsp.accuracy);
         }
+
+        k_msleep(CONFIG_APP_LOCATION_GET_INTERVAL);
     }
 
     return 0;
