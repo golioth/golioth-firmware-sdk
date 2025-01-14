@@ -11,7 +11,7 @@ config APP_LOCATION_GET_INTERVAL
       Interval (msec) between requests of location information.
 
 config GOLIOTH_WIFI_PLAYBACK
-    bool
+    bool "WiFi playback"
     default y
     depends on DT_HAS_GOLIOTH_WIFI_PLAYBACK_ENABLED
 

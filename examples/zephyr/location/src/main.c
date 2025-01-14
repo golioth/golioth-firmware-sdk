@@ -89,6 +89,11 @@ static int wifi_scan_and_encode_info(struct net_if *iface)
 {
     int err;
 
+    if (!IS_ENABLED(CONFIG_GOLIOTH_LOCATION_WIFI))
+    {
+        return 0;
+    }
+
     err = net_mgmt(NET_REQUEST_WIFI_SCAN, iface, NULL, 0);
     if (err)
     {
@@ -112,10 +117,13 @@ int main(void)
 
     LOG_DBG("Start location sample");
 
-    net_mgmt_init_event_callback(&wifi_mgmt_cb,
-                                 wifi_mgmt_event_handler,
-                                 (NET_EVENT_WIFI_SCAN_RESULT | NET_EVENT_WIFI_SCAN_DONE));
-    net_mgmt_add_event_callback(&wifi_mgmt_cb);
+    if (IS_ENABLED(CONFIG_WIFI))
+    {
+        net_mgmt_init_event_callback(&wifi_mgmt_cb,
+                                     wifi_mgmt_event_handler,
+                                     (NET_EVENT_WIFI_SCAN_RESULT | NET_EVENT_WIFI_SCAN_DONE));
+        net_mgmt_add_event_callback(&wifi_mgmt_cb);
+    }
 
     net_connect();
 
