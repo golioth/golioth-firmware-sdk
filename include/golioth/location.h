@@ -27,8 +27,6 @@ struct golioth_location_rsp
     int64_t accuracy;
 };
 
-#define GOLIOTH_LOCATION_FLAG_WIFI (1 << 0)
-
 /**
  * @brief Wi-Fi location request, used with golioth_location_init(), golioth_location_finish() and
  *        golioth_location_get_sync()

@@ -6,6 +6,8 @@
 
 #include <golioth/location/wifi.h>
 
+#include "location.h"
+
 #if defined(CONFIG_GOLIOTH_LOCATION_WIFI)
 
 LOG_TAG_DEFINE(location_wifi);
