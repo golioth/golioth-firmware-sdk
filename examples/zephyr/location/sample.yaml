@@ -14,3 +14,15 @@ tests:
       - native_sim
       - native_sim/native/64
       - nrf52840dk/nrf52840
+  sample.golioth.location.wifi_only:
+    extra_configs:
+      - CONFIG_GOLIOTH_CELLULAR_PLAYBACK=n
+    platform_allow:
+      - native_sim
+      - native_sim/native/64
+  sample.golioth.location.cellular_only:
+    extra_configs:
+      - CONFIG_GOLIOTH_WIFI_PLAYBACK=n
+    platform_allow:
+      - native_sim
+      - native_sim/native/64

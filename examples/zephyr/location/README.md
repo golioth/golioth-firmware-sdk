@@ -3,7 +3,8 @@
 ## Overview
 
 This sample demonstrates how to connect to Golioth and get location
-using scanned WiFi networks.
+using cellular network cell towers information and/or scanned WiFi
+networks.
 
 ## Requirements
 

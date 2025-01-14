@@ -8,12 +8,15 @@
 LOG_MODULE_REGISTER(location_main, LOG_LEVEL_DBG);
 
 #include <golioth/client.h>
+#include <golioth/location/cellular.h>
 #include <golioth/location/wifi.h>
 #include <samples/common/sample_credentials.h>
 #include <string.h>
 #include <zephyr/net/wifi_mgmt.h>
 
 #include <samples/common/net_connect.h>
+
+#include "cellular.h"
 
 #define APP_TIMEOUT_S 5
 
@@ -50,6 +53,38 @@ static enum golioth_status golioth_location_wifi_append_zephyr(
 }
 
 static struct golioth_location_req location_req;
+
+static int cellular_get_and_encode_info(void)
+{
+    struct golioth_cellular_info cellular_infos[4];
+    enum golioth_status status;
+    size_t num_infos;
+    int err;
+
+    if (!IS_ENABLED(CONFIG_GOLIOTH_LOCATION_CELLULAR))
+    {
+        return 0;
+    }
+
+    err = cellular_info_get(cellular_infos, ARRAY_SIZE(cellular_infos), &num_infos);
+    if (err)
+    {
+        LOG_ERR("Failed to get cellular network info: %d", err);
+        return err;
+    }
+
+    for (size_t i = 0; i < num_infos; i++)
+    {
+        status = golioth_location_cellular_append(&location_req, &cellular_infos[i]);
+        if (status != GOLIOTH_OK)
+        {
+            LOG_ERR("Failed to append cellular info: %d", status);
+            return -ENOMEM;
+        }
+    }
+
+    return 0;
+}
 
 static void wifi_scan_result_process(const struct wifi_scan_result *entry)
 {
@@ -141,6 +176,12 @@ int main(void)
     while (true)
     {
         golioth_location_init(&location_req);
+
+        err = cellular_get_and_encode_info();
+        if (err)
+        {
+            continue;
+        }
 
         err = wifi_scan_and_encode_info(wifi_iface);
         if (err)

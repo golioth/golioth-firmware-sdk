@@ -1,4 +1,9 @@
 / {
+	cellular-playback {
+		compatible = "golioth,cellular-playback";
+		status = "okay";
+	};
+
 	wifi-playback {
 		compatible = "golioth,wifi-playback";
 		status = "okay";
