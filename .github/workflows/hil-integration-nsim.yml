@@ -135,6 +135,7 @@ jobs:
             --allure-board=${{ inputs.platform }}
 
       - name: Capture coverage
+        if: success() || failure()
         run: |
           gcovr -r modules/lib/golioth-firmware-sdk                      \
             --gcov-ignore-parse-errors=negative_hits.warn_once_per_file  \
@@ -143,7 +144,7 @@ jobs:
             hil-out/${{ matrix.test }}
 
       - name: Upload test coverage artifacts
-        if: always()
+        if: success() || failure()
         uses: ./modules/lib/golioth-firmware-sdk/.github/actions/safe-upload-artifacts
         with:
           secrets-json: ${{ toJson(secrets) }}
