@@ -136,6 +136,7 @@ jobs:
     name: linux-hil-tests-summary
     runs-on: ubuntu-24.04
     needs: hil
+    if: success() || failure()
 
     steps:
       - name: Checkout repository
@@ -147,7 +148,6 @@ jobs:
           pattern: ci-hil-linux-*
 
       - name: Prepare summary
-        if: always()
         shell: bash
         run: |
           if ! command -v sudo; then
@@ -165,7 +165,6 @@ jobs:
 
       - name: Safe upload CI report summary
         uses: ./.github/actions/safe-upload-artifacts
-        if: always()
         with:
           name: ci-summary-hil-linux
           path: hil-linux.xml
