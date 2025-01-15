@@ -48,7 +48,7 @@ on:
 
 jobs:
   rand_name:
-    runs-on: ubuntu-latest
+    runs-on: ubuntu-24.04
     name: esp-idf-device-name
 
     outputs:
