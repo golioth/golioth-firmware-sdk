@@ -104,6 +104,9 @@ jobs:
             --alluredir=allure-reports                  \
             --platform linux
 
+      - name: Capture coverage
+        if: success() || failure()
+        run: |
           gcovr                                                         \
             --gcov-ignore-parse-errors=negative_hits.warn_once_per_file \
             --merge-mode-functions=separate                             \
@@ -112,6 +115,7 @@ jobs:
 
       - name: Upload coverage
         uses: actions/upload-artifact@v4
+        if: success() || failure()
         with:
           name: linux-hil-test-coverage-${{ matrix.test }}
           path: |
