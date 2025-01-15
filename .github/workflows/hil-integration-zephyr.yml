@@ -284,6 +284,7 @@ jobs:
     name: zephyr-${{ inputs.hil_board }}-summary
     runs-on: ubuntu-24.04
     needs: test
+    if: success() || failure()
 
     steps:
       - name: Collect JUnit reports
@@ -294,7 +295,6 @@ jobs:
           merge-multiple: true
 
       - name: Prepare CI report summary
-        if: always()
         shell: bash
         run: |
           sudo apt install -y xml-twig-tools
@@ -309,7 +309,6 @@ jobs:
 
       - name: Upload CI report summary
         uses: actions/upload-artifact@v4
-        if: always()
         with:
           name: ci-summary-hil-zephyr-${{ inputs.hil_board }}
           path: summary/hil-zephyr-${{ inputs.hil_board }}.xml
