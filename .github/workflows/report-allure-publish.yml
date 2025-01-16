@@ -55,7 +55,7 @@ jobs:
 
       - name: Build Allure report
         uses: simple-elf/allure-report-action@v1.11
-        if: always()
+        if: success() || failure()
         with:
           gh_pages: ${{ env.GHPAGES_LABEL }}
           allure_history: reports/allure-history
@@ -72,7 +72,7 @@ jobs:
                 --delete
 
       - name: Place index.html
-        if: always() && github.ref == 'refs/heads/main'
+        if: (success() || failure()) && github.ref == 'refs/heads/main'
         # Root URL should always point to latest main report
         run: |
           cp reports/allure-history/${{ steps.vars.outputs.allure_subdir}}/index.html \
@@ -80,7 +80,7 @@ jobs:
 
       - name: Publish test report
         uses: peaceiris/actions-gh-pages@v4
-        if: always()
+        if: success() || failure()
         with:
           deploy_key: ${{ secrets.ALLURE_REPORTS_DEPLOY_KEY }}
           external_repository: golioth/allure-reports

@@ -215,13 +215,13 @@ jobs:
 
       - name: Safe upload CI report summary
         uses: ./.github/actions/safe-upload-artifacts
-        if: always()
+        if: success() || failure()
         with:
           name: ci-individual-hil-zephyr-${{ inputs.hil_board }}-${{ matrix.test }}
           path: summary/*.xml
 
       - name: Safe upload Allure reports
-        if: always()
+        if: success() || failure()
         uses: ./.github/actions/safe-upload-artifacts
         with:
           secrets-json: ${{ toJson(secrets) }}

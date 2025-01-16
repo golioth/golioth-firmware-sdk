@@ -123,13 +123,13 @@ jobs:
 
       - name: Safe upload CI report summary
         uses: ./.github/actions/safe-upload-artifacts
-        if: always()
+        if: success() || failure()
         with:
           name: ci-hil-linux-${{ matrix.test }}
           path: summary/hil-linux-*.xml
 
       - name: Safe upload Allure reports
-        if: always()
+        if: success() || failure()
         uses: ./.github/actions/safe-upload-artifacts
         with:
           secrets-json: ${{ toJson(secrets) }}
