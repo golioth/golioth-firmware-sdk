@@ -90,7 +90,7 @@ jobs:
               --pytest-args="--hil-board=${{ inputs.platform }}"
 
       - name: Safe upload twister artifacts
-        if: always()
+        if: success() || failure()
         uses: ./modules/lib/golioth-firmware-sdk/.github/actions/safe-upload-artifacts
         with:
           secrets-json: ${{ toJson(secrets) }}
@@ -105,13 +105,13 @@ jobs:
 
       - name: Safe upload CI report summary
         uses: ./modules/lib/golioth-firmware-sdk/.github/actions/safe-upload-artifacts
-        if: always()
+        if: success() || failure()
         with:
           name: ci-individual-samples-zephyr-${{ inputs.platform }}
           path: twister-out/twister_suite_report.xml
 
       - name: Safe upload Allure reports
-        if: always()
+        if: success() || failure()
         uses: ./modules/lib/golioth-firmware-sdk/.github/actions/safe-upload-artifacts
         with:
           secrets-json: ${{ toJson(secrets) }}
@@ -131,7 +131,7 @@ jobs:
           pattern: ci-individual-samples-zephyr-*
 
       - name: Prepare CI report summary
-        if: always()
+        if: success() || failure()
         run: |
           sudo apt install -y xml-twig-tools
 
@@ -146,7 +146,7 @@ jobs:
 
       - name: Upload CI report summary
         uses: actions/upload-artifact@v4
-        if: always()
+        if: success() || failure()
         with:
           name: ci-summary-samples-zephyr-${{ inputs.platform }}
           path: samples-zephyr-*.xml

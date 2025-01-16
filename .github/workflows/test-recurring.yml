@@ -70,5 +70,5 @@ jobs:
       - hil_sample_zephyr_nsim
       - hil_test_linux
       - hil_test_zephyr_nsim
-    if: always()
+    if: success() || failure()
     uses: ./.github/workflows/report-summary-publish.yml

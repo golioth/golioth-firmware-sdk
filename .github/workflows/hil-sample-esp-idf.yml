@@ -190,7 +190,7 @@ jobs:
           exit $EXITCODE
 
       - name: Safe upload Allure reports
-        if: always()
+        if: success() || failure()
         uses: ./.github/actions/safe-upload-artifacts
         with:
           secrets-json: ${{ toJson(secrets) }}

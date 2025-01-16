@@ -104,7 +104,7 @@ jobs:
             build
 
       - name: Upload test coverage artifacts
-        if: always()
+        if: success() || failure()
         uses: actions/upload-artifact@v4
         with:
           name: unit-test-coverage
@@ -364,7 +364,7 @@ jobs:
 
       - name: Upload coverage artifacts
         uses: actions/upload-artifact@v4
-        if: always()
+        if: success() || failure()
         with:
           name: coverage-native-sim
           path: coverage/*
@@ -447,5 +447,5 @@ jobs:
       - hil_test_linux
       - hil_test_zephyr
       - hil_test_zephyr_nsim
-    if: always()
+    if: success() || failure()
     uses: ./.github/workflows/report-summary-publish.yml

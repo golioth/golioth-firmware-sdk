@@ -127,7 +127,7 @@ jobs:
                 $EXTRA_BUILD_ARGS
 
       - name: Save artifacts
-        if: always()
+        if: success() || failure()
         uses: actions/upload-artifact@v4
         with:
           name: test_artifacts_${{ inputs.hil_board }}
@@ -220,7 +220,7 @@ jobs:
                 -v
 
       - name: Safe upload twister artifacts
-        if: always()
+        if: success() || failure()
         uses: ./modules/lib/golioth-firmware-sdk/.github/actions/safe-upload-artifacts
         with:
           secrets-json: ${{ toJson(secrets) }}
@@ -233,7 +233,7 @@ jobs:
             twister-out/*.json
 
       - name: Prepare CI report summary
-        if: always()
+        if: success() || failure()
         run: |
           rm -rf summary
           mkdir summary
@@ -241,13 +241,13 @@ jobs:
 
       - name: Safe upload CI report summary
         uses: ./modules/lib/golioth-firmware-sdk/.github/actions/safe-upload-artifacts
-        if: always()
+        if: success() || failure()
         with:
           name: ci-summary-samples-zephyr-${{ inputs.hil_board }}
           path: summary/*
 
       - name: Safe upload Allure reports
-        if: always()
+        if: success() || failure()
         uses: ./modules/lib/golioth-firmware-sdk/.github/actions/safe-upload-artifacts
         with:
           secrets-json: ${{ toJson(secrets) }}

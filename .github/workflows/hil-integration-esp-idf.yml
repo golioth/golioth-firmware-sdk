@@ -136,7 +136,7 @@ jobs:
           exit $EXITCODE
 
       - name: Prepare summary
-        if: always()
+        if: success() || failure()
         shell: bash
         run: |
           if ! command -v sudo; then
@@ -157,13 +157,13 @@ jobs:
 
       - name: Safe upload CI report summary
         uses: ./.github/actions/safe-upload-artifacts
-        if: always()
+        if: success() || failure()
         with:
           name: ci-summary-hil-espidf-${{ inputs.hil_board }}
           path: summary/hil-espidf-${{ inputs.hil_board }}.xml
 
       - name: Safe upload Allure reports
-        if: always()
+        if: success() || failure()
         uses: ./.github/actions/safe-upload-artifacts
         with:
           secrets-json: ${{ toJson(secrets) }}

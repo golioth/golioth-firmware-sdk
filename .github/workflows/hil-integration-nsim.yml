@@ -180,7 +180,7 @@ jobs:
           pattern: ci-individual-hil-zephyr-*
 
       - name: Prepare CI report summary
-        if: always()
+        if: success() || failure()
         run: |
           sudo apt install -y xml-twig-tools
 
@@ -195,7 +195,7 @@ jobs:
 
       - name: Upload CI report summary
         uses: actions/upload-artifact@v4
-        if: always()
+        if: success() || failure()
         with:
           name: ci-summary-hil-zephyr-${{ inputs.platform }}
           path: hil-zephyr-*.xml
