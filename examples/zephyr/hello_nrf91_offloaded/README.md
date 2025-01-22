@@ -53,6 +53,15 @@ AT%CMNG=0,515765868,4,my-psk-id
 AT%CMNG=0,515765868,3,my-psk-encoded-as-hexstring
 ```
 
+Note: the PSK *must* be encoded as hexadecimal values. The Golioth
+console displays PSKs in ASCII encoding. One way to convert your
+ASCII-encoded PSK is to use the following Linux command:
+
+```
+$ echo "my-golioth-psk" | tr -d '\n' | xxd -ps -c 200
+6d792d676f6c696f74682d70736b
+```
+
 ##### Using `nrf_modem_at` application specific shell command
 
 This application comes with `nrf_modem_at` Zephyr shell command. It can
