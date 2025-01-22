@@ -4,11 +4,30 @@ All notable changes to this project will be documented in this file.
 The format is based on [Keep a Changelog](https://keepachangelog.com/en/1.0.0/),
 and this project adheres to [Semantic Versioning](https://semver.org/spec/v2.0.0.html).
 
-## [0.17.0] unreleased
+## [0.17.0] 2025-01-23
 
 ### Highlights:
 
+- Added New Golioth Location Service
+- Improved OTA stability and robustness
 - ESP-IDF port updated to ESP-IDF v5.4
+- ModusToolbox port updated to ModusToolbox v3.3
+
+### Added:
+
+- New APIs for interacting with the Golioth Location service. Golioth
+  Location can be used to resolve WiFi scan results and cellular tower
+  information into approximate geolocation.
+- New Zephyr examples for the Golioth Location service.
+- fw_update: Resume downloads
+- fw_update: Retry downloads with backoff
+- fw_update: Add retries for reporting state
+
+### Changed:
+
+- Default PSK max length set to 32 to match mbedTLS defaults
+- Improved WiFi handling in samples
+- Improved handling of new OTA manifests when download is in progress
 
 ## [0.16.0] 2024-11-25
 
