@@ -93,7 +93,6 @@ jobs:
           west update -o=--depth=1 -n
           git config --global user.email user@git-scm.com
           git config --global user.name "Git User"
-          west patch
 
           pip install \
             -r zephyr/scripts/requirements-base.txt \

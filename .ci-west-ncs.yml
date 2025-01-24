@@ -19,6 +19,3 @@ manifest:
         - trusted-firmware-m
         - zcbor
         - zephyr
-    userdata:
-      patches_dirs:
-        - patches/west-ncs
