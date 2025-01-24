@@ -6,6 +6,3 @@ manifest:
       name-allowlist:
         - nrf
         - zephyr
-    userdata:
-      patches_dirs:
-        - patches/west-ncs

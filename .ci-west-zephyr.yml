@@ -17,6 +17,3 @@ manifest:
         - tinycrypt
         - zcbor
         - zephyr
-    userdata:
-      patches_dirs:
-        - patches/west-zephyr
