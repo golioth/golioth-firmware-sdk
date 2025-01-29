@@ -38,8 +38,8 @@ async def setup(project, board, device):
     golioth_cred = (await device.credentials.list())[0]
     await board.set_golioth_psk_credentials(golioth_cred.identity, golioth_cred.key)
 
-    # Confirm connection to Golioth
-    assert None != await board.wait_for_regex_in_line('Golioth CoAP client connected', timeout_s=120)
+    # Wait for settings registration
+    assert None != await board.wait_for_regex_in_line('Settings registration complete', timeout_s=30)
 
 async def assert_settings_error(device, key, error):
     await device.refresh()
