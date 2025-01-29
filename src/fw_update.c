@@ -329,12 +329,12 @@ static void fw_update_thread(void *arg)
     // If it's the first time booting a new OTA image,
     // wait for successful connection to Golioth.
     //
-    // If we don't connect after 60 seconds, roll back to the old image.
+    // If we don't connect after the configured period, roll back to the old image.
     if (fw_update_is_pending_verify())
     {
         GLTH_LOGI(TAG, "Waiting for golioth client to connect before cancelling rollback");
         int seconds_elapsed = 0;
-        while (seconds_elapsed < 60)
+        while (seconds_elapsed < CONFIG_GOLIOTH_FW_UPDATE_ROLLBACK_TIMER_S)
         {
             if (golioth_client_is_connected(_client))
             {
@@ -344,7 +344,7 @@ static void fw_update_thread(void *arg)
             seconds_elapsed++;
         }
 
-        if (seconds_elapsed == 60)
+        if (seconds_elapsed == CONFIG_GOLIOTH_FW_UPDATE_ROLLBACK_TIMER_S)
         {
             // We didn't connect to Golioth cloud, so something might be wrong with
             // this firmware. Roll back and reboot.
