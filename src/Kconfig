@@ -67,6 +67,15 @@ config GOLIOTH_FW_UPDATE_THREAD_STACK_SIZE
     help
         Stack size of thread handling OTA updates.
 
+config GOLIOTH_FW_UPDATE_ROLLBACK_TIMER_S
+    int "FW Update rollback timer period"
+    default 300
+    help
+        The time, in seconds, that the firmware update thread will wait for a connection to
+        Golioth after the first boot into a new firmware image. If a connection is not established
+        within this period, the firmware update module will roll back the firmware to the previous
+        version.
+
 endif # GOLIOTH_FW_UPDATE
 
 config GOLIOTH_LIGHTDB_STATE
