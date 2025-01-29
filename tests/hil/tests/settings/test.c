@@ -128,6 +128,12 @@ void hil_test_entry(const struct golioth_client_config *config)
 
     struct golioth_settings *settings = perform_settings_registration(client);
 
+    /* Allow log buffer to clear then notify test script of registration complete */
+
+    golioth_sys_msleep(5 * 1000);
+
+    GLTH_LOGI(TAG, "Settings registration complete");
+
     while (1)
     {
         if (golioth_sys_sem_take(cancel_all_sem, 0))
