@@ -15,7 +15,6 @@ manifest:
         - oberon-psa-crypto
         - qcbor
         - segger
-        - tinycrypt
         - trusted-firmware-m
         - zcbor
         - zephyr
