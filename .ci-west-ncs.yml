@@ -13,7 +13,6 @@ manifest:
         - nrf
         - nrfxlib
         - oberon-psa-crypto
-        - qcbor
         - segger
         - tinycrypt
         - trusted-firmware-m
