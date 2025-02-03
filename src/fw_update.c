@@ -302,7 +302,7 @@ static enum golioth_status fw_verify_component_hash(
     else
     {
         GLTH_LOGE(TAG,
-                  "Firmware download failed; Recieved %u bytes but sha256 doesn't match",
+                  "Firmware download failed; Received %u bytes but sha256 doesn't match",
                   ctx->bytes_downloaded);
 
         GLTH_LOG_BUFFER_HEXDUMP(TAG,
