@@ -81,11 +81,6 @@ static enum golioth_status fw_write_block_cb(const struct golioth_ota_component 
     {
         ctx->bytes_downloaded += block_buffer_len;
         golioth_sys_sha256_update(ctx->sha, block_buffer, block_buffer_len);
-
-        if (is_last)
-        {
-            fw_update_post_download();
-        }
     }
 
     return status;
@@ -289,25 +284,20 @@ static void fw_observe_manifest(void)
 }
 
 static enum golioth_status fw_verify_component_hash(
-    struct download_progress_context *ctx,
+    const uint8_t calc_sha256[GOLIOTH_OTA_COMPONENT_BIN_HASH_LEN],
     const uint8_t server_sha256[GOLIOTH_OTA_COMPONENT_BIN_HASH_LEN])
 {
-    uint8_t calc_sha256[GOLIOTH_OTA_COMPONENT_BIN_HASH_LEN];
-    golioth_sys_sha256_finish(ctx->sha, calc_sha256);
-
-    if (memcmp(server_sha256, calc_sha256, sizeof(calc_sha256)) == 0)
+    if (memcmp(server_sha256, calc_sha256, GOLIOTH_OTA_COMPONENT_BIN_HASH_LEN) == 0)
     {
         return GOLIOTH_OK;
     }
     else
     {
-        GLTH_LOGE(TAG,
-                  "Firmware download failed; Received %u bytes but sha256 doesn't match",
-                  ctx->bytes_downloaded);
+        GLTH_LOGE(TAG, "Firmware download failed; sha256 doesn't match");
 
         GLTH_LOG_BUFFER_HEXDUMP(TAG,
                                 calc_sha256,
-                                sizeof(calc_sha256),
+                                GOLIOTH_OTA_COMPONENT_BIN_HASH_LEN,
                                 GOLIOTH_DEBUG_LOG_LEVEL_DEBUG);
     }
 
@@ -371,6 +361,7 @@ static void fw_update_thread(void *arg)
     fw_observe_manifest();
 
     struct download_progress_context download_ctx;
+    uint8_t calc_sha256[GOLIOTH_OTA_COMPONENT_BIN_HASH_LEN];
 
     while (1)
     {
@@ -544,16 +535,24 @@ static void fw_update_thread(void *arg)
             continue;
         }
 
+        golioth_sys_sha256_finish(download_ctx.sha, calc_sha256);
+        golioth_sys_sha256_destroy(download_ctx.sha);
+
+        if (GOLIOTH_OK != fw_update_post_download())
+        {
+            GLTH_LOGE(TAG, "Failed to perform post download operations");
+            fw_download_failed(GOLIOTH_OTA_REASON_FIRMWARE_UPDATE_FAILED);
+            continue;
+        };
+
         if (GOLIOTH_OK
-            != fw_verify_component_hash(&download_ctx, _component_ctx.target_component.hash))
+            != fw_verify_component_hash(calc_sha256, _component_ctx.target_component.hash))
         {
             fw_download_failed(GOLIOTH_OTA_REASON_INTEGRITY_CHECK_FAILURE);
-            golioth_sys_sha256_destroy(download_ctx.sha);
             continue;
         }
         else
         {
-            golioth_sys_sha256_destroy(download_ctx.sha);
             GLTH_LOGD(TAG, "SHA256 matches server");
         }
 
