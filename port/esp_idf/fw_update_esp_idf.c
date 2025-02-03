@@ -83,9 +83,10 @@ enum golioth_status fw_update_handle_block(const uint8_t *block,
     return GOLIOTH_OK;
 }
 
-void fw_update_post_download(void)
+enum golioth_status fw_update_post_download(void)
 {
     // Nothing to do
+    return GOLIOTH_OK;
 }
 
 enum golioth_status fw_update_validate(void)

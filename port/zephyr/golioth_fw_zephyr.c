@@ -221,20 +221,23 @@ enum golioth_status fw_update_handle_block(const uint8_t *block,
     return GOLIOTH_OK;
 }
 
-void fw_update_post_download(void)
+enum golioth_status fw_update_post_download(void)
 {
     int err;
 
     if (!_flash_img_context.stream.buf_bytes)
     {
-        return;
+        return GOLIOTH_OK;
     }
 
     err = flash_img_buffered_write(&_flash_img_context, NULL, 0, true);
     if (err)
     {
         LOG_ERR("Failed to write to flash: %d", err);
+        return GOLIOTH_ERR_IO;
     }
+
+    return GOLIOTH_OK;
 }
 
 enum golioth_status fw_update_validate(void)

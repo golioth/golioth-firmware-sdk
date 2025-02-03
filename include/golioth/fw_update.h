@@ -119,7 +119,7 @@ enum golioth_status fw_update_handle_block(const uint8_t *block,
 ///
 /// Called by golioth_fw_update.c after downloading the full image.
 /// Can be used by backend ports to do any final work, if needed.
-void fw_update_post_download(void);
+enum golioth_status fw_update_post_download(void);
 
 /// Validate new image after downloading
 ///
