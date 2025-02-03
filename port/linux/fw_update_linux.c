@@ -69,7 +69,7 @@ enum golioth_status fw_update_handle_block(const uint8_t *block,
 }
 #endif
 
-void fw_update_post_download(void)
+enum golioth_status fw_update_post_download(void)
 {
     if (_download_fp)
     {
@@ -81,6 +81,8 @@ void fw_update_post_download(void)
         fclose(_current_fp);
         _current_fp = NULL;
     }
+
+    return GOLIOTH_OK;
 }
 
 enum golioth_status fw_update_validate(void)
