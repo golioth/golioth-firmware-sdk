@@ -85,12 +85,6 @@ enum golioth_status fw_update_handle_block(const uint8_t *block,
 
 enum golioth_status fw_update_post_download(void)
 {
-    // Nothing to do
-    return GOLIOTH_OK;
-}
-
-enum golioth_status fw_update_validate(void)
-{
     assert(_update_handle);
     esp_err_t err = esp_ota_end(_update_handle);
     if (err != ESP_OK)
@@ -107,6 +101,11 @@ enum golioth_status fw_update_validate(void)
         return GOLIOTH_ERR_FAIL;
     }
 
+    return GOLIOTH_OK;
+}
+
+enum golioth_status fw_update_validate(void)
+{
     return GOLIOTH_OK;
 }
 
