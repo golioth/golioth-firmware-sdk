@@ -44,8 +44,9 @@ git submodule update --init --recursive
 ```
 
 
-> :warning: **Note:** Zephyr-based projects should use the West tool to clone the repo. See the
-Zephyr Quick Start Guide at `examples/zephyr/README.md`.
+> [!NOTE]
+> Zephyr-based projects should use the West tool to clone the repo. See
+> the Zephyr Quick Start Guide at `examples/zephyr/README.md`.
 
 ### Trying the SDK examples
 
