@@ -67,8 +67,9 @@ based project (e.g. Zephyr RTOS):
   submodules: true
 ```
 
-> :warning: **Warning:** To ensure that default Kconfig values are propagated
-correctly, place the golioth entry first in your west manifest.
+> [!WARNING]
+> To ensure that default Kconfig values are propagated correctly, place
+> the golioth entry first in your west manifest.
 
 and clone all repositories including that one by running:
 
@@ -76,9 +77,10 @@ and clone all repositories including that one by running:
 west update
 ```
 
-> :memo: When the Golioth Firmware SDK is added as a project in a
-> manifest file, the `submodules` keyword ensures that submodules are
-> updated recursively each time `west update` is used.
+> [!NOTE]
+> When the Golioth Firmware SDK is added as a project in a manifest
+> file, the `submodules` keyword ensures that submodules are updated
+> recursively each time `west update` is used.
 
 # Sample applications
 
