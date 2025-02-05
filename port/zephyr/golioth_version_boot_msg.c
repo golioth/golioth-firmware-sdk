@@ -8,7 +8,7 @@
 #include <zephyr/init.h>
 #include <golioth_version.h>
 
-#define GOLTIOTH_BOOT_BANNER_PRIO 32
+#define GOLIOTH_BOOT_BANNER_PRIO 32
 int golioth_boot_banner(void)
 {
     printk("*** Golioth Firmware SDK %s ***\n",
@@ -18,4 +18,4 @@ int golioth_boot_banner(void)
     return 0;
 }
 
-SYS_INIT(golioth_boot_banner, APPLICATION, GOLTIOTH_BOOT_BANNER_PRIO);
+SYS_INIT(golioth_boot_banner, APPLICATION, GOLIOTH_BOOT_BANNER_PRIO);
