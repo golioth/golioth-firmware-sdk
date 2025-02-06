@@ -22,8 +22,8 @@ performs an OTA update when a newer version is available.
 ### Command-line
 
 First, setup the environment. This step assumes you've installed esp-idf
-to `~/esp/esp-idf`. If you haven't, follow the initial steps in
-examples/esp_idf/README.md
+to `~/esp/esp-idf`. If you haven't, follow the initial steps in the
+[README.md](examples/esp_idf/README.md).
 
 ```sh
 source ~/esp/esp-idf/export.sh
@@ -35,7 +35,7 @@ For example, if you are using ESP32-C3, enter this:
 idf.py set-target esp32c3
 ```
 
-Next, `cd` to the fw_update example where you can build/flash/monitor:
+Next, `cd` to the `fw_update` example where you can build/flash/monitor:
 
 ```
 cd examples/esp_idf/fw_update
@@ -61,19 +61,20 @@ Type `reset` to restart the app with the new credentials.
 
 ### Prepare new firmware
 
-Edit the app_main.c file and update the firmware version number:
+Edit the `app_main.c` file and update the firmware version number:
 
 ```config
 static const char *_current_version = "1.2.4";
 ```
 
-Build the firmware update but do not flash it to the device. The binary update file
-fw_update.bin needs to be uploaded to Golioth for the OTA update as an Artifact.
-After uploading the artifact, you can create a new release using tht artifact.
+Build the firmware update but do not flash it to the device. The binary
+update file `fw_update.bin` needs to be uploaded to Golioth for the OTA
+update as an artifact. After uploading the artifact, you can create a
+new release that uses it.
 
 ### Start FW Update using `goliothctl`
 
-FW update requires fw_update.bin to be uploaded as an artifact and released.
+FW update requires `fw_update.bin` to be uploaded as an artifact and released.
 
 1. Run the following command on a host PC to upload the new firmware as
    an artifact to Golioth:
@@ -112,7 +113,7 @@ I (680) wifi_init: rx ba win: 6
 I (680) wifi_init: tcpip mbox: 32
 I (680) wifi_init: udp mbox: 6
 I (680) wifi_init: tcp mbox: 6
-                                                                                                                                                                                              I (690) wifi_init: tcp tx win: 5760
+I (690) wifi_init: tcp tx win: 5760
 I (700) wifi_init: tcp rx win: 5760
 I (700) wifi_init: tcp mss: 1440
 I (700) wifi_init: WiFi IRAM OP enabled
