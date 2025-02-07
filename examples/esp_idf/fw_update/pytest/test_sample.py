@@ -4,8 +4,6 @@
 
 import logging
 import pytest
-import time
-import datetime
 import pprint
 
 LOGGER = logging.getLogger(__name__)
