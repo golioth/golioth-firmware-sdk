@@ -1,0 +1,12 @@
+# Copyright (c) 2021-2025 Golioth, Inc.
+# SPDX-License-Identifier: Apache-2.0
+
+source "${ZEPHYR_GOLIOTH_FIRMWARE_SDK_MODULE_DIR}/examples/zephyr/common/Kconfig.defconfig"
+
+config GOLIOTH_CI_TESTING_SDK_VER
+    string "The Golioth Firmware SDK version used to compile"
+    default "Unspecified"
+    help
+        Specify in prj.conf to indicated SDK used for artifact build
+
+source "Kconfig.zephyr"
