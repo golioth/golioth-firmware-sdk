@@ -121,15 +121,17 @@ enum golioth_status fw_update_handle_block(const uint8_t *block,
 /// Can be used by backend ports to do any final work, if needed.
 enum golioth_status fw_update_post_download(void);
 
-/// Validate new image after downloading
+/// Check if candidate image matches target.
 ///
-/// Called by golioth_fw_update.c after downloading the full image.
-/// Can be used by backend ports to validate the image before
-/// attempting to boot into it.
+/// Called by golioth_fw_update.c prior to downloading a new image
+/// to check whether it is already present in candidate slot.
+///
+/// @param hash Image SHA256 hash of size GOLIOTH_OTA_COMPONENT_BIN_HASH_LEN
+/// @param img_size Image size, in bytes
 ///
 /// @return GOLIOTH_OK - image validated
 /// @return Otherwise - error in validation, abort firmware update
-enum golioth_status fw_update_validate(void);
+enum golioth_status fw_update_check_candidate(const uint8_t *hash, size_t img_size);
 
 /// Switch to the new boot image. This will cause the new image
 /// to be booted next time.
