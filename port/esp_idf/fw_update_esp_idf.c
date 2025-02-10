@@ -10,6 +10,9 @@
 #include "esp_flash_partitions.h"
 #include "esp_app_format.h"
 #include "esp_system.h"
+#include "bootloader_common.h"
+#include "golioth/golioth_status.h"
+#include "golioth/ota.h"
 #include <string.h>  // memcpy
 
 #define TAG "fw_update_esp_idf"
@@ -106,8 +109,35 @@ enum golioth_status fw_update_post_download(void)
 
 enum golioth_status fw_update_check_candidate(const uint8_t *hash, size_t img_size)
 {
-    // TODO(hasheddan): support checking candidate firmware image.
-    return GOLIOTH_ERR_NOT_IMPLEMENTED;
+    _update_partition = esp_ota_get_next_update_partition(NULL);
+    assert(_update_partition);
+
+    if (img_size > _update_partition->size)
+    {
+        return GOLIOTH_ERR_FAIL;
+    }
+
+    uint8_t calc_sha256[GOLIOTH_OTA_COMPONENT_BIN_HASH_LEN];
+
+    // Manually set size and type of partition. When partition is PART_TYPE_APP, the appended digest
+    // in the image will be used, rather than the hash of the full contents. Overriding to
+    // PART_TYPE_DATA requires that we use the image size rather than the partition size to ensure
+    // that only the hash of the image contents is calculated.
+    if (bootloader_common_get_sha256_of_partition(_update_partition->address,
+                                                  img_size,
+                                                  PART_TYPE_DATA,
+                                                  calc_sha256)
+        != ESP_OK)
+    {
+        return GOLIOTH_ERR_FAIL;
+    }
+
+    if (memcmp(hash, calc_sha256, sizeof(calc_sha256)) != 0)
+    {
+        return GOLIOTH_ERR_FAIL;
+    }
+
+    return GOLIOTH_OK;
 }
 
 enum golioth_status fw_update_change_boot_image(void)
