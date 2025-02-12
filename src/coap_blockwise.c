@@ -59,27 +59,6 @@ struct get_block_ctx
 
 /* Blockwise Uploads related functions */
 
-// Function to initialize the blockwise_transfer structure for uploads
-static void blockwise_upload_init(struct blockwise_transfer *ctx,
-                                  uint8_t *data_buf,
-                                  const char *path_prefix,
-                                  const char *path,
-                                  enum golioth_content_type content_type,
-                                  read_block_cb cb,
-                                  void *callback_arg)
-{
-    ctx->is_last = false;
-    ctx->path_prefix = path_prefix;
-    ctx->path = path;
-    ctx->content_type = content_type;
-    ctx->block_size = CONFIG_GOLIOTH_BLOCKWISE_UPLOAD_MAX_BLOCK_SIZE;
-    ctx->block_idx = 0;
-    ctx->block_buffer = data_buf;
-    ctx->callback_arg = callback_arg;
-    ctx->callback.read_cb = cb;
-    golioth_coap_next_token(ctx->token);
-}
-
 // Blockwise upload's internal callback function that the COAP client calls
 static void on_block_sent(struct golioth_client *client,
                           enum golioth_status status,
@@ -228,13 +207,22 @@ struct blockwise_transfer *golioth_blockwise_post_ctx_create(const char *path_pr
         goto finish_with_ctx;
     }
 
-    blockwise_upload_init(ctx, data_buff, path_prefix, path, content_type, read_cb, callback_arg);
-
     ctx->sem = golioth_sys_sem_create(1, 0);
     if (!ctx->sem)
     {
         goto finish_with_buff;
     }
+
+    ctx->is_last = false;
+    ctx->path_prefix = path_prefix;
+    ctx->path = path;
+    ctx->content_type = content_type;
+    ctx->block_size = CONFIG_GOLIOTH_BLOCKWISE_UPLOAD_MAX_BLOCK_SIZE;
+    ctx->block_idx = 0;
+    ctx->block_buffer = data_buff;
+    ctx->callback_arg = callback_arg;
+    ctx->callback.read_cb = read_cb;
+    golioth_coap_next_token(ctx->token);
 
     return ctx;
 
