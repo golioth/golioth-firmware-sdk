@@ -11,6 +11,8 @@
 #include <golioth/client.h>
 #include <golioth/golioth_status.h>
 
+struct blockwise_transfer;
+
 /* Blockwise Upload */
 typedef enum golioth_status (*read_block_cb)(uint32_t block_idx,
                                              uint8_t *block_buffer,
@@ -18,13 +20,17 @@ typedef enum golioth_status (*read_block_cb)(uint32_t block_idx,
                                              bool *is_last,
                                              void *callback_arg);
 
+struct blockwise_transfer *golioth_blockwise_post_ctx_create(const char *path_prefix,
+                                                             const char *path,
+                                                             enum golioth_content_type content_type,
+                                                             read_block_cb read_cb,
+                                                             void *callback_arg);
+
+void golioth_blockwise_post_ctx_destroy(struct blockwise_transfer *ctx);
+
 enum golioth_status golioth_blockwise_post(struct golioth_client *client,
-                                           const char *path_prefix,
-                                           const char *path,
-                                           enum golioth_content_type content_type,
-                                           read_block_cb cb,
-                                           golioth_set_cb_fn callback,
-                                           void *callback_arg);
+                                           struct blockwise_transfer *ctx,
+                                           golioth_set_cb_fn set_cb);
 
 /* Blockwise Download */
 typedef enum golioth_status (*write_block_cb)(uint32_t block_idx,

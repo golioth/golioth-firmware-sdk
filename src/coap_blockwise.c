@@ -205,31 +205,26 @@ static enum golioth_status process_blockwise_uploads(struct golioth_client *clie
     return status;
 }
 
-enum golioth_status golioth_blockwise_post(struct golioth_client *client,
-                                           const char *path_prefix,
-                                           const char *path,
-                                           enum golioth_content_type content_type,
-                                           read_block_cb read_cb,
-                                           golioth_set_cb_fn set_cb,
-                                           void *callback_arg)
+struct blockwise_transfer *golioth_blockwise_post_ctx_create(const char *path_prefix,
+                                                             const char *path,
+                                                             enum golioth_content_type content_type,
+                                                             read_block_cb read_cb,
+                                                             void *callback_arg)
 {
-    enum golioth_status status = GOLIOTH_ERR_FAIL;
-    if (!client || !path || !read_cb)
+    if (!path_prefix || !path)
     {
-        return status;
+        return NULL;
     }
 
     struct blockwise_transfer *ctx = malloc(sizeof(struct blockwise_transfer));
     if (!ctx)
     {
-        status = GOLIOTH_ERR_MEM_ALLOC;
         goto finish;
     }
 
     uint8_t *data_buff = malloc(CONFIG_GOLIOTH_BLOCKWISE_UPLOAD_MAX_BLOCK_SIZE);
     if (!data_buff)
     {
-        status = GOLIOTH_ERR_MEM_ALLOC;
         goto finish_with_ctx;
     }
 
@@ -238,8 +233,43 @@ enum golioth_status golioth_blockwise_post(struct golioth_client *client,
     ctx->sem = golioth_sys_sem_create(1, 0);
     if (!ctx->sem)
     {
-        status = GOLIOTH_ERR_MEM_ALLOC;
         goto finish_with_buff;
+    }
+
+    return ctx;
+
+finish_with_buff:
+    free(data_buff);
+
+finish_with_ctx:
+    free(ctx);
+
+finish:
+    return NULL;
+}
+
+void golioth_blockwise_post_ctx_destroy(struct blockwise_transfer *ctx)
+{
+    if (!ctx)
+    {
+        return;
+    }
+
+    golioth_sys_sem_destroy(ctx->sem);
+    free(ctx->block_buffer);
+    free(ctx);
+
+    return;
+}
+
+enum golioth_status golioth_blockwise_post(struct golioth_client *client,
+                                           struct blockwise_transfer *ctx,
+                                           golioth_set_cb_fn set_cb)
+{
+    enum golioth_status status = GOLIOTH_ERR_FAIL;
+    if (!ctx)
+    {
+        return GOLIOTH_ERR_NULL;
     }
 
     while (!ctx->is_last)
@@ -255,7 +285,7 @@ enum golioth_status golioth_blockwise_post(struct golioth_client *client,
 
         if (status != GOLIOTH_OK)
         {
-            set_cb(client, status, NULL, path, callback_arg);
+            set_cb(client, status, NULL, ctx->path, ctx->callback_arg);
         }
         else
         {
@@ -265,21 +295,10 @@ enum golioth_status golioth_blockwise_post(struct golioth_client *client,
             {
                 rsp_code = &ctx->coap_rsp_code;
             }
-            set_cb(client, ctx->status, rsp_code, path, callback_arg);
+            set_cb(client, ctx->status, rsp_code, ctx->path, ctx->callback_arg);
         }
     }
 
-    /* Upload complete, clean up allocated resources */
-
-    golioth_sys_sem_destroy(ctx->sem);
-
-finish_with_buff:
-    free(data_buff);
-
-finish_with_ctx:
-    free(ctx);
-
-finish:
     return status;
 }
 
