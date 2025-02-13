@@ -8,6 +8,7 @@
 LOG_TAG_DEFINE(test_stream);
 
 static golioth_sys_sem_t connected_sem;
+static golioth_sys_sem_t multi_block_sem;
 
 static void on_client_event(struct golioth_client *client,
                             enum golioth_client_event event,
@@ -85,9 +86,91 @@ void test_block_upload(struct golioth_client *client)
     }
 }
 
+void on_multi_block(struct golioth_client *client,
+                    enum golioth_status status,
+                    const struct golioth_coap_rsp_code *coap_rsp_code,
+                    const char *path,
+                    size_t block_szx,
+                    void *arg)
+{
+    uintptr_t block_idx = (uintptr_t) arg;
+    GLTH_LOGI(TAG,
+              "Multi-block callback; Block: %" PRIuPTR ", Status: %d, CoAP: %d.%02d",
+              block_idx,
+              status,
+              coap_rsp_code->code_class,
+              coap_rsp_code->code_detail);
+
+    golioth_sys_sem_give(multi_block_sem);
+}
+
+void test_multi_block_upload(struct golioth_client *client)
+{
+    enum golioth_status status;
+    size_t bu_offset, bu_data_len, bu_data_remaining;
+    uint32_t block_idx = 0;
+    bool is_last = false;
+
+    struct blockwise_transfer *ctx =
+        golioth_stream_blockwise_start(client, "multi_upload", GOLIOTH_CONTENT_TYPE_JSON);
+    if (!ctx)
+    {
+        GLTH_LOGE(TAG, "Error allocating context");
+    }
+
+    while (true)
+    {
+        bu_offset = block_idx * CONFIG_GOLIOTH_BLOCKWISE_DOWNLOAD_MAX_BLOCK_SIZE;
+        bu_data_len = CONFIG_GOLIOTH_BLOCKWISE_DOWNLOAD_MAX_BLOCK_SIZE;
+        bu_data_remaining = test_data_json_len - bu_offset;
+
+        if (bu_data_remaining <= CONFIG_GOLIOTH_BLOCKWISE_DOWNLOAD_MAX_BLOCK_SIZE)
+        {
+            bu_data_len = bu_data_remaining;
+            is_last = true;
+        }
+
+        GLTH_LOGI(TAG,
+                  "block-idx: %" PRIu32 " bu_offset: %zu bytes_remaining: %zu",
+                  block_idx,
+                  bu_offset,
+                  bu_data_remaining);
+
+
+        status = golioth_stream_blockwise_set_block_async(ctx,
+                                                          block_idx,
+                                                          ((uint8_t *) test_data_json) + bu_offset,
+                                                          bu_data_len,
+                                                          is_last,
+                                                          on_multi_block,
+                                                          (void *) block_idx);
+
+        if (status)
+        {
+            GLTH_LOGE(TAG, "Error during multi-block upload: %d", status);
+            goto cleanup;
+        }
+
+        golioth_sys_sem_take(multi_block_sem, GOLIOTH_SYS_WAIT_FOREVER);
+
+        if (is_last)
+        {
+            break;
+        }
+
+        block_idx += 1;
+    }
+
+    GLTH_LOGI(TAG, "Multi-block upload successful!");
+
+cleanup:
+    golioth_stream_blockwise_finish(ctx);
+}
+
 void hil_test_entry(const struct golioth_client_config *config)
 {
     connected_sem = golioth_sys_sem_create(1, 0);
+    multi_block_sem = golioth_sys_sem_create(1, 0);
 
     golioth_debug_set_cloud_log_enabled(false);
 
@@ -100,6 +183,12 @@ void hil_test_entry(const struct golioth_client_config *config)
     golioth_sys_msleep(1000);
 
     test_block_upload(client);
+    test_multi_block_upload(client);
+
+    /* Wait for stream to propagate from CDG to LightDB Stream */
+    golioth_sys_msleep(6000);
+
+    GLTH_LOGI(TAG, "All stream data has been sent");
 
     /* Let log messages process before returning */
     golioth_sys_msleep(5000);
