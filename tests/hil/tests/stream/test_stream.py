@@ -5,6 +5,7 @@ import hashlib
 import os
 
 BLOCK_UPLOAD_PATH='block_upload'
+MULTI_BLOCK_UPLOAD_PATH='multi_upload'
 
 pytestmark = pytest.mark.anyio
 
@@ -16,6 +17,9 @@ async def setup(board, device):
 
     # Confirm connection to Golioth
     assert None != await board.wait_for_regex_in_line('Golioth CoAP client connected', timeout_s=120)
+
+    # Wait for device to finish streaming data for test
+    assert None != await board.wait_for_regex_in_line('All stream data has been sent', timeout_s=30)
 
 def hash_from_dict(dict_to_hash: dict) -> str:
     str_data = json.dumps(dict_to_hash, sort_keys=True)
@@ -37,7 +41,6 @@ def get_test_data_hash() -> str:
 ##### Tests #####
 
 async def test_block_upload(board, device):
-    assert None != await board.wait_for_regex_in_line('Block upload successful', timeout_s=20)
 
     # Wait for stream to propagate from CDG to LightDB Stream
     await trio.sleep(6)
@@ -48,6 +51,25 @@ async def test_block_upload(board, device):
     assert 'list' in stream and len(stream.keys()) > 0
 
     blockwise_json = stream['list'][0]['data'][BLOCK_UPLOAD_PATH]
+
+    # Get hash of the JSON string we received
+    blockwise_hash = hash_from_dict(blockwise_json)
+    print("Golioth data hash:", blockwise_hash)
+
+    # Generate hash from the source JSON file
+    test_hash = get_test_data_hash()
+    print("Test data hash:", test_hash)
+
+    # Assert that a hash of the block upload matches our expected hash
+    assert blockwise_hash == test_hash
+
+async def test_multi_block_upload(board, device):
+    # Get Stream entry of the block upload from cloud
+    stream = await device.stream.get(path=MULTI_BLOCK_UPLOAD_PATH, interval="1m")
+    print(stream)
+    assert 'list' in stream and len(stream.keys()) > 0
+
+    blockwise_json = stream['list'][0]['data'][MULTI_BLOCK_UPLOAD_PATH]
 
     # Get hash of the JSON string we received
     blockwise_hash = hash_from_dict(blockwise_json)
