@@ -112,6 +112,57 @@ enum golioth_status golioth_stream_set_blockwise_sync(struct golioth_client *cli
                                                       stream_read_block_cb cb,
                                                       void *arg);
 
+/// Create a multipart blockwise upload context
+///
+/// Creates the context and returns a pointer to it. This context is used to associate all blocks of
+/// a multipart upload together. A new context is needed at the start of each multipart blockwise
+/// upload operation.
+///
+/// @param client The client handle from @ref golioth_client_create
+/// @param path The path in stream to set (e.g. "my_obj")
+/// @param content_type The content type of the object (e.g. JSON or CBOR)
+struct blockwise_transfer *golioth_stream_blockwise_start(struct golioth_client *client,
+                                                          const char *path,
+                                                          enum golioth_content_type content_type);
+
+/// Destroy a multi-block upload context
+///
+/// Free the memory allocated for a given multi-block upload context.
+///
+/// @param ctx Block upload context to be destroyed
+void golioth_stream_blockwise_finish(struct blockwise_transfer *ctx);
+
+/// Set an object in stream at a particular path by sending each block asynchronously
+///
+/// Call this function for each block. For each call you must increment the \p block_idx, adjust the
+/// \p block_buffer pointer and update the \p data_len. On the final block, set \p is_last to true.
+/// Block size is determined by the value of CONFIG_GOLIOTH_BLOCKWISE_DOWNLOAD_MAX_BLOCK_SIZE.
+///
+/// Create a new \p ctx by calling \ref golioth_stream_blockwise_start. The same \p ctx must be
+/// used for all blocks in a related upload. Generate a new \p ctx for each new upload operation.
+/// Free the context memory by calling \ref golioth_stream_blockwise_finish.
+///
+/// An optional callback and callback argument may be supplied. The callback will be called after
+/// the block is uploaded to provide access to status and CoAP response codes.
+///
+/// @param ctx Block upload context used for all blocks in a related upload operation
+/// @param block_idx The index of the block being sent
+/// @param block_buffer The buffer where the data for this block is located
+/// @param data_len The actual length of data (in bytes) for this block. This should be equal to
+///        CONFIG_GOLIOTH_BLOCKWISE_DOWNLOAD_MAX_BLOCK_SIZE for all blocks except for the final
+///        block, which may be shorter
+/// @param is_last Set this to true if this is the last block in the upload
+/// @param cb A callback that will be called after each block is sent (can be NULL)
+/// @param callback_arg An optional user provided argument that will be passed to \p callback (can
+///        be NULL)
+enum golioth_status golioth_stream_blockwise_set_block_async(struct blockwise_transfer *ctx,
+                                                             uint32_t block_idx,
+                                                             uint8_t *block_buffer,
+                                                             size_t data_len,
+                                                             bool is_last,
+                                                             golioth_set_block_cb_fn callback,
+                                                             void *callback_arg);
+
 /// @}
 
 #ifdef __cplusplus
