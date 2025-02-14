@@ -23,13 +23,7 @@ golioth_sys_sha256_t golioth_sys_sha256_create(void)
 
 void golioth_sys_sha256_destroy(golioth_sys_sha256_t sha_ctx)
 {
-    if (!sha_ctx)
-    {
-        return;
-    }
-
-    mbedtls_sha256_context *hash = sha_ctx;
-    mbedtls_sha256_free(hash);
+    golioth_sys_free(sha_ctx);
 }
 
 enum golioth_status golioth_sys_sha256_update(golioth_sys_sha256_t sha_ctx,
