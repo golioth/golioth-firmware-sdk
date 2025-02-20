@@ -306,6 +306,87 @@ finish:
     return status;
 }
 
+// Create an async upload context
+struct blockwise_transfer *golioth_blockwise_upload_start(struct golioth_client *client,
+                                                          const char *path_prefix,
+                                                          const char *path,
+                                                          enum golioth_content_type content_type)
+{
+    if (NULL == client || NULL == path_prefix || NULL == path)
+    {
+        return NULL;
+    }
+
+    if (strlen(path) > CONFIG_GOLIOTH_COAP_MAX_PATH_LEN)
+    {
+        GLTH_LOGE(TAG, "Path too long: %zu > %zu", strlen(path), CONFIG_GOLIOTH_COAP_MAX_PATH_LEN);
+        return NULL;
+    }
+
+    struct blockwise_transfer *ctx =
+        blockwise_transfer_init(client, path_prefix, path, content_type);
+    if (NULL == ctx)
+    {
+        return NULL;
+    }
+
+    /* Allocate and store path; freed in golioth_blockwise_upload_finish() */
+    char *path_buff = golioth_sys_malloc(strlen(path) + 1);
+    if (NULL == path_buff)
+    {
+        goto finish_with_ctx;
+    }
+
+    strncpy(path_buff, path, strlen(path) + 1);
+    ctx->path = path_buff;
+
+    return ctx;
+
+finish_with_ctx:
+    blockwise_transfer_free(ctx);
+    return NULL;
+}
+
+// Destroy an async upload context
+void golioth_blockwise_upload_finish(struct blockwise_transfer *ctx)
+{
+    /* ctx->path was allocated in golioth_blockwise_upload_start() */
+    free((char *) ctx->path);
+    blockwise_transfer_free(ctx);
+}
+
+// Send a single block asynchronously
+enum golioth_status golioth_blockwise_upload_block(struct blockwise_transfer *ctx,
+                                                   uint32_t block_idx,
+                                                   const uint8_t *block_buffer,
+                                                   size_t block_len,
+                                                   bool is_last,
+                                                   golioth_set_block_cb_fn set_cb,
+                                                   void *callback_arg,
+                                                   bool is_synchronous,
+                                                   int32_t timeout_s)
+{
+    if (NULL == ctx || NULL == block_buffer)
+    {
+        return GOLIOTH_ERR_NULL;
+    }
+
+    return golioth_coap_client_set_block(
+        ctx->client,
+        ctx->token,
+        ctx->path_prefix,
+        ctx->path,
+        is_last,
+        ctx->content_type,
+        block_idx,
+        BLOCKSIZE_TO_SZX(CONFIG_GOLIOTH_BLOCKWISE_UPLOAD_MAX_BLOCK_SIZE),
+        block_buffer,
+        block_len,
+        set_cb,
+        callback_arg,
+        is_synchronous,
+        timeout_s);
+}
 
 /* Blockwise Downloads related functions */
 
