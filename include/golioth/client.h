@@ -163,6 +163,21 @@ typedef void (*golioth_get_cb_fn)(struct golioth_client *client,
                                   size_t payload_size,
                                   void *arg);
 
+/// Callback function type for blockwise uploads that also returns the blocksize in szx format
+///
+/// @param client The client handle from the original request.
+/// @param status Golioth status code.
+/// @param coap_rsp_code CoAP response code received from Golioth. Can be NULL.
+/// @param path The path from the original request
+/// @param block_size The block size from the server in bytes
+/// @param arg User argument, copied from the original request. Can be NULL.
+typedef void (*golioth_set_block_cb_fn)(struct golioth_client *client,
+                                        enum golioth_status status,
+                                        const struct golioth_coap_rsp_code *coap_rsp_code,
+                                        const char *path,
+                                        size_t block_size,
+                                        void *arg);
+
 /// Callback for blockwise get requests
 ///
 /// Will be called repeatedly, once for each block received from the server, on timeout (i.e.
