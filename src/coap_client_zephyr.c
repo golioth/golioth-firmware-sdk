@@ -286,7 +286,7 @@ static int golioth_coap_cb(struct golioth_req_rsp *rsp)
                                          rsp->status,
                                          golioth_ptr_to_rsp_code(rsp),
                                          req->path,
-                                         req->post_block.block_szx,
+                                         SZX_TO_BLOCKSIZE(req->post_block.block_szx),
                                          req->post_block.arg);
             }
             break;

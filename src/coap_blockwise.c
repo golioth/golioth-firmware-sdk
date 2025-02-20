@@ -137,7 +137,7 @@ static void on_block_sent(struct golioth_client *client,
                           enum golioth_status status,
                           const struct golioth_coap_rsp_code *coap_rsp_code,
                           const char *path,
-                          size_t block_szx,
+                          size_t block_size,
                           void *arg)
 {
     assert(arg);
@@ -145,7 +145,7 @@ static void on_block_sent(struct golioth_client *client,
     ctx->status = status;
     ctx->coap_rsp_code.code_class = coap_rsp_code->code_class;
     ctx->coap_rsp_code.code_detail = coap_rsp_code->code_detail;
-    ctx->negotiated_blocksize_szx = block_szx;
+    ctx->negotiated_blocksize_szx = BLOCKSIZE_TO_SZX(block_size);
 
     golioth_sys_sem_give(ctx->sem);
 }
