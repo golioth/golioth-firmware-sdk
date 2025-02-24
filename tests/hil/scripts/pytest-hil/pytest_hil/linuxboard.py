@@ -4,7 +4,7 @@ import subprocess
 
 import trio
 
-from board import Board
+from pytest_hil.board import Board
 
 
 class LinuxBoard(Board):

@@ -1,5 +1,5 @@
-from zephyrboard import ZephyrBoard
-from bmpboard import BMPBoard
+from pytest_hil.zephyrboard import ZephyrBoard
+from pytest_hil.bmpboard import BMPBoard
 from time import sleep
 
 class RAK5010(ZephyrBoard, BMPBoard):

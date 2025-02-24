@@ -1,4 +1,4 @@
-from zephyrboard import ZephyrBoard
+from pytest_hil.zephyrboard import ZephyrBoard
 
 class NCSBoard(ZephyrBoard):
     async def reset(self):
