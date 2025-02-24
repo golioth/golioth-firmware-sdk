@@ -1,5 +1,5 @@
-from zephyrboard import ZephyrBoard
-from jlinkboard import JLinkBoard
+from pytest_hil.zephyrboard import ZephyrBoard
+from pytest_hil.jlinkboard import JLinkBoard
 
 class MIMXRT1024EVK(ZephyrBoard, JLinkBoard):
     def __init__(self, *args, **kwargs):

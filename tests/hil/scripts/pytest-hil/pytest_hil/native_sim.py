@@ -4,8 +4,8 @@ import subprocess
 
 import trio
 
-from linuxboard import LinuxBoard
-from zephyrboard import ZephyrBoard
+from pytest_hil.linuxboard import LinuxBoard
+from pytest_hil.zephyrboard import ZephyrBoard
 
 class NativeSimBoard(ZephyrBoard, LinuxBoard):
     def __init__(self, fw_image: str):

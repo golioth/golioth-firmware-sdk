@@ -1,4 +1,4 @@
-from board import Board
+from pytest_hil.board import Board
 import subprocess
 
 class BMPBoard(Board):

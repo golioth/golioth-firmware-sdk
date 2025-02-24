@@ -1,24 +1,15 @@
-from board import Board
-from espboard import ESPBoard
+from pytest_hil.board import Board
 
-class ESPIDFBoard(ESPBoard):
-    def __init__(self, *args, **kwargs):
-        ESPBoard.__init__(self, 0x0)
-        Board.__init__(self, *args, **kwargs)
-
+class  ZephyrBoard(Board):
     @property
     def PROMPT(self):
-        return 'esp32>'
-
-    @property
-    def USES_WIFI(self):
-        return True
+        return 'uart:'
 
     async def set_setting(self, key, value):
         await self.send_cmd(f'settings set {key} {value}', wait_str='saved')
 
     async def reset(self):
-        await self.send_cmd('reset', wait_str='Calling app_main*()')
+        await self.send_cmd('kernel reboot cold', wait_str='Booting Zephyr OS')
 
     async def set_wifi_credentials(self, ssid, psk):
         await self.set_setting('wifi/ssid', f'"{ssid}"')

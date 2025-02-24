@@ -1,6 +1,6 @@
 import pylink
 
-from board import Board
+from pytest_hil.board import Board
 
 class JLinkBoard(Board):
     def __init__(self, chip_name):

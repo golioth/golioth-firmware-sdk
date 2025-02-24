@@ -1,5 +1,5 @@
-from espboard import ESPBoard
-from zephyrboard import ZephyrBoard
+from pytest_hil.espboard import ESPBoard
+from pytest_hil.zephyrboard import ZephyrBoard
 
 class ESP32DevKitCWROVER(ZephyrBoard, ESPBoard):
     def __init__(self, *args, **kwargs):

@@ -1,6 +1,6 @@
 import esptool
 
-from board import Board
+from pytest_hil.board import Board
 
 class ESPBoard(Board):
     def __init__(self, app_offset):

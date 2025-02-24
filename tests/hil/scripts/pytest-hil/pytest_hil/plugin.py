@@ -1,14 +1,14 @@
 import pytest
 import allure
 import os
-from espidfboard import ESPIDFBoard
-from esp32_devkitc_wrover import ESP32DevKitCWROVER
-from nrf52840dk import nRF52840DK
-from nrf9160dk  import nRF9160DK
-from mimxrt1024evk import MIMXRT1024EVK
-from rak5010 import RAK5010
-from linuxboard import LinuxBoard
-from native_sim import NativeSimBoard
+from pytest_hil.espidfboard import ESPIDFBoard
+from pytest_hil.esp32_devkitc_wrover import ESP32DevKitCWROVER
+from pytest_hil.nrf52840dk import nRF52840DK
+from pytest_hil.nrf9160dk  import nRF9160DK
+from pytest_hil.mimxrt1024evk import MIMXRT1024EVK
+from pytest_hil.rak5010 import RAK5010
+from pytest_hil.linuxboard import LinuxBoard
+from pytest_hil.native_sim import NativeSimBoard
 
 def pytest_addoption(parser):
     parser.addoption("--platform", type=str,

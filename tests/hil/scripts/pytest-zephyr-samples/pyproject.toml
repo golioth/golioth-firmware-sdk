@@ -12,8 +12,5 @@ classifiers = [
     "Framework :: Pytest",
 ]
 
-[tool.hatch.build.targets.wheel]
-include = [ "*.py" ]
-
 [project.entry-points.pytest11]
-zephyr-samples = "plugin"
+zephyr-samples = "pytest_zephyr_samples.plugin"

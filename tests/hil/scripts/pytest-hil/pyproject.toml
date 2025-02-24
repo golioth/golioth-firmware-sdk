@@ -18,8 +18,5 @@ classifiers = [
     "Framework :: Pytest",
 ]
 
-[tool.hatch.build.targets.wheel]
-include = [ "*.py" ]
-
 [project.entry-points.pytest11]
-hil = "plugin"
+hil = "pytest_hil.plugin"
