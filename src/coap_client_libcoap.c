@@ -249,7 +249,7 @@ static coap_response_t coap_response_handler(coap_session_t *session,
                                              status,
                                              &coap_rsp_code,
                                              req->path,
-                                             server_requested_szx,
+                                             SZX_TO_BLOCKSIZE(server_requested_szx),
                                              req->post_block.arg);
                 }
             }
