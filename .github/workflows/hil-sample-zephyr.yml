@@ -120,7 +120,7 @@ jobs:
           zephyr/scripts/twister                                                \
                 --overflow-as-errors                                            \
                 --platform ${{ inputs.west_board }}                             \
-                -T modules/lib/golioth-firmware-sdk/examples/zephyr             \
+                -T modules/lib/golioth-firmware-sdk/examples/zephyr/fw_update   \
                 --prep-artifacts-for-testing                                    \
                 --package-artifacts test_artifacts_${{ inputs.hil_board }}.tar  \
                 $EXTRA_BUILD_ARGS
@@ -137,8 +137,7 @@ jobs:
     if: ${{ inputs.run_tests && !cancelled() }}
     needs: build
     runs-on:
-      - is_active
-      - has_${{ inputs.hil_board }}
+      - mikes_testbench
     timeout-minutes: 30
 
     container:
@@ -202,7 +201,7 @@ jobs:
           SNR_VAR=CI_${hil_board^^}_SNR
           zephyr/scripts/twister                                                                  \
                 -p ${{ inputs.west_board }}                                                       \
-                -T modules/lib/golioth-firmware-sdk/examples/zephyr                               \
+                -T modules/lib/golioth-firmware-sdk/examples/zephyr/fw_update                     \
                 --device-testing                                                                  \
                 --device-serial ${!PORT_VAR}                                                      \
                 --test-only                                                                       \
@@ -252,54 +251,6 @@ jobs:
           name: allure-reports-samples-zephyr-${{ inputs.hil_board }}
           path: allure-reports
 
-      - name: Erase flash
-        if: always()
-        shell: bash
-        env:
-          hil_board: ${{ inputs.hil_board }}
-        run: |
-          source /opt/credentials/runner_env.sh
-          export PATH=$PATH:/opt/SEGGER/JLink
-          SNR_VAR=CI_${hil_board^^}_SNR
-          PORT_VAR=CI_${hil_board^^}_PORT
-          cat <<EOF > erase_mimxrt1024_evk.jlink
-          r
-          h
-          exec EnableEraseAllFlashBanks
-          erase
-          sleep 3
-          r
-          sleep 3
-          q
-          EOF
-
-          if [[ "${hil_board}" == "nrf9160dk" ]] || [[ "${hil_board}" == "nrf52840dk" ]]; then
-            nrfjprog --recover --snr ${!SNR_VAR}
-
-          elif [[ "${hil_board}" == "esp32_devkitc_wrover" ]]; then
-            esptool.py --port ${!PORT_VAR} erase_flash
-
-          elif [[ "${hil_board}" == "mimxrt1024_evk" ]]; then
-            JLinkExe \
-              -nogui 1 \
-              -if swd \
-              -speed auto \
-              -device MIMXRT1024XXX5A \
-              -CommanderScript erase_mimxrt1024_evk.jlink \
-              -SelectEmuBySN ${!SNR_VAR}
-
-          elif [[ "${hil_board}" == "rak5010" ]]; then
-            gdb \
-            -ex "set confirm off" \
-            -ex "target extended-remote "${CI_BLACKMAGICPROBE_PORT} \
-            -ex "monitor swdp_scan" \
-            -ex "attach 1" \
-            -ex "monitor erase_mass" \
-            -ex "kill" \
-            -ex "quit" \
-            -silent
-
-          fi
       - name: Power Off USB Hub
         if: always()
         run: python3 /opt/golioth-scripts/usb_hub_power.py off
