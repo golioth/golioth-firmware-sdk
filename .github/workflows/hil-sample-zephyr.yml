@@ -118,6 +118,7 @@ jobs:
           export EXTRA_BUILD_ARGS=-x=CONFIG_GOLIOTH_COAP_HOST_URI=\"${{ inputs.coap_gateway_url }}\"
 
           zephyr/scripts/twister                                                \
+                -v                                                              \
                 --overflow-as-errors                                            \
                 --platform ${{ inputs.west_board }}                             \
                 -T modules/lib/golioth-firmware-sdk/examples/zephyr             \
@@ -201,6 +202,7 @@ jobs:
           PORT_VAR=CI_${hil_board^^}_PORT
           SNR_VAR=CI_${hil_board^^}_SNR
           zephyr/scripts/twister                                                                  \
+                -v                                                                                \
                 -p ${{ inputs.west_board }}                                                       \
                 -T modules/lib/golioth-firmware-sdk/examples/zephyr                               \
                 --device-testing                                                                  \
@@ -214,8 +216,7 @@ jobs:
                 --pytest-args="--mask-secrets"                                                    \
                 --pytest-args="--alluredir=allure-reports"                                        \
                 --pytest-args="--runner-name=${{ runner.name }}"                                  \
-                --pytest-args="--hil-board=${{ inputs.hil_board }}"                               \
-                -v
+                --pytest-args="--hil-board=${{ inputs.hil_board }}"
 
       - name: Safe upload twister artifacts
         if: success() || failure()
