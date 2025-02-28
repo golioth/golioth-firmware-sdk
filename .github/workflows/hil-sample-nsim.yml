@@ -76,6 +76,7 @@ jobs:
         run: |
           rm -rf allure-reports
           zephyr/scripts/twister                                                    \
+              -v                                                                    \
               --platform ${{ inputs.west_board }}                                   \
               -T modules/lib/golioth-firmware-sdk/examples/zephyr                   \
               -C --coverage-basedir modules/lib/golioth-firmware-sdk                \
