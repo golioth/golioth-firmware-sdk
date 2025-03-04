@@ -78,24 +78,19 @@ jobs:
     strategy:
       fail-fast: false
       matrix:
-        include:
-          - hil_board: esp32_devkitc_wrover
-            west_board: esp32_devkitc_wrover/esp32/procpu
-            manifest: .ci-west-zephyr.yml
-            extra_twister_args: >-
-              --flash-before
-              --west-flash=--esp-tool=$(which esptool.py),--esp-device=${!PORT_VAR}
-            binary_blob: hal_espressif
-            run_tests: true
+        runner_name: [mikes_testbench, tims_orange_pi, mikes_orange_pi, sams_orange_pi]
     uses: ./.github/workflows/hil-sample-zephyr.yml
     with:
-      hil_board: ${{ matrix.hil_board }}
-      west_board: ${{ matrix.west_board }}
-      manifest: ${{ matrix.manifest }}
-      binary_blob: ${{ matrix.binary_blob }}
-      run_tests: ${{ matrix.run_tests }}
-      extra_twister_args: ${{ matrix.extra_twister_args }}
+      hil_board: esp32_devkitc_wrover
+      west_board: esp32_devkitc_wrover/esp32/procpu
+      manifest: .ci-west-zephyr.yml
+      binary_blob: hal_espressif
+      run_tests: true
+      extra_twister_args: >-
+        --flash-before
+        --west-flash=--esp-tool=$(which esptool.py),--esp-device=${!PORT_VAR}
       api-url: ${{ inputs.api-url }}
       api-key-id: ${{ inputs.api-key-id }}
       coap_gateway_url: ${{ inputs.coap_gateway_url }}
+      runner_name: ${{ matrix.runner_name }}
     secrets: inherit

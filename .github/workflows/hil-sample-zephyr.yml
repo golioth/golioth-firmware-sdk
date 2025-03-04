@@ -62,6 +62,9 @@ on:
       coap_gateway_url:
         required: true
         type: string
+      runner_name:
+        required: true
+        type: string
 
 jobs:
   build:
@@ -123,22 +126,22 @@ jobs:
                 --platform ${{ inputs.west_board }}                             \
                 -T modules/lib/golioth-firmware-sdk/examples/zephyr/fw_update   \
                 --prep-artifacts-for-testing                                    \
-                --package-artifacts test_artifacts_${{ inputs.hil_board }}.tar  \
+                --package-artifacts test_artifacts_${{ inputs.hil_board }}_${{ inputs.runner_name}}.tar  \
                 $EXTRA_BUILD_ARGS
 
       - name: Save artifacts
         if: success() || failure()
         uses: actions/upload-artifact@v4
         with:
-          name: test_artifacts_${{ inputs.hil_board }}
-          path: test_artifacts_${{ inputs.hil_board }}.tar
+          name: test_artifacts_${{ inputs.hil_board }}_${{ inputs.runner_name}}
+          path: test_artifacts_${{ inputs.hil_board }}_${{ inputs.runner_name}}.tar
 
   test:
     name: zephyr-${{ inputs.hil_board }}-twister-run
     if: ${{ inputs.run_tests && !cancelled() }}
     needs: build
     runs-on:
-      - mikes_testbench
+      - ${{ inputs.runner_name }}
     timeout-minutes: 30
 
     container:
@@ -184,10 +187,10 @@ jobs:
       - name: Download build
         uses: actions/download-artifact@v4
         with:
-          name: test_artifacts_${{ inputs.hil_board }}
+          name: test_artifacts_${{ inputs.hil_board }}_${{ inputs.runner_name}}
           path: .
       - name: Extract artifacts
-        run: tar -xvf test_artifacts_${{ inputs.hil_board }}.tar
+        run: tar -xvf test_artifacts_${{ inputs.hil_board }}_${{ inputs.runner_name}}.tar
       - name: Run test
         shell: bash
         env:
@@ -222,7 +225,7 @@ jobs:
         uses: ./modules/lib/golioth-firmware-sdk/.github/actions/safe-upload-artifacts
         with:
           secrets-json: ${{ toJson(secrets) }}
-          name: twister-run-artifacts-${{ inputs.hil_board }}
+          name: twister-run-artifacts-${{ inputs.hil_board }}_${{ inputs.runner_name}}
           path: |
             reports/*
             twister-out/**/*.log
@@ -241,7 +244,7 @@ jobs:
         uses: ./modules/lib/golioth-firmware-sdk/.github/actions/safe-upload-artifacts
         if: success() || failure()
         with:
-          name: ci-summary-samples-zephyr-${{ inputs.hil_board }}
+          name: ci-summary-samples-zephyr-${{ inputs.hil_board }}_${{ inputs.runner_name}}
           path: summary/*
 
       - name: Safe upload Allure reports
@@ -249,7 +252,7 @@ jobs:
         uses: ./modules/lib/golioth-firmware-sdk/.github/actions/safe-upload-artifacts
         with:
           secrets-json: ${{ toJson(secrets) }}
-          name: allure-reports-samples-zephyr-${{ inputs.hil_board }}
+          name: allure-reports-samples-zephyr-${{ inputs.hil_board }}_${{ inputs.runner_name}}
           path: allure-reports
 
       - name: Erase flash
