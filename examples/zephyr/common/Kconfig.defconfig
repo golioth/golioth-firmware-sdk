@@ -127,15 +127,20 @@ config REBOOT
 config GOLIOTH_COAP_HOST_URI
 	default "$(GOLIOTH_COAP_HOST_URI)" if "$(GOLIOTH_COAP_HOST_URI)" != ""
 
-if GOLIOTH_AUTH_METHOD_PSK
+config FLASH
+	default y
 
-config GOLIOTH_SAMPLE_PSK_ID
-	default "$(GOLIOTH_SAMPLE_PSK_ID)" if "$(GOLIOTH_SAMPLE_PSK_ID)" != ""
+config FLASH_MAP
+	default y
 
-config GOLIOTH_SAMPLE_PSK
-	default "$(GOLIOTH_SAMPLE_PSK)" if "$(GOLIOTH_SAMPLE_PSK)" != ""
+config NVS
+	default y
 
-endif # GOLIOTH_AUTH_METHOD_PSK
+config SETTINGS
+	default y
+
+config SETTINGS_RUNTIME
+	default y
 
 if GOLIOTH_SAMPLE_WIFI
 

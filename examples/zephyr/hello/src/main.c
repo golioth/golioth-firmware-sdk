@@ -37,9 +37,9 @@ int main(void)
 
     net_connect();
 
-    /* Note: In production, you would provision unique credentials onto each
-     * device. For simplicity, we provide a utility to hardcode credentials as
-     * kconfig options in the samples.
+    /* Note: In production, credentials should be saved in secure storage. For
+     * simplicity, we provide a utility that stores credentials as plaintext
+     * settings.
      */
     const struct golioth_client_config *client_config = golioth_sample_credentials_get();
 
