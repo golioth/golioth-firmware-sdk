@@ -27,49 +27,6 @@ config GOLIOTH_SAMPLE_AUTH_TYPE_TAG
 
 endchoice
 
-config GOLIOTH_SAMPLE_HARDCODED_CREDENTIALS
-	bool "Hardcoded credentials"
-	help
-	  Use hardcoded credentials in samples
-
-if GOLIOTH_SAMPLE_HARDCODED_CREDENTIALS
-
-if GOLIOTH_AUTH_METHOD_PSK
-
-config GOLIOTH_SAMPLE_PSK_ID
-	string "PSK ID"
-	depends on !GOLIOTH_SAMPLE_SETTINGS
-	help
-	  Defines PSK ID used during DTLS handshake with Golioth server.
-
-config GOLIOTH_SAMPLE_PSK
-	string "PSK"
-	depends on !GOLIOTH_SAMPLE_SETTINGS
-	help
-	  Defines PSK used during DTLS handshake with Golioth server.
-
-endif # GOLIOTH_AUTH_METHOD_PSK
-
-if GOLIOTH_AUTH_METHOD_CERT
-
-config GOLIOTH_SAMPLE_HARDCODED_CRT_PATH
-	string "Public certificate path"
-	help
-	  Path to client's public certificate.
-
-	  Must be in DER format.
-
-config GOLIOTH_SAMPLE_HARDCODED_KEY_PATH
-	string "Private key path"
-	help
-	  Path to client's private key.
-
-	  Must be in DER format.
-
-endif # GOLIOTH_AUTH_METHOD_CERT
-
-endif # GOLIOTH_SAMPLE_HARDCODED_CREDENTIALS
-
 config GOLIOTH_SAMPLE_DHCP_BIND
 	bool "DHCP for samples"
 	depends on NET_L2_ETHERNET
@@ -113,7 +70,7 @@ config GOLIOTH_SAMPLE_NRF91_RESET_LOOP_OVERRIDE
 
 config GOLIOTH_SAMPLE_SETTINGS
 	bool "Load credentials from persistent settings"
-	default y if !GOLIOTH_SAMPLE_HARDCODED_CREDENTIALS
+	default y
 	depends on GOLIOTH_AUTH_METHOD_PSK
 	depends on SETTINGS
 	help

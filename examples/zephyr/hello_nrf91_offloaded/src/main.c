@@ -37,13 +37,16 @@ int main(void)
 
     net_connect();
 
-    /* Note: In production, you would provision unique credentials onto each
-     * device. For simplicity, we provide a utility to hardcode credentials as
-     * kconfig options in the samples.
-     */
-    const struct golioth_client_config *client_config = golioth_sample_credentials_get();
+    /* Note: This tag must match the one used to provision credentials */
+    const struct golioth_client_config client_config = {
+        .credentials =
+            {
+                .auth_type = GOLIOTH_TLS_AUTH_TYPE_TAG,
+                .tag = CONFIG_GOLIOTH_COAP_CLIENT_CREDENTIALS_TAG,
+            },
+    };
 
-    client = golioth_client_create(client_config);
+    client = golioth_client_create(&client_config);
 
     golioth_client_register_event_callback(client, on_client_event, NULL);
 
