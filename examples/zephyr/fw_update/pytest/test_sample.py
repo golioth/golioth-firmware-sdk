@@ -1,7 +1,5 @@
 import logging
 import pytest
-import time
-import yaml
 
 LOGGER = logging.getLogger(__name__)
 

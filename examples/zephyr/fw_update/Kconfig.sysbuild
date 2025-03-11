@@ -1,0 +1,14 @@
+# Copyright (c) 2025 Golioth, Inc.
+# SPDX-License-Identifier: Apache-2.0
+
+menu "Build and test options"
+
+config FW_UPDATE_NEXT
+    bool "Test with self built 'next' application"
+    help
+      Build application from next/ directory. Use it for testing with pytest,
+      instead of pre-uploaded binary.
+
+endmenu
+
+source "share/sysbuild/Kconfig"
