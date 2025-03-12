@@ -468,12 +468,13 @@ static void golioth_coap_add_block1(coap_pdu_t *request,
 
 static void golioth_coap_add_block2(coap_pdu_t *request, size_t block_index, size_t block_size)
 {
-    size_t szx = BLOCKSIZE_TO_SZX(block_size);
-    assert(szx != -1);
+    int szx = BLOCKSIZE_TO_SZX(block_size);
+    assert(-1 < szx);
+
     coap_block_t block = {
         .num = block_index,
         .m = 0,
-        .szx = szx,
+        .szx = (size_t) szx,
     };
 
     unsigned char buf[4];

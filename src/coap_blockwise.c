@@ -109,7 +109,10 @@ static void on_block_sent(struct golioth_client *client,
     ctx->status = status;
     ctx->coap_rsp_code.code_class = coap_rsp_code->code_class;
     ctx->coap_rsp_code.code_detail = coap_rsp_code->code_detail;
-    ctx->negotiated_blocksize_szx = BLOCKSIZE_TO_SZX(block_size);
+
+    int block_szx = BLOCKSIZE_TO_SZX(block_size);
+    assert(-1 < block_szx);
+    ctx->negotiated_blocksize_szx = (size_t) block_szx;
 
     golioth_sys_sem_give(ctx->sem);
 }
@@ -179,11 +182,14 @@ static enum golioth_status upload_single_block(struct golioth_client *client,
         golioth_sys_sem_take(ctx->sem, GOLIOTH_SYS_WAIT_FOREVER);
         err = ctx->status;
 
-        if (ctx->negotiated_blocksize_szx < BLOCKSIZE_TO_SZX(ctx->block_size))
+        int block_szx = BLOCKSIZE_TO_SZX(ctx->block_size);
+        assert (-1 < block_szx);
+
+        if (ctx->negotiated_blocksize_szx < block_szx)
         {
             /* Recalculate index so what was sent is now based on the new block_size */
             int next_block_idx = recalculate_next_block_idx(ctx->block_idx,
-                                                            BLOCKSIZE_TO_SZX(ctx->block_size),
+                                                            (size_t) block_szx,
                                                             ctx->negotiated_blocksize_szx);
 
             /* Subtract 1 to indicate the block we just sent; inc happens after return */
@@ -255,13 +261,15 @@ enum golioth_status golioth_blockwise_post(struct golioth_client *client,
         goto finish_with_transfer_ctx;
     }
 
+    int block_szx = BLOCKSIZE_TO_SZX(CONFIG_GOLIOTH_BLOCKWISE_UPLOAD_MAX_BLOCK_SIZE);
+    assert(-1 < block_szx);
+
     ctx->status = GOLIOTH_ERR_FAIL, ctx->is_last = false;
     ctx->block_size = CONFIG_GOLIOTH_BLOCKWISE_UPLOAD_MAX_BLOCK_SIZE;
     ctx->block_idx = 0;
     ctx->read_cb = read_cb;
     ctx->callback_arg = callback_arg;
-    ctx->negotiated_blocksize_szx =
-        BLOCKSIZE_TO_SZX(CONFIG_GOLIOTH_BLOCKWISE_UPLOAD_MAX_BLOCK_SIZE);
+    ctx->negotiated_blocksize_szx = (size_t) block_szx;
 
     while (false == ctx->is_last)
     {
@@ -371,6 +379,9 @@ enum golioth_status golioth_blockwise_upload_block(struct blockwise_transfer *ct
         return GOLIOTH_ERR_NULL;
     }
 
+    int block_szx = BLOCKSIZE_TO_SZX(CONFIG_GOLIOTH_BLOCKWISE_UPLOAD_MAX_BLOCK_SIZE);
+    assert(-1 < block_szx);
+
     return golioth_coap_client_set_block(
         ctx->client,
         ctx->token,
@@ -379,7 +390,7 @@ enum golioth_status golioth_blockwise_upload_block(struct blockwise_transfer *ct
         is_last,
         ctx->content_type,
         block_idx,
-        BLOCKSIZE_TO_SZX(CONFIG_GOLIOTH_BLOCKWISE_UPLOAD_MAX_BLOCK_SIZE),
+        (size_t) block_szx,
         block_buffer,
         block_len,
         set_cb,
