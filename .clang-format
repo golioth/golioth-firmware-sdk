@@ -7,8 +7,6 @@
 #
 ---
 DisableFormat: false
-Language: Cpp
-Standard: Cpp11
 
 # Indentation & whitespace
 AccessModifierOffset: -4
