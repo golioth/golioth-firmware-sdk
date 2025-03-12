@@ -432,11 +432,6 @@ static void wifi_event_handle(struct k_work *work)
         return;
     }
 
-    if (new_state == WIFI_STATE_INVALID)
-    {
-        return;
-    }
-
     wifi_state_change(wifi_mgmt, new_state);
 
     if (new_state == old_state)
