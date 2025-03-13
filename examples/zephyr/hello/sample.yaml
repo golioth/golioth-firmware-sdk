@@ -20,6 +20,25 @@ tests:
       - nrf52840dk/nrf52840
       - nrf9160dk/nrf9160/ns
       - rak5010/nrf52840
+  sample.golioth.hello.psa_crypto:
+    harness: pytest
+    tags:
+      - golioth
+      - socket
+      - goliothd
+    timeout: 180
+    extra_configs:
+      - CONFIG_GOLIOTH_SAMPLE_TWISTER_TEST=y
+      - arch:posix:CONFIG_NATIVE_UART_0_ON_STDINOUT=y
+      - CONFIG_MBEDTLS_PSA_CRYPTO_C=y
+    platform_allow:
+      - esp32_devkitc_wrover/esp32/procpu
+      - frdm_rw612
+      - native_sim
+      - native_sim/native/64
+      - nrf52840dk/nrf52840
+      - nrf9160dk/nrf9160/ns
+      - rak5010/nrf52840
   sample.golioth.hello.cid:
     harness: pytest
     tags:
