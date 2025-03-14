@@ -135,11 +135,17 @@ jobs:
 
           export EXTRA_BUILD_ARGS=-DCONFIG_GOLIOTH_COAP_HOST_URI=\"${{ inputs.coap_gateway_url }}\"
 
-          west build --no-sysbuild -p -b ${{ inputs.west_board }} \
+          west build -p -b ${{ inputs.west_board }} \
             modules/lib/golioth-firmware-sdk/tests/hil/platform/zephyr \
             -- $EXTRA_BUILD_ARGS -DGOLIOTH_HIL_TEST=${{ matrix.test }}
-          mv build/zephyr/${{ inputs.binary_name }} \
-            test_binaries/${{ matrix.test }}-${{ inputs.binary_name }}
+
+          if [[ "${{ inputs.binary_name }}" == *signed* ]]; then
+            mv build/zephyr/zephyr/${{ inputs.binary_name }} \
+              test_binaries/${{ matrix.test }}-${{ inputs.binary_name }}
+          else
+            mv build/zephyr/${{ inputs.binary_name }} \
+              test_binaries/${{ matrix.test }}-${{ inputs.binary_name }}
+          fi
 
       - name: Save artifacts
         uses: actions/upload-artifact@v4
