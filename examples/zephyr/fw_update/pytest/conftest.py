@@ -1,5 +1,3 @@
-import golioth
-import os
 import pytest
 
 UPDATE_VERSION = '255.8.9'
