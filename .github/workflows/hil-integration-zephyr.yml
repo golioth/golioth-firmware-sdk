@@ -171,9 +171,15 @@ jobs:
     steps:
       - name: Checkout repository
         uses: actions/checkout@v4
-      - name: Setup Python dependencies
+      - name: Install uv
         run: |
-          pip install \
+          pip install uv
+      - name: Setup Python dependencies
+        shell: bash
+        run: |
+          uv venv
+          source .venv/bin/activate
+          uv pip install \
             pytest \
             pytest-timeout \
             tests/hil/scripts/pytest-hil \
@@ -190,6 +196,7 @@ jobs:
         env:
           hil_board: ${{ inputs.hil_board }}
         run: |
+          source .venv/bin/activate
           rm -rf summary
           mkdir summary
           rm -rf allure-reports
