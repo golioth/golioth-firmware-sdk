@@ -142,6 +142,9 @@ static void wifi_playback_iface_init(struct net_if *iface)
 
     /* Not currently connected to a network */
     net_if_dormant_on(iface);
+
+    /* Admin up, so that scan requests succeed */
+    net_if_up(iface);
 }
 
 static enum offloaded_net_if_types wifi_playback_offload_get_type(void)
