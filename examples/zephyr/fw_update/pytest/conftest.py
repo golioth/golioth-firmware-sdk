@@ -1,22 +1,70 @@
+import logging
+from pathlib import Path
+
 import pytest
+from twister_harness.device.device_adapter import DeviceAdapter
 
 UPDATE_VERSION = '255.8.9'
 UPDATE_PACKAGE = 'main'
+
+logger = logging.getLogger()
 
 
 @pytest.fixture(scope='session')
 def anyio_backend():
     return 'trio'
 
+
 @pytest.fixture(scope="session")
 async def fw_info():
     return {"package": UPDATE_PACKAGE, "version": UPDATE_VERSION}
+
+
+async def blueprint_name(project, request):
+    return request.config.option.platform.replace('/','_')
 
 
 @pytest.fixture(scope="module")
 async def blueprint_id(project, request):
     bp_name = request.config.option.platform.replace('/','_')
     yield await project.blueprints.get_id(bp_name)
+
+
+@pytest.fixture(scope='module', autouse=True)
+async def upload_next(project, blueprint_id, request):
+    # TODO: detect whether SB_CONFIG_FW_UPDATE_NEXT=y
+    # artifacts_ids = []
+
+    # releases = await project.releases.get_all()
+    # for release in releases:
+    #     if '255.8.9' in release.release_tags:
+    #         artifacts_ids += release.artifact_ids
+    #         await project.releases.delete(release.id)
+
+    # blueprints = await project.blueprints.get_all()
+    # for blueprint in blueprints:
+    #     if blueprint.name == blueprint_name:
+    #         break
+    # else:
+    #     await project.blueprints.create(blueprint_name, 'Zephyr', 'ESP-32')
+
+    logger.info(f'Blueprint id: {blueprint_id}')
+
+    logger.info('Deleting old artifact')
+
+    artifacts = await project.artifacts.get_all()
+    for artifact in artifacts:
+        if (artifact.blueprint == blueprint_id and
+            artifact.version == UPDATE_VERSION and
+            artifact.package == UPDATE_PACKAGE):
+            await project.artifacts.delete(artifact.id)
+
+    logger.info('Uploading new artifact')
+
+    await project.artifacts.upload(Path(request.config.option.build_dir) / 'fw_update_next' / 'zephyr' / 'zephyr.signed.bin',
+                                   version=UPDATE_VERSION,
+                                   package=UPDATE_PACKAGE,
+                                   blueprint_id=blueprint_id)
 
 
 @pytest.fixture(scope="module")
