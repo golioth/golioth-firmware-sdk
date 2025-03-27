@@ -81,14 +81,14 @@ jobs:
 
   build:
     name: zephyr-${{ inputs.hil_board }}-build (${{ matrix.test }})
-    container: golioth/golioth-zephyr-base:0.16.8-SDK-v0
+    container: golioth/golioth-zephyr-base:0.17.0-SDK-v0
     needs: matrix
     strategy:
       fail-fast: false
       matrix:
         test: ${{ fromJSON(needs.matrix.outputs.tests) }}
     env:
-      ZEPHYR_SDK_INSTALL_DIR: /opt/toolchains/zephyr-sdk-0.16.8
+      ZEPHYR_SDK_INSTALL_DIR: /opt/toolchains/zephyr-sdk-0.17.0
     runs-on: ubuntu-24.04
     steps:
       - name: Checkout repository and submodules
@@ -162,7 +162,7 @@ jobs:
     timeout-minutes: 30
 
     container:
-      image: golioth/golioth-hil-base:3407412
+      image: golioth/golioth-hil-base:8e12fd2
       volumes:
         - /dev:/dev
         - /home/golioth/credentials:/opt/credentials
