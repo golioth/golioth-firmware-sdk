@@ -42,9 +42,9 @@ jobs:
     name: zephyr-${{ inputs.west_board }}-twister
     runs-on: ubuntu-24.04
     container:
-      image: golioth/golioth-zephyr-base:0.16.8-SDK-v0
+      image: golioth/golioth-zephyr-base:0.17.0-SDK-v0
     env:
-      ZEPHYR_SDK_INSTALL_DIR: /opt/toolchains/zephyr-sdk-0.16.8
+      ZEPHYR_SDK_INSTALL_DIR: /opt/toolchains/zephyr-sdk-0.17.0
     steps:
       - name: Checkout repository and submodules
         uses: actions/checkout@v4

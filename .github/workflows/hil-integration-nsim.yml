@@ -66,9 +66,9 @@ jobs:
     runs-on: ubuntu-24.04
     needs: matrix
     container:
-      image: golioth/golioth-zephyr-base:0.16.8-SDK-v0
+      image: golioth/golioth-zephyr-base:0.17.0-SDK-v0
     env:
-      ZEPHYR_SDK_INSTALL_DIR: /opt/toolchains/zephyr-sdk-0.16.8
+      ZEPHYR_SDK_INSTALL_DIR: /opt/toolchains/zephyr-sdk-0.17.0
     name: zephyr-${{ inputs.platform }}-${{ matrix.test }}-test-nsim
     strategy:
       fail-fast: false
