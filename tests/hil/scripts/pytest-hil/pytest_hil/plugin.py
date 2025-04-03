@@ -6,7 +6,6 @@ from pytest_hil.esp32_devkitc_wrover import ESP32DevKitCWROVER
 from pytest_hil.frdmrw612 import FRDMRW612
 from pytest_hil.nrf52840dk import nRF52840DK
 from pytest_hil.nrf9160dk  import nRF9160DK
-from pytest_hil.mimxrt1024evk import MIMXRT1024EVK
 from pytest_hil.rak5010 import RAK5010
 from pytest_hil.linuxboard import LinuxBoard
 from pytest_hil.native_sim import NativeSimBoard
@@ -98,9 +97,6 @@ async def board(board_name, port, baud, wifi_ssid, wifi_psk, fw_image, serial_nu
         board = nRF52840DK(port, baud, wifi_ssid, wifi_psk, fw_image, serial_number=serial_number)
     elif board_name.lower() == "nrf9160dk":
         board = nRF9160DK(port, baud, wifi_ssid, wifi_psk, fw_image, serial_number=serial_number)
-    elif board_name.lower() == "mimxrt1024_evk":
-        board = MIMXRT1024EVK(port, baud, wifi_ssid, wifi_psk, fw_image,
-                              serial_number=serial_number)
     elif board_name.lower() == "native_sim":
         board = NativeSimBoard(fw_image)
     elif board_name.lower() == "rak5010":

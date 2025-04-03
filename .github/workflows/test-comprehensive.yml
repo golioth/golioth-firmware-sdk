@@ -125,10 +125,6 @@ jobs:
             west_board: frdm_rw612
             manifest: .ci-west-zephyr.yml
             binary_name: zephyr.hex
-          - hil_board: mimxrt1024_evk
-            west_board: mimxrt1024_evk
-            manifest: .ci-west-zephyr.yml
-            binary_name: zephyr.hex
           - hil_board: nrf52840dk
             west_board: nrf52840dk/nrf52840
             manifest: .ci-west-zephyr.yml
@@ -225,14 +221,6 @@ jobs:
             manifest: .ci-west-zephyr.yml
             extra_twister_args: >-
               --west-flash="--dev-id=${!SNR_VAR}"
-            run_tests: true
-
-          - hil_board: mimxrt1024_evk
-            west_board: mimxrt1024_evk
-            manifest: .ci-west-zephyr.yml
-            extra_twister_args: >-
-              --west-flash="--dev-id=${!SNR_VAR}"
-              --west-runner jlink
             run_tests: true
 
           - hil_board: nrf52840dk

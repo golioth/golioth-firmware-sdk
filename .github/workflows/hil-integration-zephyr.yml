@@ -238,16 +238,6 @@ jobs:
           export PATH=$PATH:/opt/SEGGER/JLink
           SNR_VAR=CI_${hil_board^^}_SNR
           PORT_VAR=CI_${hil_board^^}_PORT
-          cat <<EOF > erase_mimxrt1024_evk.jlink
-          r
-          h
-          exec EnableEraseAllFlashBanks
-          erase
-          sleep 3
-          r
-          sleep 3
-          q
-          EOF
           cat <<EOF > erase_frdm_rw612.jlink
           r
           h
@@ -264,15 +254,6 @@ jobs:
 
           elif [[ "${hil_board}" == "esp32_devkitc_wrover" ]]; then
             esptool.py --port ${!PORT_VAR} erase_flash
-
-          elif [[ "${hil_board}" == "mimxrt1024_evk" ]]; then
-            JLinkExe \
-              -nogui 1 \
-              -if swd \
-              -speed auto \
-              -device MIMXRT1024XXX5A \
-              -CommanderScript erase_mimxrt1024_evk.jlink \
-              -SelectEmuBySN ${!SNR_VAR}
 
           elif [[ "${hil_board}" == "frdm_rw612" ]]; then
             JLinkExe \
