@@ -20,6 +20,7 @@ tests:
       - arch:posix:CONFIG_NATIVE_UART_0_ON_STDINOUT=y
     platform_allow:
       - mimxrt1024_evk
+      - frdm_rw612
       - native_sim
       - native_sim/native/64
       - nrf52840dk/nrf52840

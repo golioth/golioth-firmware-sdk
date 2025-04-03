@@ -15,6 +15,7 @@ tests:
       - arch:posix:CONFIG_NATIVE_UART_0_ON_STDINOUT=y
     platform_allow:
       - esp32_devkitc_wrover/esp32/procpu
+      - frdm_rw612
       - mimxrt1024_evk
       - native_sim
       - native_sim/native/64
@@ -35,6 +36,7 @@ tests:
       - arch:posix:CONFIG_NATIVE_UART_0_ON_STDINOUT=y
     platform_allow:
       - esp32_devkitc_wrover/esp32/procpu
+      - frdm_rw612
       - mimxrt1024_evk
       - native_sim
       - native_sim/native/64
@@ -45,6 +47,7 @@ tests:
     build_only: true
     platform_allow:
       - esp32_devkitc_wrover/esp32/procpu
+      - frdm_rw612
       - mimxrt1024_evk
       - native_sim
       - native_sim/native/64
@@ -59,6 +62,7 @@ tests:
       - CONFIG_GOLIOTH_SAMPLE_HARDCODED_CRT_PATH="prj.conf"
       - CONFIG_GOLIOTH_SAMPLE_HARDCODED_KEY_PATH="prj.conf"
     platform_allow:
+      - frdm_rw612
       - mimxrt1024_evk
       - native_sim
       - native_sim/native/64

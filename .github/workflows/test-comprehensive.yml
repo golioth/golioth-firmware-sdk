@@ -216,6 +216,13 @@ jobs:
             binary_blob: hal_espressif
             run_tests: true
 
+          - hil_board: frdm_rw612
+            west_board: frdm_rw612
+            manifest: .ci-west-zephyr.yml
+            extra_twister_args: >-
+              --west-flash="--dev-id=${!SNR_VAR}"
+            run_tests: true
+
           - hil_board: mimxrt1024_evk
             west_board: mimxrt1024_evk
             manifest: .ci-west-zephyr.yml
