@@ -17,7 +17,6 @@ tests:
     platform_allow:
       - esp32_devkitc_wrover/esp32/procpu
       - frdm_rw612
-      - mimxrt1024_evk
       - nrf52840dk/nrf52840
       - nrf9160dk/nrf9160/ns
   sample.golioth.fw_update.buildonly:

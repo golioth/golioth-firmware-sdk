@@ -23,7 +23,6 @@ $ west build -b esp32_devkitc_wrover/esp32/procpu --sysbuild examples/zephyr/fw_
 $ west build -b nrf52840dk/nrf52840 --sysbuild examples/zephyr/fw_update
 $ west build -b nrf9160dk/nrf9160/ns examples/zephyr/fw_update
 $ west build -b frdm_rw612 --sysbuild examples/zephyr/fw_update
-$ west build -b mimxrt1024_evk --sysbuild examples/zephyr/fw_update
 ```
 
 ### Stage the artifacts

@@ -16,7 +16,6 @@ tests:
     platform_allow:
       - esp32_devkitc_wrover/esp32/procpu
       - frdm_rw612
-      - mimxrt1024_evk
       - native_sim
       - native_sim/native/64
       - nrf52840dk/nrf52840
@@ -37,7 +36,6 @@ tests:
     platform_allow:
       - esp32_devkitc_wrover/esp32/procpu
       - frdm_rw612
-      - mimxrt1024_evk
       - native_sim
       - native_sim/native/64
       - nrf52840dk/nrf52840
@@ -48,7 +46,6 @@ tests:
     platform_allow:
       - esp32_devkitc_wrover/esp32/procpu
       - frdm_rw612
-      - mimxrt1024_evk
       - native_sim
       - native_sim/native/64
       - nrf52840dk/nrf52840
@@ -64,7 +61,6 @@ tests:
       - CONFIG_GOLIOTH_SAMPLE_HARDCODED_KEY_PATH="prj.conf"
     platform_allow:
       - frdm_rw612
-      - mimxrt1024_evk
       - native_sim
       - native_sim/native/64
       - nrf52840dk/nrf52840
