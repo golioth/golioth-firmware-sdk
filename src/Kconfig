@@ -78,6 +78,11 @@ config GOLIOTH_FW_UPDATE_ROLLBACK_TIMER_S
 
 endif # GOLIOTH_FW_UPDATE
 
+config GOLIOTH_GATEWAY
+    bool "EXPERIMENTAL: Golioth Gateway service"
+    help
+        Enable the Golioth Gateway service for proxying pouches
+
 config GOLIOTH_LIGHTDB_STATE
     bool "Golioth LightDB State service"
     help
