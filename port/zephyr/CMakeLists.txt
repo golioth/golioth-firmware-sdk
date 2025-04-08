@@ -41,6 +41,7 @@ zephyr_library_sources(
     ../../src/event_group.c
     ../../src/fw_update.c
     ../../src/coap_blockwise.c
+    ../../src/gateway.c
     ../../src/lightdb_state.c
     ../../src/location.c
     ../../src/location_cellular.c
