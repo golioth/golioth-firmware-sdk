@@ -350,6 +350,12 @@ finish_with_ctx:
 // Destroy an async upload context
 void golioth_blockwise_upload_finish(struct blockwise_transfer *ctx)
 {
+    if (NULL == ctx)
+    {
+        GLTH_LOGW(TAG, "Attempt to free NULL context");
+        return;
+    }
+
     /* ctx->path was allocated in golioth_blockwise_upload_start() */
     free((char *) ctx->path);
     blockwise_transfer_free(ctx);
