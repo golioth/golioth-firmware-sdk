@@ -121,6 +121,10 @@ jobs:
             manifest: .ci-west-zephyr.yml
             binary_name: zephyr.bin
             binary_blob: hal_espressif
+          - hil_board: frdm_rw612
+            west_board: frdm_rw612
+            manifest: .ci-west-zephyr.yml
+            binary_name: zephyr.hex
           - hil_board: mimxrt1024_evk
             west_board: mimxrt1024_evk
             manifest: .ci-west-zephyr.yml

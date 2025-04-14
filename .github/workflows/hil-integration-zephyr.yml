@@ -248,6 +248,16 @@ jobs:
           sleep 3
           q
           EOF
+          cat <<EOF > erase_frdm_rw612.jlink
+          r
+          h
+          exec EnableEraseAllFlashBanks
+          erase 0x8000000 0x8624000
+          sleep 30
+          r
+          sleep 3
+          q
+          EOF
 
           if [[ "${hil_board}" == "nrf9160dk" ]] || [[ "${hil_board}" == "nrf52840dk" ]]; then
             nrfjprog --recover --snr ${!SNR_VAR}
@@ -262,6 +272,15 @@ jobs:
               -speed auto \
               -device MIMXRT1024XXX5A \
               -CommanderScript erase_mimxrt1024_evk.jlink \
+              -SelectEmuBySN ${!SNR_VAR}
+
+          elif [[ "${hil_board}" == "frdm_rw612" ]]; then
+            JLinkExe \
+              -nogui 1 \
+              -if swd \
+              -speed auto \
+              -device RW612 \
+              -CommanderScript erase_frdm_rw612.jlink \
               -SelectEmuBySN ${!SNR_VAR}
 
           elif [[ "${hil_board}" == "rak5010" ]]; then
