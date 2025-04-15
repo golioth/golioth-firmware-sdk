@@ -4,6 +4,8 @@
  * SPDX-License-Identifier: Apache-2.0
  */
 
+#include "golioth/golioth_status.h"
+#include "golioth_port_config.h"
 #include <golioth/client.h>
 #include <golioth/golioth_debug.h>
 #include <golioth/golioth_sys.h>
@@ -28,6 +30,9 @@ static golioth_sys_sem_t resume_test_sem;
 
 static uint8_t callback_arg = 17;
 static uint8_t block_buf[CONFIG_GOLIOTH_BLOCKWISE_DOWNLOAD_MAX_BLOCK_SIZE];
+
+#define SHA256_LEN 32
+static uint8_t _saved_manifest_sha256[SHA256_LEN];
 
 struct golioth_client *client;
 
@@ -60,6 +65,70 @@ static void log_component_members(const struct golioth_ota_component *component)
     GLTH_LOGI(TAG, "component.hash: %s", hash_string);
     GLTH_LOGI(TAG, "component.uri: %s", component->uri);
     GLTH_LOGI(TAG, "component.bootloader: %s", component->bootloader);
+}
+
+static enum golioth_status calc_hash(const uint8_t *data, size_t data_size, uint8_t *output)
+{
+    golioth_sys_sha256_t hash = golioth_sys_sha256_create();
+    if (NULL == hash)
+    {
+        GLTH_LOGE(TAG, "Failed to allocate sha256 handle");
+        return GOLIOTH_ERR_MEM_ALLOC;
+    }
+
+    enum golioth_status err = golioth_sys_sha256_update(hash, data, data_size);
+    if (GOLIOTH_OK != err)
+    {
+        GLTH_LOGE(TAG, "Failed to calculate hash: %d", err);
+        goto finish;
+    }
+
+    err = golioth_sys_sha256_finish(hash, output);
+    if (GOLIOTH_OK != err)
+    {
+        GLTH_LOGE(TAG, "Failed to finish hash: %d", err);
+        goto finish;
+    }
+
+finish:
+    golioth_sys_sha256_destroy(hash);
+    return err;
+}
+
+static void on_manifest_get(struct golioth_client *client,
+                            enum golioth_status status,
+                            const struct golioth_coap_rsp_code *coap_rsp_code,
+                            const char *path,
+                            const uint8_t *payload,
+                            size_t payload_size,
+                            void *arg)
+{
+    if ((status != GOLIOTH_OK) || golioth_payload_is_null(payload, payload_size))
+    {
+        GLTH_LOGE(TAG, "Failed to get manifest (async): %d", status);
+    }
+    else
+    {
+        GLTH_LOGI(TAG, "Manifest get successful");
+    }
+
+    uint8_t manifest_sha256[SHA256_LEN];
+
+    enum golioth_status err = calc_hash(payload, payload_size, manifest_sha256);
+    if (GOLIOTH_OK != err)
+    {
+        GLTH_LOGE(TAG, "Failed to calculate sha256: %d", err);
+        return;
+    }
+
+    if (memcmp(manifest_sha256, _saved_manifest_sha256, SHA256_LEN) != 0)
+    {
+        GLTH_LOGE(TAG, "Manifest SHAs do not match");
+    }
+    else
+    {
+        GLTH_LOGI(TAG, "Manifest get SHA matches stored SHA");
+    }
 }
 
 static void test_manifest_decoding(struct golioth_ota_manifest *manifest,
@@ -98,6 +167,16 @@ static void test_multiple_artifacts(struct golioth_ota_manifest *manifest,
     }
 
     log_component_members(walrus);
+}
+
+static void test_manifest_get(void)
+{
+    enum golioth_status err =
+        golioth_ota_get_manifest_async(client, on_manifest_get, (void *) GOLIOTH_OTA_REASON_CNT);
+    if (GOLIOTH_OK != err)
+    {
+        GLTH_LOGE(TAG, "Failed to get manifest: %d", err);
+    }
 }
 
 static void test_reason_and_state(void)
@@ -219,7 +298,7 @@ enum golioth_status write_artifact_block_cb(const struct golioth_ota_component *
     {
         GLTH_LOGI(TAG, "Block download complete!");
 
-        unsigned char sha_output[32];
+        unsigned char sha_output[SHA256_LEN];
         golioth_sys_sha256_finish(ctx->sha, sha_output);
 
         if (sizeof(sha_output) == sizeof(component->hash)
@@ -348,6 +427,16 @@ static void on_manifest(struct golioth_client *client,
         else if (strcmp(main->version, DUMMY_VER_EXTRA) == 0)
         {
             test_multiple_artifacts(&manifest, main);
+
+            enum golioth_status err = calc_hash(payload, payload_size, _saved_manifest_sha256);
+            if (GOLIOTH_OK != err)
+            {
+                GLTH_LOGE(TAG, "Failed to store manifest hash: %d", err);
+            }
+            else
+            {
+                test_manifest_get();
+            }
         }
         else if (strcmp(main->version, DUMMY_VER_SAME) == 0)
         {

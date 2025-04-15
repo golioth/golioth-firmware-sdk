@@ -142,6 +142,18 @@ enum golioth_status golioth_ota_observe_manifest_async(struct golioth_client *cl
                                                        golioth_get_cb_fn callback,
                                                        void *arg);
 
+/// Get the OTA manifest asynchronously
+///
+/// This function will enqueue a request and return immediately without waiting for a response from
+/// the server. The callback will be invoked when the manifest is received from the Golioth server.
+///
+/// @param client The client handle from @ref golioth_client_create
+/// @param callback Callback function to register
+/// @param arg Optional argument, forwarded directly to the callback when invoked. Can be NULL.
+enum golioth_status golioth_ota_get_manifest_async(struct golioth_client *client,
+                                                   golioth_get_cb_fn callback,
+                                                   void *arg);
+
 /// Callback for OTA download component request
 ///
 /// Will be called repeatedly, once for each block received from the server.
