@@ -83,6 +83,7 @@ each of the samples is also continously verified on target.
 | ESP32-C3-DevKitM-1   | ESP-IDF (v5.4.0)         |
 | ESP32-DevKitC-WROVER | ESP-IDF (v5.4.0)         |
 | ESP32-DevKitC-WROVER | Zephyr (v4.0.0)          |
+| FRDM-RW612           | Zephyr (v4.1.0)          |
 | nRF52840 DK + ESP32  | Zephyr (v4.0.0)          |
 | MIMXRT1024-EVK       | Zephyr (v4.0.0)          |
 | RAK5010              | Zephyr (v4.0.0)          |
