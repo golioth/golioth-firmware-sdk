@@ -87,24 +87,6 @@ CONFIG_GOLIOTH_SAMPLE_HARDCODED_KEY_PATH="keys/device.key.der"
 
 ### Platform specific configuration
 
-#### QEMU
-
-This application has been built and tested with QEMU x86 (qemu_x86).
-
-On your Linux host computer, open a terminal window, locate the source
-code of this sample application (i.e., `examples/zephyr/lightdb/delete`) and
-type:
-
-```console
-$ west build -b qemu_x86 examples/zephyr/lightdb/delete
-$ west build -t run
-```
-
-See [Networking with
-QEMU](https://docs.zephyrproject.org/3.3.0/connectivity/networking/qemu_setup.html)
-on how to setup networking on host and configure NAT/masquerading to
-access Internet.
-
 #### ESP32-DevKitC-WROVER
 
 Configure the following Kconfig options based on your WiFi AP

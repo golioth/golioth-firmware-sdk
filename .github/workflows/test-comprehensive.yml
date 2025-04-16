@@ -246,11 +246,6 @@ jobs:
               --west-flash=--gdb=/usr/bin/gdb
               --west-runner blackmagicprobe
             run_tests: true
-
-          - hil_board: qemu_x86
-            west_board: qemu_x86
-            manifest: .ci-west-zephyr.yml
-            run_tests: false
     uses: ./.github/workflows/hil-sample-zephyr.yml
     with:
       hil_board: ${{ matrix.hil_board }}
