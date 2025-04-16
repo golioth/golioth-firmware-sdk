@@ -51,7 +51,6 @@ tests:
       - nrf52840dk/nrf52840
       - nrf9160dk/nrf9160/ns
       - rak5010/nrf52840
-      - qemu_x86
   sample.golioth.hello.cert.buildonly:
     build_only: true
     extra_configs:
@@ -66,4 +65,3 @@ tests:
       - nrf52840dk/nrf52840
       - nrf9160dk/nrf9160/ns
       - rak5010/nrf52840
-      - qemu_x86
