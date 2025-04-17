@@ -19,6 +19,7 @@ tests:
       - native_sim/native/64
       - nrf52840dk/nrf52840
       - nrf9160dk/nrf9160/ns
+      - nucleo_h563zi/stm32h563xx
       - rak5010/nrf52840
   sample.golioth.hello.psa_crypto:
     harness: pytest
@@ -38,6 +39,7 @@ tests:
       - native_sim/native/64
       - nrf52840dk/nrf52840
       - nrf9160dk/nrf9160/ns
+      - nucleo_h563zi/stm32h563xx
       - rak5010/nrf52840
   sample.golioth.hello.cid:
     harness: pytest
@@ -57,4 +59,5 @@ tests:
       - native_sim/native/64
       - nrf52840dk/nrf52840
       - nrf9160dk/nrf9160/ns
+      - nucleo_h563zi/stm32h563xx
       - rak5010/nrf52840
