@@ -18,6 +18,13 @@ menu "CoAP"
 
 rsource '../../../../src/Kconfig.coap'
 
+config GOLIOTH_COAP_MAX_PATH_LEN
+    int "Golioth maximum CoAP path length"
+    default 39
+    help
+        Maximum length of a CoAP path (everything after
+        "coaps://coap.golioth.io/").
+
 endmenu # CoAP
 
 menu "Logging"

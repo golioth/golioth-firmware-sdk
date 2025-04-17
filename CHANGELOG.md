@@ -4,6 +4,26 @@ All notable changes to this project will be documented in this file.
 The format is based on [Keep a Changelog](https://keepachangelog.com/en/1.0.0/),
 and this project adheres to [Semantic Versioning](https://semver.org/spec/v2.0.0.html).
 
+## [Unreleased]
+
+### Breaking Changes
+
+- Zephyr: The default maximum path length for Golioth APIs has changed
+  from 39 characters to 12 characters and the
+  `CONFIG_GOLIOTH_COAP_MAX_PATH_LEN` symbol can no longer be changed by
+  the user. Update this limit using the following Kconfig symbols
+  supplied by Zephyr's CoAP library:
+
+    ```
+    CONFIG_COAP_EXTENDED_OPTIONS_LEN=y
+    CONFIG_COAP_EXTENDED_OPTIONS_LEN_VALUE=39
+    ```
+
+### Fixed
+
+- Zephyr: correctly detect path names that are longer than the maximum
+  setting.
+
 ## [0.17.0] 2025-01-23
 
 ### Highlights:
