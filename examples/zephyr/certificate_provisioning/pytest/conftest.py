@@ -3,6 +3,7 @@ from pathlib import Path
 import random
 import string
 import subprocess
+import sys
 
 import pytest
 import west.configuration
@@ -11,12 +12,22 @@ from twister_harness.device.binary_adapter import NativeSimulatorAdapter
 
 WEST_TOPDIR = Path(west.configuration.west_dir()).parent
 
+sys.path.insert(0, str(WEST_TOPDIR / 'zephyr' / 'scripts' / 'west_commands'))
+from runners.core import BuildConfiguration
+
 @pytest.fixture
 def mcumgr_conn_args(request, dut):
+    build_conf = BuildConfiguration(request.config.option.build_dir)
+
     if isinstance(dut, NativeSimulatorAdapter):
+        if 'CONFIG_NET_NATIVE_OFFLOADED_SOCKETS' in build_conf:
+            ip = '127.0.0.1'
+        else:
+            ip = build_conf['CONFIG_NET_CONFIG_MY_IPV4_ADDR']
+
         return [
             "--conntype=udp",
-            "--connstring=127.0.0.1:1337",
+            f"--connstring={ip}:1337",
         ]
 
     return [
