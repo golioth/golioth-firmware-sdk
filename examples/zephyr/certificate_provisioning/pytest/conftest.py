@@ -1,3 +1,4 @@
+from contextlib import suppress
 from pathlib import Path
 import random
 import string
@@ -46,7 +47,5 @@ async def device_name(project):
     name = 'certificate-' + ''.join(random.choice(string.ascii_uppercase + string.ascii_lowercase) for i in range(16))
     yield name
 
-    try:
+    with suppress(Exception):
         await project.delete_device_by_name(name)
-    except:
-        pass
