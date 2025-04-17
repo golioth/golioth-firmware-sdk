@@ -168,6 +168,18 @@ menu "CoAP"
 
 source "${ZEPHYR_GOLIOTH_FIRMWARE_SDK_MODULE_DIR}/src/Kconfig.coap"
 
+config GOLIOTH_COAP_MAX_PATH_LEN
+    int
+    default COAP_EXTENDED_OPTIONS_LEN_VALUE if COAP_EXTENDED_OPTIONS_LEN
+    default 12
+    help
+        Maximum length of a CoAP path (everything after "coaps://coap.golioth.io/"). Increase this
+        value by setting two symbols provided by the Zephyr CoAP library:
+
+          - CONFIG_COAP_EXTENDED_OPTIONS_LEN=y
+          - CONFIG_COAP_EXTENDED_OPTIONS_LEN_VALUE=39
+
+
 config GOLIOTH_COAP_CLIENT_RX_TIMEOUT_SEC
 	int "Receive timeout (seconds)"
 	default 30

@@ -136,10 +136,3 @@ config GOLIOTH_COAP_KEEPALIVE_INTERVAL_S
         Can be useful to keep the CoAP session active, and to mitigate
         against NAT and server timeouts.
         Set to 0 to disable.
-
-config GOLIOTH_COAP_MAX_PATH_LEN
-    int "Golioth maximum CoAP path length"
-    default 39
-    help
-        Maximum length of a CoAP path (everything after
-        "coaps://coap.golioth.io/").
