@@ -15,6 +15,19 @@ are loaded into the device's filesystem using ``mcumgr``.
 
 ## Building and Running
 
+### Runtime Configuration
+
+#### WiFi Configuration
+
+Devices that use WiFi get their WiFi credentials from the settings subsystem.
+You can set the credentials with the following shell commands:
+
+```sh
+uart:~$ settings set wifi/ssid <ssid>
+uart:~$ settings set wifi/psk <wifi-password>
+uart:-$ kernel reboot cold
+```
+
 ### Platform specific configuration
 
 #### nRF52840 DK + ESP32-WROOM-32
@@ -41,20 +54,6 @@ board) using wires:
 | P1.04 (RTS) | IO15 (CTS)      | IO15 (CTS)      | IO5 (CTS)       |
 | P1.05       | EN              | EN              | EN              |
 | GND         | GND             | GND             | GND             |
-
-Configure the following Kconfig options based on your WiFi AP
-credentials:
-
-* GOLIOTH_SAMPLE_WIFI_SSID - WiFi SSID
-* GOLIOTH_SAMPLE_WIFI_PSK - WiFi PSK
-
-by adding these lines to configuration file (e.g. `prj.conf` or
-`board/nrf52840dk_nrf52840.conf`):
-
-```cfg
-CONFIG_GOLIOTH_SAMPLE_WIFI_SSID="my-wifi"
-CONFIG_GOLIOTH_SAMPLE_WIFI_PSK="my-psk"
-```
 
 On your host computer open a terminal window, locate the source code of
 this sample application (i.e., `examples/zephyr/certificate_provisioning`) and type:

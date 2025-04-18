@@ -227,13 +227,6 @@ SETTINGS_STATIC_HANDLER_DEFINE(wifi,
                                NULL,
                                NULL);
 
-#else /* defined(CONFIG_GOLIOTH_SAMPLE_WIFI_SETTINGS) */
-
-static uint8_t wifi_ssid[] = CONFIG_GOLIOTH_SAMPLE_WIFI_SSID;
-static size_t wifi_ssid_len = sizeof(CONFIG_GOLIOTH_SAMPLE_WIFI_SSID) - 1;
-static uint8_t wifi_psk[] = CONFIG_GOLIOTH_SAMPLE_WIFI_PSK;
-static size_t wifi_psk_len = sizeof(CONFIG_GOLIOTH_SAMPLE_WIFI_PSK) - 1;
-
 #endif /* defined(CONFIG_GOLIOTH_SAMPLE_WIFI_SETTINGS) */
 
 static void wifi_event_notify(struct wifi_manager_data *wifi_mgmt, enum wifi_event event)
