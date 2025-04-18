@@ -52,15 +52,13 @@ struct post_block_ctx
 
 struct get_block_ctx
 {
-    size_t rcvd_bytes;
     enum golioth_status status;
     struct golioth_coap_rsp_code coap_rsp_code;
     golioth_sys_sem_t sem;
-    bool is_last;
 
+    bool is_last;
     size_t block_size;
     uint32_t block_idx;
-    uint8_t *block_buffer;
     write_block_cb write_cb;
     void *callback_arg;
 
@@ -396,25 +394,6 @@ enum golioth_status golioth_blockwise_upload_block(struct blockwise_transfer *ct
 
 /* Blockwise Downloads related functions */
 
-// Function to call the application's write block callback after a successful
-// blockwise download
-static enum golioth_status call_write_block_callback(struct get_block_ctx *ctx)
-{
-    enum golioth_status status = ctx->write_cb(ctx->block_idx,
-                                               ctx->block_buffer,
-                                               ctx->rcvd_bytes,
-                                               ctx->is_last,
-                                               ctx->block_size,
-                                               ctx->callback_arg);
-
-    if (GOLIOTH_OK == status)
-    {
-        /* Only advance block_idx if block was stored successfully */
-        ctx->block_idx++;
-    }
-
-    return status;
-}
 
 // Blockwise download's internal callback function that the COAP client calls
 static void on_block_rcvd(struct golioth_client *client,
@@ -430,13 +409,27 @@ static void on_block_rcvd(struct golioth_client *client,
     assert(arg);
     assert(payload_size <= CONFIG_GOLIOTH_BLOCKWISE_DOWNLOAD_MAX_BLOCK_SIZE);
     struct get_block_ctx *ctx = arg;
-    assert(ctx->block_buffer);
 
     // copy blockwise download values returned by COAP client into ctx
-    ctx->status = status;
     ctx->is_last = is_last;
-    memcpy(ctx->block_buffer, payload, payload_size);
-    ctx->rcvd_bytes = payload_size;
+
+    if (GOLIOTH_OK == status)
+    {
+        status = ctx->write_cb(ctx->block_idx,
+                               payload,
+                               payload_size,
+                               is_last,
+                               ctx->block_size,
+                               ctx->callback_arg);
+    }
+
+
+    if (GOLIOTH_OK == status)
+    {
+        ctx->block_idx++;
+    }
+
+    ctx->status = status;
 
     golioth_sys_sem_give(ctx->sem);
 }
@@ -447,7 +440,6 @@ static enum golioth_status download_single_block(struct golioth_client *client,
 {
     ctx->status = GOLIOTH_ERR_FAIL;
     ctx->is_last = false;
-    ctx->rcvd_bytes = 0;
 
     enum golioth_status err = golioth_coap_client_get_block(client,
                                                             ctx->transfer_ctx->token,
@@ -475,11 +467,6 @@ static enum golioth_status process_blockwise_downloads(struct golioth_client *cl
 {
     enum golioth_status status = download_single_block(client, ctx);
 
-    if (status == GOLIOTH_OK)
-    {
-        status = call_write_block_callback(ctx);
-    }
-
     return status;
 }
 
@@ -505,16 +492,10 @@ enum golioth_status golioth_blockwise_get(struct golioth_client *client,
         goto finish;
     }
 
-    ctx->block_buffer = malloc(CONFIG_GOLIOTH_BLOCKWISE_DOWNLOAD_MAX_BLOCK_SIZE);
-    if (NULL == ctx->block_buffer)
-    {
-        goto finish_with_ctx;
-    }
-
     ctx->transfer_ctx = blockwise_transfer_init(client, path_prefix, path, content_type);
     if (NULL == ctx->transfer_ctx)
     {
-        goto finish_with_block_buffer;
+        goto finish_with_ctx;
     }
 
     ctx->sem = golioth_sys_sem_create(1, 0);
@@ -524,7 +505,6 @@ enum golioth_status golioth_blockwise_get(struct golioth_client *client,
     }
 
     ctx->status = GOLIOTH_ERR_FAIL;
-    ctx->rcvd_bytes = 0;
     ctx->is_last = false;
     ctx->block_size = CONFIG_GOLIOTH_BLOCKWISE_DOWNLOAD_MAX_BLOCK_SIZE;
     ctx->write_cb = cb;
@@ -559,9 +539,6 @@ enum golioth_status golioth_blockwise_get(struct golioth_client *client,
 
 finish_with_transfer_ctx:
     blockwise_transfer_free(ctx->transfer_ctx);
-
-finish_with_block_buffer:
-    free(ctx->block_buffer);
 
 finish_with_ctx:
     free(ctx);
