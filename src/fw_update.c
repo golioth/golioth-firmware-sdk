@@ -33,12 +33,15 @@ struct fw_update_component_context
 struct download_progress_context
 {
     size_t bytes_downloaded;
+    uint32_t block_idx;
+    enum golioth_status result;
     golioth_sys_sha256_t sha;
 };
 
 static struct golioth_client *_client;
 static golioth_sys_mutex_t _manifest_update_mut;
 static golioth_sys_sem_t _manifest_rcvd;
+static golioth_sys_sem_t _download_complete;
 static struct golioth_ota_manifest _ota_manifest;
 static golioth_fw_update_state_change_callback _state_callback;
 static void *_state_callback_arg;
@@ -65,7 +68,7 @@ static enum golioth_status fw_write_block_cb(const struct golioth_ota_component 
                                              void *arg)
 {
     assert(arg);
-    struct download_progress_context *ctx = (struct download_progress_context *) arg;
+    struct download_progress_context *ctx = arg;
 
     GLTH_LOGI(TAG,
               "Received block %" PRIu32 "/%zu",
@@ -84,6 +87,19 @@ static enum golioth_status fw_write_block_cb(const struct golioth_ota_component 
     }
 
     return status;
+}
+
+static void fw_download_end_cb(enum golioth_status status,
+                               const struct golioth_coap_rsp_code *rsp_code,
+                               const struct golioth_ota_component *component,
+                               uint32_t block_idx,
+                               void *arg)
+{
+    struct download_progress_context *ctx = arg;
+    ctx->block_idx = block_idx;
+    ctx->result = status;
+
+    golioth_sys_sem_give(_download_complete);
 }
 
 enum golioth_status golioth_fw_update_report_state_sync(struct fw_update_component_context *ctx,
@@ -474,7 +490,6 @@ static void fw_update_thread(void *arg)
 
         uint64_t start_time_ms = golioth_sys_now_ms();
         download_ctx.bytes_downloaded = 0;
-        uint32_t next_block = 0;
         download_ctx.sha = golioth_sys_sha256_create();
 
         int err;
@@ -493,9 +508,21 @@ static void fw_update_thread(void *arg)
         {
             err = golioth_ota_download_component(_client,
                                                  &_component_ctx.target_component,
-                                                 &next_block,
+                                                 block_retries.idx,
                                                  fw_write_block_cb,
+                                                 fw_download_end_cb,
                                                  (void *) &download_ctx);
+
+            if (GOLIOTH_OK == err)
+            {
+                golioth_sys_sem_take(_download_complete, GOLIOTH_SYS_WAIT_FOREVER);
+                err = download_ctx.result;
+            }
+            else
+            {
+                GLTH_LOGE(TAG, "Failed to start OTA component download");
+                break;
+            }
 
             if (err == GOLIOTH_OK)
             {
@@ -508,13 +535,13 @@ static void fw_update_thread(void *arg)
                 break;
             }
 
-            if (block_retries.idx == next_block)
+            if (block_retries.idx == download_ctx.block_idx)
             {
                 block_retries.count++;
             }
             else
             {
-                block_retries.idx = next_block;
+                block_retries.idx = download_ctx.block_idx;
                 block_retries.count = 1;
             }
 
@@ -529,7 +556,7 @@ static void fw_update_thread(void *arg)
             {
                 GLTH_LOGI(TAG,
                           "Block download failed at block idx: %" PRIu32 "; status: %s; resuming",
-                          next_block,
+                          block_retries.idx,
                           golioth_status_to_str(err));
 
                 if (!block_retries_reported)
@@ -642,6 +669,7 @@ void golioth_fw_update_init_with_config(struct golioth_client *client,
 
     _manifest_update_mut = golioth_sys_mutex_create();  // never destroyed
     _manifest_rcvd = golioth_sys_sem_create(1, 0);      // never destroyed
+    _download_complete = golioth_sys_sem_create(1, 0);  // never destroyed
 
     GLTH_LOGI(TAG,
               "Current firmware version: %s - %s",

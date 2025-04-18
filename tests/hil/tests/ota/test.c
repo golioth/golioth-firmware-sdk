@@ -41,6 +41,9 @@ struct resume_ctx
 {
     bool in_progress;
     bool fail_pending;
+    uint32_t block_idx;
+    enum golioth_status status;
+    golioth_sys_sem_t sem;
     golioth_sys_sha256_t sha;
 };
 
@@ -269,13 +272,13 @@ static void test_block_ops(void)
     }
 }
 
-enum golioth_status write_artifact_block_cb(const struct golioth_ota_component *component,
-                                            uint32_t block_idx,
-                                            const uint8_t *block_buffer,
-                                            size_t block_buffer_len,
-                                            bool is_last,
-                                            size_t negotiated_block_size,
-                                            void *arg)
+static enum golioth_status write_artifact_block_cb(const struct golioth_ota_component *component,
+                                                   uint32_t block_idx,
+                                                   const uint8_t *block_buffer,
+                                                   size_t block_buffer_len,
+                                                   bool is_last,
+                                                   size_t negotiated_block_size,
+                                                   void *arg)
 {
     if (!arg)
     {
@@ -283,7 +286,7 @@ enum golioth_status write_artifact_block_cb(const struct golioth_ota_component *
         return GOLIOTH_ERR_INVALID_FORMAT;
     }
 
-    struct resume_ctx *ctx = (struct resume_ctx *) arg;
+    struct resume_ctx *ctx = arg;
 
     if (ctx->fail_pending && block_idx == 2)
     {
@@ -294,7 +297,21 @@ enum golioth_status write_artifact_block_cb(const struct golioth_ota_component *
     GLTH_LOGI(TAG, "Downloaded block: %" PRIu32, block_idx);
     golioth_sys_sha256_update(ctx->sha, block_buffer, block_buffer_len);
 
-    if (is_last)
+    return GOLIOTH_OK;
+}
+
+static void download_complete_cb(enum golioth_status status,
+                                 const struct golioth_coap_rsp_code *coap_rsp_code,
+                                 const struct golioth_ota_component *component,
+                                 uint32_t block_idx,
+                                 void *arg)
+{
+    struct resume_ctx *ctx = arg;
+
+    ctx->status = status;
+    ctx->block_idx = block_idx;
+
+    if (GOLIOTH_OK == status)
     {
         GLTH_LOGI(TAG, "Block download complete!");
 
@@ -314,7 +331,8 @@ enum golioth_status write_artifact_block_cb(const struct golioth_ota_component *
             GLTH_LOGE(TAG, "SHA256 doesn't match expected.");
         }
     }
-    return GOLIOTH_OK;
+
+    golioth_sys_sem_give(ctx->sem);
 }
 
 static void test_resume(struct golioth_ota_component *walrus)
@@ -330,23 +348,28 @@ static void test_resume(struct golioth_ota_component *walrus)
     struct resume_ctx ctx = {
         .in_progress = false,
         .fail_pending = true,
+        .block_idx = 0,
+        .status = GOLIOTH_OK,
+        .sem = golioth_sys_sem_create(1, 0),
     };
     ctx.sha = golioth_sys_sha256_create();
 
-    uint32_t block_idx = 0;
     int counter = 0;
 
     while (counter < 10)
     {
-        GLTH_LOGI(TAG, "Starting block download from %" PRIu32, block_idx);
+        GLTH_LOGI(TAG, "Starting block download from %" PRIu32, ctx.block_idx);
 
         status = golioth_ota_download_component(client,
                                                 walrus,
-                                                &block_idx,
+                                                ctx.block_idx,
                                                 write_artifact_block_cb,
+                                                download_complete_cb,
                                                 (void *) &ctx);
 
-        if (status)
+        golioth_sys_sem_take(ctx.sem, GOLIOTH_SYS_WAIT_FOREVER);
+
+        if (GOLIOTH_OK != ctx.status)
         {
             GLTH_LOGE(TAG, "Block download failed (will resume): %d", status);
         }
