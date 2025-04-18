@@ -392,7 +392,13 @@ golioth_sys_sha256_t golioth_sys_sha256_create(void)
     }
 
     EVP_MD *md = EVP_MD_fetch(NULL, "SHA2-256", NULL);
-    EVP_DigestInit_ex2(mdctx, md, NULL);
+    int rc = EVP_DigestInit_ex2(mdctx, md, NULL);
+    if (1 != rc)
+    {
+        GLTH_LOGE(TAG, "Failed to initialize: %i", rc);
+        golioth_sys_sha256_destroy(mdctx);
+        return NULL;
+    };
 
     return (golioth_sys_sha256_t) mdctx;
 }
@@ -418,8 +424,8 @@ enum golioth_status golioth_sys_sha256_update(golioth_sys_sha256_t sha_ctx,
     }
 
     EVP_MD_CTX *mdctx = sha_ctx;
-    int err = EVP_DigestUpdate(mdctx, input, len);
-    if (err)
+    int rc = EVP_DigestUpdate(mdctx, input, len);
+    if (1 != rc)
     {
         return GOLIOTH_ERR_FAIL;
     }
@@ -435,8 +441,8 @@ enum golioth_status golioth_sys_sha256_finish(golioth_sys_sha256_t sha_ctx, uint
     }
 
     EVP_MD_CTX *mdctx = sha_ctx;
-    int err = EVP_DigestFinal_ex(mdctx, output, NULL);
-    if (err)
+    int rc = EVP_DigestFinal_ex(mdctx, output, NULL);
+    if (1 != rc)
     {
         return GOLIOTH_ERR_FAIL;
     }

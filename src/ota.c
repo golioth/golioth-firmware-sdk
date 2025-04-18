@@ -100,6 +100,24 @@ enum golioth_status golioth_ota_observe_manifest_async(struct golioth_client *cl
                                        arg);
 }
 
+enum golioth_status golioth_ota_get_manifest_async(struct golioth_client *client,
+                                                   golioth_get_cb_fn callback,
+                                                   void *arg)
+{
+    uint8_t token[GOLIOTH_COAP_TOKEN_LEN];
+    golioth_coap_next_token(token);
+
+    return golioth_coap_client_get(client,
+                                   token,
+                                   "",
+                                   GOLIOTH_OTA_MANIFEST_PATH,
+                                   GOLIOTH_CONTENT_TYPE_CBOR,
+                                   callback,
+                                   arg,
+                                   false,
+                                   GOLIOTH_SYS_WAIT_FOREVER);
+}
+
 enum golioth_status golioth_ota_report_state_sync(struct golioth_client *client,
                                                   enum golioth_ota_state state,
                                                   enum golioth_ota_reason reason,
