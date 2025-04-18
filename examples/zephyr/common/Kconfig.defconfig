@@ -142,6 +142,12 @@ config SETTINGS
 config SETTINGS_RUNTIME
 	default y
 
+configdefault COAP_EXTENDED_OPTIONS_LEN
+    default y
+
+configdefault COAP_EXTENDED_OPTIONS_LEN_VALUE
+    default 39
+
 if GOLIOTH_SAMPLE_WIFI
 
 config GOLIOTH_SAMPLE_WIFI_SSID
