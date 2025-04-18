@@ -117,8 +117,8 @@ device over a serial connection.
 
 Certificate authentication requires two files:
 
-1. A Client Certificate, located at `/lfs1/credentials/client_cert.der`
-2. A Private Key, located at `/lfs1/credentials/private_key.der`
+1. A Client Certificate, located at `/lfs1/credentials/crt.der`
+2. A Private Key, located at `/lfs1/credentials/key.der`
 
 ### Loading Files:
 
@@ -137,8 +137,8 @@ Next, exit the serial console, and from the host computer run the
 following:
 
 ```console
-$ mcumgr --conntype serial --connstring=dev=<path/to/your/device>,baud=115200 fs upload keys/client_certificate.der /lfs1/credentials/client_cert.der
-$ mcumgr --conntype serial --connstring=dev=<path/to/your/device>,baud=115200 fs upload keys/private_key.der /lfs1/credentials/private_key.der
+$ mcumgr --conntype serial --connstring=dev=<path/to/your/device>,baud=115200 fs upload keys/client_certificate.der /lfs1/credentials/crt.der
+$ mcumgr --conntype serial --connstring=dev=<path/to/your/device>,baud=115200 fs upload keys/private_key.der /lfs1/credentials/key.der
 ```
 
 Be sure to replace `<path/to/your/device>` with the appropriate serial
@@ -162,8 +162,8 @@ indicating a successful read operation.
 [00:00:00.426,879] <inf> littlefs: LittleFS version 2.5, disk version 2.0
 [00:00:00.427,093] <inf> littlefs: FS at flash-controller@4001e000:0xf8000 is 8 0x1000-byte blocks with 512 cycle
 [00:00:00.427,124] <inf> littlefs: sizes: rd 16 ; pr 16 ; ca 64 ; la 32
-[00:00:00.429,626] <inf> hello_zephyr: Read 352 bytes from /lfs1/credentials/client_cert.der
-[00:00:00.431,243] <inf> hello_zephyr: Read 121 bytes from /lfs1/credentials/private_key.der
+[00:00:00.429,626] <inf> hello_zephyr: Read 352 bytes from /lfs1/credentials/crt.der
+[00:00:00.431,243] <inf> hello_zephyr: Read 121 bytes from /lfs1/credentials/key.der
 [00:00:00.431,274] <inf> golioth_samples: Waiting for interface to be up
 [00:00:02.573,303] <inf> wifi_esp_at: AT version: 2.4.0.0(s-4c6eb5e - ESP32 - May 20 2022 03:12:58)
 [00:00:02.576,477] <inf> wifi_esp_at: SDK version: qa-test-v4.3.3-20220423

@@ -1,5 +1,5 @@
 /*
- * Copyright (c) 2023 Golioth, Inc.
+ * Copyright (c) 2023-2025 Golioth, Inc.
  *
  * SPDX-License-Identifier: Apache-2.0
  */
@@ -14,8 +14,8 @@ LOG_MODULE_REGISTER(cert_provisioning, LOG_LEVEL_DBG);
 #include <zephyr/device.h>
 #include <zephyr/fs/fs.h>
 
-#define CLIENT_CERTIFICATE_PATH "/lfs1/credentials/client_cert.der"
-#define PRIVATE_KEY_PATH "/lfs1/credentials/private_key.der"
+#define CRT_PATH "/lfs1/credentials/crt.der"
+#define KEY_PATH "/lfs1/credentials/key.der"
 
 static const uint8_t tls_ca_crt[] = {
 #include "golioth-systemclient-ca_crt.inc"
@@ -127,11 +127,10 @@ int main(void)
 
     while (1)
     {
-        int ret =
-            load_credential_from_fs(CLIENT_CERTIFICATE_PATH, &tls_client_crt, &tls_client_crt_len);
+        int ret = load_credential_from_fs(CRT_PATH, &tls_client_crt, &tls_client_crt_len);
         if (ret > 0)
         {
-            ret = load_credential_from_fs(PRIVATE_KEY_PATH, &tls_client_key, &tls_client_key_len);
+            ret = load_credential_from_fs(KEY_PATH, &tls_client_key, &tls_client_key_len);
             if (ret > 0)
             {
                 break;

@@ -13,8 +13,6 @@ WEST_TOPDIR = Path(west.configuration.west_dir()).parent
 LOGGER = logging.getLogger(__name__)
 
 FS_SUBDIR = "/lfs1/credentials"
-FS_CRT_PATH = f"{FS_SUBDIR}/client_cert.der"
-FS_KEY_PATH = f"{FS_SUBDIR}/private_key.der"
 
 pytestmark = pytest.mark.anyio
 
@@ -49,28 +47,20 @@ async def test_cert_provisioning(request, shell,
 
     # Set Golioth credential
 
-    shell._device.readlines_until(regex=".*Could not stat /lfs1/credentials/client_cert.der", timeout=180.0)
+    shell._device.readlines_until(regex=".*Could not stat /lfs1/credentials/crt.der", timeout=180.0)
 
     shell.exec_command('fs mkdir /lfs1/credentials')
     shell.exec_command('log halt')
 
-    result = subprocess.run(["mcumgr"] + mcumgr_conn_args +
-                            ["--tries=3", "--timeout=2",
-                             "fs", "upload",
-                             f"{project.info['id']}-{device_name}.crt.der", FS_CRT_PATH],
-                            capture_output=True, text=True,
-                            cwd=request.config.option.build_dir)
-    subprocess_logger(result, 'mcumgr crt')
-    assert result.returncode == 0
-
-    result = subprocess.run(["mcumgr"] + mcumgr_conn_args +
-                            ["--tries=3", "--timeout=2",
-                             "fs", "upload",
-                             f"{project.info['id']}-{device_name}.key.der", FS_KEY_PATH],
-                            capture_output=True, text=True,
-                            cwd=request.config.option.build_dir)
-    subprocess_logger(result, 'mcumgr key')
-    assert result.returncode == 0
+    for component in ["crt", "key"]:
+        result = subprocess.run(["mcumgr"] + mcumgr_conn_args +
+                                ["--tries=3", "--timeout=2",
+                                 "fs", "upload",
+                                 f"{project.info['id']}-{device_name}.{component}.der", f"{FS_SUBDIR}/{component}.der"],
+                                capture_output=True, text=True,
+                                cwd=request.config.option.build_dir)
+        subprocess_logger(result, f'mcumgr {component}')
+        assert result.returncode == 0
 
     shell.exec_command('log go')
     shell._device.clear_buffer()
