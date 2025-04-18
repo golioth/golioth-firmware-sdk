@@ -13,7 +13,7 @@ networks.
 
 ## Building and Running
 
-### Authentication specific configuration
+### Runtime Configuration
 
 #### PSK based auth
 
@@ -26,6 +26,17 @@ Golioth credentials:
 ```sh
 uart:~$ settings set golioth/psk-id <my-psk-id@my-project>
 uart:~$ settings set golioth/psk <my-psk>
+uart:-$ kernel reboot cold
+```
+
+#### WiFi Configuration
+
+Devices that use WiFi get their WiFi credentials from the settings subsystem.
+You can set the credentials with the following shell commands:
+
+```sh
+uart:~$ settings set wifi/ssid <ssid>
+uart:~$ settings set wifi/psk <wifi-password>
 uart:-$ kernel reboot cold
 ```
 
@@ -46,19 +57,6 @@ $ west build -t run
 ```
 
 #### ESP32-DevKitC-WROVER
-
-Configure the following Kconfig options based on your WiFi AP
-credentials:
-
-- GOLIOTH_SAMPLE_WIFI_SSID  - WiFi SSID
-- GOLIOTH_SAMPLE_WIFI_PSK   - WiFi PSK
-
-by adding these lines to configuration file (e.g. `prj.conf`):
-
-```cfg
-CONFIG_GOLIOTH_SAMPLE_WIFI_SSID="my-wifi"
-CONFIG_GOLIOTH_SAMPLE_WIFI_PSK="my-psk"
-```
 
 On your host computer open a terminal window, locate the source code of
 this sample application (i.e., `examples/zephyr/location`) and type:
@@ -92,20 +90,6 @@ board) using wires:
 | P1.04 (RTS) | IO15 (CTS)      | IO15 (CTS)      |
 | P1.05       | EN              | EN              |
 | GND         | GND             | GND             |
-
-Configure the following Kconfig options based on your WiFi AP
-credentials:
-
-* GOLIOTH_SAMPLE_WIFI_SSID - WiFi SSID
-* GOLIOTH_SAMPLE_WIFI_PSK - WiFi PSK
-
-by adding these lines to configuration file (e.g. `prj.conf` or
-`board/nrf52840dk_nrf52840.conf`):
-
-```cfg
-CONFIG_GOLIOTH_SAMPLE_WIFI_SSID="my-wifi"
-CONFIG_GOLIOTH_SAMPLE_WIFI_PSK="my-psk"
-```
 
 On your host computer open a terminal window, locate the source code of
 this sample application (i.e., `examples/zephyr/location`) and type:
