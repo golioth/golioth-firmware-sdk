@@ -97,7 +97,7 @@ endif # GOLIOTH_SAMPLE_SETTINGS
 
 config GOLIOTH_SAMPLE_SETTINGS_AUTOLOAD
 	bool "Automatically load settings before main()"
-	default y if GOLIOTH_SAMPLE_SETTINGS
+	default y if GOLIOTH_SAMPLE_SETTINGS || GOLIOTH_SAMPLE_WIFI_SETTINGS
 	depends on SETTINGS
 	help
 	  Load settings automatically before running main() function. Enable it,
@@ -105,7 +105,7 @@ config GOLIOTH_SAMPLE_SETTINGS_AUTOLOAD
 
 config GOLIOTH_SAMPLE_SETTINGS_SHELL
 	bool "Settings shell"
-	default y if GOLIOTH_SAMPLE_SETTINGS
+	default y if GOLIOTH_SAMPLE_SETTINGS || GOLIOTH_SAMPLE_WIFI_SETTINGS
 	depends on SHELL
 	depends on SETTINGS
 	depends on !SETTINGS_SHELL
@@ -135,28 +135,13 @@ config GOLIOTH_SAMPLE_WIFI_THREAD_PRIORITY
 	int "WiFi manager thread priority"
 	default 7
 
-endif # GOLIOTH_SAMPLE_WIFI
-
 config GOLIOTH_SAMPLE_WIFI_SETTINGS
 	bool "Load SSID and PSK from settings subsystem"
-	depends on GOLIOTH_SAMPLE_WIFI
+	default y
 	depends on SETTINGS
 	help
 	  Load WiFi SSID and PSK from settings subsystem, from 'wifi/ssid' and
 	  'wifi/psk' entries.
-
-if GOLIOTH_SAMPLE_WIFI && !GOLIOTH_SAMPLE_WIFI_SETTINGS
-
-config GOLIOTH_SAMPLE_WIFI_SSID
-	string "WiFi SSID"
-	help
-	  WiFi SSID used when connecting to WiFi AP.
-
-config GOLIOTH_SAMPLE_WIFI_PSK
-	string "WiFi PSK"
-	help
-	  WiFi PSK used when connecting to WiFi AP. Leave empty if connecting to
-	  unsecure (open) AP.
 
 endif # GOLIOTH_SAMPLE_WIFI
 
