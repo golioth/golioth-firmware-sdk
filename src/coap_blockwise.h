@@ -54,18 +54,30 @@ typedef enum golioth_status (*write_block_cb)(uint32_t block_idx,
                                               size_t negotiated_block_size,
                                               void *callback_arg);
 
+/* Function signature for the end callback, which will be called exactly one
+ * time at the conclusion of a blockwise download. If the block download is
+ * unsuccessful, then block_idx will contain the index of the block that
+ * failed to download. Callers may attempt to resume the blockwise download
+ * by passing that index to golioth_blockwise_get.
+ */
+typedef void (*blockwise_get_end_cb)(enum golioth_status status,
+                                     const struct golioth_coap_rsp_code *coap_rsp_code,
+                                     const char *path,
+                                     uint32_t block_idx,
+                                     void *arg);
+
 /* Begin a blockwise download from a given block index
  *
- * This function will block until the download finishes or an error has occurred.
- * - The block_idx parameter out will be set to the next expected block.
- * - This value may be used as input to resume after a block download has failed.
- * - block_idx may be NULL, in which case 0 will be used for first block_idx and no value will be
- *   passed out.
+ * This function is non-blocking. If the return value is GOLIOTH_OK, then
+ * end_cb will be called exactly one time. block_cb may be called 0 or more
+ * times. Blockwise downloads may be resumed by passing in a non-zero value
+ * for block_idx.
  */
 enum golioth_status golioth_blockwise_get(struct golioth_client *client,
                                           const char *path_prefix,
                                           const char *path,
                                           enum golioth_content_type content_type,
-                                          uint32_t *block_idx,
-                                          write_block_cb cb,
+                                          uint32_t block_idx,
+                                          write_block_cb block_cb,
+                                          blockwise_get_end_cb end_cb,
                                           void *callback_arg);
