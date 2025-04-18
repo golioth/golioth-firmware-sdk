@@ -142,6 +142,12 @@ config SETTINGS
 config SETTINGS_RUNTIME
 	default y
 
+configdefault COAP_EXTENDED_OPTIONS_LEN
+    default y
+
+configdefault COAP_EXTENDED_OPTIONS_LEN_VALUE
+    default 39
+
 if GOLIOTH_SAMPLE_TWISTER_TEST
 
 configdefault GOLIOTH_SAMPLE_NRF91_RESET_LOOP_OVERRIDE
