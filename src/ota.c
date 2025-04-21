@@ -350,7 +350,7 @@ struct ota_component_blockwise_ctx
 };
 
 static enum golioth_status ota_component_write_cb_wrapper(uint32_t block_idx,
-                                                          uint8_t *block_buffer,
+                                                          const uint8_t *block_buffer,
                                                           size_t block_buffer_len,
                                                           bool is_last,
                                                           size_t negotiated_block_size,

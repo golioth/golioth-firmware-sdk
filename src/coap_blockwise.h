@@ -48,7 +48,7 @@ enum golioth_status golioth_blockwise_upload_block(struct blockwise_transfer *ct
 
 /* Blockwise Download */
 typedef enum golioth_status (*write_block_cb)(uint32_t block_idx,
-                                              uint8_t *block_buffer,
+                                              const uint8_t *block_buffer,
                                               size_t block_buffer_len,
                                               bool is_last,
                                               size_t negotiated_block_size,

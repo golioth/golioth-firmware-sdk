@@ -192,7 +192,7 @@ static void test_block_ops(void)
 
 enum golioth_status write_artifact_block_cb(const struct golioth_ota_component *component,
                                             uint32_t block_idx,
-                                            uint8_t *block_buffer,
+                                            const uint8_t *block_buffer,
                                             size_t block_buffer_len,
                                             bool is_last,
                                             size_t negotiated_block_size,
