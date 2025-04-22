@@ -117,14 +117,40 @@ jobs:
         run: |
           export EXTRA_BUILD_ARGS=-x=CONFIG_GOLIOTH_COAP_HOST_URI=\"${{ inputs.coap_gateway_url }}\"
 
+          # Build
           zephyr/scripts/twister                                                \
                 -v                                                              \
                 --overflow-as-errors                                            \
                 --platform ${{ inputs.west_board }}                             \
                 -T modules/lib/golioth-firmware-sdk/examples/zephyr             \
-                --prep-artifacts-for-testing                                    \
-                --package-artifacts test_artifacts_${{ inputs.hil_board }}.tar  \
+                --build-only                                                    \
                 $EXTRA_BUILD_ARGS
+
+          # Save lfs.hex, which otherwise is cleaned up by twister with
+          # --prep-artifacts-for-testing
+          extra_files=$(find twister-out -name lfs.hex)
+
+          if [ "$extra_files" != "" ]; then
+              tar -cf extra_files.tar $extra_files
+          fi
+
+          # Reuse build directory and cleanup artifacts for testing
+          zephyr/scripts/twister                                                \
+                -n                                                              \
+                -v                                                              \
+                --overflow-as-errors                                            \
+                --platform ${{ inputs.west_board }}                             \
+                -T modules/lib/golioth-firmware-sdk/examples/zephyr             \
+                --prep-artifacts-for-testing                                    \
+                $EXTRA_BUILD_ARGS
+
+          # Re-add lfx.hex files
+          if [ "$extra_files" != "" ]; then
+              tar -xf extra_files.tar
+          fi
+
+          # Package for testing
+          tar -cjf test_artifacts_${{ inputs.hil_board }}.tar twister-out
 
       - name: Save artifacts
         if: success() || failure()
