@@ -1,0 +1,5 @@
+# Copyright (c) 2025 Golioth, Inc.
+# SPDX-License-Identifier: Apache-2.0
+
+config SHIELD_GOLIOTH_ESP_AT
+	def_bool $(shields_list_contains,golioth_esp_at)

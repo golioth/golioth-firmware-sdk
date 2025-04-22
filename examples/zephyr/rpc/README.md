@@ -54,28 +54,8 @@ $ west flash
 
 #### nRF52840 DK + ESP32-WROOM-32
 
-This subsection documents using nRF52840 DK running Zephyr with
-offloaded ESP-AT WiFi driver and ESP32-WROOM-32 module based board (such
-as ESP32 DevkitC rev. 4) running WiFi stack. See [AT Binary
-Lists](https://docs.espressif.com/projects/esp-at/en/latest/AT_Binary_Lists/index.html)
-for links to ESP-AT binaries and details on how to flash ESP-AT image on
-ESP chip. Flash ESP chip with following command:
-
-```console
-esptool.py write_flash --verify 0x0 PATH_TO_ESP_AT/factory/factory_WROOM-32.bin
-```
-
-Connect nRF52840 DK and ESP32-DevKitC V4 (or other ESP32-WROOM-32 based
-board) using wires:
-
-| nRF52840 DK | ESP32-WROOM-32  | ESP32-WROVER-32 |
-| ----------- | --------------- | ----------------|
-| P1.01 (RX)  | IO17 (TX)       | IO22 (TX)       |
-| P1.02 (TX)  | IO16 (RX)       | IO19 (RX)       |
-| P1.03 (CTS) | IO14 (RTS)      | IO14 (RTS)      |
-| P1.04 (RTS) | IO15 (CTS)      | IO15 (CTS)      |
-| P1.05       | EN              | EN              |
-| GND         | GND             | GND             |
+See [Golioth ESP-AT WiFi
+Shield](../../../zephyr/boards/shields/golioth_esp_at/doc/index.md).
 
 On your host computer open a terminal window, locate the source code of
 this sample application (i.e., `examples/zephyr/rpc`) and type:
