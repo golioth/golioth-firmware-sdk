@@ -62,7 +62,7 @@ this sample application (i.e., `examples/zephyr/lightdb/observe`) and
 type:
 
 ```console
-$ west build -b nrf52840dk/nrf52840 examples/zephyr/lightdb/observe
+$ west build -b nrf52840dk/nrf52840 --shield golioth_esp_at examples/zephyr/lightdb/observe
 $ west flash
 ```
 

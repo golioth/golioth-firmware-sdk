@@ -9,6 +9,8 @@ common:
 tests:
   sample.golioth.location:
     build_only: true
+    extra_args:
+      - platform:nrf52840dk/nrf52840:SHIELD=golioth_esp_at
     platform_allow:
       - esp32_devkitc_wrover/esp32/procpu
       - native_sim

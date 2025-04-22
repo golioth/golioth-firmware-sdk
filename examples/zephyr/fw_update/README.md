@@ -67,7 +67,7 @@ On your host computer open a terminal window, locate the source code of
 this sample application (i.e., `examples/zephyr/fw_update`) and type:
 
 ```console
-$ west build -b nrf52840dk/nrf52840 --sysbuild examples/zephyr/fw_update
+$ west build -b nrf52840dk/nrf52840 --shield golioth_esp_at --sysbuild examples/zephyr/fw_update
 $ west flash
 ```
 
