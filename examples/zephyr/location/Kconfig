@@ -11,6 +11,12 @@ configdefault GOLIOTH_LOCATION_WIFI
 configdefault WIFI
     default y if GOLIOTH_WIFI_PLAYBACK
 
+configdefault WIFI_ESP_AT_SCAN_MAC_ADDRESS
+	default y
+
+configdefault WIFI_ESP_AT_SCAN_RESULT_RSSI_ORDERED
+	default y
+
 source "${ZEPHYR_GOLIOTH_FIRMWARE_SDK_MODULE_DIR}/examples/zephyr/common/Kconfig.defconfig"
 
 config APP_LOCATION_GET_INTERVAL
