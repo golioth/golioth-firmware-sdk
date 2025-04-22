@@ -69,7 +69,7 @@ this sample application (i.e., `examples/zephyr/stream`) and
 type:
 
 ```console
-$ west build -b nrf52840dk/nrf52840 examples/zephyr/stream
+$ west build -b nrf52840dk/nrf52840 --shield golioth_esp_at examples/zephyr/stream
 $ west flash
 ```
 

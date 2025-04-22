@@ -5,7 +5,10 @@ cmake_minimum_required(VERSION 3.20.0)
 if(BOARD STREQUAL "nrf52840dk/nrf52840")
     if(NOT SHIELD)
         set(SHIELD golioth_esp_at)
-        message(WARNING "Selecting golioth_esp_at SHIELD.")
+        message(WARNING
+            "Implicitly selecting golioth_esp_at SHIELD. This behavior is\
+             deprecated. Specify '--shield golioth_esp_at' explicitly with\
+             'west build' invocation.")
     endif()
 endif()
 

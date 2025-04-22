@@ -75,7 +75,7 @@ On your host computer open a terminal window, locate the source code of
 this sample application (i.e., `examples/zephyr/location`) and type:
 
 ```console
-$ west build -b nrf52840dk/nrf52840 examples/zephyr/location
+$ west build -b nrf52840dk/nrf52840 --shield golioth_esp_at examples/zephyr/location
 $ west flash
 ```
 
