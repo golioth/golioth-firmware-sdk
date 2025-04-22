@@ -1,3 +1,5 @@
 build:
   cmake: port/zephyr
   kconfig: port/zephyr/Kconfig
+  settings:
+    board_root: zephyr
