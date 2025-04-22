@@ -1,11 +1,11 @@
 import logging
 from pathlib import Path
 import subprocess
-import datetime
-import logging
-from time import sleep
 
 import pytest
+from twister_harness.device.device_adapter import DeviceAdapter
+from twister_harness.device.hardware_adapter import HardwareAdapter
+from twister_harness.device.utils import log_command
 import west.configuration
 
 WEST_TOPDIR = Path(west.configuration.west_dir()).parent
@@ -22,7 +22,24 @@ def subprocess_logger(result, log_msg):
     if result.stderr:
         LOGGER.error(f'{log_msg} stderr: {result.stderr}')
 
-async def test_cert_provisioning(request, shell,
+@pytest.fixture
+def lfs_flash_empty(dut: DeviceAdapter, request):
+    if not isinstance(dut, HardwareAdapter):
+        return
+
+    build_dir = Path(request.config.option.build_dir)
+
+    LOGGER.info("Flashing LFS image")
+    command = dut.command + ["--hex-file", str(build_dir / "lfs.hex")]
+    log_command(LOGGER, "Flashing LFS command", command, level=logging.DEBUG)
+    result = subprocess.run(command,
+                            capture_output=True, text=True,
+                            cwd=request.config.option.build_dir,
+                            check=False)
+    subprocess_logger(result, 'LFS flash')
+    assert result.returncode == 0
+
+async def test_cert_provisioning(lfs_flash_empty, request, shell,
                                  project, device_name,
                                  mcumgr_conn_args, certificate_cred,
                                  wifi_ssid, wifi_psk):
