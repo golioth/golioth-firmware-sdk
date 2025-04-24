@@ -237,6 +237,11 @@ jobs:
               --west-flash="--dev-id=${!SNR_VAR}"
             run_tests: true
 
+          - hil_board: nucleo_h563zi
+            west_board: nucleo_h563zi/stm32h563xx
+            manifest: .ci-west-zephyr.yml
+            run_tests: false
+
           - hil_board: rak5010
             west_board: rak5010/nrf52840
             manifest: .ci-west-zephyr.yml
