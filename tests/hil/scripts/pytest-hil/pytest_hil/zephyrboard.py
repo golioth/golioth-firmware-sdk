@@ -6,7 +6,7 @@ class  ZephyrBoard(Board):
         return 'uart:'
 
     async def set_setting(self, key, value):
-        await self.send_cmd(f'settings set {key} {value}', wait_str='saved')
+        await self.send_cmd(f'settings write string {key} {value}', wait_str='saved')
 
     async def reset(self):
         await self.send_cmd('kernel reboot cold', wait_str='Booting Zephyr OS')

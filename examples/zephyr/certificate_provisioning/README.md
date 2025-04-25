@@ -23,8 +23,8 @@ Devices that use WiFi get their WiFi credentials from the settings subsystem.
 You can set the credentials with the following shell commands:
 
 ```sh
-uart:~$ settings set wifi/ssid <ssid>
-uart:~$ settings set wifi/psk <wifi-password>
+uart:~$ settings write string wifi/ssid <ssid>
+uart:~$ settings write string wifi/psk <wifi-password>
 uart:-$ kernel reboot cold
 ```
 

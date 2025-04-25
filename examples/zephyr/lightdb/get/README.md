@@ -23,8 +23,8 @@ At runtime, configure PSK-ID and PSK using the device shell based on your
 Golioth credentials:
 
 ```sh
-uart:~$ settings set golioth/psk-id <my-psk-id@my-project>
-uart:~$ settings set golioth/psk <my-psk>
+uart:~$ settings write string golioth/psk-id <my-psk-id@my-project>
+uart:~$ settings write string golioth/psk <my-psk>
 uart:-$ kernel reboot cold
 ```
 
@@ -34,8 +34,8 @@ Devices that use WiFi get their WiFi credentials from the settings subsystem.
 You can set the credentials with the following shell commands:
 
 ```sh
-uart:~$ settings set wifi/ssid <ssid>
-uart:~$ settings set wifi/psk <wifi-password>
+uart:~$ settings write string wifi/ssid <ssid>
+uart:~$ settings write string wifi/psk <wifi-password>
 uart:-$ kernel reboot cold
 ```
 

@@ -142,6 +142,9 @@ config SETTINGS
 config SETTINGS_RUNTIME
 	default y
 
+config SETTINGS_SHELL
+	default y
+
 configdefault COAP_EXTENDED_OPTIONS_LEN
     default y
 

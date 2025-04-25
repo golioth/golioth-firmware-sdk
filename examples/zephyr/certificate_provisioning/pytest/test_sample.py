@@ -40,10 +40,10 @@ async def test_cert_provisioning(request, shell,
     # Set WiFi credential
 
     if wifi_ssid is not None:
-        shell.exec_command(f"settings set wifi/ssid \"{wifi_ssid}\"")
+        shell.exec_command(f"settings write string wifi/ssid \"{wifi_ssid}\"")
 
     if wifi_psk is not None:
-        shell.exec_command(f"settings set wifi/psk \"{wifi_psk}\"")
+        shell.exec_command(f"settings write string wifi/psk \"{wifi_psk}\"")
 
     # Set Golioth credential
 

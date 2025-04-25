@@ -18,8 +18,8 @@ async def test_location(shell: Shell, dut: DeviceAdapter, device):
     # Set Golioth credential
 
     golioth_cred = (await device.credentials.list())[0]
-    shell.exec_command(f"settings set golioth/psk-id {golioth_cred.identity}")
-    shell.exec_command(f"settings set golioth/psk {golioth_cred.key}")
+    shell.exec_command(f"settings write string golioth/psk-id {golioth_cred.identity}")
+    shell.exec_command(f"settings write string golioth/psk {golioth_cred.key}")
 
     # Wait for Golioth connection
 

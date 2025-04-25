@@ -15,16 +15,16 @@ async def test_rpc(shell, device, wifi_ssid, wifi_psk):
     # Set Golioth credential
 
     golioth_cred = (await device.credentials.list())[0]
-    shell.exec_command(f"settings set golioth/psk-id {golioth_cred.identity}")
-    shell.exec_command(f"settings set golioth/psk {golioth_cred.key}")
+    shell.exec_command(f"settings write string golioth/psk-id {golioth_cred.identity}")
+    shell.exec_command(f"settings write string golioth/psk {golioth_cred.key}")
 
     # Set WiFi credential
 
     if wifi_ssid is not None:
-        shell.exec_command(f"settings set wifi/ssid \"{wifi_ssid}\"")
+        shell.exec_command(f"settings write string wifi/ssid \"{wifi_ssid}\"")
 
     if wifi_psk is not None:
-        shell.exec_command(f"settings set wifi/psk \"{wifi_psk}\"")
+        shell.exec_command(f"settings write string wifi/psk \"{wifi_psk}\"")
 
     # Wait for device to reboot and connect
 
