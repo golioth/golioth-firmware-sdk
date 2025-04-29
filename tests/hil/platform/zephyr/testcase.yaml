@@ -1,0 +1,58 @@
+common:
+  harness: pytest
+  tags:
+    - golioth
+    - socket
+    - goliothd
+  platform_allow:
+    - esp32_devkitc_wrover/esp32/procpu
+    - frdm_rw612
+    - native_sim
+    - native_sim/native/64
+    - nrf52840dk/nrf52840
+    - nrf9160dk/nrf9160/ns
+    - rak5010/nrf52840
+  timeout: 600
+tests:
+  golioth.hil.connection:
+    harness_config:
+      pytest_dut_scope: module
+      pytest_root:
+        - ../../tests/connection
+    extra_args:
+      - GOLIOTH_HIL_TEST=connection
+  golioth.hil.lightdb:
+    harness_config:
+      pytest_dut_scope: module
+      pytest_root:
+        - ../../tests/lightdb
+    extra_args:
+      - GOLIOTH_HIL_TEST=lightdb
+  golioth.hil.ota:
+    harness_config:
+      pytest_dut_scope: module
+      pytest_root:
+        - ../../tests/ota
+    extra_args:
+      - GOLIOTH_HIL_TEST=ota
+  golioth.hil.rpc:
+    harness_config:
+      pytest_dut_scope: module
+      pytest_root:
+        - ../../tests/rpc
+    extra_args:
+      - GOLIOTH_HIL_TEST=rpc
+  golioth.hil.settings:
+    harness_config:
+      pytest_dut_scope: module
+      pytest_root:
+        - ../../tests/settings
+    extra_args:
+      - GOLIOTH_HIL_TEST=settings
+  golioth.hil.stream:
+    harness_config:
+      pytest_dut_scope: module
+      pytest_root:
+        - ../../tests/stream
+    extra_args:
+      - GOLIOTH_HIL_TEST=stream
