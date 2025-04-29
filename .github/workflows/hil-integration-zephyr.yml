@@ -133,13 +133,16 @@ jobs:
           rm -rf test_binaries
           mkdir -p test_binaries
 
+          FW_IMAGE=${{ matrix.test }}.${{ inputs.binary_name }}
+          FW_IMAGE=${FW_IMAGE/\//-}
+
           export EXTRA_BUILD_ARGS=-DCONFIG_GOLIOTH_COAP_HOST_URI=\"${{ inputs.coap_gateway_url }}\"
 
-          west build --no-sysbuild -p -b ${{ inputs.west_board }} \
+          west build -p -b ${{ inputs.west_board }} \
             modules/lib/golioth-firmware-sdk/tests/hil/platform/zephyr \
             -- $EXTRA_BUILD_ARGS -DGOLIOTH_HIL_TEST=${{ matrix.test }}
-          mv build/zephyr/${{ inputs.binary_name }} \
-            test_binaries/${{ matrix.test }}-${{ inputs.binary_name }}
+          mv build/${{ inputs.binary_name }} \
+            test_binaries/${FW_IMAGE}
 
       - name: Save artifacts
         uses: actions/upload-artifact@v4
@@ -196,11 +199,13 @@ jobs:
           source /opt/credentials/runner_env.sh
           PORT_VAR=CI_${hil_board^^}_PORT
           SNR_VAR=CI_${hil_board^^}_SNR
+          FW_IMAGE=${{ matrix.test }}.${{ inputs.binary_name }}
+          FW_IMAGE=${FW_IMAGE/\//-}
 
           pytest --rootdir . tests/hil/tests/${{ matrix.test }}                          \
             --board ${hil_board}                                                         \
             --port ${!PORT_VAR}                                                          \
-            --fw-image ${{ matrix.test }}-${{ inputs.binary_name }}                      \
+            --fw-image ${FW_IMAGE}                                                       \
             --serial-number ${!SNR_VAR}                                                  \
             --api-url ${{ inputs.api-url }}                                              \
             --api-key ${{ secrets[inputs.api-key-id] }}                                  \
