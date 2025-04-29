@@ -182,7 +182,7 @@ jobs:
               --mask-secrets                                                    \
               --timeout=600                                                     \
               --alluredir=allure-reports                                        \
-              --platform=esp-idf                                                \
+              --allure-platform=esp-idf                                         \
               --runner-name ${{ runner.name }}                                  \
               --custom-suitename=sample                                         \
               || EXITCODE=$?

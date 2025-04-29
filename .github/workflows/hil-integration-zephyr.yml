@@ -210,7 +210,7 @@ jobs:
             --timeout=600                                                                \
             --junitxml=summary/hil-zephyr-${{ inputs.hil_board }}-${{ matrix.test }}.xml \
             --alluredir=allure-reports                                                   \
-            --platform zephyr                                                            \
+            --allure-platform zephyr                                                     \
             --runner-name ${{ runner.name }}
 
       - name: Safe upload CI report summary

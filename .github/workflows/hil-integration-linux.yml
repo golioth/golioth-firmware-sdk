@@ -102,7 +102,7 @@ jobs:
             --timeout=600                               \
             --junitxml=summary/hil-linux-${test}.xml    \
             --alluredir=allure-reports                  \
-            --platform linux
+            --allure-platform linux
 
       - name: Capture coverage
         if: success() || failure()
