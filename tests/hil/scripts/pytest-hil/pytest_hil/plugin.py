@@ -83,7 +83,25 @@ def wifi_psk(request):
     return request.config.getoption("--wifi-psk")
 
 @pytest.fixture(scope="module")
-async def board(board_name, port, baud, wifi_ssid, wifi_psk, fw_image, serial_number, bmp_port):
+async def board(request, baud, wifi_ssid, wifi_psk):
+    if request.config.getoption('twister_harness', None):
+        dut = request.getfixturevalue("dut")
+        dut.disconnect()
+
+        board_name = dut.device_config.platform \
+            .split("/", maxsplit=1)[0] \
+            .split("@", maxsplit=1)[0]
+        port = dut.device_config.serial
+        fw_image = None
+        serial_number = None
+        bmp_port = None
+    else:
+        board_name = request.getfixturevalue("board_name")
+        port = request.getfixturevalue("port")
+        fw_image = request.getfixturevalue("fw_image")
+        serial_number = request.getfixturevalue("serial_number")
+        bmp_port = request.getfixturevalue("bmp_port")
+
     if (board_name.lower() == "esp32s3_devkitc_espidf" or
         board_name.lower() == "esp32c3_devkitm_espidf" or
         board_name.lower() == "esp32_devkitc_wrover_espidf"):
