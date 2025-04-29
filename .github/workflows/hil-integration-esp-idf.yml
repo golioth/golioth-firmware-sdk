@@ -129,7 +129,7 @@ jobs:
               --timeout=600                                                     \
               --junitxml=summary/hil-espidf-${{ inputs.hil_board }}-${test}.xml \
               --alluredir=allure-reports                                        \
-              --platform esp-idf                                                \
+              --allure-platform esp-idf                                         \
               --runner-name ${{ runner.name }}                                  \
               || EXITCODE=$?
           done

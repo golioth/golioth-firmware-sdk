@@ -130,7 +130,7 @@ jobs:
             --timeout=600                                                               \
             --junitxml=summary/hil-zephyr-${{ inputs.platform }}-${{ matrix.test }}.xml \
             --alluredir=allure-reports                                                  \
-            --platform=zephyr                                                           \
+            --allure-platform=zephyr                                                    \
             --allure-board=${{ inputs.platform }}
 
       - name: Capture coverage

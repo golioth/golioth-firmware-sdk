@@ -11,8 +11,8 @@ from pytest_hil.linuxboard import LinuxBoard
 from pytest_hil.native_sim import NativeSimBoard
 
 def pytest_addoption(parser):
-    parser.addoption("--platform", type=str,
-            help="Platform name (eg: esp-idf, linux, zephyr)")
+    parser.addoption("--allure-platform", type=str,
+            help="Allure platform name (eg: esp-idf, linux, zephyr)")
     parser.addoption("--runner-name", type=str,
             help="Self-hosted runner name (eg: sams_orange_pi, mikes_testbench)")
     parser.addoption("--board", type=str,
@@ -36,8 +36,8 @@ def pytest_addoption(parser):
 
 
 @pytest.fixture(scope="session")
-def platform_name(request):
-    return request.config.getoption("--platform")
+def allure_platform_name(request):
+    return request.config.getoption("--allure-platform")
 
 @pytest.fixture(scope="session")
 def runner_name(request):
@@ -112,14 +112,14 @@ async def board(board_name, port, baud, wifi_ssid, wifi_psk, fw_image, serial_nu
 @pytest.hookimpl(wrapper=True)
 def pytest_runtest_setup(item):
     board_name = item.config.getoption("--allure-board") or item.config.getoption("--board")
-    platform_name = item.config.getoption("--platform")
+    allure_platform_name = item.config.getoption("--allure-platform")
     suitename = item.config.getoption("--custom-suitename") or "hil"
 
     allure.dynamic.tag(board_name)
-    allure.dynamic.tag(platform_name)
+    allure.dynamic.tag(allure_platform_name)
     allure.dynamic.parameter("board_name", board_name)
-    allure.dynamic.parameter("platform_name", platform_name)
-    allure.dynamic.parent_suite(f"{suitename}.{platform_name}.{board_name}")
+    allure.dynamic.parameter("platform_name", allure_platform_name)
+    allure.dynamic.parent_suite(f"{suitename}.{allure_platform_name}.{board_name}")
 
     if runner_name is not None:
         allure.dynamic.tag(item.config.getoption("--runner-name"))
