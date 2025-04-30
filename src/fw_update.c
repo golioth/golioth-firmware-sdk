@@ -34,8 +34,16 @@ struct download_progress_context
 {
     size_t bytes_downloaded;
     uint32_t block_idx;
+    uint8_t retries;
     enum golioth_status result;
     golioth_sys_sha256_t sha;
+    golioth_sys_timer_t block_retry_timer;
+};
+
+struct block_retry_context
+{
+    struct fw_update_component_context *component_ctx;
+    struct download_progress_context *download_ctx;
 };
 
 static struct golioth_client *_client;
@@ -82,6 +90,7 @@ static enum golioth_status fw_write_block_cb(const struct golioth_ota_component 
 
     if (status == GOLIOTH_OK)
     {
+        ctx->retries = 0;
         ctx->bytes_downloaded += block_buffer_len;
         golioth_sys_sha256_update(ctx->sha, block_buffer, block_buffer_len);
     }
@@ -96,10 +105,34 @@ static void fw_download_end_cb(enum golioth_status status,
                                void *arg)
 {
     struct download_progress_context *ctx = arg;
-    ctx->block_idx = block_idx;
-    ctx->result = status;
 
-    golioth_sys_sem_give(_download_complete);
+    if (GOLIOTH_OK == status || GOLIOTH_ERR_IO == status
+        || ctx->retries >= FW_MAX_BLOCK_RESUME_BEFORE_FAIL)
+    {
+        ctx->result = status;
+        golioth_sys_sem_give(_download_complete);
+    }
+    else
+    {
+        ctx->retries++;
+        ctx->block_idx = block_idx;
+
+        GLTH_LOGW(TAG, "Block (%d) download failed, retrying (%d)", ctx->block_idx, ctx->retries);
+
+        golioth_sys_timer_start(ctx->block_retry_timer);
+    }
+}
+
+static void block_retry_timer_expiry(golioth_sys_timer_t timer, void *arg)
+{
+    struct block_retry_context *ctx = arg;
+
+    golioth_ota_download_component(_client,
+                                   &ctx->component_ctx->target_component,
+                                   ctx->download_ctx->block_idx,
+                                   fw_write_block_cb,
+                                   fw_download_end_cb,
+                                   ctx->download_ctx);
 }
 
 enum golioth_status golioth_fw_update_report_state_sync(struct fw_update_component_context *ctx,
@@ -490,100 +523,42 @@ static void fw_update_thread(void *arg)
 
         uint64_t start_time_ms = golioth_sys_now_ms();
         download_ctx.bytes_downloaded = 0;
+        download_ctx.retries = 0;
         download_ctx.sha = golioth_sys_sha256_create();
 
         int err;
 
-        struct block_retry_cnt
+        struct block_retry_context retry_context = {
+            .download_ctx = &download_ctx,
+            .component_ctx = &_component_ctx,
+        };
+
+        struct golioth_timer_config retry_timer_config = {
+            .name = "",
+            .expiration_ms = FW_UPDATE_RESUME_DELAY_S * 1000,
+            .fn = block_retry_timer_expiry,
+            .user_arg = &retry_context,
+        };
+        download_ctx.block_retry_timer = golioth_sys_timer_create(&retry_timer_config);
+
+        err = golioth_ota_download_component(_client,
+                                             &_component_ctx.target_component,
+                                             0,
+                                             fw_write_block_cb,
+                                             fw_download_end_cb,
+                                             &download_ctx);
+
+        if (GOLIOTH_OK == err)
         {
-            uint32_t idx;
-            int count;
-        } block_retries;
-
-        block_retries.idx = 0;
-        block_retries.count = 0;
-        bool block_retries_reported = false;
-
-        while (1)
-        {
-            err = golioth_ota_download_component(_client,
-                                                 &_component_ctx.target_component,
-                                                 block_retries.idx,
-                                                 fw_write_block_cb,
-                                                 fw_download_end_cb,
-                                                 (void *) &download_ctx);
-
-            if (GOLIOTH_OK == err)
-            {
-                golioth_sys_sem_take(_download_complete, GOLIOTH_SYS_WAIT_FOREVER);
-                err = download_ctx.result;
-            }
-            else
-            {
-                GLTH_LOGE(TAG, "Failed to start OTA component download");
-                break;
-            }
-
-            if (err == GOLIOTH_OK)
-            {
-                break;
-            }
-
-            if (err == GOLIOTH_ERR_IO)
-            {
-                GLTH_LOGE(TAG, "Failed to store OTA component");
-                break;
-            }
-
-            if (block_retries.idx == download_ctx.block_idx)
-            {
-                block_retries.count++;
-            }
-            else
-            {
-                block_retries.idx = download_ctx.block_idx;
-                block_retries.count = 1;
-            }
-
-            if (block_retries.count >= FW_MAX_BLOCK_RESUME_BEFORE_FAIL)
-            {
-                GLTH_LOGE(TAG,
-                          "Max resume count of %i for single block reached; aborting download.",
-                          block_retries.count);
-                break;
-            }
-            else
-            {
-                GLTH_LOGI(TAG,
-                          "Block download failed at block idx: %" PRIu32 "; status: %s; resuming",
-                          block_retries.idx,
-                          golioth_status_to_str(err));
-
-                if (!block_retries_reported)
-                {
-                    golioth_fw_update_report_state_sync(&_component_ctx,
-                                                        GOLIOTH_OTA_STATE_DOWNLOADING,
-                                                        GOLIOTH_OTA_REASON_CONNECTION_LOST,
-                                                        FW_REPORT_COMPONENT_NAME
-                                                            | FW_REPORT_CURRENT_VERSION
-                                                            | FW_REPORT_TARGET_VERSION);
-                }
-
-                golioth_sys_msleep(FW_UPDATE_RESUME_DELAY_S * 1000);
-
-                if (!block_retries_reported)
-                {
-                    golioth_fw_update_report_state_sync(&_component_ctx,
-                                                        GOLIOTH_OTA_STATE_DOWNLOADING,
-                                                        GOLIOTH_OTA_REASON_READY,
-                                                        FW_REPORT_COMPONENT_NAME
-                                                            | FW_REPORT_CURRENT_VERSION
-                                                            | FW_REPORT_TARGET_VERSION);
-
-                    block_retries_reported = true;
-                }
-            }
+            golioth_sys_sem_take(_download_complete, GOLIOTH_SYS_WAIT_FOREVER);
+            err = download_ctx.result;
         }
+        else
+        {
+            GLTH_LOGE(TAG, "Failed to start OTA componnent download");
+        }
+
+        golioth_sys_timer_destroy(download_ctx.block_retry_timer);
 
         /* Download finished, prepare backoff in case needed */
         backoff_increment(&_component_ctx);
