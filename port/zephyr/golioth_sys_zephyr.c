@@ -139,26 +139,19 @@ int golioth_sys_sem_get_fd(golioth_sys_sem_t sem)
 
 struct golioth_timer
 {
-    struct k_timer timer;
-    struct k_work work;
+    struct k_work_delayable work;
     struct golioth_timer_config config;
 };
 
-static void timer_handler_worker(struct k_work *work)
+static void timer_worker(struct k_work *work)
 {
-    struct golioth_timer *timer = CONTAINER_OF(work, struct golioth_timer, work);
+    struct k_work_delayable *dwork = k_work_delayable_from_work(work);
+    struct golioth_timer *timer = CONTAINER_OF(dwork, struct golioth_timer, work);
 
     if (timer->config.fn)
     {
         timer->config.fn(timer, timer->config.user_arg);
     }
-}
-
-static void on_timer(struct k_timer *ztimer)
-{
-    struct golioth_timer *timer = CONTAINER_OF(ztimer, struct golioth_timer, timer);
-
-    k_work_submit(&timer->work);
 }
 
 golioth_sys_timer_t golioth_sys_timer_create(const struct golioth_timer_config *config)
@@ -173,8 +166,7 @@ golioth_sys_timer_t golioth_sys_timer_create(const struct golioth_timer_config *
 
     memcpy(&timer->config, config, sizeof(timer->config));
 
-    k_timer_init(&timer->timer, on_timer, NULL);
-    k_work_init(&timer->work, timer_handler_worker);
+    k_work_init_delayable(&timer->work, timer_worker);
 
     return (golioth_sys_timer_t) timer;
 }
@@ -183,13 +175,17 @@ bool golioth_sys_timer_start(golioth_sys_timer_t gtimer)
 {
     struct golioth_timer *timer = gtimer;
 
-    k_timer_start(&timer->timer, K_MSEC(timer->config.expiration_ms), K_NO_WAIT);
+    k_work_schedule(&timer->work, K_MSEC(timer->config.expiration_ms));
 
     return true;
 }
 
-bool golioth_sys_timer_reset(golioth_sys_timer_t timer)
+bool golioth_sys_timer_reset(golioth_sys_timer_t gtimer)
 {
+    struct golioth_timer *timer = gtimer;
+
+    k_work_cancel_delayable(&timer->work);
+
     return golioth_sys_timer_start(timer);
 }
 
@@ -197,7 +193,8 @@ void golioth_sys_timer_destroy(golioth_sys_timer_t gtimer)
 {
     struct golioth_timer *timer = gtimer;
 
-    k_timer_stop(&timer->timer);
+    k_work_cancel_delayable(&timer->work);
+
     golioth_sys_free(timer);
 }
 
