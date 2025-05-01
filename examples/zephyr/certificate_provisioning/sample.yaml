@@ -38,6 +38,7 @@ tests:
       - CONFIG_MBEDTLS_PSA_CRYPTO_C=y
       - CONFIG_GOLIOTH_SAMPLE_TWISTER_TEST=y
       - arch:posix:CONFIG_NATIVE_UART_0_ON_STDINOUT=y
+      - arch:posix:CONFIG_MCUMGR_TRANSPORT_UDP_PORT=1347
     platform_allow:
       - frdm_rw612
       - native_sim
