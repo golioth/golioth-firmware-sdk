@@ -25,9 +25,11 @@ def mcumgr_conn_args(request, dut):
         else:
             ip = build_conf['CONFIG_NET_CONFIG_MY_IPV4_ADDR']
 
+        port = build_conf['CONFIG_MCUMGR_TRANSPORT_UDP_PORT']
+
         return [
             "--conntype=udp",
-            f"--connstring={ip}:1337",
+            f"--connstring={ip}:{port}",
         ]
 
     return [
