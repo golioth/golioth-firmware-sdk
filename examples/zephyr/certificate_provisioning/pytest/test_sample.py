@@ -6,6 +6,7 @@ import pytest
 from twister_harness.device.device_adapter import DeviceAdapter
 from twister_harness.device.hardware_adapter import HardwareAdapter
 from twister_harness.device.utils import log_command
+from twister_harness.helpers.domains_helper import get_default_domain_name
 import west.configuration
 
 WEST_TOPDIR = Path(west.configuration.west_dir()).parent
@@ -28,6 +29,9 @@ def lfs_flash_empty(device_object: DeviceAdapter, request):
         return
 
     build_dir = Path(request.config.option.build_dir)
+    domains = build_dir / 'domains.yaml'
+    if domains.exists():
+        build_dir = build_dir / get_default_domain_name(domains)
 
     LOGGER.info("Flashing LFS image")
     device_object.generate_command()
@@ -35,7 +39,7 @@ def lfs_flash_empty(device_object: DeviceAdapter, request):
     log_command(LOGGER, "Flashing LFS command", command, level=logging.DEBUG)
     result = subprocess.run(command,
                             capture_output=True, text=True,
-                            cwd=request.config.option.build_dir,
+                            cwd=str(build_dir),
                             check=False)
     subprocess_logger(result, 'LFS flash')
     assert result.returncode == 0
