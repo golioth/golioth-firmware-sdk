@@ -15,7 +15,8 @@ async def fw_info():
 
 @pytest.fixture(scope="module")
 async def blueprint_id(project, request):
-    bp_name = request.config.option.platform.replace('/','_')
+    bp_name = '_'.join([x.split('@')[0] for x in
+                        request.config.option.platform.split('/')])
     yield await project.blueprints.get_id(bp_name)
 
 
