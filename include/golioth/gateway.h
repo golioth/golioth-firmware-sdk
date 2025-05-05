@@ -53,6 +53,16 @@ enum golioth_status golioth_gateway_uplink_block(struct blockwise_transfer *ctx,
 /// @param ctx The uplink context to finish, returned from \ref golioth_gateway_uplink_block
 void golioth_gateway_uplink_finish(struct blockwise_transfer *ctx);
 
+typedef enum golioth_status (*gateway_downlink_block_cb)(uint8_t *data,
+                                                         size_t len,
+                                                         bool is_last,
+                                                         void *arg);
+
+enum golioth_status golioth_gateway_downlink_get(struct golioth_client *client,
+                                                 const char *device_id,
+                                                 gateway_downlink_block_cb cb,
+                                                 void *arg);
+
 #ifdef __cplusplus
 }
 #endif
