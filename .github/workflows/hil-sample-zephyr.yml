@@ -214,7 +214,9 @@ jobs:
           name: test_artifacts_${{ inputs.hil_board }}
           path: .
       - name: Extract artifacts
-        run: tar -xvf test_artifacts_${{ inputs.hil_board }}.tar
+        run: |
+          rm -rf twister-out
+          tar -xvf test_artifacts_${{ inputs.hil_board }}.tar
       - name: Run test
         shell: bash
         env:
