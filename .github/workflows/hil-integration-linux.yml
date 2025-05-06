@@ -73,9 +73,15 @@ jobs:
           cmake -B build -S tests/hil/platform/linux \
             $EXTRA_BUILD_ARGS -DGOLIOTH_HIL_TEST=${{ matrix.test }}
           make -j$(nproc) -C build
-      - name: Setup Python dependencies
+      - name: Install uv
         run: |
-          pip install \
+          pip install uv
+      - name: Setup Python dependencies
+        shell: bash
+        run: |
+          uv venv
+          source .venv/bin/activate
+          uv pip install \
             gcovr \
             pytest \
             pytest-timeout \
@@ -87,6 +93,8 @@ jobs:
         env:
           test: ${{ matrix.test }}
         run: |
+          source .venv/bin/activate
+
           rm -rf summary
           mkdir summary
 
