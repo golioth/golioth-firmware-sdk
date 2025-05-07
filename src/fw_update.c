@@ -117,7 +117,10 @@ static void fw_download_end_cb(enum golioth_status status,
         ctx->retries++;
         ctx->block_idx = block_idx;
 
-        GLTH_LOGW(TAG, "Block (%d) download failed, retrying (%d)", ctx->block_idx, ctx->retries);
+        GLTH_LOGW(TAG,
+                  "Block (%" PRIu32 ") download failed, retrying (%" PRIu8 ")",
+                  ctx->block_idx,
+                  ctx->retries);
 
         golioth_sys_timer_start(ctx->block_retry_timer);
     }
