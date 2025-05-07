@@ -4,7 +4,7 @@ All notable changes to this project will be documented in this file.
 The format is based on [Keep a Changelog](https://keepachangelog.com/en/1.0.0/),
 and this project adheres to [Semantic Versioning](https://semver.org/spec/v2.0.0.html).
 
-## [Unreleased]
+## [0.18.0] 2025-05-07
 
 ### Breaking Changes
 
@@ -13,16 +13,50 @@ and this project adheres to [Semantic Versioning](https://semver.org/spec/v2.0.0
   `CONFIG_GOLIOTH_COAP_MAX_PATH_LEN` symbol can no longer be changed by
   the user. Update this limit using the following Kconfig symbols
   supplied by Zephyr's CoAP library:
-
     ```
     CONFIG_COAP_EXTENDED_OPTIONS_LEN=y
     CONFIG_COAP_EXTENDED_OPTIONS_LEN_VALUE=39
     ```
+- OTA: golioth_ota_download_component is now non-blocking, and the
+  function signature has changed to support two callbacks - one for
+  reading blocks called 0 or more times, and one that is called exactly
+  one time at the end of the download.
+
+### Removed
+
+- QEMU is no longer continually verified. Users should use `native_sim`
+  for emulated testing.
+- i.MX RT1024 is no longer continually verified. It is replaced with
+  the FRDM-RW612.
+- Zephyr: Hardcoded WiFi and TLS credentials are no longer supported.
+  Users should use the provided shell functions to set WiFi and TLS
+  credentials instead.
+
+### Changed
+
+- Zephyr support upgraded to v4.1.0
+- nRF Connect SDK support upgraded to v3.0.1
+- ESP-IDF support upgraded to v5.4.1
+- The FW Update rollback timer is now configurable, and the default is
+  changed from 60 seconds to 300 seconds.
+
+### Added:
+
+- FW Update now checks if an artifact is already stored before
+  initiating a download. This will prevent excessive network and flash
+  operations in this case that an update cannot be applied.
+- Multipart API for blockwise uploads.
+- Continually verify on FRDM-RW612
+- Added an API for on-demand fetching of the OTA manifest
+- Support PSA crypto API
+- EXPERIMENTAL: Gateway service for proxying pouches to Golioth
 
 ### Fixed
 
 - Zephyr: correctly detect path names that are longer than the maximum
   setting.
+- Various typos and formatting
+- Plugged a memory leak when using SHA256
 
 ## [0.17.0] 2025-01-23
 
