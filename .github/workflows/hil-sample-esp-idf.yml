@@ -108,7 +108,7 @@ jobs:
       - name: Build Samples
         uses: espressif/esp-idf-ci-action@v1
         with:
-          esp_idf_version: v5.4
+          esp_idf_version: v5.4.1
           target: ${{ inputs.idf_target }}
           command: |
             for sample in ${{ steps.build_prep.outputs.sample_list }};

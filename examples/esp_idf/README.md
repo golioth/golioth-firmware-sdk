@@ -1,36 +1,36 @@
 # Golioth ESP-IDF Examples
 
 This repo contains a set of examples intended to build
-and run in the latest release of esp-idf
-(currently [5.3.0](https://github.com/espressif/esp-idf/releases/tag/v5.3)).
+and run in the latest release of ESP-IDF
+(currently [5.4.1](https://github.com/espressif/esp-idf/releases/tag/v5.4.1)).
 
-### Install esp-idf
+### Install ESP-IDF
 
-Install version 5.3.0 of esp-idf using the
+Install version 5.4.1 of ESP-IDF using the
 [installation directions from Espressif](https://docs.espressif.com/projects/esp-idf/en/latest/esp32/get-started/index.html#installation).
 This is the version of esp-idf this SDK is tested against.
 
-For Linux users, you can install esp-idf with these commands:
+For Linux users, you can install ESP-IDF with these commands:
 
 ```sh
 sudo apt-get install git wget flex bison gperf python3 python3-venv cmake ninja-build ccache libffi-dev libssl-dev dfu-util libusb-1.0-0
 mkdir -p ~/esp
 cd ~/esp
-git clone --recursive https://github.com/espressif/esp-idf.git -b v5.3
+git clone --recursive https://github.com/espressif/esp-idf.git -b v5.4.1
 cd esp-idf
 ./install.sh all
 ```
 
-### Using VSCode esp-idf extension
+### Using VS Code ESP-IDF extension
 
-If you are using the VScode esp-idf extension, you should be able to load these examples
-directly into your workspace and build/flash/monitor.
+If you are using the Visual Studio Code ESP-IDF extension, you should be able to load these
+examples directly into your workspace and build/flash/monitor.
 
 Otherwise, follow the command-line instructions below.
 
 ### Command-line
 
-First, setup the environment. This step assumes you've installed esp-idf to `~/esp/esp-idf`
+First, setup the environment. This step assumes you've installed ESP-IDF to `~/esp/esp-idf`
 
 ```sh
 source ~/esp/esp-idf/export.sh
@@ -67,7 +67,7 @@ pip install tests/hil/scripts/pytest-hil
 
 - Latest version of python-golioth-tools installed with the following command:
 ```sh
-pip install git+https://github.com/golioth/python-golioth-tools@v0.5.1
+pip install git+https://github.com/golioth/python-golioth-tools@v0.7.0
 ```
 
 Installing python-golioth-tools enables pytest to use 'device' fixture which
