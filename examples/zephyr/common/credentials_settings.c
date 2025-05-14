@@ -5,7 +5,7 @@
  */
 
 #include <zephyr/logging/log.h>
-LOG_MODULE_REGISTER(golioth_sample_settings, CONFIG_GOLIOTH_DEBUG_DEFAULT_LOG_LEVEL);
+LOG_MODULE_REGISTER(golioth_credentials_settings, CONFIG_GOLIOTH_DEBUG_DEFAULT_LOG_LEVEL);
 
 #include <errno.h>
 #include <golioth/client.h>
