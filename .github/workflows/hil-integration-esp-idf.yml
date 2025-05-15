@@ -93,7 +93,7 @@ jobs:
         uses: actions/checkout@v4
       - name: Setup Python dependencies
         run: |
-          pip install \
+          uv pip install --system \
             pytest \
             pytest-timeout \
             tests/hil/scripts/pytest-hil \
