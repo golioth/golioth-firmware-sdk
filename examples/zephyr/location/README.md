@@ -1,5 +1,11 @@
 # Golioth location demo
 
+> [!IMPORTANT]
+> Using [Golioth
+> Location](https://docs.golioth.io/application-services/location/)
+> requires enrolling in the [private access
+> program](https://blog.golioth.io/golioth-location-private-access/).
+
 ## Overview
 
 This sample demonstrates how to connect to Golioth and get location
