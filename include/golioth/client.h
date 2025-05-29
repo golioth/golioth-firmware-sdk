@@ -178,6 +178,59 @@ typedef void (*golioth_set_block_cb_fn)(struct golioth_client *client,
                                         size_t block_size,
                                         void *arg);
 
+/// Callback for blockwise get requests
+///
+/// Will be called repeatedly, once for each block received from the server. The string offset of
+/// the block received by this callback may be calculated by multiplying \p block_idx by \p
+/// negotiated_block_size.
+///
+/// @param client The client handle from the original request.
+/// @param path The path from the original request
+/// @param block_idx The block number in sequence (starting with 0)
+/// @param block_buffer The component payload in the response packet.
+/// @param block_buffer_len The length of the component payload, in bytes.
+/// @param is_last true if this is the final block of the request
+/// @param negotiated_block_size The maximum block size negotiated with the server, in bytes
+/// @param arg User argument, copied from the original request. Can be NULL.
+typedef enum golioth_status (*golioth_get_block_cb_fn)(struct golioth_client *client,
+                                                       const char *path,
+                                                       uint32_t block_idx,
+                                                       const uint8_t *block_buffer,
+                                                       size_t block_buffer_len,
+                                                       bool is_last,
+                                                       size_t negotiated_block_size,
+                                                       void *arg);
+
+/// Callback at the end of blockwise get requests
+///
+/// The end callback will be called exactly one time at the conclusion
+/// of a blockwise download. If the block download is unsuccessful, then block_idx will contain the
+/// index of the block that failed to download. Callers may attempt to resume the blockwise download
+/// by passing that index to a blockwise get function.
+///
+/// The CoAP response code is available by reading code_class (2.xx) and code_detail (x.00) from \p
+/// coap_rsp_code:
+/// - When \p status is GOLIOTH_OK, \p coap_rsp_code->code_class will be a 2.XX success code.
+/// - When \p status is GOLIOTH_COAP_RESPONSE_CODE, check \p coap_rsp_code->code_class for a
+/// non-success code (4.XX, etc.)
+/// - All other \p status values indicate an error in which a response was not received. The \p
+/// coap_rsp_code is undefined and will be NULL.
+///
+/// @param client The client handle from the original request.
+/// @param status Golioth status code.
+/// @param coap_rsp_code CoAP response code received from Golioth. Can be NULL.
+/// @param path The path from the original request.
+/// @param block_idx The last block number received (or where to resume if get failed).
+/// the block that failed to download.
+/// @param arg User argument, copied from the original request. Can be NULL.
+///
+typedef void (*golioth_end_block_cb_fn)(struct golioth_client *client,
+                                        enum golioth_status status,
+                                        const struct golioth_coap_rsp_code *coap_rsp_code,
+                                        const char *path,
+                                        uint32_t block_idx,
+                                        void *arg);
+
 /// Callback function type for all asynchronous set and delete requests as well as
 /// blockwise uploads
 ///
