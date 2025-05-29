@@ -28,6 +28,38 @@
 
 #define SZX_TO_BLOCKSIZE(szx) ((size_t) (1 << (szx + 4)))
 
+/// Internal callback for blockwise get requests
+///
+/// Will be called repeatedly, once for each block received from the server, on timeout (i.e.
+/// response never received), or when the request is cancelled (e.g. when the Golioth client is
+/// stopped). The callback function should check \p status to determine which case triggered the
+/// callback.
+///
+/// The CoAP response code is available by reading code_class (2.xx) and code_detail (x.00) from \p
+/// coap_rsp_code:
+/// - When \p status is GOLIOTH_OK, \p coap_rsp_code->code_class will be a 2.XX success code.
+/// - When \p status is GOLIOTH_COAP_RESPONSE_CODE, check \p coap_rsp_code->code_class for a
+/// non-success code (4.XX, etc.)
+/// - All other \p status values indicate an error in which a response was not received. The \p
+/// coap_rsp_code is undefined and will be NULL.
+///
+/// @param client The client handle from the original request.
+/// @param status Golioth status code.
+/// @param coap_rsp_code CoAP response code received from Golioth. Can be NULL.
+/// @param path The path from the original request
+/// @param payload The application layer payload in the response packet. Can be NULL.
+/// @param payload_size The size of payload, in bytes
+/// @param is_last True if this is the final block of the get request
+/// @param arg User argument, copied from the original request. Can be NULL.
+///
+typedef void (*coap_get_block_cb_fn)(struct golioth_client *client,
+                                     enum golioth_status status,
+                                     const struct golioth_coap_rsp_code *coap_rsp_code,
+                                     const char *path,
+                                     const uint8_t *payload,
+                                     size_t payload_size,
+                                     bool is_last,
+                                     void *arg);
 struct golioth_coap_post_params
 {
     enum golioth_content_type content_type;
@@ -72,7 +104,7 @@ struct golioth_coap_get_block_params
     enum golioth_content_type content_type;
     size_t block_index;
     size_t block_size;
-    golioth_get_block_cb_fn callback;
+    coap_get_block_cb_fn callback;
     void *arg;
 };
 
@@ -228,7 +260,7 @@ enum golioth_status golioth_coap_client_get_block(struct golioth_client *client,
                                                   enum golioth_content_type content_type,
                                                   size_t block_index,
                                                   size_t block_size,
-                                                  golioth_get_block_cb_fn callback,
+                                                  coap_get_block_cb_fn callback,
                                                   void *callback_arg,
                                                   bool is_synchronous,
                                                   int32_t timeout_s);
