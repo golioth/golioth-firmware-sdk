@@ -1064,7 +1064,7 @@ static enum golioth_status coap_io_loop_once(struct golioth_client *client,
 
     if (time_spent_waiting_ms >= timeout_ms)
     {
-        GLTH_LOGE(TAG, "Timeout: never got a response from the server");
+        GLTH_LOGE(TAG, "Receive timeout");
 
         if (coap_session_get_state(session) == COAP_SESSION_STATE_HANDSHAKE)
         {
