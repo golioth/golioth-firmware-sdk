@@ -4,6 +4,20 @@ All notable changes to this project will be documented in this file.
 The format is based on [Keep a Changelog](https://keepachangelog.com/en/1.0.0/),
 and this project adheres to [Semantic Versioning](https://semver.org/spec/v2.0.0.html).
 
+## [0.18.1] 2025-06-02
+
+### Fixed
+
+- OTA: Fixed a bug that could result in hung downloads during high
+  traffic events.
+- Zephyr: Fixed a bug that prevented the keepalive timer from working,
+  resulting in disconnects during periods of no traffic.
+
+### Added
+
+- Examples: Added an option to get credentials from the host
+  environment when using Zephyr's `native_sim` platform.
+
 ## [0.18.0] 2025-05-07
 
 ### Breaking Changes
