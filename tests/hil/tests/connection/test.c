@@ -54,6 +54,10 @@ void hil_test_entry(const struct golioth_client_config *config)
 
     golioth_sys_sem_take(_connected_sem, GOLIOTH_SYS_WAIT_FOREVER);
 
+    /* Ensure keepalive timer is running */
+
+    golioth_sys_msleep(60 * 1000);
+
     /* Pause to ensure logs are show */
     golioth_sys_msleep(1 * 1000);
 }

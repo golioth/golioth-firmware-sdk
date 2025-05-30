@@ -1,4 +1,5 @@
 import pytest
+import trio
 
 pytestmark = pytest.mark.anyio
 
@@ -19,3 +20,6 @@ async def test_connect(board, device):
     assert None != await board.wait_for_regex_in_line('Destroying client', timeout_s=15)
     assert None != await board.wait_for_regex_in_line('Starting client', timeout_s=120)
     assert None != await board.wait_for_regex_in_line('Golioth CoAP client connected', timeout_s=120)
+
+    with pytest.raises(trio.TooSlowError):
+        await board.wait_for_regex_in_line('Receive timeout', timeout_s=60)
