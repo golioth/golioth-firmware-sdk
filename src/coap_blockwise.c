@@ -426,7 +426,13 @@ static void on_block_rcvd(struct golioth_client *client,
     else
     {
         ctx->block_idx++;
-        download_single_block(client, ctx);
+        status = download_single_block(client, ctx);
+        if (GOLIOTH_OK != status)
+        {
+            ctx->end_cb(status, NULL, path, ctx->block_idx, ctx->callback_arg);
+
+            golioth_sys_free(ctx);
+        }
     }
 }
 
