@@ -175,18 +175,18 @@ bool golioth_sys_timer_start(golioth_sys_timer_t gtimer)
 {
     struct golioth_timer *timer = gtimer;
 
-    k_work_schedule(&timer->work, K_MSEC(timer->config.expiration_ms));
+    int ret = k_work_schedule(&timer->work, K_MSEC(timer->config.expiration_ms));
 
-    return true;
+    return ret > 0;
 }
 
 bool golioth_sys_timer_reset(golioth_sys_timer_t gtimer)
 {
     struct golioth_timer *timer = gtimer;
 
-    k_work_cancel_delayable(&timer->work);
+    int ret = k_work_reschedule(&timer->work, K_MSEC(timer->config.expiration_ms));
 
-    return golioth_sys_timer_start(timer);
+    return ret >= 0;
 }
 
 void golioth_sys_timer_destroy(golioth_sys_timer_t gtimer)
