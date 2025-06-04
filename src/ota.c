@@ -20,7 +20,8 @@
 
 LOG_TAG_DEFINE(golioth_ota);
 
-#define GOLIOTH_OTA_MANIFEST_PATH ".u/desired"
+#define GOLIOTH_OTA_MANIFEST_PATH_PREFIX ".u/"
+#define GOLIOTH_OTA_MANIFEST_PATH_DESIRED "desired"
 #define GOLIOTH_OTA_COMPONENT_PATH_PREFIX ".u/c/"
 
 enum
@@ -93,8 +94,8 @@ enum golioth_status golioth_ota_observe_manifest_async(struct golioth_client *cl
 
     return golioth_coap_client_observe(client,
                                        token,
-                                       "",
-                                       GOLIOTH_OTA_MANIFEST_PATH,
+                                       GOLIOTH_OTA_MANIFEST_PATH_PREFIX,
+                                       GOLIOTH_OTA_MANIFEST_PATH_DESIRED,
                                        GOLIOTH_CONTENT_TYPE_CBOR,
                                        callback,
                                        arg);
@@ -109,8 +110,8 @@ enum golioth_status golioth_ota_get_manifest_async(struct golioth_client *client
 
     return golioth_coap_client_get(client,
                                    token,
-                                   "",
-                                   GOLIOTH_OTA_MANIFEST_PATH,
+                                   GOLIOTH_OTA_MANIFEST_PATH_PREFIX,
+                                   GOLIOTH_OTA_MANIFEST_PATH_DESIRED,
                                    GOLIOTH_CONTENT_TYPE_CBOR,
                                    callback,
                                    arg,
