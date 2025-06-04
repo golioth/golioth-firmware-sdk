@@ -154,6 +154,29 @@ enum golioth_status golioth_ota_get_manifest_async(struct golioth_client *client
                                                    golioth_get_cb_fn callback,
                                                    void *arg);
 
+/// Get the OTA manifest asynchronously using blockwise download
+///
+/// Use this function to perform a blockwise get of the OTA manifest in CBOR format. This may be
+/// used to retrieve manifests of any size, but is required to get a manifest that is larger than
+/// CONFIG_GOLIOTH_BLOCKWISE_DOWNLOAD_MAX_BLOCK_SIZE (1024 bytes or smaller).
+///
+/// This function will enqueue a request and return immediately without waiting for a response from
+/// the server. The \p block_cb will be called once for each block received from the server. The \p
+/// end_cb will be called exactly one time at the conclusion (successful or otherwise) of the
+/// manifest download.
+///
+/// @param client The client handle from @ref golioth_client_create
+/// @param block_idx The index of the first block to download. Callers can resume a blockwise
+///                  download by passing in a non-zero block_idx.
+/// @param block_cb Callback for receiving a block of data. See @ref golioth_get_block_cb_fn
+/// @param end_cb Callabck for the end of a download. See @ref golioth_end_block_cb_fn
+/// @param arg Optional argument, forwarded directly to the callback when invoked. Can be NULL.
+enum golioth_status golioth_ota_blockwise_manifest_async(struct golioth_client *client,
+                                                         size_t block_idx,
+                                                         golioth_get_block_cb_fn block_cb,
+                                                         golioth_end_block_cb_fn end_cb,
+                                                         void *arg);
+
 /// Callback for OTA download component request
 ///
 /// Will be called 0 or more times, once for each block received from the server.
