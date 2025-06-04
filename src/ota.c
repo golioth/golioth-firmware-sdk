@@ -368,14 +368,17 @@ struct ota_component_blockwise_ctx
     void *arg;
 };
 
-static enum golioth_status ota_component_write_cb_wrapper(uint32_t block_idx,
+static enum golioth_status ota_component_write_cb_wrapper(struct golioth_client *client,
+                                                          const char *path,
+                                                          uint32_t block_idx,
                                                           const uint8_t *block_buffer,
                                                           size_t block_buffer_len,
                                                           bool is_last,
                                                           size_t negotiated_block_size,
-                                                          void *callback_arg)
+                                                          void *arg)
 {
-    struct ota_component_blockwise_ctx *ctx = callback_arg;
+    assert(arg);
+    struct ota_component_blockwise_ctx *ctx = arg;
 
     enum golioth_status status = ctx->block_cb(ctx->component,
                                                block_idx,
@@ -388,15 +391,17 @@ static enum golioth_status ota_component_write_cb_wrapper(uint32_t block_idx,
     return status;
 }
 
-static void ota_component_download_end_cb_wrapper(enum golioth_status status,
-                                                  const struct golioth_coap_rsp_code *rsp_code,
+static void ota_component_download_end_cb_wrapper(struct golioth_client *client,
+                                                  enum golioth_status status,
+                                                  const struct golioth_coap_rsp_code *coap_rsp_code,
                                                   const char *path,
                                                   uint32_t block_idx,
                                                   void *arg)
 {
+    assert(arg);
     struct ota_component_blockwise_ctx *ctx = arg;
 
-    ctx->end_cb(status, rsp_code, ctx->component, block_idx, ctx->arg);
+    ctx->end_cb(status, coap_rsp_code, ctx->component, block_idx, ctx->arg);
 
     golioth_sys_free(ctx);
 }

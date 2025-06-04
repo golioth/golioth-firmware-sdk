@@ -53,8 +53,8 @@ struct get_block_ctx
 {
     size_t block_size;
     uint32_t block_idx;
-    write_block_cb write_cb;
-    blockwise_get_end_cb end_cb;
+    golioth_get_block_cb_fn get_cb;
+    golioth_end_block_cb_fn end_cb;
     void *callback_arg;
 
     struct blockwise_transfer *transfer_ctx;
@@ -409,17 +409,19 @@ static void on_block_rcvd(struct golioth_client *client,
 
     if (GOLIOTH_OK == status)
     {
-        status = ctx->write_cb(ctx->block_idx,
-                               payload,
-                               payload_size,
-                               is_last,
-                               ctx->block_size,
-                               ctx->callback_arg);
+        status = ctx->get_cb(client,
+                             path,
+                             ctx->block_idx,
+                             payload,
+                             payload_size,
+                             is_last,
+                             ctx->block_size,
+                             ctx->callback_arg);
     }
 
     if (is_last || GOLIOTH_OK != status)
     {
-        ctx->end_cb(status, coap_rsp_code, path, ctx->block_idx, ctx->callback_arg);
+        ctx->end_cb(client, status, coap_rsp_code, path, ctx->block_idx, ctx->callback_arg);
 
         golioth_sys_free(ctx);
     }
@@ -429,7 +431,7 @@ static void on_block_rcvd(struct golioth_client *client,
         status = download_single_block(client, ctx);
         if (GOLIOTH_OK != status)
         {
-            ctx->end_cb(status, NULL, path, ctx->block_idx, ctx->callback_arg);
+            ctx->end_cb(client, status, NULL, path, ctx->block_idx, ctx->callback_arg);
 
             golioth_sys_free(ctx);
         }
@@ -458,8 +460,8 @@ enum golioth_status golioth_blockwise_get(struct golioth_client *client,
                                           const char *path,
                                           enum golioth_content_type content_type,
                                           uint32_t block_idx,
-                                          write_block_cb block_cb,
-                                          blockwise_get_end_cb end_cb,
+                                          golioth_get_block_cb_fn block_cb,
+                                          golioth_end_block_cb_fn end_cb,
                                           void *callback_arg)
 {
     enum golioth_status status = GOLIOTH_ERR_FAIL;
@@ -483,7 +485,7 @@ enum golioth_status golioth_blockwise_get(struct golioth_client *client,
     }
 
     ctx->block_size = CONFIG_GOLIOTH_BLOCKWISE_DOWNLOAD_MAX_BLOCK_SIZE;
-    ctx->write_cb = block_cb;
+    ctx->get_cb = block_cb;
     ctx->end_cb = end_cb;
     ctx->callback_arg = callback_arg;
     ctx->block_idx = block_idx;
