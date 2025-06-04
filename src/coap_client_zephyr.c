@@ -12,6 +12,7 @@
 
 #include "coap_client_zephyr.h"
 #include "pathv.h"
+#include "zephyr/net/coap.h"
 #include "zephyr_coap_req.h"
 #include "zephyr_coap_utils.h"
 
@@ -385,6 +386,15 @@ static int golioth_coap_get_block(struct golioth_coap_request_msg *req)
 
     coap_req->block_ctx.current = (req->get_block.block_index * req->get_block.block_size);
     coap_req->block_ctx.block_size = coap_bytes_to_block_size(req->get_block.block_size);
+
+    err = coap_append_option_int(&coap_req->request,
+                                 COAP_OPTION_ACCEPT,
+                                 golioth_content_type_to_coap_format(req->get_block.content_type));
+    if (err)
+    {
+        LOG_ERR("Unable to add content type to packet, err: %d", err);
+        goto free_req;
+    }
 
     err = golioth_coap_req_append_block2_option(coap_req);
     if (err)
