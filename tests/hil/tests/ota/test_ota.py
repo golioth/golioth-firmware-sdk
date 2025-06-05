@@ -159,6 +159,9 @@ async def test_multiple_artifacts(artifacts, board, project, releases):
     # Test manifest get
     assert None != await board.wait_for_regex_in_line('Manifest get SHA matches stored SHA', timeout_s=30)
 
+    # Test manifest blockwise
+    assert None != await board.wait_for_regex_in_line('Manifest blockwise SHA matches stored SHA', timeout_s=30)
+
 async def test_block_operations(board, project, releases):
     await project.releases.rollout_set(releases["test_blocks"].id, True)
     assert None != await board.wait_for_regex_in_line(f"golioth_ota_size_to_nblocks: {TEST_BLOCK_CNT + 1}", timeout_s=12)
