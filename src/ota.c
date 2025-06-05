@@ -13,6 +13,7 @@
 #include "coap_client.h"
 #include <golioth/golioth_debug.h>
 #include <golioth/golioth_sys.h>
+#include "golioth/client.h"
 #include "golioth_util.h"
 #include <golioth/zcbor_utils.h>
 
@@ -20,7 +21,8 @@
 
 LOG_TAG_DEFINE(golioth_ota);
 
-#define GOLIOTH_OTA_MANIFEST_PATH ".u/desired"
+#define GOLIOTH_OTA_MANIFEST_PATH_PREFIX ".u/"
+#define GOLIOTH_OTA_MANIFEST_PATH_DESIRED "desired"
 #define GOLIOTH_OTA_COMPONENT_PATH_PREFIX ".u/c/"
 
 enum
@@ -93,8 +95,8 @@ enum golioth_status golioth_ota_observe_manifest_async(struct golioth_client *cl
 
     return golioth_coap_client_observe(client,
                                        token,
-                                       "",
-                                       GOLIOTH_OTA_MANIFEST_PATH,
+                                       GOLIOTH_OTA_MANIFEST_PATH_PREFIX,
+                                       GOLIOTH_OTA_MANIFEST_PATH_DESIRED,
                                        GOLIOTH_CONTENT_TYPE_CBOR,
                                        callback,
                                        arg);
@@ -109,13 +111,29 @@ enum golioth_status golioth_ota_get_manifest_async(struct golioth_client *client
 
     return golioth_coap_client_get(client,
                                    token,
-                                   "",
-                                   GOLIOTH_OTA_MANIFEST_PATH,
+                                   GOLIOTH_OTA_MANIFEST_PATH_PREFIX,
+                                   GOLIOTH_OTA_MANIFEST_PATH_DESIRED,
                                    GOLIOTH_CONTENT_TYPE_CBOR,
                                    callback,
                                    arg,
                                    false,
                                    GOLIOTH_SYS_WAIT_FOREVER);
+}
+
+enum golioth_status golioth_ota_blockwise_manifest_async(struct golioth_client *client,
+                                                         size_t block_idx,
+                                                         golioth_get_block_cb_fn block_cb,
+                                                         golioth_end_block_cb_fn end_cb,
+                                                         void *arg)
+{
+    return golioth_blockwise_get(client,
+                                 GOLIOTH_OTA_MANIFEST_PATH_PREFIX,
+                                 GOLIOTH_OTA_MANIFEST_PATH_DESIRED,
+                                 GOLIOTH_CONTENT_TYPE_CBOR,
+                                 block_idx,
+                                 block_cb,
+                                 end_cb,
+                                 arg);
 }
 
 enum golioth_status golioth_ota_report_state_sync(struct golioth_client *client,

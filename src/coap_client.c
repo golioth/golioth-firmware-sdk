@@ -659,7 +659,7 @@ enum golioth_status golioth_coap_client_get_block(struct golioth_client *client,
                                                   enum golioth_content_type content_type,
                                                   size_t block_index,
                                                   size_t block_size,
-                                                  golioth_get_block_cb_fn callback,
+                                                  coap_get_block_cb_fn callback,
                                                   void *arg,
                                                   bool is_synchronous,
                                                   int32_t timeout_s)
