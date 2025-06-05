@@ -19,6 +19,8 @@ static golioth_sys_sem_t connected_sem;
 static golioth_sys_sem_t reason_test_sem;
 static golioth_sys_sem_t block_test_sem;
 static golioth_sys_sem_t resume_test_sem;
+static golioth_sys_sem_t manifest_get_test_sem;
+static golioth_sys_sem_t manifest_get_cb_sem;
 
 #define GOLIOTH_OTA_REASON_CNT 10
 #define GOLIOTH_OTA_STATE_CNT 4
@@ -33,6 +35,10 @@ static uint8_t block_buf[CONFIG_GOLIOTH_BLOCKWISE_DOWNLOAD_MAX_BLOCK_SIZE];
 
 #define SHA256_LEN 32
 static uint8_t _saved_manifest_sha256[SHA256_LEN];
+
+/* Arbitrarily large memory area as there's no way to know actual CBOR manifest size */
+#define MANIFEST_CACHE 4096
+static uint8_t manifest_cache[MANIFEST_CACHE];
 
 struct golioth_client *client;
 
@@ -109,6 +115,7 @@ static void on_manifest_get(struct golioth_client *client,
     if ((status != GOLIOTH_OK) || golioth_payload_is_null(payload, payload_size))
     {
         GLTH_LOGE(TAG, "Failed to get manifest (async): %d", status);
+        goto finish;
     }
     else
     {
@@ -121,7 +128,7 @@ static void on_manifest_get(struct golioth_client *client,
     if (GOLIOTH_OK != err)
     {
         GLTH_LOGE(TAG, "Failed to calculate sha256: %d", err);
-        return;
+        goto finish;
     }
 
     if (memcmp(manifest_sha256, _saved_manifest_sha256, SHA256_LEN) != 0)
@@ -130,8 +137,92 @@ static void on_manifest_get(struct golioth_client *client,
     }
     else
     {
-        GLTH_LOGI(TAG, "Manifest get SHA matches stored SHA");
+        GLTH_LOGW(TAG, "Manifest get SHA matches stored SHA as expected");
     }
+
+finish:
+    golioth_sys_sem_give(manifest_get_cb_sem);
+}
+
+static enum golioth_status on_block(struct golioth_client *client,
+                                    const char *path,
+                                    uint32_t block_idx,
+                                    const uint8_t *block_buffer,
+                                    size_t block_buffer_len,
+                                    bool is_last,
+                                    size_t negotiated_block_size,
+                                    void *arg)
+{
+    if (NULL == arg)
+    {
+        GLTH_LOGE(TAG, "arg cannot be NULL");
+        return GOLIOTH_ERR_NULL;
+    }
+
+    size_t *bytes_cached_p = (size_t *) arg;
+
+    size_t offset = negotiated_block_size * block_idx;
+
+    if (MANIFEST_CACHE < (offset + block_buffer_len))
+    {
+        GLTH_LOGE(TAG, "Block %" PRIu32 " overflows manifest_cache", block_idx);
+        return GOLIOTH_ERR_QUEUE_FULL;
+    }
+
+    memcpy(manifest_cache + offset, block_buffer, block_buffer_len);
+    *bytes_cached_p += block_buffer_len;
+
+    GLTH_LOGI(TAG, "Cached manifest block: %" PRIu32, block_idx);
+
+    return GOLIOTH_OK;
+}
+
+static void on_end(struct golioth_client *client,
+                   enum golioth_status status,
+                   const struct golioth_coap_rsp_code *coap_rsp_code,
+                   const char *path,
+                   uint32_t block_idx,
+                   void *arg)
+{
+    if (NULL == arg)
+    {
+        GLTH_LOGE(TAG, "arg cannot be NULL");
+        golioth_sys_sem_give(manifest_get_cb_sem);
+        return;
+    }
+
+    size_t *bytes_cached_p = (size_t *) arg;
+
+    if (status != GOLIOTH_OK)
+    {
+        GLTH_LOGE(TAG, "Blockwise manifest get failed: %d", status);
+    }
+    else
+    {
+        GLTH_LOGI(TAG, "Blockwise manifest get received %zu bytes", *bytes_cached_p);
+    }
+
+    uint8_t manifest_sha256[SHA256_LEN];
+
+    enum golioth_status err = calc_hash(manifest_cache, *bytes_cached_p, manifest_sha256);
+    if (GOLIOTH_OK != err)
+    {
+        GLTH_LOGE(TAG, "Failed to calculate sha256: %d", err);
+        goto finish;
+    }
+
+    if (memcmp(manifest_sha256, _saved_manifest_sha256, SHA256_LEN) != 0)
+    {
+        GLTH_LOGE(TAG, "Manifest SHAs do not match");
+    }
+    else
+    {
+        GLTH_LOGW(TAG, "Manifest blockwise SHA matches stored SHA as expected");
+    }
+
+finish:
+    free(bytes_cached_p);
+    golioth_sys_sem_give(manifest_get_cb_sem);
 }
 
 static void test_manifest_decoding(struct golioth_ota_manifest *manifest,
@@ -174,11 +265,36 @@ static void test_multiple_artifacts(struct golioth_ota_manifest *manifest,
 
 static void test_manifest_get(void)
 {
-    enum golioth_status err =
-        golioth_ota_get_manifest_async(client, on_manifest_get, (void *) GOLIOTH_OTA_REASON_CNT);
+    enum golioth_status err;
+
+    err = golioth_ota_get_manifest_async(client, on_manifest_get, (void *) GOLIOTH_OTA_REASON_CNT);
     if (GOLIOTH_OK != err)
     {
         GLTH_LOGE(TAG, "Failed to get manifest: %d", err);
+    }
+    else
+    {
+        golioth_sys_sem_take(manifest_get_cb_sem, 5 * 1000);
+    }
+
+
+    size_t *bytes_cached_p = (size_t *) golioth_sys_malloc(sizeof(size_t));
+    if (NULL == bytes_cached_p)
+    {
+        GLTH_LOGE(TAG, "Failed to allocate bytes_cached");
+        return;
+    }
+
+    *bytes_cached_p = 0;
+
+    err = golioth_ota_blockwise_manifest_async(client, 0, on_block, on_end, bytes_cached_p);
+    if (GOLIOTH_OK != err)
+    {
+        GLTH_LOGE(TAG, "Failed to get manifest: %d", err);
+    }
+    else
+    {
+        golioth_sys_sem_take(manifest_get_cb_sem, 5 * 1000);
     }
 }
 
@@ -458,7 +574,7 @@ static void on_manifest(struct golioth_client *client,
             }
             else
             {
-                test_manifest_get();
+                golioth_sys_sem_give(manifest_get_test_sem);
             }
         }
         else if (strcmp(main->version, DUMMY_VER_SAME) == 0)
@@ -488,6 +604,8 @@ void hil_test_entry(const struct golioth_client_config *config)
     reason_test_sem = golioth_sys_sem_create(1, 0);
     block_test_sem = golioth_sys_sem_create(1, 0);
     resume_test_sem = golioth_sys_sem_create(1, 0);
+    manifest_get_test_sem = golioth_sys_sem_create(1, 0);
+    manifest_get_cb_sem = golioth_sys_sem_create(1, 0);
 
     golioth_debug_set_cloud_log_enabled(false);
 
@@ -511,6 +629,10 @@ void hil_test_entry(const struct golioth_client_config *config)
         if (golioth_sys_sem_take(resume_test_sem, 0))
         {
             test_resume(&stored_component);
+        }
+        if (golioth_sys_sem_take(manifest_get_test_sem, 0))
+        {
+            test_manifest_get();
         }
 
         golioth_sys_msleep(100);
