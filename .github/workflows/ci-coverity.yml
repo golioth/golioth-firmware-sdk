@@ -1,0 +1,61 @@
+name: "CI: Coverity"
+
+on:
+  schedule:
+    # Run workflow every Sunday
+    - cron: "00 0 * * 0"
+  workflow_dispatch:
+
+jobs:
+  coverity:
+    runs-on: ubuntu-24.04
+    container: golioth/golioth-coverity-base:f08df75
+
+    steps:
+      - uses: actions/checkout@v4
+        with:
+          path: modules/lib/golioth-firmware-sdk
+          submodules: recursive
+      - name: Init and update west
+        run: |
+          mkdir -p .west
+          cat <<EOF > .west/config
+          [manifest]
+          path = modules/lib/golioth-firmware-sdk
+          file = west-zephyr.yml
+          EOF
+
+          west update -o=--depth=1 -n
+
+          pip3 install \
+            -r zephyr/scripts/requirements-base.txt \
+            -r zephyr/scripts/requirements-build-test.txt \
+            -r zephyr/scripts/requirements-run-test.txt
+
+          # Needed for TF-M
+          pip3 install \
+            cryptography==41.0.7 \
+            pyasn1 \
+            pyyaml \
+            cbor>=1.0.0 \
+            imgtool>=1.9.0 \
+            jinja2 \
+            click
+      - run: |
+          /opt/toolchains/coverity/bin/cov-configure --comptype gcc \
+            --compiler /opt/toolchains/zephyr-sdk-0.17.0/arm-zephyr-eabi/bin/arm-zephyr-eabi-gcc
+          /opt/toolchains/coverity/bin/cov-build --dir cov-int \
+            west build -p -b nrf52840dk/nrf52840 \
+            modules/lib/golioth-firmware-sdk/examples/zephyr/fw_update \
+            -- -DCONFIG_NET_LOG=n -DCONFIG_LOG=n
+          tar czvf golioth-firmware-sdk.tgz cov-int
+          curl --form token=${{ secrets.COVERITY_TOKEN }} \
+            --form email=sam@golioth.io \
+            --form file=@golioth-firmware-sdk.tgz \
+            --form version="0" \
+            --form description="Description" \
+            https://scan.coverity.com/builds?project=golioth%2Fgolioth-firmware-sdk
+      - uses: actions/upload-artifact@v4
+        with:
+          name: coverity_output
+          path: golioth-firmware-sdk.tgz
