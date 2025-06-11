@@ -45,6 +45,7 @@ jobs:
       image: golioth/golioth-zephyr-base:0.17.0-SDK-v0
     env:
       ZEPHYR_SDK_INSTALL_DIR: /opt/toolchains/zephyr-sdk-0.17.0
+      EXTRA_TWISTER_ARGS: ${{ github.event_name == 'pull_request' && '-e nightly' || '' }}
     steps:
       - name: Checkout repository and submodules
         uses: actions/checkout@v4
@@ -81,6 +82,7 @@ jobs:
               -T modules/lib/golioth-firmware-sdk/examples/zephyr                   \
               -C --coverage-basedir modules/lib/golioth-firmware-sdk                \
               --coverage-formats txt                                                \
+              ${EXTRA_TWISTER_ARGS}                                                 \
               -x=CONFIG_GOLIOTH_COAP_HOST_URI=\"${{ inputs.coap_gateway_url }}\"    \
               --pytest-args="--api-url=${{ inputs.api-url }}"                       \
               --pytest-args="--api-key=${{ secrets[inputs.api-key-id] }}"           \

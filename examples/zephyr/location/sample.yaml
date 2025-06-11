@@ -21,6 +21,8 @@ tests:
   sample.golioth.location.playback:
     timeout: 100
     harness: pytest
+    tags:
+      - nightly
     extra_configs:
       - CONFIG_GOLIOTH_SAMPLE_TWISTER_TEST=y
       - arch:posix:CONFIG_NATIVE_UART_0_ON_STDINOUT=y
@@ -29,6 +31,8 @@ tests:
       - native_sim/native/64
   sample.golioth.location.playback.wifi:
     harness: pytest
+    tags:
+      - nightly
     extra_configs:
       - CONFIG_GOLIOTH_SAMPLE_TWISTER_TEST=y
       - arch:posix:CONFIG_NATIVE_UART_0_ON_STDINOUT=y
@@ -38,6 +42,8 @@ tests:
       - native_sim/native/64
   sample.golioth.location.playback.cellular:
     harness: pytest
+    tags:
+      - nightly
     extra_configs:
       - CONFIG_GOLIOTH_SAMPLE_TWISTER_TEST=y
       - arch:posix:CONFIG_NATIVE_UART_0_ON_STDINOUT=y
