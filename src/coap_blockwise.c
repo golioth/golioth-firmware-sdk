@@ -77,7 +77,7 @@ static void blockwise_transfer_init(struct blockwise_transfer *ctx,
 // Function to free the blockwise_transfer structure
 static void blockwise_transfer_free(struct blockwise_transfer *ctx)
 {
-    free(ctx);
+    golioth_sys_free(ctx);
 }
 
 /* Blockwise Uploads related functions */
