@@ -143,7 +143,7 @@ static int golioth_coap_req_reply_handler(struct golioth_coap_req *req,
     {
         size_t want_offset = req->block_ctx.current;
         size_t cur_offset;
-        size_t new_offset;
+        int new_offset;
 
         err = coap_update_from_block(response, &req->block_ctx);
         if (err)
@@ -175,7 +175,7 @@ static int golioth_coap_req_reply_handler(struct golioth_coap_req *req,
             rsp.user_data = req->user_data;
             rsp.status = GOLIOTH_ERR_FAIL;
 
-            LOG_ERR("Failed to move to next block: %zu", new_offset);
+            LOG_ERR("Failed to move to next block: %d", new_offset);
 
             (void) req->cb(&rsp);
 
