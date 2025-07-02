@@ -81,6 +81,26 @@ static void golioth_coap_req_cancel_and_free(struct golioth_coap_req *req)
     free(req);
 }
 
+static enum coap_block_size max_block_size_from_payload_len(uint16_t payload_len)
+{
+    enum coap_block_size block_size = COAP_BLOCK_16;
+
+    payload_len /= 16;
+
+    while (payload_len > 1 && block_size < COAP_BLOCK_1024)
+    {
+        block_size++;
+        payload_len /= 2;
+    }
+
+    return block_size;
+}
+
+static enum coap_block_size golioth_estimated_coap_block_size(struct golioth_client *client)
+{
+    return max_block_size_from_payload_len(client->rx_buffer_len);
+}
+
 /* Reordering according to RFC7641 section 3.4 */
 static inline bool sequence_number_is_newer(int v1, int v2)
 {
@@ -134,6 +154,24 @@ static int golioth_coap_req_reply_handler(struct golioth_coap_req *req,
     else
     {
         rsp.status = GOLIOTH_OK;
+
+        /* If this is a response to a block1 request with more_data==false, reset block context */
+        if (coap_get_option_int(&req->request, COAP_OPTION_BLOCK1) >= 0)
+        {
+            bool has_more;
+            uint32_t block_number;
+            int block_size = coap_get_block1_option(&req->request, &has_more, &block_number);
+            if (0 > block_size)
+            {
+                LOG_ERR("CoAP request has block1 but failed to parse");
+            }
+            else if (!has_more)
+            {
+                coap_block_transfer_init(&req->block_ctx,
+                                         golioth_estimated_coap_block_size(req->client),
+                                         0);
+            }
+        }
     }
 
     payload = coap_packet_get_payload(response, &payload_len);
@@ -365,26 +403,6 @@ static int golioth_req_rsp_default_handler(struct golioth_req_rsp *rsp)
     LOG_HEXDUMP_DBG(rsp->data, rsp->len, info ? info : "RSP");
 
     return 0;
-}
-
-static enum coap_block_size max_block_size_from_payload_len(uint16_t payload_len)
-{
-    enum coap_block_size block_size = COAP_BLOCK_16;
-
-    payload_len /= 16;
-
-    while (payload_len > 1 && block_size < COAP_BLOCK_1024)
-    {
-        block_size++;
-        payload_len /= 2;
-    }
-
-    return block_size;
-}
-
-static enum coap_block_size golioth_estimated_coap_block_size(struct golioth_client *client)
-{
-    return max_block_size_from_payload_len(client->rx_buffer_len);
 }
 
 static int golioth_coap_req_init(struct golioth_coap_req *req,
