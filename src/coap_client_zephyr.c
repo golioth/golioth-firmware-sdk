@@ -292,6 +292,17 @@ static int golioth_coap_cb(struct golioth_req_rsp *rsp)
                                          SZX_TO_BLOCKSIZE(req->post_block.block_szx),
                                          req->post_block.arg);
             }
+            if (req->post_block.is_last && (NULL != req->post_block.rsp_callback))
+            {
+                req->post_block.rsp_callback(client,
+                                             rsp->status,
+                                             golioth_ptr_to_rsp_code(rsp),
+                                             req->path,
+                                             rsp->data,
+                                             rsp->len,
+                                             rsp->is_last,
+                                             req->post_block.rsp_arg);
+            }
             break;
         case GOLIOTH_COAP_REQUEST_DELETE:
             if (req->delete.callback)

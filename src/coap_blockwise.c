@@ -158,6 +158,8 @@ static enum golioth_status upload_single_block(struct golioth_client *client,
                                                             block_size,
                                                             on_block_sent,
                                                             ctx,
+                                                            NULL,
+                                                            NULL,
                                                             false,
                                                             GOLIOTH_SYS_WAIT_FOREVER);
     if (GOLIOTH_OK == err)
@@ -363,6 +365,8 @@ enum golioth_status golioth_blockwise_upload_block(struct blockwise_transfer *ct
         block_len,
         set_cb,
         callback_arg,
+        NULL,
+        NULL,
         is_synchronous,
         timeout_s);
 }

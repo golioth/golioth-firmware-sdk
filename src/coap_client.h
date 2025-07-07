@@ -89,7 +89,9 @@ struct golioth_coap_post_block_params
     // Size of payload, in bytes
     size_t payload_size;
     golioth_set_block_cb_fn callback;
+    coap_get_block_cb_fn rsp_callback;
     void *arg;
+    void *rsp_arg;
 };
 
 struct golioth_coap_get_params
@@ -233,6 +235,8 @@ enum golioth_status golioth_coap_client_set_block(struct golioth_client *client,
                                                   size_t payload_size,
                                                   golioth_set_block_cb_fn callback,
                                                   void *callback_arg,
+                                                  coap_get_block_cb_fn rsp_callback,
+                                                  void *rsp_cb_arg,
                                                   bool is_synchronous,
                                                   int32_t timeout_s);
 
