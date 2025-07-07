@@ -386,6 +386,8 @@ enum golioth_status golioth_coap_client_set_block(struct golioth_client *client,
                                                   size_t payload_size,
                                                   golioth_set_block_cb_fn callback,
                                                   void *callback_arg,
+                                                  coap_get_block_cb_fn rsp_callback,
+                                                  void *rsp_cb_arg,
                                                   bool is_synchronous,
                                                   int32_t timeout_s)
 {
@@ -395,7 +397,9 @@ enum golioth_status golioth_coap_client_set_block(struct golioth_client *client,
         .block_index = block_index,
         .block_szx = block_szx,
         .callback = callback,
+        .rsp_callback = rsp_callback,
         .arg = callback_arg,
+        .rsp_arg = rsp_cb_arg,
     };
     return golioth_coap_client_set_internal(client,
                                             token,

@@ -238,11 +238,12 @@ static coap_response_t coap_response_handler(coap_session_t *session,
             else if (req->type == GOLIOTH_COAP_REQUEST_POST_BLOCK)
             {
                 coap_opt_iterator_t opt_iter;
-                coap_opt_t *block_opt = coap_check_option(received, COAP_OPTION_BLOCK1, &opt_iter);
+                coap_opt_t *block1_opt = coap_check_option(received, COAP_OPTION_BLOCK1, &opt_iter);
+                coap_opt_t *block2_opt = coap_check_option(received, COAP_OPTION_BLOCK2, &opt_iter);
 
                 /* Get block1 szx value from server; use stored value if block1 is not preset */
                 size_t server_requested_szx =
-                    block_opt ? COAP_OPT_BLOCK_SZX(block_opt) : req->post_block.block_szx;
+                    block1_opt ? COAP_OPT_BLOCK_SZX(block1_opt) : req->post_block.block_szx;
 
                 if (req->post_block.callback)
                 {
@@ -252,6 +253,18 @@ static coap_response_t coap_response_handler(coap_session_t *session,
                                              req->path,
                                              SZX_TO_BLOCKSIZE(server_requested_szx),
                                              req->post_block.arg);
+                }
+                if (req->post_block.is_last && (NULL != req->post_block.rsp_callback))
+                {
+                    bool is_last = block2_opt ? (COAP_OPT_BLOCK_MORE(block2_opt) == 0) : true;
+                    req->post_block.rsp_callback(client,
+                                                 status,
+                                                 &coap_rsp_code,
+                                                 req->path,
+                                                 data,
+                                                 data_len,
+                                                 is_last,
+                                                 req->post_block.rsp_arg);
                 }
             }
             else if (req->type == GOLIOTH_COAP_REQUEST_DELETE)
