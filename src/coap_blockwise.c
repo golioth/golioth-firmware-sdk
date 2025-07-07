@@ -217,37 +217,33 @@ enum golioth_status golioth_blockwise_post(struct golioth_client *client,
 
     status = GOLIOTH_ERR_MEM_ALLOC;
 
-    struct post_block_ctx *ctx = golioth_sys_malloc(sizeof(struct post_block_ctx));
-    if (NULL == ctx)
+    struct post_block_ctx ctx;
+
+    blockwise_transfer_init(&ctx.transfer_ctx, client, path_prefix, path, content_type);
+
+    ctx.block_buffer = golioth_sys_malloc(CONFIG_GOLIOTH_BLOCKWISE_UPLOAD_MAX_BLOCK_SIZE);
+    if (NULL == ctx.block_buffer)
     {
         goto finish;
     }
 
-    blockwise_transfer_init(&ctx->transfer_ctx, client, path_prefix, path, content_type);
-
-    ctx->block_buffer = golioth_sys_malloc(CONFIG_GOLIOTH_BLOCKWISE_UPLOAD_MAX_BLOCK_SIZE);
-    if (NULL == ctx->block_buffer)
-    {
-        goto finish_with_post_block_ctx;
-    }
-
-    ctx->sem = golioth_sys_sem_create(1, 0);
-    if (NULL == ctx->sem)
+    ctx.sem = golioth_sys_sem_create(1, 0);
+    if (NULL == ctx.sem)
     {
         goto finish_with_block_buffer;
     }
 
-    ctx->status = GOLIOTH_ERR_FAIL, ctx->is_last = false;
-    ctx->block_size = CONFIG_GOLIOTH_BLOCKWISE_UPLOAD_MAX_BLOCK_SIZE;
-    ctx->block_idx = 0;
-    ctx->read_cb = read_cb;
-    ctx->callback_arg = callback_arg;
-    ctx->negotiated_blocksize_szx =
-        BLOCKSIZE_TO_SZX(CONFIG_GOLIOTH_BLOCKWISE_UPLOAD_MAX_BLOCK_SIZE);
+    ctx.status = GOLIOTH_ERR_FAIL;
+    ctx.is_last = false;
+    ctx.block_size = CONFIG_GOLIOTH_BLOCKWISE_UPLOAD_MAX_BLOCK_SIZE;
+    ctx.block_idx = 0;
+    ctx.read_cb = read_cb;
+    ctx.callback_arg = callback_arg;
+    ctx.negotiated_blocksize_szx = BLOCKSIZE_TO_SZX(CONFIG_GOLIOTH_BLOCKWISE_UPLOAD_MAX_BLOCK_SIZE);
 
-    while (false == ctx->is_last)
+    while (!ctx.is_last)
     {
-        if ((status = process_blockwise_uploads(client, ctx)) != GOLIOTH_OK)
+        if ((status = process_blockwise_uploads(client, &ctx)) != GOLIOTH_OK)
         {
             break;
         }
@@ -264,22 +260,19 @@ enum golioth_status golioth_blockwise_post(struct golioth_client *client,
         {
             struct golioth_coap_rsp_code *rsp_code = NULL;
 
-            if (ctx->status == GOLIOTH_OK || ctx->status == GOLIOTH_ERR_COAP_RESPONSE)
+            if (ctx.status == GOLIOTH_OK || ctx.status == GOLIOTH_ERR_COAP_RESPONSE)
             {
-                rsp_code = &ctx->coap_rsp_code;
+                rsp_code = &ctx.coap_rsp_code;
             }
-            set_cb(client, ctx->status, rsp_code, path, callback_arg);
+            set_cb(client, ctx.status, rsp_code, path, callback_arg);
         }
     }
 
     /* Upload complete, clean up allocated resources */
-    golioth_sys_sem_destroy(ctx->sem);
+    golioth_sys_sem_destroy(ctx.sem);
 
 finish_with_block_buffer:
-    free(ctx->block_buffer);
-
-finish_with_post_block_ctx:
-    free(ctx);
+    free(ctx.block_buffer);
 
 finish:
     return status;
