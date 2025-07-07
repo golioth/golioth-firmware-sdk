@@ -176,7 +176,8 @@ static coap_response_t coap_response_handler(coap_session_t *session,
                                       req->get.arg);
                 }
             }
-            else if (req->type == GOLIOTH_COAP_REQUEST_GET_BLOCK)
+            else if (req->type == GOLIOTH_COAP_REQUEST_GET_BLOCK
+                     || req->type == GOLIOTH_COAP_REQUEST_POST_BLOCK_RSP)
             {
                 coap_opt_iterator_t opt_iter;
                 coap_opt_t *block_opt = coap_check_option(received, COAP_OPTION_BLOCK2, &opt_iter);
@@ -521,7 +522,11 @@ static void golioth_coap_get_block(struct golioth_coap_request_msg *req,
                                    struct golioth_client *client,
                                    coap_session_t *session)
 {
-    coap_pdu_t *req_pdu = coap_new_pdu(COAP_MESSAGE_CON, COAP_REQUEST_CODE_GET, session);
+    coap_pdu_code_t request_type = req->type == GOLIOTH_COAP_REQUEST_GET_BLOCK
+        ? COAP_REQUEST_CODE_GET
+        : COAP_REQUEST_CODE_POST;
+
+    coap_pdu_t *req_pdu = coap_new_pdu(COAP_MESSAGE_CON, request_type, session);
     if (!req_pdu)
     {
         GLTH_LOGE(TAG, "coap_new_pdu() get failed");
@@ -931,6 +936,7 @@ static enum golioth_status coap_io_loop_once(struct golioth_client *client,
             golioth_coap_get(&request_msg, session);
             break;
         case GOLIOTH_COAP_REQUEST_GET_BLOCK:
+        case GOLIOTH_COAP_REQUEST_POST_BLOCK_RSP:
             GLTH_LOGD(TAG, "Handle GET_BLOCK %s", request_msg.path);
             golioth_coap_get_block(&request_msg, client, session);
             break;

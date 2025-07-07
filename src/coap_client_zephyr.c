@@ -246,6 +246,7 @@ static int golioth_coap_cb(struct golioth_req_rsp *rsp)
             }
             break;
         case GOLIOTH_COAP_REQUEST_GET_BLOCK:
+        case GOLIOTH_COAP_REQUEST_POST_BLOCK_RSP:
             if (req->get_block.callback)
             {
                 req->get_block.callback(client,
@@ -365,10 +366,13 @@ static int golioth_coap_get_block(struct golioth_coap_request_msg *req)
     struct golioth_client *client = req->client;
     int err;
 
+    enum coap_method method =
+        req->type == GOLIOTH_COAP_REQUEST_GET_BLOCK ? COAP_METHOD_GET : COAP_METHOD_POST;
+
     err = golioth_coap_req_new(&coap_req,
                                client,
                                req->token,
-                               COAP_METHOD_GET,
+                               method,
                                COAP_TYPE_CON,
                                GOLIOTH_COAP_MAX_NON_PAYLOAD_LEN + path_len,
                                golioth_coap_cb,
@@ -722,6 +726,7 @@ static enum golioth_status coap_io_loop_once(struct golioth_client *client)
                                       0);
             break;
         case GOLIOTH_COAP_REQUEST_GET_BLOCK:
+        case GOLIOTH_COAP_REQUEST_POST_BLOCK_RSP:
             LOG_DBG("Handle GET_BLOCK %s", req->path);
             err = golioth_coap_get_block(req);
             break;
