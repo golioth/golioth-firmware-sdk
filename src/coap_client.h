@@ -128,6 +128,7 @@ enum golioth_coap_request_type
     GOLIOTH_COAP_REQUEST_GET_BLOCK,
     GOLIOTH_COAP_REQUEST_POST,
     GOLIOTH_COAP_REQUEST_POST_BLOCK,
+    GOLIOTH_COAP_REQUEST_POST_BLOCK_RSP,
     GOLIOTH_COAP_REQUEST_DELETE,
     GOLIOTH_COAP_REQUEST_OBSERVE,
     GOLIOTH_COAP_REQUEST_OBSERVE_RELEASE,
@@ -264,6 +265,18 @@ enum golioth_status golioth_coap_client_get_block(struct golioth_client *client,
                                                   void *callback_arg,
                                                   bool is_synchronous,
                                                   int32_t timeout_s);
+
+enum golioth_status golioth_coap_client_get_rsp_block(struct golioth_client *client,
+                                                      const uint8_t token[GOLIOTH_COAP_TOKEN_LEN],
+                                                      const char *path_prefix,
+                                                      const char *path,
+                                                      enum golioth_content_type content_type,
+                                                      size_t block_index,
+                                                      size_t block_size,
+                                                      coap_get_block_cb_fn callback,
+                                                      void *arg,
+                                                      bool is_synchronous,
+                                                      int32_t timeout_s);
 
 enum golioth_status golioth_coap_client_observe(struct golioth_client *client,
                                                 const uint8_t token[GOLIOTH_COAP_TOKEN_LEN],

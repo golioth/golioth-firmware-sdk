@@ -579,7 +579,7 @@ static enum golioth_status golioth_coap_client_get_internal(
     }
 
     request_msg.ageout_ms = ageout_ms;
-    if (type == GOLIOTH_COAP_REQUEST_GET_BLOCK)
+    if (type == GOLIOTH_COAP_REQUEST_GET_BLOCK || type == GOLIOTH_COAP_REQUEST_POST_BLOCK_RSP)
     {
         request_msg.get_block = *(struct golioth_coap_get_block_params *) request_params;
     }
@@ -676,6 +676,35 @@ enum golioth_status golioth_coap_client_get_block(struct golioth_client *client,
                                             path_prefix,
                                             path,
                                             GOLIOTH_COAP_REQUEST_GET_BLOCK,
+                                            &params,
+                                            is_synchronous,
+                                            timeout_s);
+}
+
+enum golioth_status golioth_coap_client_get_rsp_block(struct golioth_client *client,
+                                                      const uint8_t token[GOLIOTH_COAP_TOKEN_LEN],
+                                                      const char *path_prefix,
+                                                      const char *path,
+                                                      enum golioth_content_type content_type,
+                                                      size_t block_index,
+                                                      size_t block_size,
+                                                      coap_get_block_cb_fn callback,
+                                                      void *arg,
+                                                      bool is_synchronous,
+                                                      int32_t timeout_s)
+{
+    struct golioth_coap_get_block_params params = {
+        .content_type = content_type,
+        .block_index = block_index,
+        .block_size = block_size,
+        .callback = callback,
+        .arg = arg,
+    };
+    return golioth_coap_client_get_internal(client,
+                                            token,
+                                            path_prefix,
+                                            path,
+                                            GOLIOTH_COAP_REQUEST_POST_BLOCK_RSP,
                                             &params,
                                             is_synchronous,
                                             timeout_s);
