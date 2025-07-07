@@ -28,7 +28,10 @@ enum golioth_status golioth_gateway_uplink_block(struct blockwise_transfer *ctx,
                                           buf_len,
                                           is_last,
                                           set_cb,
+                                          NULL,
+                                          NULL,
                                           callback_arg,
+                                          NULL,
                                           false,
                                           GOLIOTH_SYS_WAIT_FOREVER);
 }
