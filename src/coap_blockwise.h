@@ -42,7 +42,10 @@ enum golioth_status golioth_blockwise_upload_block(struct blockwise_transfer *ct
                                                    size_t block_len,
                                                    bool is_last,
                                                    golioth_set_block_cb_fn set_cb,
+                                                   golioth_get_block_cb_fn get_cb,
+                                                   golioth_end_block_cb_fn end_cb,
                                                    void *callback_arg,
+                                                   void *rsp_callback_arg,
                                                    bool is_synchronous,
                                                    int32_t timeout_s);
 

@@ -99,7 +99,10 @@ enum golioth_status golioth_stream_blockwise_set_block_async(struct blockwise_tr
                                           data_len,
                                           is_last,
                                           callback,
+                                          NULL,
+                                          NULL,
                                           callback_arg,
+                                          NULL,
                                           false,
                                           GOLIOTH_SYS_WAIT_FOREVER);
 }

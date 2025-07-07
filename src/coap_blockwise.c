@@ -27,6 +27,7 @@ struct blockwise_transfer
     uint8_t token[GOLIOTH_COAP_TOKEN_LEN];
     const char *path_prefix;
     const char *path;
+    enum golioth_coap_request_type type;
 
     enum golioth_status status;
     struct golioth_coap_rsp_code coap_rsp_code;
@@ -59,6 +60,15 @@ struct get_block_ctx
 
     struct blockwise_transfer transfer_ctx;
 };
+
+static void on_block_rcvd(struct golioth_client *client,
+                          enum golioth_status status,
+                          const struct golioth_coap_rsp_code *coap_rsp_code,
+                          const char *path,
+                          const uint8_t *payload,
+                          size_t payload_size,
+                          bool is_last,
+                          void *arg);
 
 // Function to initialize the blockwise_transfer structure
 static void blockwise_transfer_init(struct blockwise_transfer *ctx,
@@ -144,8 +154,6 @@ static enum golioth_status upload_single_block(struct golioth_client *client,
                                                struct post_block_ctx *ctx,
                                                size_t block_size)
 {
-    assert(block_size > 0 && block_size <= ctx->block_size);
-
     enum golioth_status err = golioth_coap_client_set_block(client,
                                                             ctx->transfer_ctx.token,
                                                             ctx->transfer_ctx.path_prefix,
@@ -162,6 +170,7 @@ static enum golioth_status upload_single_block(struct golioth_client *client,
                                                             NULL,
                                                             false,
                                                             GOLIOTH_SYS_WAIT_FOREVER);
+
     if (GOLIOTH_OK == err)
     {
         golioth_sys_sem_take(ctx->sem, GOLIOTH_SYS_WAIT_FOREVER);
@@ -222,6 +231,7 @@ enum golioth_status golioth_blockwise_post(struct golioth_client *client,
     struct post_block_ctx ctx;
 
     blockwise_transfer_init(&ctx.transfer_ctx, client, path_prefix, path, content_type);
+    ctx.transfer_ctx.type = GOLIOTH_COAP_REQUEST_POST_BLOCK;
 
     ctx.block_buffer = golioth_sys_malloc(CONFIG_GOLIOTH_BLOCKWISE_UPLOAD_MAX_BLOCK_SIZE);
     if (NULL == ctx.block_buffer)
@@ -304,6 +314,7 @@ struct blockwise_transfer *golioth_blockwise_upload_start(struct golioth_client 
     }
 
     blockwise_transfer_init(ctx, client, path_prefix, path, content_type);
+    ctx->type = GOLIOTH_COAP_REQUEST_POST_BLOCK;
 
     /* Allocate and store path; freed in golioth_blockwise_upload_finish() */
     char *path_buff = golioth_sys_malloc(strlen(path) + 1);
@@ -343,13 +354,31 @@ enum golioth_status golioth_blockwise_upload_block(struct blockwise_transfer *ct
                                                    size_t block_len,
                                                    bool is_last,
                                                    golioth_set_block_cb_fn set_cb,
+                                                   golioth_get_block_cb_fn get_cb,
+                                                   golioth_end_block_cb_fn end_cb,
                                                    void *callback_arg,
+                                                   void *rsp_callback_arg,
                                                    bool is_synchronous,
                                                    int32_t timeout_s)
 {
     if (NULL == ctx || NULL == block_buffer)
     {
         return GOLIOTH_ERR_NULL;
+    }
+
+    struct get_block_ctx *rsp_ctx = NULL;
+    coap_get_block_cb_fn rsp_cb = NULL;
+    if (is_last && NULL != get_cb && NULL != end_cb)
+    {
+        rsp_ctx = malloc(sizeof(struct get_block_ctx));
+        rsp_ctx->block_idx = 0;
+        rsp_ctx->block_size = CONFIG_GOLIOTH_BLOCKWISE_DOWNLOAD_MAX_BLOCK_SIZE;
+        rsp_ctx->transfer_ctx = *ctx;
+        rsp_ctx->get_cb = get_cb;
+        rsp_ctx->end_cb = end_cb;
+        rsp_ctx->callback_arg = rsp_callback_arg;
+
+        rsp_cb = on_block_rcvd;
     }
 
     return golioth_coap_client_set_block(
@@ -365,8 +394,8 @@ enum golioth_status golioth_blockwise_upload_block(struct blockwise_transfer *ct
         block_len,
         set_cb,
         callback_arg,
-        NULL,
-        NULL,
+        rsp_cb,
+        rsp_ctx,
         is_synchronous,
         timeout_s);
 }
@@ -426,17 +455,34 @@ static void on_block_rcvd(struct golioth_client *client,
 static enum golioth_status download_single_block(struct golioth_client *client,
                                                  struct get_block_ctx *ctx)
 {
-    return golioth_coap_client_get_block(client,
-                                         ctx->transfer_ctx.token,
-                                         ctx->transfer_ctx.path_prefix,
-                                         ctx->transfer_ctx.path,
-                                         ctx->transfer_ctx.content_type,
-                                         ctx->block_idx,
-                                         ctx->block_size,
-                                         on_block_rcvd,
-                                         ctx,
-                                         false,
-                                         GOLIOTH_SYS_WAIT_FOREVER);
+    if (GOLIOTH_COAP_REQUEST_GET_BLOCK == ctx->transfer_ctx.type)
+    {
+        return golioth_coap_client_get_block(client,
+                                             ctx->transfer_ctx.token,
+                                             ctx->transfer_ctx.path_prefix,
+                                             ctx->transfer_ctx.path,
+                                             ctx->transfer_ctx.content_type,
+                                             ctx->block_idx,
+                                             ctx->block_size,
+                                             on_block_rcvd,
+                                             ctx,
+                                             false,
+                                             GOLIOTH_SYS_WAIT_FOREVER);
+    }
+    else
+    {
+        return golioth_coap_client_get_rsp_block(client,
+                                                 ctx->transfer_ctx.token,
+                                                 ctx->transfer_ctx.path_prefix,
+                                                 ctx->transfer_ctx.path,
+                                                 ctx->transfer_ctx.content_type,
+                                                 ctx->block_idx,
+                                                 ctx->block_size,
+                                                 on_block_rcvd,
+                                                 ctx,
+                                                 false,
+                                                 GOLIOTH_SYS_WAIT_FOREVER);
+    }
 }
 
 enum golioth_status golioth_blockwise_get(struct golioth_client *client,
@@ -460,6 +506,7 @@ enum golioth_status golioth_blockwise_get(struct golioth_client *client,
     }
 
     blockwise_transfer_init(&ctx->transfer_ctx, client, path_prefix, path, content_type);
+    ctx->transfer_ctx.type = GOLIOTH_COAP_REQUEST_GET_BLOCK;
 
     ctx->block_size = CONFIG_GOLIOTH_BLOCKWISE_DOWNLOAD_MAX_BLOCK_SIZE;
     ctx->get_cb = block_cb;
