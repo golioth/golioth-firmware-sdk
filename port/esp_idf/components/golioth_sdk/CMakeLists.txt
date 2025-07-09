@@ -31,6 +31,7 @@ idf_component_register(
         "${sdk_src}/golioth_status.c"
         "${sdk_src}/coap_client.c"
         "${sdk_src}/coap_client_libcoap.c"
+        "${sdk_src}/gateway.c"
         "${sdk_src}/log.c"
         "${sdk_src}/lightdb_state.c"
         "${sdk_src}/location.c"
