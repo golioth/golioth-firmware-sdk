@@ -9,12 +9,88 @@
 
 #if defined(CONFIG_GOLIOTH_GATEWAY)
 
-struct blockwise_transfer *golioth_gateway_uplink_start(struct golioth_client *client)
+struct gateway_downlink
 {
-    return golioth_blockwise_upload_start(client, ".pouch", "", GOLIOTH_CONTENT_TYPE_OCTET_STREAM);
+    gateway_downlink_block_cb block_cb;
+    gateway_downlink_end_cb end_cb;
+    void *arg;
+};
+
+struct gateway_uplink
+{
+    struct blockwise_transfer *transfer_ctx;
+    struct gateway_downlink *downlink;
+};
+
+static enum golioth_status downlink_block_cb_wrapper(struct golioth_client *client,
+                                                     const char *path,
+                                                     uint32_t block_idx,
+                                                     const uint8_t *block_buffer,
+                                                     size_t block_buffer_len,
+                                                     bool is_last,
+                                                     size_t negotiated_block_size,
+                                                     void *arg)
+{
+    struct gateway_downlink *downlink = arg;
+
+    return downlink->block_cb(block_buffer, block_buffer_len, is_last, downlink->arg);
 }
 
-enum golioth_status golioth_gateway_uplink_block(struct blockwise_transfer *ctx,
+static void downlink_end_cb_wrapper(struct golioth_client *client,
+                                    enum golioth_status status,
+                                    const struct golioth_coap_rsp_code *coap_rsp_code,
+                                    const char *path,
+                                    uint32_t block_idx,
+                                    void *arg)
+{
+    struct gateway_downlink *downlink = arg;
+
+    downlink->end_cb(status, coap_rsp_code, downlink->arg);
+
+    golioth_sys_free(downlink);
+}
+
+struct gateway_uplink *golioth_gateway_uplink_start(struct golioth_client *client,
+                                                    gateway_downlink_block_cb dnlk_block_cb,
+                                                    gateway_downlink_end_cb dnlk_end_cb,
+                                                    void *downlink_arg)
+{
+    struct gateway_uplink *uplink = golioth_sys_malloc(sizeof(struct gateway_uplink));
+    if (NULL == uplink)
+    {
+        return NULL;
+    }
+
+    if (NULL != dnlk_block_cb && NULL != dnlk_end_cb)
+    {
+        uplink->downlink = golioth_sys_malloc(sizeof(struct gateway_downlink));
+        if (NULL == uplink->downlink)
+        {
+            golioth_sys_free(uplink);
+            return NULL;
+        }
+        uplink->downlink->block_cb = dnlk_block_cb;
+        uplink->downlink->end_cb = dnlk_end_cb;
+        uplink->downlink->arg = downlink_arg;
+    }
+    else
+    {
+        uplink->downlink = NULL;
+    }
+
+    uplink->transfer_ctx = golioth_blockwise_upload_start(client, ".pouch", "", GOLIOTH_CONTENT_TYPE_OCTET_STREAM);
+
+    if (NULL == uplink->transfer_ctx)
+    {
+        golioth_sys_free(uplink->downlink);
+        golioth_sys_free(uplink);
+        return NULL;
+    }
+
+    return uplink;
+}
+
+enum golioth_status golioth_gateway_uplink_block(struct gateway_uplink *uplink,
                                                  uint32_t block_idx,
                                                  const uint8_t *buf,
                                                  size_t buf_len,
@@ -22,23 +98,34 @@ enum golioth_status golioth_gateway_uplink_block(struct blockwise_transfer *ctx,
                                                  golioth_set_block_cb_fn set_cb,
                                                  void *callback_arg)
 {
-    return golioth_blockwise_upload_block(ctx,
+    golioth_get_block_cb_fn get_block_cb = NULL;
+    golioth_end_block_cb_fn end_block_cb = NULL;
+
+    if (is_last && NULL != uplink->downlink)
+    {
+        get_block_cb = downlink_block_cb_wrapper;
+        end_block_cb = downlink_end_cb_wrapper;
+    }
+
+    return golioth_blockwise_upload_block(uplink->transfer_ctx,
                                           block_idx,
                                           buf,
                                           buf_len,
                                           is_last,
                                           set_cb,
-                                          NULL,
-                                          NULL,
+                                          get_block_cb,
+                                          end_block_cb,
                                           callback_arg,
-                                          NULL,
+                                          uplink->downlink,
                                           false,
                                           GOLIOTH_SYS_WAIT_FOREVER);
 }
 
-void golioth_gateway_uplink_finish(struct blockwise_transfer *ctx)
+void golioth_gateway_uplink_finish(struct gateway_uplink *uplink)
 {
-    golioth_blockwise_upload_finish(ctx);
+    golioth_blockwise_upload_finish(uplink->transfer_ctx);
+
+    golioth_sys_free(uplink);
 }
 
 #endif  // CONFIG_GOLIOTH_GATEWAY
