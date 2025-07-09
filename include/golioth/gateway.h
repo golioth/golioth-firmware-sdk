@@ -15,11 +15,25 @@ extern "C"
 #include <golioth/client.h>
 #include <stdlib.h>
 
+struct gateway_uplink;
+
+typedef enum golioth_status (*gateway_downlink_block_cb)(const uint8_t *data,
+                                                         size_t len,
+                                                         bool is_last,
+                                                         void *arg);
+
+typedef void (*gateway_downlink_end_cb)(enum golioth_status status,
+                                        const struct golioth_coap_rsp_code *coap_rsp_code,
+                                        void *arg);
+
 /// Start a gateway uplink. The pointer returned from this function can be used with
 /// \ref golioth_gateway_uplink_block.
 ///
 /// @param client The client handle from @ref golioth_client_create
-struct blockwise_transfer *golioth_gateway_uplink_start(struct golioth_client *client);
+struct gateway_uplink *golioth_gateway_uplink_start(struct golioth_client *client,
+                                                    gateway_downlink_block_cb dnlk_block_cb,
+                                                    gateway_downlink_end_cb dnlk_end_cb,
+                                                    void *downlink_arg);
 
 /// Send a single uplink block
 ///
@@ -40,7 +54,7 @@ struct blockwise_transfer *golioth_gateway_uplink_start(struct golioth_client *c
 /// @param set_cb A callback that will be called after each block is sent (can be NULL)
 /// @param callback_arg An optional user provided argument that will be passed to \p callback (can
 ///        be NULL)
-enum golioth_status golioth_gateway_uplink_block(struct blockwise_transfer *ctx,
+enum golioth_status golioth_gateway_uplink_block(struct gateway_uplink *uplink,
                                                  uint32_t block_idx,
                                                  const uint8_t *buf,
                                                  size_t buf_len,
@@ -51,7 +65,7 @@ enum golioth_status golioth_gateway_uplink_block(struct blockwise_transfer *ctx,
 /// Finish a gateway uplink.
 ///
 /// @param ctx The uplink context to finish, returned from \ref golioth_gateway_uplink_block
-void golioth_gateway_uplink_finish(struct blockwise_transfer *ctx);
+void golioth_gateway_uplink_finish(struct gateway_uplink *uplink);
 
 #ifdef __cplusplus
 }
