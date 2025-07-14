@@ -438,7 +438,7 @@ static struct golioth_setting *alloc_setting(struct golioth_settings *settings)
     if (settings->num_settings == CONFIG_GOLIOTH_MAX_NUM_SETTINGS)
     {
         GLTH_LOGE(TAG,
-                  "Exceededed CONFIG_GOLIOTH_MAX_NUM_SETTINGS (%d)",
+                  "Exceeded CONFIG_GOLIOTH_MAX_NUM_SETTINGS (%d)",
                   CONFIG_GOLIOTH_MAX_NUM_SETTINGS);
         return NULL;
     }
