@@ -92,7 +92,7 @@ static void response_init(struct settings_response *response, struct golioth_set
                            1);
 
     /* Initialize the map */
-    zcbor_map_start_encode(response->zse, ZCBOR_MAX_ELEM_COUNT);
+    zcbor_map_start_encode(response->zse, 2);
 }
 
 static void add_error_to_response(struct settings_response *response,
@@ -163,7 +163,7 @@ static int finalize_and_send_response(struct golioth_client *client,
     }
 
     /* Close the root map */
-    ok = zcbor_map_end_encode(response->zse, 1);
+    ok = zcbor_map_end_encode(response->zse, 2);
     if (!ok)
     {
         return -ENOMEM;
