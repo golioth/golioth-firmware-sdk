@@ -5,7 +5,9 @@
  */
 
 #include <golioth/gateway.h>
+#include <golioth/payload_utils.h>
 #include "coap_blockwise.h"
+#include "coap_client.h"
 
 #if defined(CONFIG_GOLIOTH_GATEWAY)
 
@@ -126,6 +128,75 @@ void golioth_gateway_uplink_finish(struct gateway_uplink *uplink)
     golioth_blockwise_upload_finish(uplink->transfer_ctx);
 
     golioth_sys_free(uplink);
+}
+
+struct server_cert_context
+{
+    void *buf;
+    size_t len;
+    enum golioth_status status;
+};
+
+static void on_server_cert(struct golioth_client *client,
+                           enum golioth_status status,
+                           const struct golioth_coap_rsp_code *coap_rsp_code,
+                           const char *path,
+                           const uint8_t *payload,
+                           size_t payload_size,
+                           void *arg)
+{
+    struct server_cert_context *ctx = arg;
+
+    if (status != GOLIOTH_OK)
+    {
+        ctx->status = status;
+        return;
+    }
+
+    if (golioth_payload_is_null(payload, payload_size))
+    {
+        ctx->status = GOLIOTH_ERR_NULL;
+        return;
+    }
+
+    if (payload_size > ctx->len) {
+        ctx->status = GOLIOTH_ERR_MEM_ALLOC;
+        return;
+    }
+
+    memcpy(ctx->buf, payload, payload_size);
+    ctx->len = payload_size;
+}
+
+enum golioth_status golioth_gateway_server_cert_get(struct golioth_client *client,
+                                                    void *buf, size_t *len, int32_t timeout_s)
+
+{
+    enum golioth_status status;
+    struct server_cert_context ctx = {
+        .buf = buf,
+        .len = *len,
+    };
+
+    uint8_t token[GOLIOTH_COAP_TOKEN_LEN];
+    golioth_coap_next_token(token);
+
+    status = golioth_coap_client_get(client,
+                                   token,
+                                   ".g/server-cert",
+                                   "",
+                                   GOLIOTH_CONTENT_TYPE_OCTET_STREAM,
+                                   on_server_cert,
+                                   &ctx,
+                                   true,
+                                   timeout_s);
+    if (status != GOLIOTH_OK) {
+        return status;
+    }
+
+    *len = ctx.len;
+
+    return GOLIOTH_OK;
 }
 
 #endif  // CONFIG_GOLIOTH_GATEWAY
