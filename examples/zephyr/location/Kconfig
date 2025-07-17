@@ -1,11 +1,11 @@
 # Copyright (c) 2021-2025 Golioth, Inc.
 # SPDX-License-Identifier: Apache-2.0
 
-configdefault GOLIOTH_LOCATION_CELLULAR
+configdefault GOLIOTH_NET_INFO_CELLULAR
     default y if SOC_SERIES_NRF91X
     default y if GOLIOTH_CELLULAR_PLAYBACK
 
-configdefault GOLIOTH_LOCATION_WIFI
+configdefault GOLIOTH_NET_INFO_WIFI
     default y if WIFI
 
 configdefault WIFI

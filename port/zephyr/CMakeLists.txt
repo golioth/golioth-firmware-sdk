@@ -43,9 +43,9 @@ zephyr_library_sources(
     ../../src/coap_blockwise.c
     ../../src/gateway.c
     ../../src/lightdb_state.c
-    ../../src/location.c
-    ../../src/location_cellular.c
-    ../../src/location_wifi.c
+    ../../src/net_info.c
+    ../../src/net_info_cellular.c
+    ../../src/net_info_wifi.c
     ../../src/stream.c
     ../../src/log.c
     ../../src/mbox.c
