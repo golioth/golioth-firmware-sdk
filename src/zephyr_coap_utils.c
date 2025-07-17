@@ -46,7 +46,7 @@ int coap_data_check_rx_packet_type(uint8_t *data, size_t len)
     tkl = coap_data_get_token_len(data);
     if (tkl > 8)
     {
-        LOG_DBG("Invalid RX");
+        GLTH_LOGD("Invalid RX");
         return -EINVAL;
     }
 
@@ -54,11 +54,11 @@ int coap_data_check_rx_packet_type(uint8_t *data, size_t len)
         && coap_data_get_code(data) == COAP_CODE_EMPTY)
     {
         /* Empty packet */
-        LOG_DBG("RX Empty");
+        GLTH_LOGD("RX Empty");
         return -ENOMSG;
     }
 
-    LOG_DBG("RX Non-empty");
+    GLTH_LOGD("RX Non-empty");
 
     return 0;
 }

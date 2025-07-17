@@ -332,7 +332,7 @@ static int golioth_coap_cb(struct golioth_req_rsp *rsp)
     {
         if (!golioth_sys_timer_reset(client->keepalive_timer))
         {
-            LOG_WRN("Failed to reset keepalive timer");
+            GLTH_LOGW("Failed to reset keepalive timer");
         }
     }
 
@@ -396,7 +396,7 @@ static int golioth_coap_get_block(struct golioth_coap_request_msg *req)
     err = coap_packet_append_uri_path_from_pathv(&coap_req->request, pathv);
     if (err)
     {
-        LOG_ERR("Unable add uri path to packet");
+        GLTH_LOGE("Unable add uri path to packet");
         goto free_req;
     }
 
@@ -408,21 +408,21 @@ static int golioth_coap_get_block(struct golioth_coap_request_msg *req)
                                  golioth_content_type_to_coap_format(req->get_block.content_type));
     if (err)
     {
-        LOG_ERR("Unable to add content type to packet, err: %d", err);
+        GLTH_LOGE("Unable to add content type to packet, err: %d", err);
         goto free_req;
     }
 
     err = golioth_coap_req_append_block2_option(coap_req);
     if (err)
     {
-        LOG_ERR("Unable to append block2: %d", err);
+        GLTH_LOGE("Unable to append block2: %d", err);
         goto free_req;
     }
 
     err = golioth_coap_req_schedule(coap_req);
     if (err)
     {
-        LOG_ERR("Failed to schedule CoAP GET BLOCK: %d", err);
+        GLTH_LOGE("Failed to schedule CoAP GET BLOCK: %d", err);
         goto free_req;
     }
 
@@ -459,7 +459,7 @@ static int golioth_coap_post_block(struct golioth_coap_request_msg *req)
     err = coap_packet_append_uri_path_from_pathv(&coap_req->request, pathv);
     if (err)
     {
-        LOG_ERR("Unable add uri path to packet");
+        GLTH_LOGE("Unable add uri path to packet");
         goto free_req;
     }
 
@@ -468,7 +468,7 @@ static int golioth_coap_post_block(struct golioth_coap_request_msg *req)
     err = golioth_coap_req_append_block1_option(req, coap_req);
     if (err)
     {
-        LOG_ERR("Unable to append block1: %d", err);
+        GLTH_LOGE("Unable to append block1: %d", err);
         goto free_req;
     }
 
@@ -477,14 +477,14 @@ static int golioth_coap_post_block(struct golioth_coap_request_msg *req)
                                  golioth_content_type_to_coap_format(req->post_block.content_type));
     if (err)
     {
-        LOG_ERR("Unable to add content type to packet, err: %d", err);
+        GLTH_LOGE("Unable to add content type to packet, err: %d", err);
         goto free_req;
     }
 
     err = coap_packet_append_payload_marker(&coap_req->request);
     if (err)
     {
-        LOG_ERR("Unable to add payload marker to packet");
+        GLTH_LOGE("Unable to add payload marker to packet");
         goto free_req;
     }
 
@@ -493,14 +493,14 @@ static int golioth_coap_post_block(struct golioth_coap_request_msg *req)
                                      req->post_block.payload_size);
     if (err)
     {
-        LOG_ERR("Unable to add payload to packet");
+        GLTH_LOGE("Unable to add payload to packet");
         goto free_req;
     }
 
     err = golioth_coap_req_schedule(coap_req);
     if (err)
     {
-        LOG_ERR("Failed to schedule CoAP POST BLOCK: %d", err);
+        GLTH_LOGE("Failed to schedule CoAP POST BLOCK: %d", err);
         goto free_req;
     }
 
@@ -526,7 +526,7 @@ static int golioth_coap_observe(struct golioth_coap_request_msg *req, struct gol
                                   GOLIOTH_COAP_REQ_OBSERVE);
     if (err)
     {
-        LOG_ERR("Failed to schedule CoAP OBSERVE: %d", err);
+        GLTH_LOGE("Failed to schedule CoAP OBSERVE: %d", err);
         return err;
     }
 
@@ -586,7 +586,7 @@ void golioth_cancel_all_observations_by_prefix(struct golioth_client *client, co
             int err = golioth_coap_req_find_and_cancel_observation(client, &obs_info->req);
             if (err)
             {
-                LOG_WRN("Error sending eager release for observation: %d", err);
+                GLTH_LOGW("Error sending eager release for observation: %d", err);
             }
             obs_info->in_use = false;
         }
@@ -626,28 +626,28 @@ static int golioth_deregister_observation(struct golioth_coap_request_msg *req,
 
     if (err)
     {
-        LOG_ERR("Unable add observe deregister option");
+        GLTH_LOGE("Unable add observe deregister option");
         return err;
     }
 
     err = coap_packet_append_uri_path_from_pathv(&packet, pathv);
     if (err)
     {
-        LOG_ERR("Unable add path option");
+        GLTH_LOGE("Unable add path option");
         return err;
     }
 
     err = coap_append_option_int(&packet, COAP_OPTION_ACCEPT, req->observe.content_type);
     if (err)
     {
-        LOG_ERR("Unable to add content format to packet");
+        GLTH_LOGE("Unable to add content format to packet");
         return err;
     }
 
     err = golioth_send_coap(client, &packet);
     if (err)
     {
-        LOG_ERR("Unable to send observe deregister packet");
+        GLTH_LOGE("Unable to send observe deregister packet");
         return err;
     }
 
@@ -691,7 +691,7 @@ static enum golioth_status coap_io_loop_once(struct golioth_client *client)
     // Make sure the request isn't too old
     if (golioth_sys_now_ms() > req->ageout_ms)
     {
-        LOG_WRN("Ignoring request that has aged out, type %d, path %s",
+        GLTH_LOGW("Ignoring request that has aged out, type %d, path %s",
                 req->type,
                 (req->path ? req->path : "N/A"));
 
@@ -720,11 +720,11 @@ static enum golioth_status coap_io_loop_once(struct golioth_client *client)
     switch (req->type)
     {
         case GOLIOTH_COAP_REQUEST_EMPTY:
-            LOG_DBG("Handle EMPTY");
+            GLTH_LOGD("Handle EMPTY");
             err = golioth_send_coap_empty(req->client);
             goto free_req;
         case GOLIOTH_COAP_REQUEST_GET:
-            LOG_DBG("Handle GET %s", req->path);
+            GLTH_LOGD("Handle GET %s", req->path);
             err = golioth_coap_req_cb(req->client,
                                       req->token,
                                       COAP_METHOD_GET,
@@ -738,11 +738,11 @@ static enum golioth_status coap_io_loop_once(struct golioth_client *client)
             break;
         case GOLIOTH_COAP_REQUEST_GET_BLOCK:
         case GOLIOTH_COAP_REQUEST_POST_BLOCK_RSP:
-            LOG_DBG("Handle GET_BLOCK %s", req->path);
+            GLTH_LOGD("Handle GET_BLOCK %s", req->path);
             err = golioth_coap_get_block(req);
             break;
         case GOLIOTH_COAP_REQUEST_POST:
-            LOG_DBG("Handle POST %s", req->path);
+            GLTH_LOGD("Handle POST %s", req->path);
             err = golioth_coap_req_cb(req->client,
                                       req->token,
                                       COAP_METHOD_POST,
@@ -756,12 +756,12 @@ static enum golioth_status coap_io_loop_once(struct golioth_client *client)
             golioth_sys_free(req->post.payload);
             break;
         case GOLIOTH_COAP_REQUEST_POST_BLOCK:
-            LOG_DBG("Handle POST_BLOCK %s", req->path);
+            GLTH_LOGD("Handle POST_BLOCK %s", req->path);
             err = golioth_coap_post_block(req);
             golioth_sys_free(req->post_block.payload);
             break;
         case GOLIOTH_COAP_REQUEST_DELETE:
-            LOG_DBG("Handle DELETE %s", req->path);
+            GLTH_LOGD("Handle DELETE %s", req->path);
             err = golioth_coap_req_cb(req->client,
                                       req->token,
                                       COAP_METHOD_DELETE,
@@ -774,7 +774,7 @@ static enum golioth_status coap_io_loop_once(struct golioth_client *client)
                                       0);
             break;
         case GOLIOTH_COAP_REQUEST_OBSERVE:
-            LOG_DBG("Handle OBSERVE %s", req->path);
+            GLTH_LOGD("Handle OBSERVE %s", req->path);
             err = add_observation(req, client);
             if (err == GOLIOTH_ERR_QUEUE_FULL)
             {
@@ -786,11 +786,11 @@ static enum golioth_status coap_io_loop_once(struct golioth_client *client)
             goto free_req;
             break;
         case GOLIOTH_COAP_REQUEST_OBSERVE_RELEASE:
-            LOG_DBG("Handle OBSERVE RELEASE %s", req->path);
+            GLTH_LOGD("Handle OBSERVE RELEASE %s", req->path);
             err = golioth_deregister_observation(req, client);
             break;
         default:
-            LOG_WRN("Unknown request_msg type: %u", req->type);
+            GLTH_LOGW("Unknown request_msg type: %u", req->type);
             err = -EINVAL;
             goto free_req;
     }
@@ -818,7 +818,7 @@ static void on_keepalive(golioth_sys_timer_t timer, void *arg)
 
     if (!golioth_sys_timer_reset(client->keepalive_timer))
     {
-        LOG_WRN("Failed to reset keepalive timer");
+        GLTH_LOGW("Failed to reset keepalive timer");
     }
 }
 
@@ -935,14 +935,14 @@ static int golioth_connect_sockaddr(struct golioth_client *client,
     sock = zsock_socket(addr->sa_family, SOCK_DGRAM, IPPROTO_DTLS_1_2);
     if (sock < 0)
     {
-        LOG_ERR("Failed to create socket: %d", -errno);
+        GLTH_LOGE("Failed to create socket: %d", -errno);
         return -errno;
     }
 
     err = golioth_setsockopt_dtls(client, sock, host);
     if (err)
     {
-        LOG_ERR("Failed to set DTLS socket options: %d", err);
+        GLTH_LOGE("Failed to set DTLS socket options: %d", err);
         goto close_sock;
     }
 
@@ -950,7 +950,7 @@ static int golioth_connect_sockaddr(struct golioth_client *client,
     if (ret < 0)
     {
         err = -errno;
-        LOG_ERR("Failed to connect to socket: %d", err);
+        GLTH_LOGE("Failed to connect to socket: %d", err);
         goto close_sock;
     }
 
@@ -980,7 +980,7 @@ close_sock:
             net_addr_ntop(AF_INET, &net_sin(addr)->sin_addr, buf, sizeof(buf));    \
         }                                                                          \
                                                                                    \
-        LOG_DBG(fmt, buf);                                                         \
+        GLTH_LOGD(fmt, buf);                                                         \
     } while (0)
 #else
 #define LOG_SOCKADDR(fmt, addr)
@@ -1002,7 +1002,7 @@ static int golioth_connect_host_port(struct golioth_client *client,
     ret = zsock_getaddrinfo(host, port, &hints, &addrs);
     if (ret < 0)
     {
-        LOG_ERR("Fail to get address (%s %s) %d", host, port, ret);
+        GLTH_LOGE("Fail to get address (%s %s) %d", host, port, ret);
         return -EAGAIN;
     }
 
@@ -1054,7 +1054,7 @@ static int golioth_connect(struct golioth_client *client)
         err = golioth_ot_synthesize_ipv6_address(host, ipv6_addr);
         if (err)
         {
-            LOG_ERR("Failed to synthesize Golioth Server IPv6 address: %d", err);
+            GLTH_LOGE("Failed to synthesize Golioth Server IPv6 address: %d", err);
             return err;
         }
 
@@ -1064,7 +1064,7 @@ static int golioth_connect(struct golioth_client *client)
     err = golioth_connect_host_port(client, host, port);
     if (err)
     {
-        LOG_ERR("Failed to connect: %d", err);
+        GLTH_LOGE("Failed to connect: %d", err);
         return err;
     }
 
@@ -1208,7 +1208,7 @@ static int golioth_process_rx(struct golioth_client *client)
 
     if (ret > client->rx_buffer_len)
     {
-        LOG_WRN("Truncated packet (%zu -> %zu)", (size_t) ret, client->rx_buffer_len);
+        GLTH_LOGW("Truncated packet (%zu -> %zu)", (size_t) ret, client->rx_buffer_len);
         ret = client->rx_buffer_len;
     }
 
@@ -1245,10 +1245,10 @@ static void golioth_coap_client_thread(void *arg)
         client->session_connected = false;
 
         client->is_running = false;
-        LOG_DBG("Waiting for the \"run\" signal");
+        GLTH_LOGD("Waiting for the \"run\" signal");
         k_poll(&client->run_event, 1, K_FOREVER);
         client->run_event.state = K_POLL_STATE_NOT_READY;
-        LOG_DBG("Received \"run\" signal");
+        GLTH_LOGD("Received \"run\" signal");
         client->is_running = true;
 
         /* Flush pending events */
@@ -1257,12 +1257,12 @@ static void golioth_coap_client_thread(void *arg)
         err = golioth_connect(client);
         if (err)
         {
-            LOG_WRN("Failed to connect: %d", err);
+            GLTH_LOGW("Failed to connect: %d", err);
             k_sleep(K_SECONDS(5));
             continue;
         }
 
-        LOG_INF("Golioth CoAP client connected");
+        GLTH_LOGI("Golioth CoAP client connected");
         client->session_connected = true;
 
         golioth_sys_client_connected(client);
@@ -1288,7 +1288,7 @@ static void golioth_coap_client_thread(void *arg)
         // them up again now (tokens will be updated).
         reestablish_observations(client);
 
-        LOG_INF("Entering CoAP I/O loop");
+        GLTH_LOGI("Entering CoAP I/O loop");
         while (true)
         {
             event_occurred = false;
@@ -1302,7 +1302,7 @@ static void golioth_coap_client_thread(void *arg)
                 timeout = 0;
             }
 
-            LOG_DBG("Next timeout: %d", timeout);
+            GLTH_LOGD("Next timeout: %d", timeout);
 
             k_work_reschedule(&eventfd_timeout, K_MSEC(timeout));
 
@@ -1310,20 +1310,20 @@ static void golioth_coap_client_thread(void *arg)
 
             if (ret < 0)
             {
-                LOG_ERR("Error in poll:%d", errno);
+                GLTH_LOGE("Error in poll:%d", errno);
                 break;
             }
 
             if (ret == 0)
             {
-                LOG_DBG("Timeout in poll");
+                GLTH_LOGD("Timeout in poll");
                 event_occurred = true;
             }
 
             if (fds[POLLFD_EVENT].revents)
             {
                 (void) eventfd_read(fds[POLLFD_EVENT].fd, &eventfd_value);
-                LOG_DBG("Event in eventfd");
+                GLTH_LOGD("Event in eventfd");
                 event_occurred = true;
             }
 
@@ -1339,11 +1339,11 @@ static void golioth_coap_client_thread(void *arg)
                 {
                     if (stop_request)
                     {
-                        LOG_INF("Stop request");
+                        GLTH_LOGI("Stop request");
                     }
                     else
                     {
-                        LOG_WRN("Receive timeout");
+                        GLTH_LOGW("Receive timeout");
                     }
 
                     break;
@@ -1357,7 +1357,7 @@ static void golioth_coap_client_thread(void *arg)
                 err = golioth_process_rx(client);
                 if (err)
                 {
-                    LOG_ERR("Failed to receive: %d", err);
+                    GLTH_LOGE("Failed to receive: %d", err);
                     break;
                 }
             }
@@ -1371,7 +1371,7 @@ static void golioth_coap_client_thread(void *arg)
             }
         }
 
-        LOG_INF("Ending session");
+        GLTH_LOGI("Ending session");
 
         golioth_sys_client_disconnected(client);
         if (client->event_callback && client->session_connected)
@@ -1396,26 +1396,26 @@ static int credentials_set_psk(const struct golioth_psk_credential *psk)
     err = tls_credential_delete(sec_tag_list[0], TLS_CREDENTIAL_PSK_ID);
     if ((err) && (err != -ENOENT))
     {
-        LOG_ERR("Failed to delete PSK ID: %d", err);
+        GLTH_LOGE("Failed to delete PSK ID: %d", err);
     }
 
     err = tls_credential_add(sec_tag_list[0], TLS_CREDENTIAL_PSK_ID, psk->psk_id, psk->psk_id_len);
     if (err)
     {
-        LOG_ERR("Failed to register PSK ID: %d", err);
+        GLTH_LOGE("Failed to register PSK ID: %d", err);
         return err;
     }
 
     err = tls_credential_delete(sec_tag_list[0], TLS_CREDENTIAL_PSK);
     if ((err) && (err != -ENOENT))
     {
-        LOG_ERR("Failed to delete PSK: %d", err);
+        GLTH_LOGE("Failed to delete PSK: %d", err);
     }
 
     err = tls_credential_add(sec_tag_list[0], TLS_CREDENTIAL_PSK, psk->psk, psk->psk_len);
     if (err)
     {
-        LOG_ERR("Failed to register PSK: %d", err);
+        GLTH_LOGE("Failed to register PSK: %d", err);
         return err;
     }
 
@@ -1503,7 +1503,7 @@ struct golioth_client *golioth_client_create(const struct golioth_client_config 
     struct golioth_client *new_client = golioth_sys_malloc(sizeof(struct golioth_client));
     if (!new_client)
     {
-        LOG_ERR("Failed to allocate memory for client");
+        GLTH_LOGE("Failed to allocate memory for client");
         goto error;
     }
     memset(new_client, 0, sizeof(struct golioth_client));
@@ -1539,7 +1539,7 @@ struct golioth_client *golioth_client_create(const struct golioth_client_config 
                                                     sizeof(struct golioth_coap_request_msg));
     if (!new_client->request_queue)
     {
-        LOG_ERR("Failed to create request queue");
+        GLTH_LOGE("Failed to create request queue");
         goto error;
     }
 
@@ -1554,7 +1554,7 @@ struct golioth_client *golioth_client_create(const struct golioth_client_config 
     new_client->coap_thread_handle = golioth_sys_thread_create(&thread_cfg);
     if (!new_client->coap_thread_handle)
     {
-        LOG_ERR("Failed to create client thread");
+        GLTH_LOGE("Failed to create client thread");
         goto error;
     }
 
@@ -1567,7 +1567,7 @@ struct golioth_client *golioth_client_create(const struct golioth_client_config 
     new_client->keepalive_timer = golioth_sys_timer_create(&keepalive_timer_cfg);
     if (!new_client->keepalive_timer)
     {
-        LOG_ERR("Failed to create keepalive timer");
+        GLTH_LOGE("Failed to create keepalive timer");
         goto error;
     }
 
@@ -1575,7 +1575,7 @@ struct golioth_client *golioth_client_create(const struct golioth_client_config 
     {
         if (!golioth_sys_timer_start(new_client->keepalive_timer))
         {
-            LOG_ERR("Failed to start keepalive timer");
+            GLTH_LOGE("Failed to start keepalive timer");
             goto error;
         }
     }

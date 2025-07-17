@@ -177,24 +177,24 @@ static int flash_img_prepare(struct flash_img_context *flash)
     switch (swap_type)
     {
         case BOOT_SWAP_TYPE_REVERT:
-            LOG_WRN("'revert' swap type detected, it is not safe to continue");
+            GLTH_LOGW("'revert' swap type detected, it is not safe to continue");
             return -EBUSY;
         default:
-            LOG_INF("swap type: %s", swap_type_str(swap_type));
+            GLTH_LOGI("swap type: %s", swap_type_str(swap_type));
             break;
     }
 
     err = flash_img_init(flash);
     if (err)
     {
-        LOG_ERR("failed to init: %d", err);
+        GLTH_LOGE("failed to init: %d", err);
         return err;
     }
 
     err = flash_img_erase_if_needed(flash);
     if (err)
     {
-        LOG_ERR("failed to erase: %d", err);
+        GLTH_LOGE("failed to erase: %d", err);
         return err;
     }
 
@@ -235,7 +235,7 @@ enum golioth_status fw_update_handle_block(const uint8_t *block,
     err = flash_img_buffered_write(&_flash_img_context, block, block_size, false);
     if (err)
     {
-        LOG_ERR("Failed to write to flash: %d", err);
+        GLTH_LOGE("Failed to write to flash: %d", err);
         return GOLIOTH_ERR_IO;
     }
 
@@ -254,7 +254,7 @@ enum golioth_status fw_update_post_download(void)
     err = flash_img_buffered_write(&_flash_img_context, NULL, 0, true);
     if (err)
     {
-        LOG_ERR("Failed to write to flash: %d", err);
+        GLTH_LOGE("Failed to write to flash: %d", err);
         return GOLIOTH_ERR_IO;
     }
 

@@ -53,7 +53,7 @@ int golioth_ot_synthesize_ipv6_address(char *hostname, char *ipv6_addr_buffer)
     err = otIp4AddressFromString(CONFIG_DNS_SERVER1, &dns_server_addr);
     if (err != OT_ERROR_NONE)
     {
-        LOG_ERR("DNS server IPv4 address error: %d", err);
+        GLTH_LOGE("DNS server IPv4 address error: %d", err);
         return err;
     }
 
@@ -62,7 +62,7 @@ int golioth_ot_synthesize_ipv6_address(char *hostname, char *ipv6_addr_buffer)
                                       &ot_dns_context.query_config.mServerSockAddr.mAddress);
     if (err != OT_ERROR_NONE)
     {
-        LOG_ERR("Synthesize DNS server IPv6 address error: %d", err);
+        GLTH_LOGE("Synthesize DNS server IPv6 address error: %d", err);
         return err;
     }
 
@@ -73,7 +73,7 @@ int golioth_ot_synthesize_ipv6_address(char *hostname, char *ipv6_addr_buffer)
                                        &ot_dns_context.query_config);
     if (err != OT_ERROR_NONE)
     {
-        LOG_ERR("Golioth System Server address resolution DNS query error: %d", err);
+        GLTH_LOGE("Golioth System Server address resolution DNS query error: %d", err);
         return err;
     }
 

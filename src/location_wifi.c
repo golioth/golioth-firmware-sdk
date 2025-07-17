@@ -37,39 +37,39 @@ enum golioth_status golioth_location_wifi_append(struct golioth_location_req *re
     ok = zcbor_map_start_encode(req->zse, 1);
     if (!ok)
     {
-        LOG_ERR("Failed to %s %s encoding", "start", "map");
+        GLTH_LOGE("Failed to %s %s encoding", "start", "map");
         return GOLIOTH_ERR_MEM_ALLOC;
     }
 
     ok = zcbor_tstr_put_lit(req->zse, "mac");
     if (!ok)
     {
-        LOG_ERR("Failed to encode %s %s", "mac", "key");
+        GLTH_LOGE("Failed to encode %s %s", "mac", "key");
         return GOLIOTH_ERR_MEM_ALLOC;
     }
 
     ok = zcbor_tstr_put_term(req->zse, mac_str, 6 * 2 + 5);
     if (!ok)
     {
-        LOG_ERR("Failed to encode %s %s", "mac", "val");
+        GLTH_LOGE("Failed to encode %s %s", "mac", "val");
         return GOLIOTH_ERR_MEM_ALLOC;
     }
 
     ok = zcbor_tstr_put_lit(req->zse, "rss") && zcbor_int32_put(req->zse, result->rssi);
     if (!ok)
     {
-        LOG_ERR("Failed to encode RSSI");
+        GLTH_LOGE("Failed to encode RSSI");
         return GOLIOTH_ERR_MEM_ALLOC;
     }
 
     ok = zcbor_map_end_encode(req->zse, 1);
     if (!ok)
     {
-        LOG_ERR("Failed to %s %s encoding", "end", "map");
+        GLTH_LOGE("Failed to %s %s encoding", "end", "map");
         return GOLIOTH_ERR_MEM_ALLOC;
     }
 
-    LOG_DBG("Encoded successfully %s", mac_str);
+    GLTH_LOGD("Encoded successfully %s", mac_str);
 
     return 0;
 }

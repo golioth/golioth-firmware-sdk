@@ -41,7 +41,7 @@ enum golioth_status golioth_location_cellular_append(struct golioth_location_req
     ok = zcbor_map_start_encode(req->zse, 1);
     if (!ok)
     {
-        LOG_ERR("Failed to %s %s encoding", "start", "map");
+        GLTH_LOGE("Failed to %s %s encoding", "start", "map");
         return GOLIOTH_ERR_MEM_ALLOC;
     }
 
@@ -51,7 +51,7 @@ enum golioth_status golioth_location_cellular_append(struct golioth_location_req
         && zcbor_tstr_put_lit(req->zse, "id") && zcbor_uint32_put(req->zse, cell->id);
     if (!ok)
     {
-        LOG_ERR("Failed to encode %s", "type, mcc, mnc, id");
+        GLTH_LOGE("Failed to encode %s", "type, mcc, mnc, id");
         return GOLIOTH_ERR_MEM_ALLOC;
     }
 
@@ -60,7 +60,7 @@ enum golioth_status golioth_location_cellular_append(struct golioth_location_req
         ok = zcbor_tstr_put_lit(req->zse, "strength") && zcbor_int32_put(req->zse, cell->strength);
         if (!ok)
         {
-            LOG_ERR("Failed to encode %s", "strength");
+            GLTH_LOGE("Failed to encode %s", "strength");
             return GOLIOTH_ERR_MEM_ALLOC;
         }
     }
@@ -68,11 +68,11 @@ enum golioth_status golioth_location_cellular_append(struct golioth_location_req
     ok = zcbor_map_end_encode(req->zse, 1);
     if (!ok)
     {
-        LOG_ERR("Failed to %s %s encoding", "end", "map");
+        GLTH_LOGE("Failed to %s %s encoding", "end", "map");
         return GOLIOTH_ERR_MEM_ALLOC;
     }
 
-    LOG_DBG("Encoded successfully %s mcc=%" PRIu16 " mnc=%" PRIu16 " id=%" PRIu32,
+    GLTH_LOGD("Encoded successfully %s mcc=%" PRIu16 " mnc=%" PRIu16 " id=%" PRIu32,
             type_str,
             cell->mcc,
             cell->mnc,

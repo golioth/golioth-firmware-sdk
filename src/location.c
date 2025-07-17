@@ -31,7 +31,7 @@ enum golioth_status golioth_location_append(struct golioth_location_req *req,
 
     if (finished & flag)
     {
-        LOG_ERR("Interchangably calling different golioth_location_*_append() is not supported");
+        GLTH_LOGE("Interchangably calling different golioth_location_*_append() is not supported");
         return GOLIOTH_ERR_NOT_ALLOWED;
     }
 
@@ -45,7 +45,7 @@ enum golioth_status golioth_location_append(struct golioth_location_req *req,
         ok = zcbor_list_end_encode(req->zse, 1);
         if (!ok)
         {
-            LOG_ERR("Failed to close location group");
+            GLTH_LOGE("Failed to close location group");
             return -ENOMEM;
         }
     }
@@ -81,7 +81,7 @@ static enum golioth_status location_decode(struct golioth_location_rsp *rsp,
     err = zcbor_map_decode(zsd, map_entries, ARRAY_SIZE(map_entries));
     if (err)
     {
-        LOG_ERR("Failed to parse position");
+        GLTH_LOGE("Failed to parse position");
         return GOLIOTH_ERR_INVALID_FORMAT;
     }
 
@@ -104,12 +104,12 @@ static void location_cb(struct golioth_client *client,
     {
         if (status == GOLIOTH_ERR_COAP_RESPONSE && payload_size == 0)
         {
-            LOG_WRN("Location not found");
+            GLTH_LOGW("Location not found");
             data->status = GOLIOTH_ERR_NULL;
         }
         else
         {
-            LOG_ERR("Error status: %d (%s)", status, golioth_status_to_str(status));
+            GLTH_LOGE("Error status: %d (%s)", status, golioth_status_to_str(status));
         }
         return;
     }
@@ -141,7 +141,7 @@ enum golioth_status golioth_location_finish(struct golioth_location_req *req)
     ok = zcbor_list_end_encode(req->zse, 1) && zcbor_map_end_encode(req->zse, 1);
     if (!ok)
     {
-        LOG_ERR("Failed to finish location request");
+        GLTH_LOGE("Failed to finish location request");
         return GOLIOTH_ERR_MEM_ALLOC;
     }
 
