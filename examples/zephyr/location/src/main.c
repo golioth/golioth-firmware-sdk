@@ -8,8 +8,9 @@
 LOG_MODULE_REGISTER(location_main, LOG_LEVEL_DBG);
 
 #include <golioth/client.h>
-#include <golioth/location/cellular.h>
-#include <golioth/location/wifi.h>
+#include <golioth/stream.h>
+#include <golioth/net_info/cellular.h>
+#include <golioth/net_info/wifi.h>
 #include <samples/common/sample_credentials.h>
 #include <string.h>
 #include <zephyr/net/wifi_mgmt.h>
@@ -35,8 +36,8 @@ static void on_client_event(struct golioth_client *client,
     LOG_INF("Golioth client %s", is_connected ? "connected" : "disconnected");
 }
 
-static enum golioth_status golioth_location_wifi_append_zephyr(
-    struct golioth_location_req *req,
+static enum golioth_status golioth_net_info_wifi_append_zephyr(
+    struct golioth_net_info *info,
     const struct wifi_scan_result *result)
 {
     struct golioth_wifi_scan_result golioth_result = {
@@ -49,10 +50,10 @@ static enum golioth_status golioth_location_wifi_append_zephyr(
         .rssi = result->rssi,
     };
 
-    return golioth_location_wifi_append(req, &golioth_result);
+    return golioth_net_info_wifi_append(info, &golioth_result);
 }
 
-static struct golioth_location_req location_req;
+static struct golioth_net_info *info;
 
 static int cellular_get_and_encode_info(void)
 {
@@ -61,7 +62,7 @@ static int cellular_get_and_encode_info(void)
     size_t num_infos;
     int err;
 
-    if (!IS_ENABLED(CONFIG_GOLIOTH_LOCATION_CELLULAR))
+    if (!IS_ENABLED(CONFIG_GOLIOTH_NET_INFO_CELLULAR))
     {
         return 0;
     }
@@ -75,7 +76,7 @@ static int cellular_get_and_encode_info(void)
 
     for (size_t i = 0; i < num_infos; i++)
     {
-        status = golioth_location_cellular_append(&location_req, &cellular_infos[i]);
+        status = golioth_net_info_cellular_append(info, &cellular_infos[i]);
         if (status != GOLIOTH_OK)
         {
             LOG_ERR("Failed to append cellular info: %d", status);
@@ -93,7 +94,7 @@ static void wifi_scan_result_process(const struct wifi_scan_result *entry)
         return;
     }
 
-    golioth_location_wifi_append_zephyr(&location_req, entry);
+    golioth_net_info_wifi_append_zephyr(info, entry);
 }
 
 static K_SEM_DEFINE(scan_sem, 0, 1);
@@ -124,7 +125,7 @@ static int wifi_scan_and_encode_info(struct net_if *iface)
 {
     int err;
 
-    if (!IS_ENABLED(CONFIG_GOLIOTH_LOCATION_WIFI))
+    if (!IS_ENABLED(CONFIG_GOLIOTH_NET_INFO_WIFI))
     {
         return 0;
     }
@@ -146,7 +147,6 @@ static struct net_mgmt_event_callback wifi_mgmt_cb;
 int main(void)
 {
     struct net_if *wifi_iface = net_if_get_first_wifi();
-    struct golioth_location_rsp location_rsp;
     enum golioth_status status;
     int err;
 
@@ -173,46 +173,50 @@ int main(void)
 
     k_sem_take(&connected, K_FOREVER);
 
+    info = golioth_net_info_create();
+
     while (true)
     {
-        golioth_location_init(&location_req);
-
         err = cellular_get_and_encode_info();
         if (err)
         {
+            LOG_ERR("Failed to encode cellular network information data: %d", err);
             continue;
         }
 
         err = wifi_scan_and_encode_info(wifi_iface);
         if (err)
         {
+            LOG_ERR("Failed to encode wifi network information data: %d", err);
             continue;
         }
 
-        status = golioth_location_finish(&location_req);
+        status = golioth_net_info_finish(info);
         if (status != GOLIOTH_OK)
         {
             if (status == GOLIOTH_ERR_NULL)
             {
-                LOG_WRN("No location data to be provided");
+                LOG_WRN("No network information data provided");
                 return 0;
             }
 
-            LOG_ERR("Failed to encode location data");
+            LOG_ERR("Failed to encode network information data");
             return -ENOMEM;
         }
 
-        status = golioth_location_get_sync(client, &location_req, &location_rsp, APP_TIMEOUT_S);
-        if (status == GOLIOTH_OK)
+        err = golioth_stream_set_sync(client,
+                                      "/loc/net",
+                                      GOLIOTH_CONTENT_TYPE_CBOR,
+                                      golioth_net_info_get_buf(info),
+                                      golioth_net_info_get_buf_len(info),
+                                      APP_TIMEOUT_S);
+        if (err != GOLIOTH_OK)
         {
-            LOG_INF("%s%lld.%09lld %s%lld.%09lld (%lld)",
-                    location_rsp.latitude < 0 ? "-" : "",
-                    llabs(location_rsp.latitude) / 1000000000,
-                    llabs(location_rsp.latitude) % 1000000000,
-                    location_rsp.longitude < 0 ? "-" : "",
-                    llabs(location_rsp.longitude) / 1000000000,
-                    llabs(location_rsp.longitude) % 1000000000,
-                    (long long int) location_rsp.accuracy);
+            LOG_ERR("Failed to stream network data: %d", err);
+        }
+        else
+        {
+            LOG_INF("Successfully streamed network data");
         }
 
         k_msleep(CONFIG_APP_LOCATION_GET_INTERVAL);

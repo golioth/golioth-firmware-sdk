@@ -6,7 +6,7 @@
 
 #pragma once
 
-#include <golioth/location/cellular.h>
+#include <golioth/net_info/cellular.h>
 
 int cellular_info_get(struct golioth_cellular_info *infos,
                       size_t num_max_infos,

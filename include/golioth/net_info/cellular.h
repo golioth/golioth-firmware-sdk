@@ -13,7 +13,7 @@ extern "C"
 
 #include <stdint.h>
 
-#include <golioth/location.h>
+#include <golioth/net_info.h>
 
 enum golioth_cellular_type
 {
@@ -21,7 +21,7 @@ enum golioth_cellular_type
     GOLIOTH_CELLULAR_TYPE_NBIOT,
 };
 
-/** @brief Cellular tower information, which is passed to golioth_location_cellular_append() */
+/** @brief Cellular tower information, which is passed to golioth_net_info_cellular_append() */
 struct golioth_cellular_info
 {
     /** Type */
@@ -36,14 +36,14 @@ struct golioth_cellular_info
     int8_t strength;
 };
 
-/// Append information about cellular network (cell tower) to location request
+/// Append information about cellular network (cell tower) to network information
 ///
-/// @param req Location request
+/// @param info Network information
 /// @param cell Information about cellular network
 ///
-/// @retval GOLIOTH_OK Location request finished successfully
-/// @retval GOLIOTH_ERR_MEM_ALLOC Not enough memory in request buffer
-enum golioth_status golioth_location_cellular_append(struct golioth_location_req *req,
+/// @retval GOLIOTH_OK Cellular network info added successfully
+/// @retval GOLIOTH_ERR_MEM_ALLOC Not enough memory in network info buffer
+enum golioth_status golioth_net_info_cellular_append(struct golioth_net_info *info,
                                                      const struct golioth_cellular_info *cell);
 
 #ifdef __cplusplus
