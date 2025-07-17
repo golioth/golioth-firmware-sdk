@@ -67,6 +67,17 @@ enum golioth_status golioth_gateway_uplink_block(struct gateway_uplink *uplink,
 /// @param ctx The uplink context to finish, returned from \ref golioth_gateway_uplink_block
 void golioth_gateway_uplink_finish(struct gateway_uplink *uplink);
 
+/// Get server certificate.
+///
+/// @param client The client handle from @ref golioth_client_create
+/// @param buf Pointer to buffer where certificate will be written
+/// @param len Pointer to length. On input it is buffer length. On output it is certificate length.
+/// @param timeout_s Timeout in seconds for API call
+enum golioth_status golioth_gateway_server_cert_get(struct golioth_client *client,
+                                                    void *buf,
+                                                    size_t *len,
+                                                    int32_t timeout_s);
+
 #ifdef __cplusplus
 }
 #endif
