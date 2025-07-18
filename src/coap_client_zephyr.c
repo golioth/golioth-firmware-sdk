@@ -30,6 +30,10 @@ LOG_TAG_DEFINE(golioth_coap_client_zephyr);
 #define GOLIOTH_MAX_IDENTITY_LEN 32
 #define GOLIOTH_EMPTY_PACKET_LEN (16 + GOLIOTH_MAX_IDENTITY_LEN)
 
+/* forward declarations */
+static const struct golioth_coap_rsp_code *golioth_ptr_to_rsp_code(
+    const struct golioth_req_rsp *rsp);
+
 enum
 {
     CLIENT_FLAG_STOP,
@@ -1617,7 +1621,8 @@ static void purge_request_mbox(golioth_mbox_t request_mbox)
     }
 }
 
-const struct golioth_coap_rsp_code *golioth_ptr_to_rsp_code(const struct golioth_req_rsp *rsp)
+static const struct golioth_coap_rsp_code *golioth_ptr_to_rsp_code(
+    const struct golioth_req_rsp *rsp)
 {
     if (rsp->status == GOLIOTH_OK || rsp->status == GOLIOTH_ERR_COAP_RESPONSE)
     {
