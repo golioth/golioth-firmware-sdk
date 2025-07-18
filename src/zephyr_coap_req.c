@@ -4,9 +4,10 @@
  * SPDX-License-Identifier: Apache-2.0
  */
 
-#include "golioth/golioth_status.h"
-#include <zephyr/logging/log.h>
-LOG_MODULE_DECLARE(golioth_coap_client);
+#include <golioth/golioth_debug.h>
+#include <golioth/golioth_status.h>
+
+LOG_TAG_DEFINE(golioth_zephyr_coap_req);
 
 #include <stdlib.h>
 
@@ -74,7 +75,7 @@ static void golioth_coap_req_cancel(struct golioth_coap_req *req)
 
 static void golioth_coap_req_cancel_and_free(struct golioth_coap_req *req)
 {
-    LOG_DBG("cancel and free req %p data %p", (void *) req, (void *) req->request.data);
+    GLTH_LOGD(TAG, "cancel and free req %p data %p", (void *) req, (void *) req->request.data);
 
     golioth_coap_req_cancel(req);
     free(req->request.data);
@@ -129,14 +130,15 @@ static int golioth_coap_req_reply_handler(struct golioth_coap_req *req,
         .coap_rsp_code.code_detail = (uint8_t) (code & 0x1f),
     };
 
-    LOG_DBG("CoAP response code: 0x%x (class %u detail %u)",
-            (unsigned int) code,
-            rsp.coap_rsp_code.code_class,
-            rsp.coap_rsp_code.code_detail);
+    GLTH_LOGD(TAG,
+              "CoAP response code: 0x%x (class %u detail %u)",
+              (unsigned int) code,
+              rsp.coap_rsp_code.code_class,
+              rsp.coap_rsp_code.code_detail);
 
     if (code == COAP_RESPONSE_CODE_BAD_REQUEST)
     {
-        LOG_WRN("Server reports CoAP Bad Request. (Check payload formatting)");
+        GLTH_LOGW(TAG, "Server reports CoAP Bad Request. (Check payload formatting)");
     }
 
     /* Check for 2.xx style CoAP response success code */
@@ -147,7 +149,7 @@ static int golioth_coap_req_reply_handler(struct golioth_coap_req *req,
 
         (void) req->cb(&rsp);
 
-        LOG_DBG("cancel and free req: %p", (void *) req);
+        GLTH_LOGD(TAG, "cancel and free req: %p", (void *) req);
 
         goto cancel_and_free;
     }
@@ -163,7 +165,7 @@ static int golioth_coap_req_reply_handler(struct golioth_coap_req *req,
             int block_size = coap_get_block1_option(&req->request, &has_more, &block_number);
             if (0 > block_size)
             {
-                LOG_ERR("CoAP request has block1 but failed to parse");
+                GLTH_LOGE(TAG, "CoAP request has block1 but failed to parse");
             }
             else if (!has_more)
             {
@@ -189,7 +191,7 @@ static int golioth_coap_req_reply_handler(struct golioth_coap_req *req,
             rsp.user_data = req->user_data;
             rsp.status = GOLIOTH_ERR_FAIL;
 
-            LOG_ERR("Failed to parse get response: %d", err);
+            GLTH_LOGE(TAG, "Failed to parse get response: %d", err);
 
             (void) req->cb(&rsp);
 
@@ -200,7 +202,7 @@ static int golioth_coap_req_reply_handler(struct golioth_coap_req *req,
         cur_offset = req->block_ctx.current;
         if (cur_offset < want_offset)
         {
-            LOG_WRN("Block at %zu already received, ignoring", cur_offset);
+            GLTH_LOGW(TAG, "Block at %zu already received, ignoring", cur_offset);
 
             req->block_ctx.current = want_offset;
 
@@ -213,7 +215,7 @@ static int golioth_coap_req_reply_handler(struct golioth_coap_req *req,
             rsp.user_data = req->user_data;
             rsp.status = GOLIOTH_ERR_FAIL;
 
-            LOG_ERR("Failed to move to next block: %d", new_offset);
+            GLTH_LOGE(TAG, "Failed to move to next block: %d", new_offset);
 
             (void) req->cb(&rsp);
 
@@ -229,7 +231,7 @@ static int golioth_coap_req_reply_handler(struct golioth_coap_req *req,
             rsp.is_last = true;
             rsp.user_data = req->user_data;
 
-            LOG_DBG("Blockwise transfer is finished!");
+            GLTH_LOGD(TAG, "Blockwise transfer is finished!");
 
             (void) req->cb(&rsp);
 
@@ -253,7 +255,7 @@ static int golioth_coap_req_reply_handler(struct golioth_coap_req *req,
 
             if (req->is_observe)
             {
-                LOG_ERR("TODO: blockwise observe is not supported");
+                GLTH_LOGE(TAG, "TODO: blockwise observe is not supported");
                 err = -ENOTSUP;
             }
 
@@ -272,9 +274,10 @@ static int golioth_coap_req_reply_handler(struct golioth_coap_req *req,
                 if (req->block_ctx.block_size < rmsg->post_block.block_szx)
                 {
 
-                    LOG_DBG("Server wants blocksize: %i intead of: %i",
-                            coap_block_size_to_bytes(req->block_ctx.block_size),
-                            coap_block_size_to_bytes(rmsg->post_block.block_szx));
+                    GLTH_LOGD(TAG,
+                              "Server wants blocksize: %i intead of: %i",
+                              coap_block_size_to_bytes(req->block_ctx.block_size),
+                              coap_block_size_to_bytes(rmsg->post_block.block_szx));
 
                     rmsg->post_block.block_szx = req->block_ctx.block_size;
                 }
@@ -396,7 +399,11 @@ static int golioth_req_rsp_default_handler(struct golioth_req_rsp *rsp)
                      rsp->coap_rsp_code.code_detail);
         }
 
-        LOG_ERR("Error response (%s): %d %s", info ? info : "app", rsp->status, coap_ret_code);
+        GLTH_LOGE(TAG,
+                  "Error response (%s): %d %s",
+                  info ? info : "app",
+                  rsp->status,
+                  coap_ret_code);
         return 0;
     }
 
@@ -480,14 +487,14 @@ int golioth_coap_req_new(struct golioth_coap_req **req,
     *req = calloc(1, sizeof(**req));
     if (!(*req))
     {
-        LOG_ERR("Failed to allocate request");
+        GLTH_LOGE(TAG, "Failed to allocate request");
         return -ENOMEM;
     }
 
     buffer = malloc(buffer_len);
     if (!buffer)
     {
-        LOG_ERR("Failed to allocate packet buffer");
+        GLTH_LOGE(TAG, "Failed to allocate packet buffer");
         err = -ENOMEM;
         goto free_req;
     }
@@ -503,7 +510,7 @@ int golioth_coap_req_new(struct golioth_coap_req **req,
                                 user_data);
     if (err)
     {
-        LOG_ERR("Failed to initialize CoAP GET request: %d", err);
+        GLTH_LOGE(TAG, "Failed to initialize CoAP GET request: %d", err);
         goto free_buffer;
     }
 
@@ -549,7 +556,7 @@ int golioth_coap_req_cb(struct golioth_client *client,
                                user_data);
     if (err)
     {
-        LOG_ERR("Failed to create new CoAP GET request: %d", err);
+        GLTH_LOGE(TAG, "Failed to create new CoAP GET request: %d", err);
         return err;
     }
 
@@ -561,7 +568,7 @@ int golioth_coap_req_cb(struct golioth_client *client,
         err = coap_append_option_int(&req->request, COAP_OPTION_OBSERVE, 0 /* register */);
         if (err)
         {
-            LOG_ERR("Unable add observe option");
+            GLTH_LOGE(TAG, "Unable add observe option");
             goto free_req;
         }
     }
@@ -569,7 +576,7 @@ int golioth_coap_req_cb(struct golioth_client *client,
     err = coap_packet_append_uri_path_from_pathv(&req->request, pathv);
     if (err)
     {
-        LOG_ERR("Unable add uri path to packet");
+        GLTH_LOGE(TAG, "Unable add uri path to packet");
         goto free_req;
     }
 
@@ -578,7 +585,7 @@ int golioth_coap_req_cb(struct golioth_client *client,
         err = coap_append_option_int(&req->request, COAP_OPTION_CONTENT_FORMAT, format);
         if (err)
         {
-            LOG_ERR("Unable add content format to packet");
+            GLTH_LOGE(TAG, "Unable add content format to packet");
             goto free_req;
         }
     }
@@ -588,7 +595,7 @@ int golioth_coap_req_cb(struct golioth_client *client,
         err = coap_append_option_int(&req->request, COAP_OPTION_ACCEPT, format);
         if (err)
         {
-            LOG_ERR("Unable add content format to packet");
+            GLTH_LOGE(TAG, "Unable add content format to packet");
             goto free_req;
         }
     }
@@ -598,14 +605,14 @@ int golioth_coap_req_cb(struct golioth_client *client,
         err = coap_packet_append_payload_marker(&req->request);
         if (err)
         {
-            LOG_ERR("Unable add payload marker to packet");
+            GLTH_LOGE(TAG, "Unable add payload marker to packet");
             goto free_req;
         }
 
         err = coap_packet_append_payload(&req->request, data, data_len);
         if (err)
         {
-            LOG_ERR("Unable add payload to packet");
+            GLTH_LOGE(TAG, "Unable add payload to packet");
             goto free_req;
         }
     }
@@ -687,7 +694,10 @@ static int64_t golioth_coap_req_poll_prepare(struct golioth_coap_req *req, uint3
                 .status = GOLIOTH_ERR_TIMEOUT,
             };
 
-            LOG_WRN("Packet %p (reply %p) was not replied to", (void *) req, (void *) &req->reply);
+            GLTH_LOGW(TAG,
+                      "Packet %p (reply %p) was not replied to",
+                      (void *) req,
+                      (void *) &req->reply);
 
             (void) req->cb(&rsp);
 
@@ -701,10 +711,11 @@ static int64_t golioth_coap_req_poll_prepare(struct golioth_coap_req *req, uint3
     {
         if (resend)
         {
-            LOG_DBG("Resending request %p (reply %p) (retries %d)",
-                    (void *) req,
-                    (void *) &req->reply,
-                    (int) req->pending.retries);
+            GLTH_LOGD(TAG,
+                      "Resending request %p (reply %p) (retries %d)",
+                      (void *) req,
+                      (void *) &req->reply,
+                      (int) req->pending.retries);
 
             req->client->resend_report_count++;
         }
@@ -712,16 +723,17 @@ static int64_t golioth_coap_req_poll_prepare(struct golioth_coap_req *req, uint3
         err = golioth_coap_req_send(req);
         if (err)
         {
-            LOG_ERR("Send error: %d", err);
+            GLTH_LOGE(TAG, "Send error: %d", err);
         }
     }
 
     if (req->client->resend_report_count
         && ((now - req->client->resend_report_last_ms) >= (RESEND_REPORT_TIMEFRAME_S * 1000)))
     {
-        LOG_WRN("%u resends in last %d seconds",
-                req->client->resend_report_count,
-                RESEND_REPORT_TIMEFRAME_S);
+        GLTH_LOGW(TAG,
+                  "%u resends in last %d seconds",
+                  req->client->resend_report_count,
+                  RESEND_REPORT_TIMEFRAME_S);
         req->client->resend_report_last_ms = now;
         req->client->resend_report_count = 0;
     }
@@ -798,14 +810,18 @@ static int __golioth_coap_req_find_and_cancel_observation(
 
             if (coap_token_len == 0)
             {
-                LOG_ERR("Unable to get coap token from request. Got length: %d", coap_token_len);
+                GLTH_LOGE(TAG,
+                          "Unable to get coap token from request. Got length: %d",
+                          coap_token_len);
                 err = GOLIOTH_ERR_NO_MORE_DATA;
                 goto remove_from_coap_reqs_and_free;
             }
 
             if (coap_content_format < 0)
             {
-                LOG_ERR("Unable to get coap content format from request: %d", coap_content_format);
+                GLTH_LOGE(TAG,
+                          "Unable to get coap content format from request: %d",
+                          coap_content_format);
                 err = GOLIOTH_ERR_INVALID_FORMAT;
                 goto remove_from_coap_reqs_and_free;
             }
@@ -821,7 +837,7 @@ static int __golioth_coap_req_find_and_cancel_observation(
                                                       NULL);
             if (err)
             {
-                LOG_ERR("Error encoding observe release request: %d", err);
+                GLTH_LOGE(TAG, "Error encoding observe release request: %d", err);
             }
 
         remove_from_coap_reqs_and_free:

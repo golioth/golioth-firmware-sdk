@@ -6,10 +6,10 @@
 
 #include "zephyr_coap_utils.h"
 
+#include <golioth/golioth_debug.h>
 #include <zephyr/net/coap.h>
 
-#include <zephyr/logging/log.h>
-LOG_MODULE_DECLARE(golioth_coap_client);
+LOG_TAG_DEFINE(golioth_zephyr_coap_utils);
 
 #define COAP_BASIC_HEADER_SIZE 4
 
@@ -46,7 +46,7 @@ int coap_data_check_rx_packet_type(uint8_t *data, size_t len)
     tkl = coap_data_get_token_len(data);
     if (tkl > 8)
     {
-        LOG_DBG("Invalid RX");
+        GLTH_LOGD(TAG, "Invalid RX");
         return -EINVAL;
     }
 
@@ -54,11 +54,11 @@ int coap_data_check_rx_packet_type(uint8_t *data, size_t len)
         && coap_data_get_code(data) == COAP_CODE_EMPTY)
     {
         /* Empty packet */
-        LOG_DBG("RX Empty");
+        GLTH_LOGD(TAG, "RX Empty");
         return -ENOMSG;
     }
 
-    LOG_DBG("RX Non-empty");
+    GLTH_LOGD(TAG, "RX Non-empty");
 
     return 0;
 }
