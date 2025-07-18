@@ -60,6 +60,18 @@ static void notify_observers(const coap_pdu_t *received,
     }
 }
 
+static const struct golioth_coap_rsp_code *golioth_ptr_to_rsp_code(
+    enum golioth_status status,
+    const struct golioth_coap_rsp_code *coap_rsp_code)
+{
+    if (status == GOLIOTH_OK || status == GOLIOTH_ERR_COAP_RESPONSE)
+    {
+        return coap_rsp_code;
+    }
+
+    return NULL;
+}
+
 static coap_response_t coap_response_handler(coap_session_t *session,
                                              const coap_pdu_t *sent,
                                              const coap_pdu_t *received,
@@ -169,7 +181,7 @@ static coap_response_t coap_response_handler(coap_session_t *session,
                 {
                     req->get.callback(client,
                                       status,
-                                      &coap_rsp_code,
+                                      golioth_ptr_to_rsp_code(status, &coap_rsp_code),
                                       req->path,
                                       data,
                                       data_len,
@@ -203,7 +215,7 @@ static coap_response_t coap_response_handler(coap_session_t *session,
                 {
                     req->get_block.callback(client,
                                             status,
-                                            &coap_rsp_code,
+                                            golioth_ptr_to_rsp_code(status, &coap_rsp_code),
                                             req->path,
                                             data,
                                             data_len,
@@ -219,7 +231,7 @@ static coap_response_t coap_response_handler(coap_session_t *session,
                     {
                         req->post.callback_post(client,
                                                 status,
-                                                &coap_rsp_code,
+                                                golioth_ptr_to_rsp_code(status, &coap_rsp_code),
                                                 req->path,
                                                 data,
                                                 data_len,
@@ -229,7 +241,7 @@ static coap_response_t coap_response_handler(coap_session_t *session,
                     {
                         req->post.callback_set(client,
                                                status,
-                                               &coap_rsp_code,
+                                               golioth_ptr_to_rsp_code(status, &coap_rsp_code),
                                                req->path,
                                                req->post.arg);
                     }
@@ -249,7 +261,7 @@ static coap_response_t coap_response_handler(coap_session_t *session,
                 {
                     req->post_block.callback(client,
                                              status,
-                                             &coap_rsp_code,
+                                             golioth_ptr_to_rsp_code(status, &coap_rsp_code),
                                              req->path,
                                              SZX_TO_BLOCKSIZE(server_requested_szx),
                                              req->post_block.arg);
@@ -259,7 +271,7 @@ static coap_response_t coap_response_handler(coap_session_t *session,
                     bool is_last = block2_opt ? (COAP_OPT_BLOCK_MORE(block2_opt) == 0) : true;
                     req->post_block.rsp_callback(client,
                                                  status,
-                                                 &coap_rsp_code,
+                                                 golioth_ptr_to_rsp_code(status, &coap_rsp_code),
                                                  req->path,
                                                  data,
                                                  data_len,
@@ -273,7 +285,7 @@ static coap_response_t coap_response_handler(coap_session_t *session,
                 {
                     req->delete.callback(client,
                                          status,
-                                         &coap_rsp_code,
+                                         golioth_ptr_to_rsp_code(status, &coap_rsp_code),
                                          req->path,
                                          req->delete.arg);
                 }
@@ -281,7 +293,12 @@ static coap_response_t coap_response_handler(coap_session_t *session,
         }
     }
 
-    notify_observers(received, client, data, data_len, status, &coap_rsp_code);
+    notify_observers(received,
+                     client,
+                     data,
+                     data_len,
+                     status,
+                     golioth_ptr_to_rsp_code(status, &coap_rsp_code));
 
     return COAP_RESPONSE_OK;
 }
