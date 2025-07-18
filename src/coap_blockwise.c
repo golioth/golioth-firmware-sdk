@@ -103,8 +103,11 @@ static void on_block_sent(struct golioth_client *client,
     assert(arg);
     struct post_block_ctx *ctx = arg;
     ctx->status = status;
-    ctx->coap_rsp_code.code_class = coap_rsp_code->code_class;
-    ctx->coap_rsp_code.code_detail = coap_rsp_code->code_detail;
+    if (NULL != coap_rsp_code)
+    {
+        ctx->coap_rsp_code.code_class = coap_rsp_code->code_class;
+        ctx->coap_rsp_code.code_detail = coap_rsp_code->code_detail;
+    }
     ctx->negotiated_blocksize_szx = BLOCKSIZE_TO_SZX(block_size);
 
     golioth_sys_sem_give(ctx->sem);
