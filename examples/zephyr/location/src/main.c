@@ -19,8 +19,6 @@ LOG_MODULE_REGISTER(location_main, LOG_LEVEL_DBG);
 
 #include "cellular.h"
 
-#define APP_TIMEOUT_S 5
-
 struct golioth_client *client;
 static K_SEM_DEFINE(connected, 0, 1);
 
@@ -142,6 +140,51 @@ static int wifi_scan_and_encode_info(struct net_if *iface)
     return 0;
 }
 
+struct block_upload_source
+{
+    const uint8_t *buf;
+    size_t len;
+};
+
+static enum golioth_status block_upload_read_chunk(uint32_t block_idx,
+                                                   uint8_t *block_buffer,
+                                                   size_t *block_size,
+                                                   bool *is_last,
+                                                   void *arg)
+{
+    size_t bu_max_block_size = *block_size;
+    const struct block_upload_source *bu_source = arg;
+    size_t bu_offset = block_idx * bu_max_block_size;
+    size_t bu_size = bu_source->len - bu_offset;
+
+    if (bu_offset >= bu_source->len)
+    {
+        GLTH_LOGE(TAG, "Calculated offset is past end of buffer: %zu", bu_offset);
+        goto bu_error;
+    }
+
+    if (bu_size <= bu_max_block_size)
+    {
+        *block_size = bu_size;
+        *is_last = true;
+    }
+
+    GLTH_LOGI(TAG,
+              "block-idx: %" PRIu32 " bu_offset: %zu bytes_remaining: %zu",
+              block_idx,
+              bu_offset,
+              bu_size);
+
+    memcpy(block_buffer, bu_source->buf + bu_offset, *block_size);
+    return GOLIOTH_OK;
+
+bu_error:
+    *block_size = 0;
+    *is_last = true;
+
+    return GOLIOTH_ERR_NO_MORE_DATA;
+}
+
 static struct net_mgmt_event_callback wifi_mgmt_cb;
 
 int main(void)
@@ -204,12 +247,15 @@ int main(void)
             return -ENOMEM;
         }
 
-        err = golioth_stream_set_sync(client,
-                                      "/loc/net",
-                                      GOLIOTH_CONTENT_TYPE_CBOR,
-                                      golioth_net_info_get_buf(info),
-                                      golioth_net_info_get_buf_len(info),
-                                      APP_TIMEOUT_S);
+        /* Always use blockwise upload to ensure large payloads are delivered successfully */
+        struct block_upload_source bu_source = {.buf = golioth_net_info_get_buf(info),
+                                                .len = golioth_net_info_get_buf_len(info)};
+
+        int err = golioth_stream_set_blockwise_sync(client,
+                                                    "loc/net",
+                                                    GOLIOTH_CONTENT_TYPE_CBOR,
+                                                    block_upload_read_chunk,
+                                                    (void *) &bu_source);
         if (err != GOLIOTH_OK)
         {
             LOG_ERR("Failed to stream network data: %d", err);
