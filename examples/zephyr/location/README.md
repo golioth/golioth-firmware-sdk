@@ -1,16 +1,18 @@
-# Golioth location demo
-
-> [!IMPORTANT]
-> Using [Golioth
-> Location](https://docs.golioth.io/application-services/location/)
-> requires enrolling in the [private access
-> program](https://blog.golioth.io/golioth-location-private-access/).
+# Golioth location sample
 
 ## Overview
 
-This sample demonstrates how to connect to Golioth and get location
-using cellular network cell towers information and/or scanned WiFi
-networks.
+This sample demonstrates how to use cell tower and / or Wi-Fi access
+point information to stream device position to any destination using
+[Golioth
+Location](https://docs.golioth.io/application-services/location/) and
+[Pipelines](https://docs.golioth.io/data-routing).
+
+> [!NOTE]
+> To successfully deliver device position to a destination, you must
+> have an appropriate Pipeline configured in your Golioth project. This
+> example works with the Golioth Location Pipelines examples in the
+> [documentation](https://docs.golioth.io/data-routing/examples/location).
 
 ## Requirements
 
@@ -100,35 +102,28 @@ $ west flash
 This is the output from the serial console:
 
 ```console
-*** Booting Zephyr OS build v4.0.0-1-gb39d67f51986 ***
+*** Booting nRF Connect SDK v3.0.1-9eb5615da66b ***
+*** Using Zephyr OS v4.0.99-77f865b8f8d0 ***
+*** Golioth Firmware SDK v0.18.1-25-g4939c82e47d7 ***
 [00:00:00.000,000] <inf> net_config: Initializing network
 [00:00:00.000,000] <inf> net_config: IPv4 address: 192.0.2.1
 [00:00:00.000,000] <dbg> location_main: main: Start location sample
-[00:00:00.000,000] <inf> golioth_mbox: Mbox created, bufsize: 1848, num_items: 10, item_size: 168
-[00:00:00.400,003] <inf> golioth_coap_client_zephyr: Golioth CoAP client connected
-[00:00:00.400,003] <inf> location_main: Golioth client connected
-[00:00:00.400,003] <inf> golioth_coap_client_zephyr: Entering CoAP I/O loop
-[00:00:00.580,002] <inf> location_main: 50.663974800 17.942322850 (32)
-[00:00:00.760,001] <inf> location_main: 50.664181170 17.942337360 (23)
-[00:00:01.170,001] <inf> location_main: 50.664464180 17.942332180 (22)
-[00:00:01.700,001] <inf> location_main: 50.665216090 17.942386110 (26)
-[00:00:02.190,001] <inf> location_main: 50.665924320 17.942342850 (17)
-[00:00:02.690,001] <inf> location_main: 50.666588620 17.942297690 (21)
-[00:00:03.180,001] <inf> location_main: 50.667436140 17.942253480 (25)
-[00:00:03.680,001] <inf> location_main: 50.667930110 17.942142910 (27)
-[00:00:04.170,001] <inf> location_main: 50.668083230 17.942170380 (33)
-[00:00:04.670,001] <inf> location_main: 50.669921000 17.948761000 (569)
-[00:00:05.170,001] <inf> location_main: 50.667979840 17.942204310 (36)
-[00:00:05.660,001] <inf> location_main: 50.665045000 17.947862000 (604)
-[00:00:06.170,001] <inf> location_main: 50.668312550 17.942551440 (31)
-[00:00:06.670,001] <inf> location_main: 50.668242700 17.942328220 (52)
-[00:00:07.170,001] <inf> location_main: 50.668386960 17.942680660 (46)
-[00:00:07.670,001] <inf> location_main: 50.668344030 17.943467020 (37)
-[00:00:08.180,001] <inf> location_main: 50.668361530 17.943982820 (50)
-[00:00:08.680,001] <inf> location_main: 50.668426910 17.945390790 (58)
-[00:00:09.170,001] <inf> location_main: 50.668490680 17.947672650 (43)
-[00:00:09.780,001] <inf> location_main: 50.668505260 17.947435020 (34)
-[00:00:10.160,001] <inf> location_main: 50.668612950 17.948811810 (71)
-[00:00:10.670,001] <inf> location_main: 50.668666040 17.948747050 (107)
-[00:00:11.270,001] <inf> location_main: 50.664927000 17.947822000 (593)
+[00:00:00.000,000] <inf> golioth_mbox: Mbox created, bufsize: 2024, num_items: 10, item_size: 184
+[00:00:00.390,003] <inf> golioth_coap_client_zephyr: Golioth CoAP client connected
+[00:00:00.390,003] <inf> location_main: Golioth client connected
+[00:00:00.390,003] <inf> golioth_coap_client_zephyr: Entering CoAP I/O loop
+[00:00:15.010,000] <inf> location_main: block-idx: 0 bu_offset: 0 bytes_remaining: 378
+[00:00:15.330,001] <inf> location_main: Successfully streamed network data
+[00:00:20.010,000] <inf> location_main: block-idx: 0 bu_offset: 0 bytes_remaining: 1082
+[00:00:20.070,001] <inf> location_main: block-idx: 1 bu_offset: 1024 bytes_remaining: 58
+[00:00:20.220,002] <inf> location_main: Successfully streamed network data
+[00:00:25.010,000] <inf> location_main: block-idx: 0 bu_offset: 0 bytes_remaining: 1428
+[00:00:25.070,001] <inf> location_main: block-idx: 1 bu_offset: 1024 bytes_remaining: 404
+[00:00:25.170,002] <inf> location_main: Successfully streamed network data
+[00:00:35.010,000] <inf> location_main: block-idx: 0 bu_offset: 0 bytes_remaining: 1248
+[00:00:35.070,001] <inf> location_main: block-idx: 1 bu_offset: 1024 bytes_remaining: 224
+[00:00:35.170,002] <inf> location_main: Successfully streamed network data
+[00:00:40.010,000] <inf> location_main: block-idx: 0 bu_offset: 0 bytes_remaining: 1112
+[00:00:40.080,001] <inf> location_main: block-idx: 1 bu_offset: 1024 bytes_remaining: 88
+[00:00:40.200,002] <inf> location_main: Successfully streamed network data
 ```
