@@ -4,6 +4,34 @@ All notable changes to this project will be documented in this file.
 The format is based on [Keep a Changelog](https://keepachangelog.com/en/1.0.0/),
 and this project adheres to [Semantic Versioning](https://semver.org/spec/v2.0.0.html).
 
+## [0.19.0] 2025-07-24
+
+### Changed
+
+- Based on experience gained during the Private Access phase, the
+  Golioth Location service has been changed from a dedicated service
+  to a Pipelines Transformer. The experimental firmware service has
+  been removed and the Location examples have been updated to use
+  Pipelines. A new `net_info` utility has been added to facilitate
+  constructing payloads appropriate for use with the transformer.
+
+### Fixed:
+
+- Fixed a NULL dereference that occurred when processing certain errors
+  in CoAP blockwise operations.
+- Fixed some internal log messages being to sent to Golioth even when
+  turned off in Kconfig.
+- Fixed unsigned-compare-against zero in certain error paths
+- Fixed memory leak during blockwise transfers
+
+### Added
+
+- The CoAP client can now receive blockwise responses to blockwise
+  posts.
+- Added an API for receiving OTA manifests blockwise, to support
+  manifests larger than 1 kB.
+- The SDK is now scanned by Coverity Static Analysis
+
 ## [0.18.1] 2025-06-02
 
 ### Fixed
