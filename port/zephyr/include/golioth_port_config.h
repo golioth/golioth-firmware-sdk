@@ -25,7 +25,16 @@
 
 #define GLTH_LOG_BUFFER_HEXDUMP(tag, buf, size, level) LOG_HEXDUMP_DBG(buf, size, "buffer")
 
-#endif
+#else /* CONFIG_GOLIOTH_DEBUG_LOG */
+
+#define GLTH_LOGV(TAG, ...)
+#define GLTH_LOGD(TAG, ...)
+#define GLTH_LOGI(TAG, ...)
+#define GLTH_LOGW(TAG, ...)
+#define GLTH_LOGE(TAG, ...)
+#define GLTH_LOG_BUFFER_HEXDUMP(TAG, ...)
+
+#endif /* CONFIG_GOLIOTH_DEBUG_LOG */
 
 /* Use Zephyr random subsystem, which has support for HW RNGs and HW entropy sources. Seeding is
  * taken care of by Zephyr automatically, so make srand() a noop. */
