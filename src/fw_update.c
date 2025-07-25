@@ -524,7 +524,9 @@ static void fw_update_thread(void *arg)
                                             FW_REPORT_COMPONENT_NAME | FW_REPORT_CURRENT_VERSION
                                                 | FW_REPORT_TARGET_VERSION);
 
+#if defined(CONFIG_GOLIOTH_DEBUG_LOG)
         uint64_t start_time_ms = golioth_sys_now_ms();
+#endif
         download_ctx.bytes_downloaded = 0;
         download_ctx.retries = 0;
         download_ctx.sha = golioth_sys_sha256_create();
