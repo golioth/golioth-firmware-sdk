@@ -4,6 +4,7 @@
  * SPDX-License-Identifier: Apache-2.0
  */
 
+#include <stdio.h>
 #include <golioth/settings.h>
 #include "golioth_util.h"
 #include "coap_client.h"
