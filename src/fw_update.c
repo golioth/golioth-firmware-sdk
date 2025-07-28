@@ -607,6 +607,7 @@ static void fw_update_thread(void *arg)
                   "Successfully downloaded %zu bytes in %" PRIu64 " ms",
                   download_ctx.bytes_downloaded,
                   golioth_sys_now_ms() - start_time_ms);
+        (void) start_time_ms;
 
         GLTH_LOGI(TAG, "State = Downloaded");
         golioth_fw_update_report_state_sync(&_component_ctx,
