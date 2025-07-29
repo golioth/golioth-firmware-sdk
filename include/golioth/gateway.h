@@ -78,6 +78,17 @@ enum golioth_status golioth_gateway_server_cert_get(struct golioth_client *clien
                                                     size_t *len,
                                                     int32_t timeout_s);
 
+/// Set device certificate.
+///
+/// @param client The client handle from @ref golioth_client_create
+/// @param buf Pointer to buffer where certificate is stored
+/// @param len Certificate length
+/// @param timeout_s Timeout in seconds for API call
+enum golioth_status golioth_gateway_device_cert_set(struct golioth_client *client,
+                                                    const void *buf,
+                                                    size_t len,
+                                                    int32_t timeout_s);
+
 #ifdef __cplusplus
 }
 #endif
