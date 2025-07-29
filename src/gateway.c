@@ -199,4 +199,25 @@ enum golioth_status golioth_gateway_server_cert_get(struct golioth_client *clien
     return GOLIOTH_OK;
 }
 
+enum golioth_status golioth_gateway_device_cert_set(struct golioth_client *client,
+                                                    const void *buf,
+                                                    size_t len,
+                                                    int32_t timeout_s)
+{
+    uint8_t token[GOLIOTH_COAP_TOKEN_LEN];
+    golioth_coap_next_token(token);
+
+    return golioth_coap_client_set(client,
+                                   token,
+                                   ".g/device-cert",
+                                   "",
+                                   GOLIOTH_CONTENT_TYPE_OCTET_STREAM,
+                                   buf,
+                                   len,
+                                   NULL,
+                                   NULL,
+                                   true,
+                                   timeout_s);
+}
+
 #endif  // CONFIG_GOLIOTH_GATEWAY
