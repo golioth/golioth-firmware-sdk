@@ -378,18 +378,14 @@ static void on_settings(struct golioth_client *client,
 {
     if (GOLIOTH_OK != status)
     {
-        char coap_code_str[16] = {0};
-        if (coap_rsp_code)
+        GLTH_LOGE(TAG, "Settings error: %d", status);
+        if (GOLIOTH_ERR_COAP_RESPONSE == status)
         {
-            /* Mask class & detail (following RFC 7252) to silence truncation build warning */
-            snprintf(coap_code_str,
-                     sizeof(coap_code_str),
-                     "CoAP: %d.%02d",
-                     (coap_rsp_code->code_class & 0b111),
-                     (coap_rsp_code->code_detail & 0b11111));
+            GLTH_LOGE(TAG,
+                      "CoAP response: %d.%02d",
+                      (coap_rsp_code->code_class & 0b111),
+                      (coap_rsp_code->code_detail & 0b11111));
         }
-
-        GLTH_LOGE(TAG, "Settings callback received status error: %d  %s", status, coap_code_str);
         return;
     }
 
