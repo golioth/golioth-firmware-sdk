@@ -156,24 +156,6 @@ static int golioth_coap_req_reply_handler(struct golioth_coap_req *req,
     else
     {
         rsp.status = GOLIOTH_OK;
-
-        /* If this is a response to a block1 request with more_data==false, reset block context */
-        if (coap_get_option_int(&req->request, COAP_OPTION_BLOCK1) >= 0)
-        {
-            bool has_more;
-            uint32_t block_number;
-            int block_size = coap_get_block1_option(&req->request, &has_more, &block_number);
-            if (0 > block_size)
-            {
-                GLTH_LOGE(TAG, "CoAP request has block1 but failed to parse");
-            }
-            else if (!has_more)
-            {
-                coap_block_transfer_init(&req->block_ctx,
-                                         golioth_estimated_coap_block_size(req->client),
-                                         0);
-            }
-        }
     }
 
     payload = coap_packet_get_payload(response, &payload_len);
@@ -181,6 +163,21 @@ static int golioth_coap_req_reply_handler(struct golioth_coap_req *req,
     block2 = coap_get_option_int(response, COAP_OPTION_BLOCK2);
     if (block2 != -ENOENT)
     {
+        /* If this is the first block in a block2 response, reset block context */
+        bool has_more;
+        uint32_t block_number;
+        int block_size = coap_get_block2_option(response, &has_more, &block_number);
+        if (0 > block_size)
+        {
+            GLTH_LOGE(TAG, "CoAP request has block2 but failed to parse");
+        }
+        else if (0 == block_number)
+        {
+            coap_block_transfer_init(&req->block_ctx,
+                                     golioth_estimated_coap_block_size(req->client),
+                                     0);
+        }
+
         size_t want_offset = req->block_ctx.current;
         size_t cur_offset;
         int new_offset;
