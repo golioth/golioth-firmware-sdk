@@ -11,6 +11,8 @@
 
 #if defined(CONFIG_GOLIOTH_GATEWAY)
 
+#define GOLIOTH_GATEWAY_PATH_PREFIX ".g/"
+
 struct gateway_downlink
 {
     gateway_downlink_block_cb block_cb;
@@ -80,7 +82,10 @@ struct gateway_uplink *golioth_gateway_uplink_start(struct golioth_client *clien
         uplink->downlink = NULL;
     }
 
-    uplink->transfer_ctx = golioth_blockwise_upload_start(client, ".pouch", "", GOLIOTH_CONTENT_TYPE_OCTET_STREAM);
+    uplink->transfer_ctx = golioth_blockwise_upload_start(client,
+                                                          GOLIOTH_GATEWAY_PATH_PREFIX,
+                                                          "pouch",
+                                                          GOLIOTH_CONTENT_TYPE_OCTET_STREAM);
 
     if (NULL == uplink->transfer_ctx)
     {
@@ -159,7 +164,8 @@ static void on_server_cert(struct golioth_client *client,
         return;
     }
 
-    if (payload_size > ctx->len) {
+    if (payload_size > ctx->len)
+    {
         ctx->status = GOLIOTH_ERR_MEM_ALLOC;
         return;
     }
@@ -169,7 +175,9 @@ static void on_server_cert(struct golioth_client *client,
 }
 
 enum golioth_status golioth_gateway_server_cert_get(struct golioth_client *client,
-                                                    void *buf, size_t *len, int32_t timeout_s)
+                                                    void *buf,
+                                                    size_t *len,
+                                                    int32_t timeout_s)
 
 {
     enum golioth_status status;
@@ -182,15 +190,16 @@ enum golioth_status golioth_gateway_server_cert_get(struct golioth_client *clien
     golioth_coap_next_token(token);
 
     status = golioth_coap_client_get(client,
-                                   token,
-                                   ".g/server-cert",
-                                   "",
-                                   GOLIOTH_CONTENT_TYPE_OCTET_STREAM,
-                                   on_server_cert,
-                                   &ctx,
-                                   true,
-                                   timeout_s);
-    if (status != GOLIOTH_OK) {
+                                     token,
+                                     GOLIOTH_GATEWAY_PATH_PREFIX,
+                                     "server-cert",
+                                     GOLIOTH_CONTENT_TYPE_OCTET_STREAM,
+                                     on_server_cert,
+                                     &ctx,
+                                     true,
+                                     timeout_s);
+    if (status != GOLIOTH_OK)
+    {
         return status;
     }
 
@@ -209,8 +218,8 @@ enum golioth_status golioth_gateway_device_cert_set(struct golioth_client *clien
 
     return golioth_coap_client_set(client,
                                    token,
-                                   ".g/device-cert",
-                                   "",
+                                   GOLIOTH_GATEWAY_PATH_PREFIX,
+                                   "device-cert",
                                    GOLIOTH_CONTENT_TYPE_OCTET_STREAM,
                                    buf,
                                    len,
