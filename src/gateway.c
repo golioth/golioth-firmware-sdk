@@ -26,6 +26,15 @@ struct gateway_uplink
     struct gateway_downlink *downlink;
 };
 
+struct server_cert_context
+{
+    void *buf;
+    size_t buf_len;
+    size_t received_size;
+    struct k_sem sem;
+    enum golioth_status status;
+};
+
 static enum golioth_status downlink_block_cb_wrapper(struct golioth_client *client,
                                                      const char *path,
                                                      uint32_t block_idx,
@@ -135,77 +144,75 @@ void golioth_gateway_uplink_finish(struct gateway_uplink *uplink)
     golioth_sys_free(uplink);
 }
 
-struct server_cert_context
-{
-    void *buf;
-    size_t len;
-    enum golioth_status status;
-};
-
-static void on_server_cert(struct golioth_client *client,
-                           enum golioth_status status,
-                           const struct golioth_coap_rsp_code *coap_rsp_code,
-                           const char *path,
-                           const uint8_t *payload,
-                           size_t payload_size,
-                           void *arg)
+static enum golioth_status server_cert_data(struct golioth_client *client,
+                                            const char *path,
+                                            uint32_t block_idx,
+                                            const uint8_t *block_buffer,
+                                            size_t block_buffer_len,
+                                            bool is_last,
+                                            size_t negotiated_block_size,
+                                            void *arg)
 {
     struct server_cert_context *ctx = arg;
 
-    if (status != GOLIOTH_OK)
+    size_t offset = negotiated_block_size * block_idx;
+    if (offset + block_buffer_len > ctx->buf_len)
     {
-        ctx->status = status;
-        return;
+        return GOLIOTH_ERR_MEM_ALLOC;
     }
 
-    if (golioth_payload_is_null(payload, payload_size))
-    {
-        ctx->status = GOLIOTH_ERR_NULL;
-        return;
-    }
+    void *dst = (void *) (((intptr_t) ctx->buf) + offset);
 
-    if (payload_size > ctx->len)
-    {
-        ctx->status = GOLIOTH_ERR_MEM_ALLOC;
-        return;
-    }
+    memcpy(dst, block_buffer, block_buffer_len);
+    ctx->received_size += block_buffer_len;
 
-    memcpy(ctx->buf, payload, payload_size);
-    ctx->len = payload_size;
+    return GOLIOTH_OK;
+}
+
+static void server_cert_end(struct golioth_client *client,
+                            enum golioth_status status,
+                            const struct golioth_coap_rsp_code *coap_rsp_code,
+                            const char *path,
+                            uint32_t block_idx,
+                            void *arg)
+{
+    struct server_cert_context *ctx = arg;
+
+    ctx->status = status;
+    k_sem_give(&ctx->sem);
 }
 
 enum golioth_status golioth_gateway_server_cert_get(struct golioth_client *client,
                                                     void *buf,
-                                                    size_t *len,
-                                                    int32_t timeout_s)
+                                                    size_t *len)
 
 {
     enum golioth_status status;
     struct server_cert_context ctx = {
         .buf = buf,
-        .len = *len,
+        .buf_len = *len,
+        .received_size = 0,
     };
+    k_sem_init(&ctx.sem, 0, 1);
 
-    uint8_t token[GOLIOTH_COAP_TOKEN_LEN];
-    golioth_coap_next_token(token);
-
-    status = golioth_coap_client_get(client,
-                                     token,
-                                     GOLIOTH_GATEWAY_PATH_PREFIX,
-                                     "server-cert",
-                                     GOLIOTH_CONTENT_TYPE_OCTET_STREAM,
-                                     on_server_cert,
-                                     &ctx,
-                                     true,
-                                     timeout_s);
+    status = golioth_blockwise_get(client,
+                                   GOLIOTH_GATEWAY_PATH_PREFIX,
+                                   "server-cert",
+                                   GOLIOTH_CONTENT_TYPE_OCTET_STREAM,
+                                   0,
+                                   server_cert_data,
+                                   server_cert_end,
+                                   &ctx);
     if (status != GOLIOTH_OK)
     {
         return status;
     }
 
-    *len = ctx.len;
+    k_sem_take(&ctx.sem, K_FOREVER);
 
-    return GOLIOTH_OK;
+    *len = ctx.received_size;
+
+    return ctx.status;
 }
 
 enum golioth_status golioth_gateway_device_cert_set(struct golioth_client *client,
