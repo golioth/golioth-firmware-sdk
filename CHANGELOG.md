@@ -4,6 +4,17 @@ All notable changes to this project will be documented in this file.
 The format is based on [Keep a Changelog](https://keepachangelog.com/en/1.0.0/),
 and this project adheres to [Semantic Versioning](https://semver.org/spec/v2.0.0.html).
 
+## [0.20.0] 2025-08-25
+
+### Added
+
+- The Gateway service supports certificate operations
+
+### Changed
+
+- The Gateway service pulls downlink data as a response to uplink
+- The Gateway service targets a different path
+
 ## [0.19.1] 2025-08-13
 
 ### Fixed:
