@@ -103,7 +103,7 @@ static void wifi_scan_done_process(void)
 }
 
 static void wifi_mgmt_event_handler(struct net_mgmt_event_callback *cb,
-                                    uint32_t mgmt_event,
+                                    uint64_t mgmt_event,
                                     struct net_if *iface)
 {
     switch (mgmt_event)

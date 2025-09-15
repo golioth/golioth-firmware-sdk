@@ -16,7 +16,7 @@ tests:
     extra_args:
       - platform:nrf52840dk/nrf52840:fw_update_SHIELD=golioth_esp_at
     platform_allow:
-      - esp32_devkitc_wrover/esp32/procpu
+      - esp32_devkitc/esp32/procpu
       - frdm_rw612
       - nrf52840dk/nrf52840
       - nrf9160dk/nrf9160/ns

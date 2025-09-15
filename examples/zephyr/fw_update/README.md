@@ -48,13 +48,13 @@ uart:-$ kernel reboot cold
 
 ### Platform specific configuration
 
-#### ESP32-DevKitC-WROVER
+#### ESP32-DevKitC
 
 On your host computer open a terminal window, locate the source code of
 this sample application (i.e., `examples/zephyr/fw_update`) and type:
 
 ```console
-$ west build -b esp32_devkitc_wrover/esp32/procpu --sysbuild examples/zephyr/fw_update
+$ west build -b esp32_devkitc/esp32/procpu --sysbuild examples/zephyr/fw_update
 $ west flash
 ```
 
@@ -123,8 +123,8 @@ Build the firmware update but do not flash it to the device. The binary
 update file will be uploaded to Golioth for the OTA update.
 
 ```console
-# For esp32_devkitc_wrover/esp32/procpu
-$ west build -b esp32_devkitc_wrover/esp32/procpu --sysbuild examples/zephyr/fw_update
+# For esp32_devkitc/esp32/procpu
+$ west build -b esp32_devkitc/esp32/procpu --sysbuild examples/zephyr/fw_update
 
 # For nRF52840dk:
 $ west build -b nrf52840dk/nrf52840 --sysbuild examples/zephyr/fw_update

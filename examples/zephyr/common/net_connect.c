@@ -18,7 +18,7 @@ struct wait_data
 };
 
 static void event_cb_handler(struct net_mgmt_event_callback *cb,
-                             uint32_t mgmt_event,
+                             uint64_t mgmt_event,
                              struct net_if *iface)
 {
     struct wait_data *wait = CONTAINER_OF(cb, struct wait_data, cb);
@@ -29,7 +29,7 @@ static void event_cb_handler(struct net_mgmt_event_callback *cb,
     }
 }
 
-static void wait_for_net_event(struct net_if *iface, uint32_t event)
+static void wait_for_net_event(struct net_if *iface, uint64_t event)
 {
     struct wait_data wait;
 

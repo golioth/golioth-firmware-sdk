@@ -41,14 +41,14 @@ uart:-$ kernel reboot cold
 
 ### Platform specific configuration
 
-#### ESP32-DevKitC-WROVER
+#### ESP32-DevKitC
 
 On your host computer open a terminal window, locate the source code of
 this sample application (i.e., `examples/zephyr/lightdb/observe`) and
 type:
 
 ```console
-$ west build -b esp32_devkitc_wrover/esp32/procpu examples/zephyr/lightdb/observe
+$ west build -b esp32_devkitc/esp32/procpu examples/zephyr/lightdb/observe
 $ west flash
 ```
 
