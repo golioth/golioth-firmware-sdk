@@ -4,7 +4,7 @@ manifest:
     import:
       file: west-zephyr.yml
       name-allowlist:
-        - cmsis
+        - cmsis_6
         - hal_espressif
         - hal_nordic
         - hal_nxp

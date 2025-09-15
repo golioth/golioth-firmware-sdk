@@ -12,7 +12,7 @@ tests:
     extra_args:
       - platform:nrf52840dk/nrf52840:SHIELD=golioth_esp_at
     platform_allow:
-      - esp32_devkitc_wrover/esp32/procpu
+      - esp32_devkitc/esp32/procpu
       - native_sim
       - native_sim/native/64
       - nrf52840dk/nrf52840
