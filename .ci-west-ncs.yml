@@ -4,7 +4,7 @@ manifest:
     import:
       file: west-ncs.yml
       name-allowlist:
-        - cmsis
+        - cmsis_6
         - hal_nordic
         - littlefs
         - mbedtls

@@ -469,12 +469,12 @@ static inline atomic_val_t atomic_update(atomic_t *target, atomic_val_t value, a
 }
 
 static void ipv4_changed(struct net_mgmt_event_callback *cb,
-                         uint32_t mgmt_event,
+                         uint64_t mgmt_event,
                          struct net_if *iface)
 {
     struct wifi_manager_data *wifi_mgmt = CONTAINER_OF(cb, struct wifi_manager_data, ipv4_mgmt_cb);
 
-    LOG_DBG("ipv4 event: %x", (unsigned int) mgmt_event);
+    LOG_DBG("ipv4 event: %llx", (unsigned long long) mgmt_event);
 
     switch (mgmt_event)
     {
@@ -495,13 +495,13 @@ static inline int wifi_connect_error(const struct wifi_status *status)
 }
 
 static void wifi_mgmt_event_handler(struct net_mgmt_event_callback *cb,
-                                    uint32_t mgmt_event,
+                                    uint64_t mgmt_event,
                                     struct net_if *iface)
 {
     struct wifi_manager_data *wifi_mgmt = CONTAINER_OF(cb, struct wifi_manager_data, wifi_mgmt_cb);
     const struct wifi_status *status = cb->info;
 
-    LOG_DBG("wifi event: %x", (unsigned int) mgmt_event);
+    LOG_DBG("wifi event: %llx", (unsigned long long) mgmt_event);
 
     switch (mgmt_event)
     {
