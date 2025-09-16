@@ -17,11 +17,11 @@ async def test_hello(board, device):
     await board.set_golioth_psk_credentials(golioth_cred.identity, golioth_cred.key)
 
     # Record timestamp and wait for fourth hello message
-    start = datetime.datetime.utcnow()
+    start = datetime.datetime.now(datetime.UTC)
     await board.wait_for_regex_in_line('.*Sending hello! 3', timeout_s=90.0)
 
     # Check logs for hello messages
-    end = datetime.datetime.utcnow()
+    end = datetime.datetime.now(datetime.UTC)
     logs = await device.get_logs({'start': start.strftime('%Y-%m-%dT%H:%M:%S.%fZ'), 'end': end.strftime('%Y-%m-%dT%H:%M:%S.%fZ')})
 
     # Test logs received from server

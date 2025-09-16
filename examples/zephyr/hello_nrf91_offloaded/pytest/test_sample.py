@@ -35,12 +35,12 @@ async def test_hello(shell, device, build_conf):
 
     # Record timestamp and wait for fourth hello message
 
-    start = datetime.datetime.utcnow()
+    start = datetime.datetime.now(datetime.UTC)
     shell._device.readlines_until(regex=".*Sending hello! 3", timeout=110.0)
 
     # Check logs for hello messages
 
-    end = datetime.datetime.utcnow()
+    end = datetime.datetime.now(datetime.UTC)
 
     logs = await device.get_logs({'start': start.strftime('%Y-%m-%dT%H:%M:%S.%fZ'), 'end': end.strftime('%Y-%m-%dT%H:%M:%S.%fZ')})
 
