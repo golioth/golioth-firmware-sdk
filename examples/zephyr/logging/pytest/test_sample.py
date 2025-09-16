@@ -69,12 +69,12 @@ async def test_logging(shell, device, wifi_ssid, wifi_psk):
 
     # Record timestamp and wait for fourth hello message
 
-    start = datetime.datetime.utcnow()
+    start = datetime.datetime.now(datetime.UTC)
     shell._device.readlines_until(regex=".*Debug info! 2", timeout=90.0)
 
     # Check logs for hello messages
 
-    end = datetime.datetime.utcnow()
+    end = datetime.datetime.now(datetime.UTC)
 
     logs = await device.get_logs({'start': start.strftime('%Y-%m-%dT%H:%M:%S.%fZ'), 'end': end.strftime('%Y-%m-%dT%H:%M:%S.%fZ')})
 
