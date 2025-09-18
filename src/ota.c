@@ -58,6 +58,14 @@ struct component_tstr_value
 };
 
 static enum golioth_ota_state _state = GOLIOTH_OTA_STATE_IDLE;
+static golioth_sys_timer_t manifest_timer;
+static bool manifest_timer_initialized = false;
+static struct manifest_get_args
+{
+    struct golioth_client *client;
+    golioth_get_cb_fn cb;
+    void *arg;
+} manifest_timer_arg;
 
 size_t golioth_ota_size_to_nblocks(size_t component_size)
 {
@@ -88,6 +96,28 @@ const struct golioth_ota_component *golioth_ota_find_component(
     return found;
 }
 
+static void ota_manifest_timer_expiry(golioth_sys_timer_t timer, void *user_arg)
+{
+    struct manifest_get_args *get_args = user_arg;
+
+    if (golioth_client_is_running(get_args->client))
+    {
+        enum golioth_status status =
+            golioth_ota_get_manifest_async(get_args->client, get_args->cb, get_args->arg);
+
+        if (GOLIOTH_OK != status)
+        {
+            GLTH_LOGE(TAG, "Periodic OTA manifest fetch failed");
+        }
+    }
+    else
+    {
+        GLTH_LOGD(TAG, "Client not running; skipping periodic manifest fetch");
+    }
+
+    golioth_sys_timer_reset(timer);
+}
+
 enum golioth_status golioth_ota_observe_manifest_async(struct golioth_client *client,
                                                        golioth_get_cb_fn callback,
                                                        void *arg)
@@ -95,13 +125,41 @@ enum golioth_status golioth_ota_observe_manifest_async(struct golioth_client *cl
     uint8_t token[GOLIOTH_COAP_TOKEN_LEN];
     golioth_coap_next_token(token);
 
-    return golioth_coap_client_observe(client,
-                                       token,
-                                       GOLIOTH_OTA_MANIFEST_PATH_PREFIX,
-                                       GOLIOTH_OTA_MANIFEST_PATH_DESIRED,
-                                       GOLIOTH_CONTENT_TYPE_CBOR,
-                                       callback,
-                                       arg);
+    enum golioth_status status = golioth_coap_client_observe(client,
+                                                             token,
+                                                             GOLIOTH_OTA_MANIFEST_PATH_PREFIX,
+                                                             GOLIOTH_OTA_MANIFEST_PATH_DESIRED,
+                                                             GOLIOTH_CONTENT_TYPE_CBOR,
+                                                             callback,
+                                                             arg);
+    if (GOLIOTH_OK != status)
+    {
+        return status;
+    }
+
+    manifest_timer_arg.client = client;
+    manifest_timer_arg.cb = callback;
+    manifest_timer_arg.arg = arg;
+
+    if (!manifest_timer_initialized && CONFIG_GOLIOTH_OTA_MANIFEST_SUBSCRIPTION_POLL_INTERVAL_S > 0)
+    {
+        struct golioth_timer_config cfg = {
+            .name = "ota_manifest_timer",
+            .expiration_ms = CONFIG_GOLIOTH_OTA_MANIFEST_SUBSCRIPTION_POLL_INTERVAL_S * 1000,
+            .fn = ota_manifest_timer_expiry,
+            .user_arg = &manifest_timer_arg,
+        };
+        manifest_timer = golioth_sys_timer_create(&cfg);
+
+        manifest_timer_initialized = true;
+    }
+
+    if (manifest_timer_initialized)
+    {
+        golioth_sys_timer_reset(manifest_timer);
+    }
+
+    return GOLIOTH_OK;
 }
 
 enum golioth_status golioth_ota_get_manifest_async(struct golioth_client *client,
@@ -110,6 +168,11 @@ enum golioth_status golioth_ota_get_manifest_async(struct golioth_client *client
 {
     uint8_t token[GOLIOTH_COAP_TOKEN_LEN];
     golioth_coap_next_token(token);
+
+    if (manifest_timer_initialized)
+    {
+        golioth_sys_timer_reset(manifest_timer);
+    }
 
     return golioth_coap_client_get(client,
                                    token,
@@ -128,6 +191,11 @@ enum golioth_status golioth_ota_blockwise_manifest_async(struct golioth_client *
                                                          golioth_end_block_cb_fn end_cb,
                                                          void *arg)
 {
+    if (manifest_timer_initialized)
+    {
+        golioth_sys_timer_reset(manifest_timer);
+    }
+
     return golioth_blockwise_get(client,
                                  GOLIOTH_OTA_MANIFEST_PATH_PREFIX,
                                  GOLIOTH_OTA_MANIFEST_PATH_DESIRED,
