@@ -32,6 +32,14 @@ config GOLIOTH_OTA_MAX_NUM_COMPONENTS
     help
         Maximum number of components in an OTA manifest.
 
+config GOLIOTH_OTA_MANIFEST_SUBSCRIPTION_POLL_INTERVAL_S
+    int "Polling period for fetching OTA manifest"
+    default 86400
+    help
+        The maximum period to wait between fetching the OTA manifest. Devices may receive a
+        manifest sooner if they are notified directly by Golioth. A value of 0 will disable
+        the periodic fetch and rely solely on notifications from Golioth.
+
 endif # GOLIOTH_OTA
 
 config GOLIOTH_FW_UPDATE
