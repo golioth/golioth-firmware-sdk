@@ -66,5 +66,5 @@ void net_connect(void)
     }
 
     LOG_INF("Waiting to obtain IP address");
-    wait_for_net_event(iface, NET_EVENT_IPV4_ADDR_ADD);
+    // wait_for_net_event(iface, NET_EVENT_IPV4_ADDR_ADD);
 }

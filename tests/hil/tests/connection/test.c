@@ -24,36 +24,36 @@ void hil_test_entry(const struct golioth_client_config *config)
     struct golioth_client *client = golioth_client_create(config);
 
     golioth_client_register_event_callback(client, on_client_event, NULL);
-    golioth_sys_sem_take(_connected_sem, GOLIOTH_SYS_WAIT_FOREVER);
+    // golioth_sys_sem_take(_connected_sem, GOLIOTH_SYS_WAIT_FOREVER);
 
-    /* Pause to ensure we don't have out-of-order logs */
-    golioth_sys_msleep(1 * 1000);
+    while (1)
+    {
+        /* Pause to ensure we don't have out-of-order logs */
+        golioth_sys_msleep(5 * 1000);
 
-    GLTH_LOGI(TAG, "Stopping client");
-    golioth_client_stop(client);
+        GLTH_LOGI(TAG, "Stopping client");
+        golioth_client_stop(client);
 
-    golioth_sys_msleep(10 * 1000);
+        golioth_sys_msleep(5 * 1000);
 
-    GLTH_LOGI(TAG, "Starting client");
-    golioth_client_start(client);
+        GLTH_LOGI(TAG, "Stopping client (already stopped)");
+        golioth_client_stop(client);
 
-    golioth_sys_sem_take(_connected_sem, GOLIOTH_SYS_WAIT_FOREVER);
+        golioth_sys_msleep(5 * 1000);
 
-    /* Pause to ensure we don't have out-of-order logs */
-    golioth_sys_msleep(1 * 1000);
+        GLTH_LOGI(TAG, "Starting client");
+        golioth_client_start(client);
 
-    GLTH_LOGI(TAG, "Destroying client");
-    golioth_client_destroy(client);
-    client = NULL;
+        // golioth_sys_sem_take(_connected_sem, GOLIOTH_SYS_WAIT_FOREVER);
+    }
 
-    golioth_sys_msleep(10 * 1000);
+    // /* Pause to ensure we don't have out-of-order logs */
+    // golioth_sys_msleep(1 * 1000);
 
-    GLTH_LOGI(TAG, "Starting client");
-    client = golioth_client_create(config);
-    golioth_client_start(client);
+    // GLTH_LOGI(TAG, "Destroying client");
+    // golioth_client_destroy(client);
+    // client = NULL;
 
-    golioth_sys_sem_take(_connected_sem, GOLIOTH_SYS_WAIT_FOREVER);
+    // golioth_sys_msleep(10 * 1000);
 
-    /* Pause to ensure logs are show */
-    golioth_sys_msleep(1 * 1000);
 }

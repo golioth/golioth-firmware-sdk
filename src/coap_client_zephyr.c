@@ -1626,7 +1626,8 @@ enum golioth_status golioth_client_stop(struct golioth_client *client)
 
     GLTH_LOGI(TAG, "Attempting to stop client");
 
-    k_sem_take(&client->run_sem, K_NO_WAIT);
+    int ret = k_sem_take(&client->run_sem, K_NO_WAIT);
+    GLTH_LOGI(TAG, "Client stop sem_take (%d)", ret);
 
     atomic_set_bit(&flags, FLAG_STOP_CLIENT);
 
@@ -1635,6 +1636,7 @@ enum golioth_status golioth_client_stop(struct golioth_client *client)
     // Wait for client to be fully stopped
     while (golioth_client_is_running(client))
     {
+        GLTH_LOGI(TAG, "Client running, waiting...");
         golioth_sys_msleep(100);
     }
 
