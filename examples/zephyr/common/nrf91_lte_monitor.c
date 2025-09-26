@@ -11,6 +11,8 @@ LOG_MODULE_REGISTER(lte_monitor, CONFIG_GOLIOTH_SAMPLE_NRF91_LTE_MONITOR_LOG_LEV
 #include <zephyr/init.h>
 #include <zephyr/sys/reboot.h>
 
+#include <nrf_modem_at.h>
+
 static void lte_handler(const struct lte_lc_evt *const evt)
 {
     switch (evt->type)
@@ -61,7 +63,7 @@ static void lte_handler(const struct lte_lc_evt *const evt)
 #if defined(CONFIG_GOLIOTH_SAMPLE_NRF91_RESET_LOOP_OVERRIDE)
                     LOG_WRN("Attempting factory reset to override reset loop restriction");
                     lte_lc_offline();
-                    lte_lc_factory_reset(LTE_LC_FACTORY_RESET_ALL);
+                    nrf_modem_at_printf("AT%%XFACTORYRESET=0");
                     sys_reboot(SYS_REBOOT_COLD);
 #endif
                     break;
