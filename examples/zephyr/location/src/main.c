@@ -19,6 +19,14 @@ LOG_MODULE_REGISTER(location_main, LOG_LEVEL_DBG);
 
 #include "cellular.h"
 
+#if CONFIG_GOLIOTH_LOCATION_SAMPLE_NET_EVENT_SIZE == 32
+typedef uint32_t net_event_t;
+#elif CONFIG_GOLIOTH_LOCATION_SAMPLE_NET_EVENT_SIZE == 64
+typedef uint64_t net_event_t;
+#else
+#error "CONFIG_GOLIOTH_LOCATION_SAMPLE_NET_EVENT_SIZE invalid"
+#endif
+
 struct golioth_client *client;
 static K_SEM_DEFINE(connected, 0, 1);
 
@@ -103,7 +111,7 @@ static void wifi_scan_done_process(void)
 }
 
 static void wifi_mgmt_event_handler(struct net_mgmt_event_callback *cb,
-                                    uint64_t mgmt_event,
+                                    net_event_t mgmt_event,
                                     struct net_if *iface)
 {
     switch (mgmt_event)
