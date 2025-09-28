@@ -305,7 +305,7 @@ jobs:
           if [[ "${hil_board}" == "nrf9160dk" ]] || [[ "${hil_board}" == "nrf52840dk" ]]; then
             nrfjprog --recover --snr ${!SNR_VAR}
 
-          elif [[ "${hil_board}" == "esp32_devkitc" ]]; then
+          elif [[ "${hil_board}" == "esp32_devkitc_wrover" ]]; then
             esptool.py --port ${!PORT_VAR} erase_flash
 
           elif [[ "${hil_board}" == "frdm_rw612" ]]; then

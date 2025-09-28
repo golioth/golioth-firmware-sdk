@@ -116,7 +116,7 @@ jobs:
       fail-fast: false
       matrix:
         include:
-          - hil_board: esp32_devkitc
+          - hil_board: esp32_devkitc_wrover
             west_board: esp32_devkitc/esp32/procpu
             manifest: .ci-west-zephyr.yml
             binary_name: zephyr/zephyr.bin
@@ -179,7 +179,7 @@ jobs:
         include:
           - hil_board: esp32s3_devkitc
             idf_target: esp32s3
-          - hil_board: esp32_devkitc
+          - hil_board: esp32_devkitc_wrover
             idf_target: esp32
           - hil_board: esp32c3_devkitm
             idf_target: esp32c3
@@ -207,7 +207,7 @@ jobs:
       fail-fast: false
       matrix:
         include:
-          - hil_board: esp32_devkitc
+          - hil_board: esp32_devkitc_wrover
             west_board: esp32_devkitc/esp32/procpu
             manifest: .ci-west-zephyr.yml
             extra_twister_args: >-
@@ -410,7 +410,7 @@ jobs:
         include:
           - hil_board: esp32s3_devkitc
             idf_target: esp32s3
-          - hil_board: esp32_devkitc
+          - hil_board: esp32_devkitc_wrover
             idf_target: esp32
           - hil_board: esp32c3_devkitm
             idf_target: esp32c3
