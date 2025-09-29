@@ -147,6 +147,8 @@ static uint8_t wifi_ssid[WIFI_SSID_MAX_LEN];
 static size_t wifi_ssid_len;
 static uint8_t wifi_psk[WIFI_PSK_MAX_LEN];
 static size_t wifi_psk_len;
+static uint8_t wifi_key[WIFI_SAE_PSK_MAX_LEN];
+static size_t wifi_key_len;
 
 static int wifi_settings_get(const char *name, char *dst, int val_len_max)
 {
@@ -162,6 +164,11 @@ static int wifi_settings_get(const char *name, char *dst, int val_len_max)
     {
         val = wifi_psk;
         val_len = wifi_psk_len;
+    }
+    else if (!strcmp(name, "key"))
+    {
+        val = wifi_key;
+        val_len = wifi_key_len;
     }
     else
     {
@@ -201,6 +208,12 @@ static int wifi_settings_set(const char *name,
         buffer = wifi_psk;
         buffer_len = sizeof(wifi_psk);
         ret_len = &wifi_psk_len;
+    }
+    else if (!strcmp(name, "key"))
+    {
+        buffer = wifi_key;
+        buffer_len = sizeof(wifi_key);
+        ret_len = &wifi_key_len;
     }
     else
     {
@@ -257,6 +270,25 @@ static void wifi_mgmt_connecting_update(struct wifi_manager_data *wifi_mgmt, boo
     }
 }
 
+static enum wifi_security_type wifi_get_security()
+{
+    if (wifi_key_len > 0)
+    {
+        if (!strcmp(wifi_key, "sae"))
+        {
+            LOG_INF("using WIFI_SECURITY_TYPE_SAE");
+            return WIFI_SECURITY_TYPE_SAE;
+        }
+        else
+        {
+            LOG_INF("using WIFI_SECURITY_TYPE_PSK");
+            return WIFI_SECURITY_TYPE_PSK;
+        }
+    }
+    LOG_INF("using WIFI_SECURITY_TYPE_NONE");
+    return WIFI_SECURITY_TYPE_NONE;
+}
+
 static void wifi_connect(struct wifi_manager_data *wifi_mgmt)
 {
     struct wifi_connect_req_params params = {
@@ -265,7 +297,7 @@ static void wifi_connect(struct wifi_manager_data *wifi_mgmt)
         .psk = wifi_psk,
         .psk_length = wifi_psk_len,
         .channel = WIFI_CHANNEL_ANY,
-        .security = wifi_psk_len > 0 ? WIFI_SECURITY_TYPE_PSK : WIFI_SECURITY_TYPE_NONE,
+        .security = wifi_get_security(),
     };
     int err;
 
