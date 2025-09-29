@@ -228,6 +228,7 @@ jobs:
             manifest: .ci-west-zephyr.yml
             extra_twister_args: >-
               --west-flash="--dev-id=${!SNR_VAR}"
+              --west-runner nrfjprog
             run_tests: true
 
           - hil_board: nrf9160dk
