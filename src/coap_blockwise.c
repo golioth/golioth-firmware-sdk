@@ -372,7 +372,7 @@ enum golioth_status golioth_blockwise_upload_block(struct blockwise_transfer *ct
     {
         rsp_ctx = malloc(sizeof(struct get_block_ctx));
         rsp_ctx->block_idx = 0;
-        rsp_ctx->block_size = CONFIG_GOLIOTH_BLOCKWISE_DOWNLOAD_MAX_BLOCK_SIZE;
+        rsp_ctx->block_size = CONFIG_GOLIOTH_BLOCKWISE_UPLOAD_MAX_BLOCK_SIZE;
         memcpy(&rsp_ctx->transfer_ctx, ctx, sizeof(struct blockwise_transfer));
         rsp_ctx->get_cb = get_cb;
         rsp_ctx->end_cb = end_cb;
