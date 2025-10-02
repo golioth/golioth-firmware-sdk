@@ -149,8 +149,9 @@ config GOLIOTH_SAMPLE_SETTINGS_SHELL
 config GOLIOTH_SAMPLE_WIFI
 	bool "WiFi utilities for samples"
 	depends on NET_L2_WIFI_MGMT
+	select WIFI_CREDENTIALS
 	help
-	  Enable utilities for easy WiFi setup, mainly for use inside samples/.
+	  Enable utilities for easy WiFi setup, mainly for use inside examples/.
 
 if GOLIOTH_SAMPLE_WIFI
 
@@ -165,15 +166,6 @@ config GOLIOTH_SAMPLE_WIFI_INIT_PRIORITY
 config GOLIOTH_SAMPLE_WIFI_THREAD_PRIORITY
 	int "WiFi manager thread priority"
 	default 7
-
-config GOLIOTH_SAMPLE_WIFI_SETTINGS
-	bool "Load SSID and PSK from settings subsystem"
-	default y
-	depends on SETTINGS
-	select GOLIOTH_SAMPLE_SETTINGS
-	help
-	  Load WiFi SSID and PSK from settings subsystem, from 'wifi/ssid' and
-	  'wifi/psk' entries.
 
 endif # GOLIOTH_SAMPLE_WIFI
 

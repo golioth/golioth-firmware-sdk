@@ -12,8 +12,8 @@ class  ZephyrBoard(Board):
         await self.send_cmd('kernel reboot cold', wait_str='Booting Zephyr OS')
 
     async def set_wifi_credentials(self, ssid, psk):
-        await self.set_setting('wifi/ssid', f'"{ssid}"')
-        await self.set_setting('wifi/psk', f'"{psk}"')
+        await self.send_cmd(f'wifi cred add -k 1 -s "{ssid}" -p "{psk}"')
+        await self.send_cmd('wifi cred auto_connect')
 
     async def set_golioth_psk_credentials(self, psk_id, psk):
         await self.set_setting('golioth/psk-id', f'"{psk_id}"')

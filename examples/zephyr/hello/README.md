@@ -30,13 +30,14 @@ uart:-$ kernel reboot cold
 
 #### WiFi Configuration
 
-Devices that use WiFi get their WiFi credentials from the settings subsystem.
-You can set the credentials with the following shell commands:
+Devices that use WiFi use Zephyr's [WiFi Credentials](https://docs.zephyrproject.org/latest/connectivity/networking/api/wifi_credentials.html)
+library. The `wifi cred add` shell command accepts network SSID and security
+information and is compatible with a variety of WiFi security mechanisms.
+For example, to add a network that uses WPA2-PSK:
 
 ```sh
-uart:~$ settings set wifi/ssid <ssid>
-uart:~$ settings set wifi/psk <wifi-password>
-uart:-$ kernel reboot cold
+uart:~$ wifi cred add -k 1 -s <my-ssid> -p <my-psk>
+uart:-$ wifi cred auto_connect
 ```
 
 ### Platform specific configuration
