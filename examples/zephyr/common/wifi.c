@@ -12,7 +12,6 @@ LOG_MODULE_REGISTER(golioth_wifi, LOG_LEVEL_INF);
 #include <zephyr/net/net_mgmt.h>
 #include <zephyr/net/wifi_mgmt.h>
 #include <zephyr/pm/device.h>
-#include <zephyr/settings/settings.h>
 #include <zephyr/shell/shell.h>
 
 #define WIFI_MANAGER_MGMT_EVENTS (NET_EVENT_WIFI_CONNECT_RESULT | NET_EVENT_WIFI_DISCONNECT_RESULT)
@@ -141,94 +140,6 @@ static const int wifi_state_change_map[][WIFI_STATE_LAST + 1] = {
     [WIFI_EVENT_IP_DEL] = {INV, INV, 0, 0, CON},
 };
 
-#if defined(CONFIG_GOLIOTH_SAMPLE_WIFI_SETTINGS)
-
-static uint8_t wifi_ssid[WIFI_SSID_MAX_LEN];
-static size_t wifi_ssid_len;
-static uint8_t wifi_psk[WIFI_PSK_MAX_LEN];
-static size_t wifi_psk_len;
-
-static int wifi_settings_get(const char *name, char *dst, int val_len_max)
-{
-    uint8_t *val;
-    size_t val_len;
-
-    if (!strcmp(name, "ssid"))
-    {
-        val = wifi_ssid;
-        val_len = wifi_ssid_len;
-    }
-    else if (!strcmp(name, "psk"))
-    {
-        val = wifi_psk;
-        val_len = wifi_psk_len;
-    }
-    else
-    {
-        LOG_WRN("Unsupported key '%s'", name);
-        return -ENOENT;
-    }
-
-    if (val_len > val_len_max)
-    {
-        LOG_ERR("Not enough space (%zu %d)", val_len, val_len_max);
-        return -ENOMEM;
-    }
-
-    memcpy(dst, val, val_len);
-
-    return val_len;
-}
-
-static int wifi_settings_set(const char *name,
-                             size_t len_rd,
-                             settings_read_cb read_cb,
-                             void *cb_arg)
-{
-    uint8_t *buffer;
-    size_t buffer_len;
-    size_t *ret_len;
-    ssize_t ret;
-
-    if (!strcmp(name, "ssid"))
-    {
-        buffer = wifi_ssid;
-        buffer_len = sizeof(wifi_ssid);
-        ret_len = &wifi_ssid_len;
-    }
-    else if (!strcmp(name, "psk"))
-    {
-        buffer = wifi_psk;
-        buffer_len = sizeof(wifi_psk);
-        ret_len = &wifi_psk_len;
-    }
-    else
-    {
-        LOG_WRN("Unsupported key '%s'", name);
-        return -ENOENT;
-    }
-
-    ret = read_cb(cb_arg, buffer, buffer_len);
-    if (ret < 0)
-    {
-        LOG_ERR("Failed to read value: %d", (int) ret);
-        return ret;
-    }
-
-    *ret_len = ret;
-
-    return 0;
-}
-
-SETTINGS_STATIC_HANDLER_DEFINE(wifi,
-                               "wifi",
-                               IS_ENABLED(CONFIG_SETTINGS_RUNTIME) ? wifi_settings_get : NULL,
-                               wifi_settings_set,
-                               NULL,
-                               NULL);
-
-#endif /* defined(CONFIG_GOLIOTH_SAMPLE_WIFI_SETTINGS) */
-
 static void wifi_event_notify(struct wifi_manager_data *wifi_mgmt, enum wifi_event event)
 {
     wifi_mgmt->event = event;
@@ -259,21 +170,13 @@ static void wifi_mgmt_connecting_update(struct wifi_manager_data *wifi_mgmt, boo
 
 static void wifi_connect(struct wifi_manager_data *wifi_mgmt)
 {
-    struct wifi_connect_req_params params = {
-        .ssid = wifi_ssid,
-        .ssid_length = wifi_ssid_len,
-        .psk = wifi_psk,
-        .psk_length = wifi_psk_len,
-        .channel = WIFI_CHANNEL_ANY,
-        .security = wifi_psk_len > 0 ? WIFI_SECURITY_TYPE_PSK : WIFI_SECURITY_TYPE_NONE,
-    };
     int err;
 
-    LOG_INF("Connecting to '%.*s'", wifi_ssid_len, wifi_ssid);
+    LOG_INF("Connecting to stored WiFi network");
 
     wifi_mgmt_connecting_update(wifi_mgmt, true);
 
-    err = net_mgmt(NET_REQUEST_WIFI_CONNECT, wifi_mgmt->iface, &params, sizeof(params));
+    err = net_mgmt(NET_REQUEST_WIFI_CONNECT_STORED, wifi_mgmt->iface, NULL, 0);
     if (err == -EALREADY)
     {
         LOG_INF("already connected");
