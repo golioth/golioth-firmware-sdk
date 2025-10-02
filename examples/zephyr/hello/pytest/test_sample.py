@@ -18,11 +18,9 @@ async def test_hello(shell, device, wifi_ssid, wifi_psk):
 
     # Set WiFi credential
 
-    if wifi_ssid is not None:
-        shell.exec_command(f"settings set wifi/ssid \"{wifi_ssid}\"")
-
-    if wifi_psk is not None:
-        shell.exec_command(f"settings set wifi/psk \"{wifi_psk}\"")
+    if wifi_ssid is not None and wifi_psk is not None:
+        shell.exec_command(f"wifi cred add -k 1 -s \"{wifi_ssid}\" -p \"{wifi_psk}\"")
+        shell.exec_command("wifi cred auto_connect")
 
     # Record timestamp and wait for fourth hello message
 
