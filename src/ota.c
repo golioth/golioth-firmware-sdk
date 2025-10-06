@@ -118,9 +118,9 @@ static void ota_manifest_timer_expiry(golioth_sys_timer_t timer, void *user_arg)
     golioth_sys_timer_reset(timer);
 }
 
-enum golioth_status golioth_ota_observe_manifest_async(struct golioth_client *client,
-                                                       golioth_get_cb_fn callback,
-                                                       void *arg)
+enum golioth_status golioth_ota_manifest_subscribe(struct golioth_client *client,
+                                                   golioth_get_cb_fn callback,
+                                                   void *arg)
 {
     uint8_t token[GOLIOTH_COAP_TOKEN_LEN];
     golioth_coap_next_token(token);
