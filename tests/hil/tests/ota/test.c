@@ -614,7 +614,7 @@ void hil_test_entry(const struct golioth_client_config *config)
 
     golioth_sys_sem_take(connected_sem, GOLIOTH_SYS_WAIT_FOREVER);
 
-    golioth_ota_observe_manifest_async(client, on_manifest, &callback_arg);
+    golioth_ota_manifest_subscribe(client, on_manifest, &callback_arg);
 
     while (1)
     {

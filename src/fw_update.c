@@ -312,7 +312,7 @@ static void fw_observe_manifest(void)
 
     while (status != GOLIOTH_OK)
     {
-        status = golioth_ota_observe_manifest_async(_client, on_ota_manifest, NULL);
+        status = golioth_ota_manifest_subscribe(_client, on_ota_manifest, NULL);
 
         if (status == GOLIOTH_OK)
         {

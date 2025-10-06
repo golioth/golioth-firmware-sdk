@@ -129,18 +129,19 @@ const struct golioth_ota_component *golioth_ota_find_component(
     const struct golioth_ota_manifest *manifest,
     const char *package);
 
-/// Observe for the OTA manifest asynchronously
+/// Subscribe for updates to the OTA manifest
 ///
-/// This function will enqueue a request and return immediately without
-/// waiting for a response from the server. The callback will be invoked whenever
-/// the manifest is changed on the Golioth server.
+/// This function subscribes to updates to the Golioth OTA manifest. Updates will
+/// be fetched every CONFIG_GOLIOTH_OTA_MANIFEST_SUBSCRIPTION_POLL_INTERVAL_S seconds.
+/// Updates will also be pushed directly to the device if a manifest changes while
+/// the device is connected.
 ///
 /// @param client The client handle from @ref golioth_client_create
 /// @param callback Callback function to register
 /// @param arg Optional argument, forwarded directly to the callback when invoked. Can be NULL.
-enum golioth_status golioth_ota_observe_manifest_async(struct golioth_client *client,
-                                                       golioth_get_cb_fn callback,
-                                                       void *arg);
+enum golioth_status golioth_ota_manifest_subscribe(struct golioth_client *client,
+                                                   golioth_get_cb_fn callback,
+                                                   void *arg);
 
 /// Get the OTA manifest asynchronously
 ///
