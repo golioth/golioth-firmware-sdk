@@ -1,0 +1,221 @@
+name: "Generate: FW Update Test Artifacts"
+
+on:
+  workflow_dispatch:
+  push:
+
+jobs:
+  build-zephyr:
+    container: golioth/golioth-zephyr-base:0.17.0-SDK-v0
+    env:
+      ZEPHYR_SDK_INSTALL_DIR: /opt/toolchains/zephyr-sdk-0.17.0
+    runs-on: ubuntu-24.04
+    steps:
+      - name: Checkout repository
+        uses: actions/checkout@v4
+        with:
+          path: modules/lib/golioth-firmware-sdk
+      - name: Init and update west
+        run: |
+          mkdir -p .west
+          cat <<EOF > .west/config
+          [manifest]
+          path = modules/lib/golioth-firmware-sdk
+          file = .ci-west-zephyr.yml
+          EOF
+
+          west update -o=--depth=1 -n
+
+          uv pip install \
+            -r zephyr/scripts/requirements-base.txt \
+            -r zephyr/scripts/requirements-build-test.txt \
+            -r zephyr/scripts/requirements-run-test.txt
+
+          uv pip install \
+            cryptography==41.0.7 \
+            pyasn1 \
+            pyyaml \
+            cbor>=1.0.0 \
+            imgtool>=1.9.0 \
+            jinja2 \
+            click
+
+          west blobs fetch hal_espressif
+      - name: Write Version File
+        run: |
+          cat <<EOF > modules/lib/golioth-firmware-sdk/examples/zephyr/fw_update/VERSION
+          VERSION_MAJOR = 255
+          VERSION_MINOR = 8
+          PATCHLEVEL = 9
+          VERSION_TWEAK = 0
+          EXTRAVERSION =
+          EOF
+      - name: Compile (Prod)
+        run: |
+          zephyr/scripts/twister                                          \
+            -v                                                            \
+            --overflow-as-errors                                          \
+            --platform frdm_rw612/rw612                                   \
+            --platform nrf52840dk/nrf52840                                \
+            --platform esp32s3_devkitc/esp32s3/procpu                     \
+            --platform rak5010/nrf52840                                   \
+            -T modules/lib/golioth-firmware-sdk/examples/zephyr/fw_update \
+            --build-only
+
+          mkdir test_artifacts
+
+          for dir in $(ls -1 -d twister-out/*/ | xargs -n 1 basename)
+          do
+            mv twister-out/${dir}/zephyr/modules/lib/golioth-firmware-sdk/examples/zephyr/fw_update/*/fw_update/zephyr/zephyr.signed.bin test_artifacts/${dir}-prod.bin
+          done
+      - name: Compile (Dev)
+        run: |
+          zephyr/scripts/twister                                          \
+            -v                                                            \
+            --overflow-as-errors                                          \
+            --platform frdm_rw612/rw612                                   \
+            --platform nrf52840dk/nrf52840                                \
+            --platform esp32_devkitc/esp32/procpu                         \
+            --platform rak5010/nrf52840                                   \
+            -T modules/lib/golioth-firmware-sdk/examples/zephyr/fw_update \
+            --build-only                                                  \
+            -x=CONFIG_GOLIOTH_COAP_HOST_URI=\"coaps://coap.golioth.dev\"
+
+          for dir in $(ls -1 -d twister-out/*/ | xargs -n 1 basename)
+          do
+            mv twister-out/${dir}/zephyr/modules/lib/golioth-firmware-sdk/examples/zephyr/fw_update/*/fw_update/zephyr/zephyr.signed.bin test_artifacts/${dir}-dev.bin
+          done
+      - name: Archive
+        uses: actions/upload-artifact@v4
+        with:
+          name: test_artifacts_zephyr
+          path: test_artifacts
+
+  build-ncs:
+    container: golioth/golioth-zephyr-base:0.17.0-SDK-v0
+    env:
+      ZEPHYR_SDK_INSTALL_DIR: /opt/toolchains/zephyr-sdk-0.17.0
+    runs-on: ubuntu-24.04
+    steps:
+      - name: Checkout repository
+        uses: actions/checkout@v4
+        with:
+          path: modules/lib/golioth-firmware-sdk
+      - name: Init and update west
+        run: |
+          mkdir -p .west
+          cat <<EOF > .west/config
+          [manifest]
+          path = modules/lib/golioth-firmware-sdk
+          file = .ci-west-ncs.yml
+          EOF
+
+          west update -o=--depth=1 -n
+
+          uv pip install \
+            -r zephyr/scripts/requirements-base.txt \
+            -r zephyr/scripts/requirements-build-test.txt \
+            -r zephyr/scripts/requirements-run-test.txt
+
+          uv pip install \
+            cryptography==41.0.7 \
+            pyasn1 \
+            pyyaml \
+            cbor>=1.0.0 \
+            imgtool>=1.9.0 \
+            jinja2 \
+            click
+      - name: Write Version File
+        run: |
+          cat <<EOF > modules/lib/golioth-firmware-sdk/examples/zephyr/fw_update/VERSION
+          VERSION_MAJOR = 255
+          VERSION_MINOR = 8
+          PATCHLEVEL = 9
+          VERSION_TWEAK = 0
+          EXTRAVERSION =
+          EOF
+      - name: Compile (Prod)
+        run: |
+          zephyr/scripts/twister                                          \
+            -v                                                            \
+            --overflow-as-errors                                          \
+            --platform nrf9160dk/nrf9160/ns                               \
+            -T modules/lib/golioth-firmware-sdk/examples/zephyr/fw_update \
+            --build-only
+
+          mkdir test_artifacts
+
+          for dir in $(ls -1 -d twister-out/*/ | xargs -n 1 basename)
+          do
+            mv twister-out/${dir}/zephyr/*/fw_update/zephyr/zephyr.signed.bin test_artifacts/${dir}-prod.bin
+          done
+      - name: Compile (Dev)
+        run: |
+          zephyr/scripts/twister                                          \
+            -v                                                            \
+            --overflow-as-errors                                          \
+            --platform nrf9160dk/nrf9160/ns                               \
+            -T modules/lib/golioth-firmware-sdk/examples/zephyr/fw_update \
+            --build-only                                                  \
+            -x=CONFIG_GOLIOTH_COAP_HOST_URI=\"coaps://coap.golioth.dev\"
+
+          for dir in $(ls -1 -d twister-out/*/ | xargs -n 1 basename)
+          do
+            mv twister-out/${dir}/zephyr/*/fw_update/zephyr/zephyr.signed.bin test_artifacts/${dir}-dev.bin
+          done
+      - name: Archive
+        uses: actions/upload-artifact@v4
+        with:
+          name: test_artifacts_ncs
+          path: test_artifacts
+
+  build-esp-idf:
+    runs-on: ubuntu-24.04
+    steps:
+      - name: Checkout Repository and Submodules
+        uses: actions/checkout@v4
+        with:
+          submodules: 'recursive'
+      - name: Prepare
+        run: |
+          sed -i -e 's/1.2.3/255.8.9/' examples/esp_idf/fw_update/main/app_main.c
+          mkdir test_artifacts
+      - name: Build ESP32-S3 (Prod)
+        uses: espressif/esp-idf-ci-action@v1
+        with:
+          esp_idf_version: v5.4.1
+          target: esp32s3
+          path: 'examples/esp_idf/fw_update'
+          command: idf.py set-target esp32s3 && idf.py build && mv build/merged.bin ../../../test_artifacts/espidf-esp32s3_devkitc-prod.bin
+      - name: Change to dev
+        run: echo CONFIG_GOLIOTH_COAP_HOST_URI=\"coaps://coap.golioth.dev\" >> examples/esp_idf/fw_update/sdkconfig.defaults
+      - name: Build ESP32-S3 (Dev)
+        uses: espressif/esp-idf-ci-action@v1
+        with:
+          esp_idf_version: v5.4.1
+          target: esp32s3
+          path: 'examples/esp_idf/fw_update'
+          command: idf.py set-target esp32s3 && idf.py build && mv build/merged.bin ../../../test_artifacts/espidf-esp32s3_devkitc-dev.bin
+      - name: Archive
+        uses: actions/upload-artifact@v4
+        with:
+          name: test_artifacts_espidf
+          path: test_artifacts
+  combine-and-upload:
+    runs-on: ubuntu-24.04
+    needs:
+      - build-zephyr
+      - build-ncs
+      - build-esp-idf
+    steps:
+      - name: Gather artifacts
+        uses: actions/download-artifact@v4
+        with:
+          path: artifacts
+          merge-multiple: true
+
+      - name: Archive
+        uses: actions/upload-artifact@v4
+        with:
+          name: test_artifacts
+          path: artifacts
