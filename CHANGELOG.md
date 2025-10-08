@@ -4,6 +4,38 @@ All notable changes to this project will be documented in this file.
 The format is based on [Keep a Changelog](https://keepachangelog.com/en/1.0.0/),
 and this project adheres to [Semantic Versioning](https://semver.org/spec/v2.0.0.html).
 
+
+## [0.21.0] 2025-10-08
+
+### Breaking Changes
+- The function for subscribing to changes to the OTA manifest has
+  been renamed from `golioth_ota_observe_manifest_async()` to
+  `golioth_ota_manifest_subscribe()`. This name change reflects the
+  new subscription behavior described below. Applications using
+  Golioth's reference firmware update implementation do not require
+  any changes.
+- Applications which use Golioth's sample library for storing WiFi
+  credentials will need to maintain that functionality themselves
+  going forward or migrate to Zephyr's WiFi Credentials library
+  (see below).
+
+### Added
+
+- The OTA service now periodically polls for updates to the OTA
+  manifest, in addition to using CoAP observations to receive
+  asynchronous notifications of changes to the manifest. The
+  polling period defaults to 1 day and is configurable using
+  `CONFIG_GOLIOTH_OTA_MANIFEST_SUBSCRITION_POLL_INTERVAL_S`.
+
+### Changed
+
+- Zephyr samples use Zephyr's native WiFi Credentials library for
+  storing WiFi network information, instead of the previous custom
+  solution. This provides greater flexibility in the selection of
+  WiFi security and storage backend options.
+- Zephyr support has been upgraded to v4.2.1.
+- nRF Connect SDK support has been upgraded to v3.1.1.
+
 ## [0.20.0] 2025-08-25
 
 ### Added
