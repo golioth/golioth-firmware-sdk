@@ -154,7 +154,7 @@ static int finalize_and_send_response(struct golioth_client *client,
      */
     if (response->num_errors > 0)
     {
-        ok = zcbor_list_end_encode(response->zse, SIZE_MAX);
+        ok = zcbor_list_end_encode(response->zse, ZCBOR_MAX_ELEM_COUNT);
         if (!ok)
         {
             return -ENOMEM;
