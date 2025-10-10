@@ -70,7 +70,11 @@ static int golioth_coap_req_submit(struct golioth_coap_req *req)
 
 static void golioth_coap_req_cancel(struct golioth_coap_req *req)
 {
+    struct golioth_client *client = req->client;
+
+    k_mutex_lock(&client->coap_reqs_lock, K_FOREVER);
     sys_dlist_remove(&req->node);
+    k_mutex_unlock(&client->coap_reqs_lock);
 }
 
 static void golioth_coap_req_cancel_and_free(struct golioth_coap_req *req)
