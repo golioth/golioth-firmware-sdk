@@ -1,7 +1,7 @@
 / {
-
 	fstab {
 		compatible = "zephyr,fstab";
+
 		lfs1: lfs1 {
 			compatible = "zephyr,fstab,littlefs";
 			mount-point = "/lfs1";
@@ -19,7 +19,6 @@
 		zephyr,console = &cdc_acm_uart0;
 		zephyr,shell-uart = &cdc_acm_uart0;
 	};
-
 };
 
 &zephyr_udc0 {
