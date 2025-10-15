@@ -13,6 +13,10 @@ LOG_MODULE_REGISTER(golioth_openthread);
 #include <zephyr/net/openthread.h>
 #include <openthread/error.h>
 
+#ifdef CONFIG_OPENTHREAD_MULTIPLE_INSTANCE
+#error "Only single-instance OpenThread is supported by the Golioth Firmware SDK"
+#endif
+
 struct ot_dns_resolve_context
 {
     otIp6Address golioth_addr;
@@ -48,7 +52,7 @@ int golioth_ot_synthesize_ipv6_address(char *hostname, char *ipv6_addr_buffer)
 
     k_sem_init(&ot_dns_context.sem, 0, 1);
 
-    struct openthread_context *ot_context = openthread_get_default_context();
+    otInstance *instance = otInstanceGetSingle();
 
     err = otIp4AddressFromString(CONFIG_DNS_SERVER1, &dns_server_addr);
     if (err != OT_ERROR_NONE)
@@ -57,7 +61,7 @@ int golioth_ot_synthesize_ipv6_address(char *hostname, char *ipv6_addr_buffer)
         return err;
     }
 
-    err = otNat64SynthesizeIp6Address(ot_context->instance,
+    err = otNat64SynthesizeIp6Address(instance,
                                       &dns_server_addr,
                                       &ot_dns_context.query_config.mServerSockAddr.mAddress);
     if (err != OT_ERROR_NONE)
@@ -66,7 +70,7 @@ int golioth_ot_synthesize_ipv6_address(char *hostname, char *ipv6_addr_buffer)
         return err;
     }
 
-    err = otDnsClientResolveIp4Address(ot_context->instance,
+    err = otDnsClientResolveIp4Address(instance,
                                        hostname,
                                        ot_dns_callback,
                                        &ot_dns_context,
