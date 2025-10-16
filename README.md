@@ -32,7 +32,7 @@ API documentation: https://firmware-sdk-docs.golioth.io/
 This repo uses git submodules, so you will need to clone with the `--recursive` option:
 
 ```sh
-git clone --recursive https://github.com/golioth/golioth-firmware-sdk.git -b v0.21.0
+git clone --recursive https://github.com/golioth/golioth-firmware-sdk.git -b v0.21.1
 ```
 
 Or, if you've already cloned but forgot the `--recursive`, you can update and
