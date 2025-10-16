@@ -105,7 +105,7 @@ typedef struct
 static void freertos_timer_callback(TimerHandle_t xTimer)
 {
     wrapped_timer_t *wt = (wrapped_timer_t *) pvTimerGetTimerID(xTimer);
-    wt->fn(wt->timer, wt->user_arg);
+    wt->fn(wt, wt->user_arg);
 }
 
 static TickType_t ms_to_ticks(uint32_t ms)
