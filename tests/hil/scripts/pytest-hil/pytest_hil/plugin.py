@@ -3,6 +3,7 @@ import allure
 import os
 from pytest_hil.espidfboard import ESPIDFBoard
 from pytest_hil.esp32_devkitc_wrover import ESP32DevKitCWROVER
+from pytest_hil.esp32s3_devkitc import ESP32S3DevKitC
 from pytest_hil.frdmrw612 import FRDMRW612
 from pytest_hil.nrf52840dk import nRF52840DK
 from pytest_hil.nrf9160dk  import nRF9160DK
@@ -109,6 +110,9 @@ async def board(request, baud, wifi_ssid, wifi_psk):
     elif board_name.lower() == "esp32_devkitc_wrover":
         board = ESP32DevKitCWROVER(port, baud, wifi_ssid, wifi_psk, fw_image,
                                    serial_number=serial_number)
+    elif board_name.lower() == "esp32s3_devkitc":
+        board = ESP32S3DevKitC(port, baud, wifi_ssid, wifi_psk, fw_image,
+                               serial_number=serial_number)
     elif board_name.lower() == "frdm_rw612":
         board = FRDMRW612(port, baud, wifi_ssid, wifi_psk, fw_image, serial_number=serial_number)
     elif board_name.lower() == "nrf52840dk":
