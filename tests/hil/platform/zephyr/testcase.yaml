@@ -5,7 +5,7 @@ common:
     - socket
     - goliothd
   platform_allow:
-    - esp32_devkitc/esp32/procpu
+    - esp32s3_devkitc/esp32s3/procpu
     - frdm_rw612
     - native_sim
     - native_sim/native/64
