@@ -42,7 +42,7 @@ uart:-$ wifi cred auto_connect
 
 ### Platform specific configuration
 
-#### ESP32-DevKitC
+#### ESP32-S3-DevKitC
 
 On your host computer open a terminal window, locate the source code of
 this sample application (i.e., `examples/zephyr/logging`) and type:
