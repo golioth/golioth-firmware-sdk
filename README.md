@@ -80,8 +80,6 @@ each of the samples is also continously verified on target.
 | Board                | Platform                 |
 | ---                  | ---                      |
 | ESP32-S3-DevKitC-1   | ESP-IDF (v5.4.1)         |
-| ESP32-C3-DevKitM-1   | ESP-IDF (v5.4.1)         |
-| ESP32-DevKitC-WROVER | ESP-IDF (v5.4.1)         |
 | ESP32-DevKitC-WROVER | Zephyr (v4.2.1)          |
 | FRDM-RW612           | Zephyr (v4.2.1)          |
 | nRF52840 DK + ESP32  | Zephyr (v4.2.1)          |
