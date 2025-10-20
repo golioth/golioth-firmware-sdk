@@ -42,13 +42,13 @@ uart:-$ wifi cred auto_connect
 
 ### Platform specific configuration
 
-#### ESP32-DevKitC
+#### ESP32-S3-DevKitC
 
 On your host computer open a terminal window, locate the source code of this
 sample application (i.e., `examples/zephyr/hello`) and type:
 
 ```console
-$ west build -b esp32_devkitc/esp32/procpu examples/zephyr/hello
+$ west build -b esp32s3_devkitc/esp32s3/procpu examples/zephyr/hello
 $ west flash
 ```
 
