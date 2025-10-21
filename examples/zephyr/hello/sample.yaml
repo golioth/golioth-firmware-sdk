@@ -23,6 +23,7 @@ tests:
       - nrf9160dk/nrf9160/ns
       - nucleo_h563zi/stm32h563xx
       - rak5010/nrf52840
+      - rpi_pico2/rp2350a/m33/w
   sample.golioth.hello.psa_crypto:
     harness: pytest
     tags:
@@ -43,6 +44,7 @@ tests:
       - nrf9160dk/nrf9160/ns
       - nucleo_h563zi/stm32h563xx
       - rak5010/nrf52840
+      - rpi_pico2/rp2350a/m33/w
   sample.golioth.hello.cid:
     harness: pytest
     tags:
@@ -65,3 +67,4 @@ tests:
       - nrf9160dk/nrf9160/ns
       - nucleo_h563zi/stm32h563xx
       - rak5010/nrf52840
+      - rpi_pico2/rp2350a/m33/w
