@@ -248,6 +248,14 @@ jobs:
               --west-flash=--gdb=/usr/bin/gdb
               --west-runner blackmagicprobe
             run_tests: true
+
+          - hil_board: rpi_pico2
+            west_board: rpi_pico2/rp2350a/m33/w
+            manifest: .ci-west-zephyr.yml
+            extra_twister_args: --west-flash=--erase,--cmd-erase='flash erase_sector 0 0 last'
+            binary_blob: "hal_infineon --allow-regex='img/whd/resources/(firmware/COMPONENT_43439|clm/COMPONENT_43439/COMPONENT_MURATA-1YN)/*'"
+            run_tests: true
+
     uses: ./.github/workflows/hil-sample-zephyr.yml
     with:
       hil_board: ${{ matrix.hil_board }}
