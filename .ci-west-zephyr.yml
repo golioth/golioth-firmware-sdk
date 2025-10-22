@@ -8,6 +8,7 @@ manifest:
         - hal_espressif
         - hal_nordic
         - hal_nxp
+        - hal_rpi_pico
         - hal_stm32
         - littlefs
         - mbedtls
