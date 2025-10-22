@@ -26,6 +26,7 @@ tests:
     sysbuild: true
     platform_allow:
       - rak5010/nrf52840
+      - rpi_pico2/rp2350a/m33/w/mcuboot
   sample.golioth.fw_update.native:
     build_only: true
     platform_allow:
