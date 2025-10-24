@@ -11,8 +11,6 @@ async def setup(project, board, device):
     await board.set_golioth_psk_credentials(golioth_cred.identity, golioth_cred.key)
 
     # Setup data for replication
-    await device.lightdb.delete('hil/lightdb')
-
     await device.lightdb.set('hil/lightdb/desired/true', True)
     await device.lightdb.set('hil/lightdb/desired/false', False)
     await device.lightdb.set('hil/lightdb/desired/int', 13)
