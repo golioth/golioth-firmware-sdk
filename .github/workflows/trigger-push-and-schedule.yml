@@ -4,6 +4,7 @@ on:
   push:
     branches:
       - main
+      - szczys/python-golioth-tools-v0.8.0
   pull_request:
   schedule:
     # Run workflow at the start of every day (12 AM UTC)
