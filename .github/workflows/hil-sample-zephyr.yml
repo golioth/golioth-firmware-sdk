@@ -205,7 +205,7 @@ jobs:
             -r zephyr/scripts/requirements-build-test.txt \
             -r zephyr/scripts/requirements-run-test.txt \
             tests/hil/scripts/pytest-zephyr-samples \
-            git+https://github.com/golioth/python-golioth-tools@v0.7.0
+            git+https://github.com/golioth/python-golioth-tools@szczys/remove-websockets
       - name: Power On USB Hub
         run: python3 /opt/golioth-scripts/usb_hub_power.py on
       - name: Download build

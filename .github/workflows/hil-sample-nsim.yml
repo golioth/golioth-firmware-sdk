@@ -71,7 +71,7 @@ jobs:
             -r zephyr/scripts/requirements-build-test.txt \
             -r zephyr/scripts/requirements-run-test.txt \
             modules/lib/golioth-firmware-sdk/tests/hil/scripts/pytest-zephyr-samples \
-            git+https://github.com/golioth/python-golioth-tools@v0.7.0 \
+            git+https://github.com/golioth/python-golioth-tools@szczys/remove-websockets \
             asyncclick==8.1.8
 
       - name: Run tests
