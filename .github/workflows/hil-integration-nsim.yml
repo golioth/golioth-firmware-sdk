@@ -101,7 +101,7 @@ jobs:
             pytest \
             pytest-timeout \
             modules/lib/golioth-firmware-sdk/tests/hil/scripts/pytest-hil \
-            git+https://github.com/golioth/python-golioth-tools@v0.7.0
+            git+https://github.com/golioth/python-golioth-tools@v0.8.0
 
       - name: Build test
         run: |
