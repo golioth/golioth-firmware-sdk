@@ -169,7 +169,7 @@ jobs:
     timeout-minutes: 30
 
     container:
-      image: golioth/golioth-twister-base:de8d92a
+      image: golioth/golioth-twister-base:7b9609f
       env:
         ZEPHYR_SDK_INSTALL_DIR: /opt/toolchains/zephyr-sdk-0.17.4
       volumes:

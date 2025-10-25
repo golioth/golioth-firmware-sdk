@@ -9,7 +9,7 @@ on:
 jobs:
   coverity:
     runs-on: ubuntu-24.04
-    container: golioth/golioth-coverity-base:de8d92a
+    container: golioth/golioth-coverity-base:7b9609f
 
     steps:
       - uses: actions/checkout@v4
