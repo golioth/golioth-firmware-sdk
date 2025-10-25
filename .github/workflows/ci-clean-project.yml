@@ -20,7 +20,7 @@ jobs:
 
       - name: Install Golioth Python Tools
         run: |
-          pip install git+https://github.com/golioth/python-golioth-tools@v0.7.0
+          pip install git+https://github.com/golioth/python-golioth-tools@v0.8.0
 
       - name: Remove old asset from Prod
         run: |
