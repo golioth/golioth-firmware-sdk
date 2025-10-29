@@ -7,6 +7,7 @@ from pytest_hil.frdmrw612 import FRDMRW612
 from pytest_hil.nrf52840dk import nRF52840DK
 from pytest_hil.nrf9160dk  import nRF9160DK
 from pytest_hil.rak5010 import RAK5010
+from pytest_hil.rpi_pico2 import PICO2
 from pytest_hil.linuxboard import LinuxBoard
 from pytest_hil.native_sim import NativeSimBoard
 
@@ -27,6 +28,10 @@ def pytest_addoption(parser):
             help="Serial number to identify on-board debugger")
     parser.addoption("--bmp-port", type=str,
             help="Serial port of a BlackMagicProbe programmer")
+    parser.addoption("--openocd-binary", type=str,
+            help="Path to the OpenOCD binary")
+    parser.addoption("--openocd-script-dir", type=str,
+            help="Path to the OpenOCD script folder")
     parser.addoption("--custom-suitename", type=str,
             help="Use a custom suite name when generating Allure reports")
     parser.addoption("--allure-board", type=str,
@@ -82,6 +87,20 @@ def wifi_ssid(request):
 def wifi_psk(request):
     return request.config.getoption("--wifi-psk")
 
+@pytest.fixture(scope="session")
+def openocd_binary(request):
+    if request.config.getoption("--openocd-binary") is not None:
+        return request.config.getoption("--openocd-binary")
+    else:
+        return os.environ.get('OPENOCD_BINARY')
+
+@pytest.fixture(scope="session")
+def openocd_script_dir(request):
+    if request.config.getoption("--openocd-script-dir") is not None:
+        return request.config.getoption("--openocd-script-dir")
+    else:
+        return os.environ.get('OPENOCD_SCRIPT_DIR')
+
 @pytest.fixture(scope="module")
 async def board(request, baud, wifi_ssid, wifi_psk):
     if request.config.getoption('twister_harness', None):
@@ -101,6 +120,8 @@ async def board(request, baud, wifi_ssid, wifi_psk):
         fw_image = request.getfixturevalue("fw_image")
         serial_number = request.getfixturevalue("serial_number")
         bmp_port = request.getfixturevalue("bmp_port")
+        openocd_binary = request.getfixturevalue("openocd_binary")
+        openocd_script_dir = request.getfixturevalue("openocd_script_dir")
 
     if (board_name.lower() == "esp32s3_devkitc_espidf" or
         board_name.lower() == "esp32c3_devkitm_espidf" or
@@ -119,6 +140,9 @@ async def board(request, baud, wifi_ssid, wifi_psk):
         board = NativeSimBoard(fw_image)
     elif board_name.lower() == "rak5010":
         board = RAK5010(port, baud, wifi_ssid, wifi_psk, fw_image, bmp_port=bmp_port)
+    elif board_name.lower() == "rpi_pico2":
+        board = PICO2(port, baud, wifi_ssid, wifi_psk, fw_image, serial_number=serial_number,
+                      openocd_binary=openocd_binary, openocd_script_dir=openocd_script_dir)
     elif board_name.lower() == "linux":
         board = LinuxBoard(fw_image)
     else:
