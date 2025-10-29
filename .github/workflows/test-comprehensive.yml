@@ -137,6 +137,11 @@ jobs:
             west_board: rak5010/nrf52840
             manifest: .ci-west-zephyr.yml
             binary_name: zephyr/zephyr.hex
+          - hil_board: rpi_pico2
+            west_board: rpi_pico2/rp2350a/m33/w
+            manifest: .ci-west-zephyr.yml
+            binary_name: zephyr/zephyr.hex
+            binary_blob: "hal_infineon --allow-regex='img/whd/resources/(firmware/COMPONENT_43439|clm/COMPONENT_43439/COMPONENT_MURATA-1YN)/*'"
     uses: ./.github/workflows/hil-integration-zephyr.yml
     with:
       hil_board: ${{ matrix.hil_board }}

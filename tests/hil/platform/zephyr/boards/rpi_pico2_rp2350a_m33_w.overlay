@@ -1,0 +1,3 @@
+/* Partitioning for the RP2350A-M33 board using 4M flash.
+ */
+#include <raspberrypi/partitions_4M_default.dtsi>
