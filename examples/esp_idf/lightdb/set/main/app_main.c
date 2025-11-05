@@ -41,7 +41,7 @@ static void counter_set_handler(struct golioth_client *client,
 {
     if (status != GOLIOTH_OK)
     {
-        GLTH_LOGW(TAG, "Failed to set counter: %d", status);
+        GLTH_LOGW(TAG, "Failed to set counter: %d (%s)", status, golioth_status_to_str(status));
         return;
     }
 
@@ -57,7 +57,7 @@ static void counter_set_async(int counter)
     err = golioth_lightdb_set_int_async(client, "counter", counter, counter_set_handler, NULL);
     if (err)
     {
-        GLTH_LOGW(TAG, "Failed to set counter: %d", err);
+        GLTH_LOGW(TAG, "Failed to set counter: %d (%s)", err, golioth_status_to_str(err));
         return;
     }
 }
@@ -69,7 +69,7 @@ static void counter_set_sync(int counter)
     err = golioth_lightdb_set_int_sync(client, "counter", counter, APP_TIMEOUT_S);
     if (err)
     {
-        GLTH_LOGW(TAG, "Failed to set counter: %d", err);
+        GLTH_LOGW(TAG, "Failed to set counter: %d (%s)", err, golioth_status_to_str(err));
         return;
     }
 
@@ -92,7 +92,7 @@ static void counter_set_json_async(int counter)
                                     NULL);
     if (err)
     {
-        GLTH_LOGW(TAG, "Failed to set counter: %d", err);
+        GLTH_LOGW(TAG, "Failed to set counter: %d (%s)", err, golioth_status_to_str(err));
         return;
     }
 }
@@ -140,7 +140,7 @@ static void counter_set_cbor_sync(int counter)
                                        APP_TIMEOUT_S);
     if (err != 0)
     {
-        GLTH_LOGW(TAG, "Failed to set counter: %d", err);
+        GLTH_LOGW(TAG, "Failed to set counter: %d (%s)", err, golioth_status_to_str(err));
     }
     else
     {

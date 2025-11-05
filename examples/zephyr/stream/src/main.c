@@ -98,7 +98,7 @@ static void temperature_async_push_handler(struct golioth_client *client,
 {
     if (status != GOLIOTH_OK)
     {
-        LOG_WRN("Failed to push temperature: %d", status);
+        LOG_WRN("Failed to push temperature: %d (%s)", status, golioth_status_to_str(status));
         return;
     }
 
@@ -172,7 +172,7 @@ static void temperature_push_cbor(const struct sensor_value *temp, bool async)
 
     if (err)
     {
-        LOG_WRN("Failed to push temperature: %d", err);
+        LOG_WRN("Failed to push temperature: %d (%s)", err, golioth_status_to_str(err));
         return;
     }
 

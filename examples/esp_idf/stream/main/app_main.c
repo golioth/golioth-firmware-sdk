@@ -57,7 +57,10 @@ static void temperature_push_handler(struct golioth_client *client,
 {
     if (status != GOLIOTH_OK)
     {
-        GLTH_LOGW(TAG, "Failed to push temperature: %d", status);
+        GLTH_LOGW(TAG,
+                  "Failed to push temperature: %d (%s)",
+                  status,
+                  golioth_status_to_str(status));
         return;
     }
 
@@ -131,7 +134,7 @@ static void temperature_push_cbor(struct golioth_client *client, float temp, boo
 
     if (err)
     {
-        GLTH_LOGW(TAG, "Failed to push temperature: %d", err);
+        GLTH_LOGW(TAG, "Failed to push temperature: %d (%s)", err, golioth_status_to_str(err));
         return;
     }
 

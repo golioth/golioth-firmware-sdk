@@ -108,7 +108,10 @@ static void on_rpc(struct golioth_client *client,
 
     if (status != GOLIOTH_OK)
     {
-        GLTH_LOGE(TAG, "Error response on observed RPC: %d", status);
+        GLTH_LOGE(TAG,
+                  "Error response on observed RPC: %d (%s)",
+                  status,
+                  golioth_status_to_str(status));
         return;
     }
 

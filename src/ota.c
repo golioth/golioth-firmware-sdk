@@ -107,7 +107,10 @@ static void ota_manifest_timer_expiry(golioth_sys_timer_t timer, void *user_arg)
 
         if (GOLIOTH_OK != status)
         {
-            GLTH_LOGE(TAG, "Periodic OTA manifest fetch failed");
+            GLTH_LOGE(TAG,
+                      "Periodic OTA manifest fetch failed: %d (%s)",
+                      status,
+                      golioth_status_to_str(status));
         }
     }
     else

@@ -40,7 +40,10 @@ static void counter_observe_handler(struct golioth_client *client,
 {
     if (status != GOLIOTH_OK)
     {
-        GLTH_LOGW(TAG, "Failed to receive observed payload: %d", status);
+        GLTH_LOGW(TAG,
+                  "Failed to receive observed payload: %d (%s)",
+                  status,
+                  golioth_status_to_str(status));
         return;
     }
 
