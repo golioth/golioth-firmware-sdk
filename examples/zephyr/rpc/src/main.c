@@ -82,7 +82,7 @@ int main(void)
 
     if (err)
     {
-        LOG_ERR("Failed to register RPC: %d", err);
+        LOG_ERR("Failed to register RPC: %d (%s)", err, golioth_status_to_str(err));
     }
 
     while (true)

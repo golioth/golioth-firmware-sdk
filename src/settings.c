@@ -384,7 +384,7 @@ static void on_settings(struct golioth_client *client,
 {
     if (GOLIOTH_OK != status)
     {
-        GLTH_LOGE(TAG, "Settings error: %d", status);
+        GLTH_LOGE(TAG, "Settings error: %d (%s)", status, golioth_status_to_str(status));
         if (GOLIOTH_ERR_COAP_RESPONSE == status)
         {
             GLTH_LOGE(TAG,
@@ -487,7 +487,7 @@ struct golioth_settings *golioth_settings_init(struct golioth_client *client)
 
     if (status != GOLIOTH_OK)
     {
-        GLTH_LOGE(TAG, "Failed to observe settings");
+        GLTH_LOGE(TAG, "Failed to observe settings %d (%s)", status, golioth_status_to_str(status));
         golioth_sys_free(gsettings);
         gsettings = NULL;
     }

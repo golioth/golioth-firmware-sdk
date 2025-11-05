@@ -187,7 +187,7 @@ enum golioth_status golioth_fw_update_report_state_sync(struct fw_update_compone
         }
     }
 
-    GLTH_LOGE(TAG, "Failed to report fw status: %u", status);
+    GLTH_LOGE(TAG, "Failed to report fw status: %d (%s)", status, golioth_status_to_str(status));
     return status;
 }
 
@@ -201,7 +201,10 @@ static void on_ota_manifest(struct golioth_client *client,
 {
     if (status != GOLIOTH_OK)
     {
-        GLTH_LOGE(TAG, "Error in OTA manifest observation: %d", status);
+        GLTH_LOGE(TAG,
+                  "Error in OTA manifest observation: %d (%s)",
+                  status,
+                  golioth_status_to_str(status));
         return;
     }
 
@@ -214,7 +217,7 @@ static void on_ota_manifest(struct golioth_client *client,
 
     if (parse_status != GOLIOTH_OK)
     {
-        GLTH_LOGE(TAG, "Failed to parse manifest: %s", golioth_status_to_str(parse_status));
+        GLTH_LOGE(TAG, "Failed to parse manifest: %d (%s)", status, golioth_status_to_str(status));
         return;
     }
     golioth_sys_sem_give(_manifest_rcvd);
@@ -320,9 +323,10 @@ static void fw_observe_manifest(void)
         }
 
         GLTH_LOGW(TAG,
-                  "Failed to observe manifest, retry in %" PRIu32 "s: %d",
+                  "Failed to observe manifest, retry in %" PRIu32 "s: %d (%s)",
                   retry_delay_s,
-                  status);
+                  status,
+                  golioth_status_to_str(status));
 
         golioth_sys_msleep(retry_delay_s * 1000);
 
@@ -558,7 +562,10 @@ static void fw_update_thread(void *arg)
         }
         else
         {
-            GLTH_LOGE(TAG, "Failed to start OTA componnent download");
+            GLTH_LOGE(TAG,
+                      "Failed to start OTA component download: %d (%s)",
+                      err,
+                      golioth_status_to_str(err));
         }
 
         golioth_sys_timer_destroy(download_ctx.block_retry_timer);

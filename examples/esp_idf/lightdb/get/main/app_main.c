@@ -45,7 +45,10 @@ static void counter_get_handler(struct golioth_client *client,
 {
     if ((status != GOLIOTH_OK) || golioth_payload_is_null(payload, payload_size))
     {
-        GLTH_LOGW(TAG, "Failed to get counter (async): %d", status);
+        GLTH_LOGW(TAG,
+                  "Failed to get counter (async): %d (%s)",
+                  status,
+                  golioth_status_to_str(status));
     }
     else
     {
@@ -64,7 +67,7 @@ static void counter_get_async(struct golioth_client *client)
                                     NULL);
     if (err)
     {
-        GLTH_LOGW(TAG, "failed to get data from LightDB: %d", err);
+        GLTH_LOGW(TAG, "failed to get data from LightDB: %d (%s)", err, golioth_status_to_str(err));
     }
 }
 
@@ -76,7 +79,7 @@ static void counter_get_sync(struct golioth_client *client)
     err = golioth_lightdb_get_int_sync(client, "counter", &value, APP_TIMEOUT_S);
     if (err)
     {
-        GLTH_LOGW(TAG, "failed to get data from LightDB: %d", err);
+        GLTH_LOGW(TAG, "failed to get data from LightDB: %d (%s)", err, golioth_status_to_str(err));
     }
     else
     {
@@ -113,7 +116,10 @@ static void counter_get_cbor_handler(struct golioth_client *client,
 {
     if ((status != GOLIOTH_OK) || golioth_payload_is_null(payload, payload_size))
     {
-        GLTH_LOGW(TAG, "Failed to get counter (async): %d", status);
+        GLTH_LOGW(TAG,
+                  "Failed to get counter (async): %d (%s)",
+                  status,
+                  golioth_status_to_str(status));
         return;
     }
 
@@ -140,7 +146,7 @@ static void counter_get_cbor_async(struct golioth_client *client)
                                         NULL);
     if (err)
     {
-        GLTH_LOGW(TAG, "Failed to get data from LightDB: %d", err);
+        GLTH_LOGW(TAG, "Failed to get data from LightDB: %d (%s)", err, golioth_status_to_str(err));
     }
 }
 

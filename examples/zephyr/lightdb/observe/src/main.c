@@ -40,7 +40,9 @@ static void counter_observe_handler(struct golioth_client *client,
 {
     if (status != GOLIOTH_OK)
     {
-        LOG_WRN("Failed to receive observed payload: %d", status);
+        LOG_WRN("Failed to receive observed payload: %d (%s)",
+                status,
+                golioth_status_to_str(status));
         return;
     }
 

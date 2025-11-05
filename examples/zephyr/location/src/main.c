@@ -266,7 +266,7 @@ int main(void)
                                                     (void *) &bu_source);
         if (err != GOLIOTH_OK)
         {
-            LOG_ERR("Failed to stream network data: %d", err);
+            LOG_ERR("Failed to stream network data: %d (%s)", err, golioth_status_to_str(err));
         }
         else
         {

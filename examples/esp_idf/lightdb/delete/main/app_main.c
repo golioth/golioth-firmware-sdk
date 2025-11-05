@@ -40,7 +40,7 @@ static void counter_handler(struct golioth_client *client,
 {
     if (status != GOLIOTH_OK)
     {
-        GLTH_LOGW(TAG, "Failed to deleted counter: %d", status);
+        GLTH_LOGW(TAG, "Failed to deleted counter: %d (%s)", status, golioth_status_to_str(status));
         return;
     }
 
@@ -67,7 +67,10 @@ static void counter_delete_sync(struct golioth_client *client)
     err = golioth_lightdb_delete_sync(client, "counter", APP_TIMEOUT_S);
     if (err)
     {
-        GLTH_LOGW(TAG, "failed to delete data from LightDB: %d", err);
+        GLTH_LOGW(TAG,
+                  "failed to delete data from LightDB: %d (%s)",
+                  err,
+                  golioth_status_to_str(err));
     }
 
     GLTH_LOGI(TAG, "Counter deleted successfully");

@@ -45,7 +45,7 @@ static void counter_get_handler(struct golioth_client *client,
 {
     if ((status != GOLIOTH_OK) || golioth_payload_is_null(payload, payload_size))
     {
-        LOG_WRN("Failed to get counter (async): %d", status);
+        LOG_WRN("Failed to get counter (async): %d (%s)", status, golioth_status_to_str(status));
     }
     else
     {
@@ -64,7 +64,7 @@ static void counter_get_async(struct golioth_client *client)
                                     NULL);
     if (err)
     {
-        LOG_WRN("failed to get data from LightDB: %d", err);
+        LOG_WRN("failed to get data from LightDB: %d (%s)", err, golioth_status_to_str(err));
     }
 }
 
@@ -76,7 +76,7 @@ static void counter_get_sync(struct golioth_client *client)
     err = golioth_lightdb_get_int_sync(client, "counter", &value, APP_TIMEOUT_S);
     if (err)
     {
-        LOG_WRN("failed to get data from LightDB: %d", err);
+        LOG_WRN("failed to get data from LightDB: %d (%s)", err, golioth_status_to_str(err));
     }
     else
     {
@@ -95,7 +95,7 @@ static void counter_get_json_sync(struct golioth_client *client)
         golioth_lightdb_get_sync(client, "", GOLIOTH_CONTENT_TYPE_JSON, sbuf, &len, APP_TIMEOUT_S);
     if (err || (0 == strlen(sbuf)))
     {
-        LOG_WRN("failed to get JSON data from LightDB: %d", err);
+        LOG_WRN("failed to get JSON data from LightDB: %d (%s)", err, golioth_status_to_str(err));
     }
     else
     {
@@ -113,7 +113,7 @@ static void counter_get_cbor_handler(struct golioth_client *client,
 {
     if ((status != GOLIOTH_OK) || golioth_payload_is_null(payload, payload_size))
     {
-        LOG_WRN("Failed to get counter (async): %d", status);
+        LOG_WRN("Failed to get counter (async): %d (%s)", status, golioth_status_to_str(status));
         return;
     }
 
@@ -140,7 +140,7 @@ static void counter_get_cbor_async(struct golioth_client *client)
                                         NULL);
     if (err)
     {
-        LOG_WRN("Failed to get data from LightDB: %d", err);
+        LOG_WRN("Failed to get data from LightDB: %d (%s)", err, golioth_status_to_str(err));
     }
 }
 
