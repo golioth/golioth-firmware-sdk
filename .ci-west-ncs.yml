@@ -13,6 +13,7 @@ manifest:
         - nrf
         - nrfxlib
         - oberon-psa-crypto
+        - openthread
         - segger
         - trusted-firmware-m
         - zcbor
