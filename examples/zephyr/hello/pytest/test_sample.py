@@ -1,4 +1,5 @@
 import datetime
+import time
 import logging
 import pytest
 import trio
@@ -31,7 +32,10 @@ async def test_hello(shell, device, wifi_ssid, wifi_psk):
 
     end = datetime.datetime.now(datetime.UTC)
 
+    start_time = time.time()
     logs = await device.get_logs({'start': start.strftime('%Y-%m-%dT%H:%M:%S.%fZ'), 'end': end.strftime('%Y-%m-%dT%H:%M:%S.%fZ')})
+    end_time = time.time()
+    LOGGER.info(f"Logs fetch took: {end_time - start_time}")
 
     # Test logs received from server
 
