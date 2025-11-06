@@ -4,6 +4,7 @@ on:
   push:
     branches:
       - main
+      - test/ci-logs-latency
   pull_request:
   schedule:
     # Run workflow at the start of every day (12 AM UTC)
