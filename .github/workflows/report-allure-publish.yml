@@ -54,7 +54,7 @@ jobs:
           fi
 
       - name: Build Allure report
-        uses: simple-elf/allure-report-action@v1.11
+        uses: simple-elf/allure-report-action@53ebb757a2097edc77c53ecef4d454fc2f2f774c
         if: success() || failure()
         with:
           gh_pages: ${{ env.GHPAGES_LABEL }}
