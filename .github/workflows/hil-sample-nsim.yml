@@ -71,10 +71,10 @@ jobs:
             -r zephyr/scripts/requirements-build-test.txt \
             -r zephyr/scripts/requirements-run-test.txt \
             modules/lib/golioth-firmware-sdk/tests/hil/scripts/pytest-zephyr-samples \
-            git+https://github.com/golioth/python-golioth-tools@v0.8.0 \
+            git+https://github.com/golioth/python-golioth-tools@szczys/test-response-timeout \
             asyncclick==8.1.8
 
-      - name: Run tests
+      - name: Run tests 1
         run: |
           rm -rf allure-reports
           zephyr/scripts/twister                                                    \
@@ -91,65 +91,113 @@ jobs:
               --pytest-args="--alluredir=allure-reports"                            \
               --pytest-args="--runner-name=${{ runner.name }}"                      \
               --pytest-args="--hil-board=${{ inputs.platform }}"
+          EXITCODE=$?
+          grep -Rn "PYTEST: INFO: Logs fetch took" twister-out | tee -a logs-fetch-timing-${{ inputs.platform }}.txt
+          exit $EXITCODE
 
-      - name: Safe upload twister artifacts
+      - name: Run tests 2
+        run: |
+          rm -rf allure-reports
+          zephyr/scripts/twister                                                    \
+              -v                                                                    \
+              --platform ${{ inputs.west_board }}                                   \
+              -T modules/lib/golioth-firmware-sdk/examples/zephyr                   \
+              -C --coverage-basedir modules/lib/golioth-firmware-sdk                \
+              --coverage-formats txt                                                \
+              ${EXTRA_TWISTER_ARGS}                                                 \
+              -x=CONFIG_GOLIOTH_COAP_HOST_URI=\"${{ inputs.coap_gateway_url }}\"    \
+              --pytest-args="--api-url=${{ inputs.api-url }}"                       \
+              --pytest-args="--api-key=${{ secrets[inputs.api-key-id] }}"           \
+              --pytest-args="--mask-secrets"                                        \
+              --pytest-args="--alluredir=allure-reports"                            \
+              --pytest-args="--runner-name=${{ runner.name }}"                      \
+              --pytest-args="--hil-board=${{ inputs.platform }}"
+          EXITCODE=$?
+          grep -Rn "PYTEST: INFO: Logs fetch took" twister-out | tee -a logs-fetch-timing-${{ inputs.platform }}.txt
+          exit $EXITCODE
+
+      - name: Run tests 3
+        run: |
+          rm -rf allure-reports
+          zephyr/scripts/twister                                                    \
+              -v                                                                    \
+              --platform ${{ inputs.west_board }}                                   \
+              -T modules/lib/golioth-firmware-sdk/examples/zephyr                   \
+              -C --coverage-basedir modules/lib/golioth-firmware-sdk                \
+              --coverage-formats txt                                                \
+              ${EXTRA_TWISTER_ARGS}                                                 \
+              -x=CONFIG_GOLIOTH_COAP_HOST_URI=\"${{ inputs.coap_gateway_url }}\"    \
+              --pytest-args="--api-url=${{ inputs.api-url }}"                       \
+              --pytest-args="--api-key=${{ secrets[inputs.api-key-id] }}"           \
+              --pytest-args="--mask-secrets"                                        \
+              --pytest-args="--alluredir=allure-reports"                            \
+              --pytest-args="--runner-name=${{ runner.name }}"                      \
+              --pytest-args="--hil-board=${{ inputs.platform }}"
+          EXITCODE=$?
+          grep -Rn "PYTEST: INFO: Logs fetch took" twister-out | tee -a logs-fetch-timing-${{ inputs.platform }}.txt
+          exit $EXITCODE
+
+      - name: Run tests 4
+        run: |
+          rm -rf allure-reports
+          zephyr/scripts/twister                                                    \
+              -v                                                                    \
+              --platform ${{ inputs.west_board }}                                   \
+              -T modules/lib/golioth-firmware-sdk/examples/zephyr                   \
+              -C --coverage-basedir modules/lib/golioth-firmware-sdk                \
+              --coverage-formats txt                                                \
+              ${EXTRA_TWISTER_ARGS}                                                 \
+              -x=CONFIG_GOLIOTH_COAP_HOST_URI=\"${{ inputs.coap_gateway_url }}\"    \
+              --pytest-args="--api-url=${{ inputs.api-url }}"                       \
+              --pytest-args="--api-key=${{ secrets[inputs.api-key-id] }}"           \
+              --pytest-args="--mask-secrets"                                        \
+              --pytest-args="--alluredir=allure-reports"                            \
+              --pytest-args="--runner-name=${{ runner.name }}"                      \
+              --pytest-args="--hil-board=${{ inputs.platform }}"
+          EXITCODE=$?
+          grep -Rn "PYTEST: INFO: Logs fetch took" twister-out | tee -a logs-fetch-timing-${{ inputs.platform }}.txt
+          exit $EXITCODE
+
+      - name: Run tests 5
+        run: |
+          rm -rf allure-reports
+          zephyr/scripts/twister                                                    \
+              -v                                                                    \
+              --platform ${{ inputs.west_board }}                                   \
+              -T modules/lib/golioth-firmware-sdk/examples/zephyr                   \
+              -C --coverage-basedir modules/lib/golioth-firmware-sdk                \
+              --coverage-formats txt                                                \
+              ${EXTRA_TWISTER_ARGS}                                                 \
+              -x=CONFIG_GOLIOTH_COAP_HOST_URI=\"${{ inputs.coap_gateway_url }}\"    \
+              --pytest-args="--api-url=${{ inputs.api-url }}"                       \
+              --pytest-args="--api-key=${{ secrets[inputs.api-key-id] }}"           \
+              --pytest-args="--mask-secrets"                                        \
+              --pytest-args="--alluredir=allure-reports"                            \
+              --pytest-args="--runner-name=${{ runner.name }}"                      \
+              --pytest-args="--hil-board=${{ inputs.platform }}"
+          EXITCODE=$?
+          grep -Rn "PYTEST: INFO: Logs fetch took" twister-out | tee -a logs-fetch-timing-${{ inputs.platform }}.txt
+          exit $EXITCODE
+
+      - name: Show timing
+        run: |
+          cat logs-fetch-timing-${{ inputs.platform }}.txt
+
+      - name: Save timing
         if: success() || failure()
-        uses: ./modules/lib/golioth-firmware-sdk/.github/actions/safe-upload-artifacts
+        uses: actions/upload-artifact@v4
         with:
-          secrets-json: ${{ toJson(secrets) }}
+          name: logs-get-timing-${{ inputs.platform }}
+          path: logs-fetch-timing-${{ inputs.platform }}.txt
+
+      - name: Save artifacts
+        if: success() || failure()
+        uses: actions/upload-artifact@v4
+        with:
           name: twister-run-artifacts-${{ inputs.platform }}
           path: |
             reports/*
-            twister-out/coverage.json
             twister-out/**/*.log
             twister-out/**/report.xml
             twister-out/*.xml
             twister-out/*.json
-
-      - name: Safe upload CI report summary
-        uses: ./modules/lib/golioth-firmware-sdk/.github/actions/safe-upload-artifacts
-        if: success() || failure()
-        with:
-          name: ci-individual-samples-zephyr-${{ inputs.platform }}
-          path: twister-out/twister_suite_report.xml
-
-      - name: Safe upload Allure reports
-        if: success() || failure()
-        uses: ./modules/lib/golioth-firmware-sdk/.github/actions/safe-upload-artifacts
-        with:
-          secrets-json: ${{ toJson(secrets) }}
-          name: allure-reports-samples-zephyr-${{ inputs.platform }}
-          path: allure-reports
-
-  hil_sample_zephyr_nsim_summary:
-    name: zephyr-${{ inputs.platform }}-twister-summary
-    runs-on: ubuntu-24.04
-    needs: build_and_test
-    if: success() || failure()
-
-    steps:
-      - name: Collect JUnit reports
-        uses: actions/download-artifact@v4
-        with:
-          pattern: ci-individual-samples-zephyr-*
-
-      - name: Prepare CI report summary
-        if: success() || failure()
-        run: |
-          sudo apt install -y xml-twig-tools
-
-          rm -rf summary
-          mkdir summary
-
-          xml_grep --pretty_print indented \
-            --wrap testsuites --descr '' \
-            --cond "testsuite" \
-            ci-individual-samples-zephyr-${{ inputs.platform }}*/*.xml \
-            > samples-zephyr-${{ inputs.platform }}.xml
-
-      - name: Upload CI report summary
-        uses: actions/upload-artifact@v4
-        if: success() || failure()
-        with:
-          name: ci-summary-samples-zephyr-${{ inputs.platform }}
-          path: samples-zephyr-*.xml
