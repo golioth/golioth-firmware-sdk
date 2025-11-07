@@ -925,6 +925,36 @@ static int golioth_setsockopt_dtls(struct golioth_client *client, int sock, cons
         }
     }
 
+    if (0 <= CONFIG_GOLIOTH_ZEPHYR_DTLS_HANDSHAKE_TIMEOUT_MIN_MS)
+    {
+        uint32_t timeout = CONFIG_GOLIOTH_ZEPHYR_DTLS_HANDSHAKE_TIMEOUT_MIN_MS;
+
+        ret = zsock_setsockopt(sock,
+                               SOL_TLS,
+                               TLS_DTLS_HANDSHAKE_TIMEOUT_MIN,
+                               &timeout,
+                               sizeof(timeout));
+        if (ret < 0)
+        {
+            return -errno;
+        }
+    }
+
+    if (0 <= CONFIG_GOLIOTH_ZEPHYR_DTLS_HANDSHAKE_TIMEOUT_MAX_MS)
+    {
+        uint32_t timeout = CONFIG_GOLIOTH_ZEPHYR_DTLS_HANDSHAKE_TIMEOUT_MAX_MS;
+
+        ret = zsock_setsockopt(sock,
+                               SOL_TLS,
+                               TLS_DTLS_HANDSHAKE_TIMEOUT_MAX,
+                               &timeout,
+                               sizeof(timeout));
+        if (ret < 0)
+        {
+            return -errno;
+        }
+    }
+
     return 0;
 }
 

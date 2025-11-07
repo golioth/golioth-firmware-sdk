@@ -218,6 +218,20 @@ config GOLIOTH_COAP_CLIENT_RX_BUF_SIZE
 	  Size of receive buffer, which is used for reading data from network
 	  socket.
 
+config GOLIOTH_ZEPHYR_DTLS_HANDSHAKE_TIMEOUT_MIN_MS
+    int "Minimum DTLS handshake timeout"
+    default -1
+    help
+      Minimum time (in milliseconds) to wait for a DTLS handshake before timeout. When set to -1 the
+      Zephyr default value will be used.
+
+config GOLIOTH_ZEPHYR_DTLS_HANDSHAKE_TIMEOUT_MAX_MS
+    int "Maximum DTLS handshake timeout"
+    default -1
+    help
+      Maximum time (in milliseconds) to wait for a DTLS handshake before timeout. When set to -1 the
+      Zephyr default value will be used.
+
 endmenu # CoAP Settings
 
 menu "Logging"
