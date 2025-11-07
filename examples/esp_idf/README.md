@@ -67,7 +67,7 @@ pip install tests/hil/scripts/pytest-hil
 
 - Latest version of python-golioth-tools installed with the following command:
 ```sh
-pip install git+https://github.com/golioth/python-golioth-tools@v0.8.0
+pip install git+https://github.com/golioth/python-golioth-tools@v0.8.1
 ```
 
 Installing python-golioth-tools enables pytest to use 'device' fixture which
