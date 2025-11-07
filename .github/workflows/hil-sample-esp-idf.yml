@@ -114,10 +114,12 @@ jobs:
             for sample in ${{ steps.build_prep.outputs.sample_list }};
             do
               echo CONFIG_GOLIOTH_COAP_HOST_URI=\"${{ inputs.coap_gateway_url }}\" \
-                >> ${sample}/sdkconfig.defaults && \
-              idf.py -C $sample build && \
-              mv ${sample}/build/merged.bin test_binaries/$(basename $sample).bin
+                >> ${sample}/sdkconfig.defaults
+              idf.py -C $sample build
+              mv ${sample}/build/merged.bin test_binaries/$(basename $sample).bin || \
+                EXITCODE=$?
             done
+            exit $EXITCODE
 
       - name: Save Artifacts
         uses: actions/upload-artifact@v4
