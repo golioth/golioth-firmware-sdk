@@ -80,7 +80,7 @@ jobs:
             pytest \
             pytest-timeout \
             tests/hil/scripts/pytest-hil \
-            git+https://github.com/golioth/python-golioth-tools@v0.8.0
+            git+https://github.com/golioth/python-golioth-tools@v0.8.1
       - name: Run test
         id: run_test
         shell: bash
