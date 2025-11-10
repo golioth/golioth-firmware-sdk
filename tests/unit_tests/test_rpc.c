@@ -263,7 +263,7 @@ void test_rpc_call_not_registered(void)
     };
     on_rpc(NULL, status, &coap_rsp_code, NULL, payload, sizeof(payload), &grpc);
 
-    TEST_ASSERT_EQUAL_STRING("Method %.*s not registered", last_wrn_msg);
+    TEST_ASSERT_EQUAL_STRING("Method %s not registered", last_wrn_msg);
     TEST_ASSERT_EQUAL(1, golioth_coap_client_set_fake.call_count);
 
     const uint8_t expected[] = {

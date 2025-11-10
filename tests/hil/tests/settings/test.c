@@ -42,7 +42,10 @@ static enum golioth_settings_status on_test_string(const char *new_value,
                                                    size_t new_value_len,
                                                    void *arg)
 {
-    GLTH_LOGI(TAG, "Received test_string: %.*s", new_value_len, new_value);
+    char test_str[new_value_len + 1];
+    memcpy(test_str, new_value, new_value_len);
+    test_str[new_value_len] = '\0';
+    GLTH_LOGI(TAG, "Received test_string: %s", test_str);
 
     return GOLIOTH_SETTINGS_SUCCESS;
 }
