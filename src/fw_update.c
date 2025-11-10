@@ -208,7 +208,10 @@ static void on_ota_manifest(struct golioth_client *client,
         return;
     }
 
-    GLTH_LOGD(TAG, "Received OTA manifest: %.*s", (int) payload_size, payload);
+    char manifest_str[payload_size + 1];
+    memcpy(manifest_str, payload, payload_size);
+    manifest_str[payload_size] = '\0';
+    GLTH_LOGD(TAG, "Received OTA manifest: %s", manifest_str);
 
     golioth_sys_mutex_lock(_manifest_update_mut, GOLIOTH_SYS_WAIT_FOREVER);
     enum golioth_status parse_status =
