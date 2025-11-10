@@ -77,7 +77,7 @@ jobs:
         run: |
           pip install \
             gcovr \
-            pytest \
+            pytest==8.4.2 \
             pytest-timeout \
             tests/hil/scripts/pytest-hil \
             git+https://github.com/golioth/python-golioth-tools@v0.8.1

@@ -98,7 +98,7 @@ jobs:
             -r zephyr/scripts/requirements-base.txt \
             -r zephyr/scripts/requirements-build-test.txt \
             -r zephyr/scripts/requirements-run-test.txt \
-            pytest \
+            pytest==8.4.2 \
             pytest-timeout \
             modules/lib/golioth-firmware-sdk/tests/hil/scripts/pytest-hil \
             git+https://github.com/golioth/python-golioth-tools@v0.8.1
