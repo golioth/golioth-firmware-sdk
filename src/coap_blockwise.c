@@ -56,6 +56,7 @@ struct get_block_ctx
 {
     size_t block_size;
     uint32_t block_idx;
+    bool post_response;
     golioth_get_block_cb_fn get_cb;
     golioth_end_block_cb_fn end_cb;
     void *callback_arg;
@@ -373,6 +374,7 @@ enum golioth_status golioth_blockwise_upload_block(struct blockwise_transfer *ct
         rsp_ctx = malloc(sizeof(struct get_block_ctx));
         rsp_ctx->block_idx = 0;
         rsp_ctx->block_size = CONFIG_GOLIOTH_BLOCKWISE_DOWNLOAD_MAX_BLOCK_SIZE;
+        rsp_ctx->post_response = true;
         memcpy(&rsp_ctx->transfer_ctx, ctx, sizeof(struct blockwise_transfer));
         rsp_ctx->get_cb = get_cb;
         rsp_ctx->end_cb = end_cb;
@@ -432,7 +434,14 @@ static void on_block_rcvd(struct golioth_client *client,
                              ctx->callback_arg);
     }
 
-    if (is_last || GOLIOTH_OK != status)
+    /* If we are ending due to an error on the first block of a response to a post,
+       then the error was already sent to the application via the set_block callback.
+       Just free the context but do not notify the application. */
+    if (ctx->post_response && ctx->block_idx == 0 && GOLIOTH_OK != status)
+    {
+        golioth_sys_free(ctx);
+    }
+    else if (is_last || GOLIOTH_OK != status)
     {
         ctx->end_cb(client, status, coap_rsp_code, path, ctx->block_idx, ctx->callback_arg);
 
@@ -513,6 +522,7 @@ enum golioth_status golioth_blockwise_get(struct golioth_client *client,
     ctx->transfer_ctx.type = GOLIOTH_COAP_REQUEST_GET_BLOCK;
 
     ctx->block_size = CONFIG_GOLIOTH_BLOCKWISE_DOWNLOAD_MAX_BLOCK_SIZE;
+    ctx->post_response = false;
     ctx->get_cb = block_cb;
     ctx->end_cb = end_cb;
     ctx->callback_arg = callback_arg;
