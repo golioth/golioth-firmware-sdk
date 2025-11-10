@@ -204,7 +204,7 @@ async def test_reason_and_state(board, device, project, releases):
                 latest_reason_code = int(device.metadata['update']['lobster']['reasonCode'])
             except:
                 if retries_left == 0:
-                    assert false, "Unable to get reason/state using REST API"
+                    assert False, "Unable to get reason/state using REST API"
                 continue
 
             if retries_left == 0 or latest_reason_code == i:
