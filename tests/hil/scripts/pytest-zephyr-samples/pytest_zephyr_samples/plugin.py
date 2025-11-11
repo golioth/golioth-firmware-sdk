@@ -1,6 +1,7 @@
 import pytest
 import allure
 import os
+from contextlib import suppress
 
 def pytest_addoption(parser):
     parser.addoption("--wifi-ssid",   type=str, help="WiFi SSID")
@@ -34,6 +35,12 @@ def pytest_runtest_setup(item):
         hil_board = os.environ['hil_board']
     else:
         hil_board = item.config.option.device_serial
+
+    with suppress(Exception):
+        sample_name = item.config.getoption("--build-dir").split('/')[-1]
+        suite_name = sample_name.split("sample.golioth.")[-1]
+        allure.dynamic.parameter("sample", sample_name)
+        allure.dynamic.suite(suite_name)
 
     allure.dynamic.tag(hil_board)
     allure.dynamic.tag("zephyr")
