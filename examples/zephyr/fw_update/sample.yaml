@@ -13,6 +13,10 @@ tests:
     timeout: 720
     extra_configs:
       - CONFIG_GOLIOTH_SAMPLE_TWISTER_TEST=y
+      - platform:esp32s3_devkitc/esp32s3/procpu:CONFIG_GOLIOTH_FW_UPDATE_PACKAGE_NAME="esp32s3_devkitc"
+      - platform:frdm_rw612/rw612:CONFIG_GOLIOTH_FW_UPDATE_PACKAGE_NAME="frdm_rw612"
+      - platform:nrf52840dk/nrf52840:CONFIG_GOLIOTH_FW_UPDATE_PACKAGE_NAME="nrf52840dk"
+      - platform:nrf9160dk/nrf9160/ns:CONFIG_GOLIOTH_FW_UPDATE_PACKAGE_NAME="nrf9160dk"
     extra_args:
       - platform:nrf52840dk/nrf52840:fw_update_SHIELD=golioth_esp_at
     platform_allow:
