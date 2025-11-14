@@ -10,13 +10,13 @@ LOGGER = logging.getLogger(__name__)
 
 pytestmark = pytest.mark.anyio
 
-async def test_fw_update(board, project, device, fw_info, release):
+async def test_fw_update(board, project, device, fw_info, cohort, artifact):
 
     # Wait for app to start running or 10 seconds to pass so runtime settings are ready.
 
     try:
         await board.wait_for_regex_in_line('.*Start FW Update sample.', timeout_s=10.0)
-    except:
+    except Exception as e:
         pass
 
     # Set Golioth credential
@@ -27,9 +27,9 @@ async def test_fw_update(board, project, device, fw_info, release):
 
     await board.wait_for_regex_in_line('.*Nothing to do.', timeout_s=90.0)
 
-    # Rollout the release
+    # Create deployment
 
-    await project.releases.rollout_set(release.id, True)
+    await cohort.deployments.create(f"fw_update-{fw_info['version']}", [artifact.id])
 
     # Monitor block download and watch for reboot after update
 
@@ -62,8 +62,16 @@ async def test_fw_update(board, project, device, fw_info, release):
     print("fw_info:")
     pprint.pprint(fw_info)
 
-    d_package = device_check.info['metadata']['update']['main']['package']
-    d_version = device_check.info['metadata']['update']['main']['version']
+    d_package = device_check.info['metadata']['update'][f'{fw_info["package"]}']['package']
+    d_version = device_check.info['metadata']['update'][f'{fw_info["package"]}']['version']
 
-    assert d_package == fw_info['package'], f'Expected firmware package "{fw_info["package"]}" but got "%s"'.format(d_package)
-    assert d_version == fw_info['version'], f'Expected firmware version "{fw_info["version"]}" but got "%s"'.format(d_version)
+    assert d_package == fw_info["package"], (
+        f'Expected firmware package "{fw_info["package"]}" but got "%s"'.format(
+            d_package
+        )
+    )
+    assert d_version == fw_info["version"], (
+        f'Expected firmware version "{fw_info["version"]}" but got "%s"'.format(
+            d_version
+        )
+    )

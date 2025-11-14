@@ -1,65 +1,46 @@
 import pytest
 
 UPDATE_VERSION = '255.8.9'
-UPDATE_PACKAGE = 'main'
-
 
 @pytest.fixture(scope='session')
 def anyio_backend():
     return 'trio'
 
 @pytest.fixture(scope="session")
-async def fw_info():
-    return {"package": UPDATE_PACKAGE, "version": UPDATE_VERSION}
+async def target_package(request):
+    return request.config.getoption('hil_board')
 
-
-@pytest.fixture(scope="module")
-async def blueprint_id(project, request):
-    bp_name = '_'.join([x.split('@')[0] for x in
-                        request.config.option.platform.split('/')])
-    yield await project.blueprints.get_id(bp_name)
-
+@pytest.fixture(scope="session")
+async def fw_info(target_package):
+    return {"package": target_package, "version": UPDATE_VERSION}
 
 @pytest.fixture(scope="module")
-async def tag(project, device, blueprint_id):
-    tag_name = device.name.lower().replace('-','_')
-    tag = await project.tags.create(tag_name)
+async def cohort(project, device):
+    cohort_name = device.name.lower().replace('-','_')
+    cohort = await project.cohorts.create(cohort_name)
 
-    await device.add_blueprint(blueprint_id)
-    await device.add_tag(tag.id)
+    await device.update_cohort(cohort.id)
 
-    yield tag
+    yield cohort
 
     try:
-        await device.remove_tag(tag.id)
-    except:
+        await device.remove_cohort()
+    except Exception as e:
         pass
 
-    await project.tags.delete(tag.id)
-
+    await project.cohorts.delete(cohort.id)
 
 @pytest.fixture(scope="module")
-async def artifact(project, blueprint_id):
+async def artifact(project, target_package):
     # Find Artifact that matches this device and desired update version
 
     artifact = None
     all_artifacts = await project.artifacts.get_all()
     for a in all_artifacts:
-        if (a.blueprint == blueprint_id and
-            a.version == UPDATE_VERSION and
-            a.package == UPDATE_PACKAGE):
+        if (a.package == target_package and
+            a.version == UPDATE_VERSION):
             artifact = a
 
-    assert artifact != None
+    assert artifact is not None
 
     yield artifact
-
-
-@pytest.fixture(scope="module")
-async def release(project, artifact, tag):
-    release = await project.releases.create([artifact.id], [], [tag.id], False)
-    yield release
-
-    # Clean Up
-
-    await project.releases.delete(release.id)
