@@ -5,13 +5,13 @@ LOGGER = logging.getLogger(__name__)
 
 pytestmark = pytest.mark.anyio
 
-async def test_fw_update(shell, project, device, wifi_ssid, wifi_psk, fw_info, release):
+async def test_fw_update(shell, project, device, wifi_ssid, wifi_psk, fw_info, cohort, artifact):
 
     # Wait for app to start running or 10 seconds to pass so runtime settings are ready.
 
     try:
         shell._device.readlines_until(regex=".*Start FW Update sample.", timeout=10.0)
-    except:
+    except Exception as e:
         pass
 
     # Set Golioth credential
@@ -30,10 +30,9 @@ async def test_fw_update(shell, project, device, wifi_ssid, wifi_psk, fw_info, r
 
     shell._device.readlines_until(regex=".*Nothing to do.", timeout=90.0)
 
+    # Create deployment
 
-    # Rollout the release
-
-    await project.releases.rollout_set(release.id, True)
+    await cohort.deployments.create(f"fw_update-{fw_info['version']}", [artifact.id])
 
     # Monitor block download and watch for reboot after update
 
@@ -45,8 +44,10 @@ async def test_fw_update(shell, project, device, wifi_ssid, wifi_psk, fw_info, r
 
     # Test for board to run new firmware and report to Golioth
 
-    shell._device.readlines_until(regex=f".*Current firmware version: {fw_info['package']} - {fw_info['version']}.",
-                                  timeout=120.0)
+    shell._device.readlines_until(
+        regex=f".*Current firmware version: {fw_info['package']} - {fw_info['version']}.",
+        timeout=120.0,
+    )
     LOGGER.info("Device reported expected update version")
 
     shell._device.readlines_until(regex=".*Nothing to do.", timeout=30.0)
@@ -56,8 +57,16 @@ async def test_fw_update(shell, project, device, wifi_ssid, wifi_psk, fw_info, r
 
     device_check = await project.device_by_name(device.name)
 
-    d_package = device_check.info['metadata']['update']['main']['package']
-    d_version = device_check.info['metadata']['update']['main']['version']
+    d_package = device_check.info['metadata']['update'][fw_info['package']]['package']
+    d_version = device_check.info['metadata']['update'][fw_info['package']]['version']
 
-    assert d_package == fw_info['package'], f'Expected firmware package "{fw_info["package"]}" but got "%s"'.format(d_package)
-    assert d_version == fw_info['version'], f'Expected firmware version "{fw_info["version"]}" but got "%s"'.format(d_version)
+    assert d_package == fw_info["package"], (
+        f'Expected firmware package "{fw_info["package"]}" but got "%s"'.format(
+            d_package
+        )
+    )
+    assert d_version == fw_info["version"], (
+        f'Expected firmware version "{fw_info["version"]}" but got "%s"'.format(
+            d_version
+        )
+    )
