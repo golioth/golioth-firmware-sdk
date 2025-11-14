@@ -115,7 +115,15 @@ jobs:
             do
               echo CONFIG_GOLIOTH_COAP_HOST_URI=\"${{ inputs.coap_gateway_url }}\" \
                 >> ${sample}/sdkconfig.defaults
+
+              if [[ "${sample##*/}" == "fw_update" ]]; then echo
+                echo CONFIG_GOLIOTH_FW_UPDATE_PACKAGE_NAME=\"${{ inputs.hil_board }}_espidf\" \
+                  >> ${sample}/sdkconfig.defaults
+                echo CONFIG_GOLIOTH_OTA_MAX_PACKAGE_NAME_LEN=32 >> ${sample}/sdkconfig.defaults
+              fi
+
               idf.py -C $sample build
+
               mv ${sample}/build/merged.bin test_binaries/$(basename $sample).bin || \
                 EXITCODE=$?
             done
