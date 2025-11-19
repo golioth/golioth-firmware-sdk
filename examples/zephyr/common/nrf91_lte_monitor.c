@@ -55,7 +55,7 @@ static void lte_handler(const struct lte_lc_evt *const evt)
             }
             break;
         case LTE_LC_EVT_MODEM_EVENT:
-            switch (evt->modem_evt)
+            switch (evt->modem_evt.type)
             {
                 case LTE_LC_MODEM_EVT_RESET_LOOP:
                     LOG_INF("Modem: Reset Loop detected");
