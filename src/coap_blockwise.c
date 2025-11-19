@@ -84,7 +84,7 @@ static int blockwise_transfer_init(struct blockwise_transfer *ctx,
     {
         return -EINVAL;
     }
-    strncpy(ctx->path, path, CONFIG_GOLIOTH_COAP_MAX_PATH_LEN);
+    strncpy(ctx->path, path, CONFIG_GOLIOTH_COAP_MAX_PATH_LEN + 1);
 
     ctx->client = client;
     ctx->path_prefix = path_prefix;
