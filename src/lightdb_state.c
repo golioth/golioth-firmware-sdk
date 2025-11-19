@@ -410,7 +410,14 @@ static void on_payload(struct golioth_client *client,
             break;
         case LIGHTDB_GET_TYPE_STRING:
         {
-            // Remove the leading and trailing quote to get the raw string value
+            if (payload_size < 2)
+            {
+                /* Strings must be wrapped in quotation marks */
+                GLTH_LOGE(TAG, "Received invalid string");
+                break;
+            }
+
+            /* Remove the leading and trailing quote to get the raw string value */
             size_t nbytes = min(ldb_response->buf_size - 1, payload_size - 2);
             memcpy(ldb_response->buf, payload + 1 /* skip quote */, nbytes);
             ldb_response->buf[nbytes] = 0;
