@@ -87,33 +87,20 @@ async def artifacts(project):
     return artifacts
 
 @pytest.fixture(scope="module")
-async def releases(project, artifacts, tag):
-    releases = dict()
+async def cohort(project, device):
+    cohort_name = device.name.lower().replace('-','_')
+    cohort = await project.cohorts.create(cohort_name)
 
-    releases["test_manifest"] = await project.releases.create([artifacts["test_manifest"].id], [], [tag.id], False)
-    releases["test_multiple"] = await project.releases.create([artifacts["test_multiple"].id, artifacts["multi_artifact"].id], [], [tag.id], False)
-    releases["test_blocks"] = await project.releases.create([artifacts["test_blocks"].id], [], [tag.id], False)
-    releases["test_reasons"] = await project.releases.create([artifacts["test_reasons"].id], [], [tag.id], False)
-    releases["test_resume"] = await project.releases.create([artifacts["multi_artifact"].id], [], [tag.id], False)
-    yield releases
+    await device.update_cohort(cohort.id)
 
-    # Clean Up
+    yield cohort
 
-    for r in releases:
-        try:
-            await project.releases.delete(releases[r].id)
-        except:
-            pass
+    try:
+        await device.remove_cohort()
+    except Exception as e:
+        pass
 
-@pytest.fixture(autouse=True, scope="function")
-async def releases_teardown(project, releases):
-    yield
-    release_ids = [r.id for r in releases.values()]
-    updated_release_info = await project.releases.get_all()
-    for r in updated_release_info:
-        if r.id in release_ids:
-            if r.rollout:
-                await project.releases.rollout_set(r.id, False)
+    await project.cohorts.delete(cohort.id)
 
 async def verify_component_values(board, info):
     package_info = info["package"]
@@ -128,8 +115,8 @@ async def verify_component_values(board, info):
 
 ##### Tests #####
 
-async def test_manifest(artifacts, board, project, releases):
-    await project.releases.rollout_set(releases["test_manifest"].id, True)
+async def test_manifest(artifacts, board, project, cohort):
+    await cohort.deployments.create("test_manifest", [artifacts["test_manifest"].id])
 
     assert None != await board.wait_for_regex_in_line('Manifest received', timeout_s=30)
 
@@ -144,8 +131,9 @@ async def test_manifest(artifacts, board, project, releases):
 
     await verify_component_values(board, artifacts["test_manifest"].info)
 
-async def test_multiple_artifacts(artifacts, board, project, releases):
-    await project.releases.rollout_set(releases["test_multiple"].id, True)
+async def test_multiple_artifacts(artifacts, board, project, cohort):
+    await cohort.deployments.create("test_multiple", [artifacts["test_multiple"].id,
+                                                      artifacts["multi_artifact"].id])
 
     assert None != await board.wait_for_regex_in_line('Manifest received', timeout_s=30)
     assert None != await board.wait_for_regex_in_line('Manifest successfully decoded', timeout_s=2)
@@ -162,8 +150,8 @@ async def test_multiple_artifacts(artifacts, board, project, releases):
     # Test manifest blockwise
     assert None != await board.wait_for_regex_in_line('Manifest blockwise SHA matches stored SHA', timeout_s=30)
 
-async def test_block_operations(board, project, releases):
-    await project.releases.rollout_set(releases["test_blocks"].id, True)
+async def test_block_operations(board, project, artifacts, cohort):
+    await cohort.deployments.create("test_blocks", [artifacts["test_blocks"].id])
     assert None != await board.wait_for_regex_in_line(f"golioth_ota_size_to_nblocks: {TEST_BLOCK_CNT + 1}", timeout_s=12)
 
     # Test NULL client
@@ -177,8 +165,8 @@ async def test_block_operations(board, project, releases):
     assert None != await board.wait_for_regex_in_line("Received block 1", timeout_s=4)
     assert None != await board.wait_for_regex_in_line("is_last: 1", timeout_s=40)
 
-async def test_resume(board, project, releases):
-    await project.releases.rollout_set(releases["test_resume"].id, True)
+async def test_resume(board, project, artifacts, cohort):
+    await cohort.deployments.create("test_resume", [artifacts["multi_artifact"].id])
 
     assert None != await board.wait_for_regex_in_line('Manifest received', timeout_s=30)
     assert None != await board.wait_for_regex_in_line('Manifest successfully decoded', timeout_s=2)
@@ -187,8 +175,8 @@ async def test_resume(board, project, releases):
     assert None != await board.wait_for_regex_in_line('SHA256 matches as expected', timeout_s=20)
     assert None != await board.wait_for_regex_in_line('Block download successful', timeout_s=2)
 
-async def test_reason_and_state(board, device, project, releases):
-    await project.releases.rollout_set(releases["test_reasons"].id, True)
+async def test_reason_and_state(board, device, project, artifacts, cohort):
+    await cohort.deployments.create("test_reasons", [artifacts["test_reasons"].id])
     # Test reason and state code updates
 
     for i, r in enumerate(golioth_ota_reason):
