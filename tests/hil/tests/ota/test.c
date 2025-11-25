@@ -73,7 +73,6 @@ static void log_component_members(const struct golioth_ota_component *component)
     GLTH_LOGI(TAG, "component.size: %u", (unsigned int) component->size);
     GLTH_LOGI(TAG, "component.hash: %s", hash_string);
     GLTH_LOGI(TAG, "component.uri: %s", component->uri);
-    GLTH_LOGI(TAG, "component.bootloader: %s", component->bootloader);
 }
 
 static enum golioth_status calc_hash(const uint8_t *data, size_t data_size, uint8_t *output)
