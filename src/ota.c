@@ -41,7 +41,6 @@ enum
     COMPONENT_KEY_HASH = 3,
     COMPONENT_KEY_SIZE = 4,
     COMPONENT_KEY_URI = 5,
-    COMPONENT_KEY_BOOTLOADER = 6,
 };
 
 typedef struct
@@ -343,10 +342,6 @@ static int components_decode(zcbor_state_t *zsd, void *value)
             component->uri,
             sizeof(component->uri) - 1,
         };
-        struct component_tstr_value bootloader_name = {
-            component->bootloader,
-            sizeof(component->bootloader) - 1,
-        };
 
         int64_t component_size;
         struct zcbor_map_entry map_entries[] = {
@@ -355,9 +350,6 @@ static int components_decode(zcbor_state_t *zsd, void *value)
             ZCBOR_U32_MAP_ENTRY(COMPONENT_KEY_HASH, component_entry_decode_value, &hash),
             ZCBOR_U32_MAP_ENTRY(COMPONENT_KEY_SIZE, zcbor_map_int64_decode, &component_size),
             ZCBOR_U32_MAP_ENTRY(COMPONENT_KEY_URI, component_entry_decode_value, &uri),
-            ZCBOR_U32_MAP_ENTRY(COMPONENT_KEY_BOOTLOADER,
-                                component_entry_decode_value,
-                                &bootloader_name),
         };
 
         err = zcbor_map_decode(zsd, map_entries, ARRAY_SIZE(map_entries));

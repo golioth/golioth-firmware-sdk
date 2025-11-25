@@ -26,8 +26,6 @@ extern "C"
 #define GOLIOTH_OTA_COMPONENT_HEX_HASH_LEN 64
 /// Size of a SHA256 of Artifact bin array in bytes
 #define GOLIOTH_OTA_COMPONENT_BIN_HASH_LEN 32
-/// Maximum size of Binary Detected Type in bytes
-#define GOLIOTH_OTA_MAX_COMPONENT_BOOTLOADER_NAME_LEN 7
 /// Maximum size of Relative URI to download binary (+ 7 bytes for Path)
 #define GOLIOTH_OTA_MAX_COMPONENT_URI_LEN \
     (CONFIG_GOLIOTH_OTA_MAX_PACKAGE_NAME_LEN + CONFIG_GOLIOTH_OTA_MAX_VERSION_LEN + 7)
@@ -87,8 +85,6 @@ struct golioth_ota_component
     uint8_t hash[GOLIOTH_OTA_COMPONENT_BIN_HASH_LEN];
     /// Artifact uri (e.g. "/.u/c/main@1.2.3")
     char uri[GOLIOTH_OTA_MAX_COMPONENT_URI_LEN + 1];
-    /// Artifact bootloader ("mcuboot" or "default"")
-    char bootloader[GOLIOTH_OTA_MAX_COMPONENT_BOOTLOADER_NAME_LEN + 1];
 };
 
 /// An OTA manifest, composed of multiple components/artifacts
