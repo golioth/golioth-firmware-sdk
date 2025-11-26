@@ -114,7 +114,7 @@ int zcbor_map_decode(zcbor_state_t *zsd, struct zcbor_map_entry *entries, size_t
         return -EBADMSG;
     }
 
-    while (num_decoded < num_entries && !zcbor_list_or_map_end(zsd))
+    while (!zcbor_list_or_map_end(zsd))
     {
         err = zcbor_map_key_decode(zsd, &key);
         if (err)
