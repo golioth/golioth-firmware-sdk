@@ -185,3 +185,8 @@ config GOLIOTH_MAX_NUM_SETTINGS
         by the application.
 
 endif # GOLIOTH_SETTINGS
+
+config GOLIOTH_PKI
+    bool "Golioth Public Key Infrastructure service"
+    help
+        Enable the Golioth Public Key Infrastructure service
