@@ -10,8 +10,9 @@
 #include <assert.h>
 #include <string.h>
 #include <golioth/golioth_sys.h>
-#include <golioth/fw_update.h>
-#include "golioth/ota.h"
+#include <golioth/ota.h>
+
+#include "fw_update.h"
 
 _Static_assert(sizeof(CONFIG_GOLIOTH_FW_UPDATE_PACKAGE_NAME)
                    <= CONFIG_GOLIOTH_OTA_MAX_PACKAGE_NAME_LEN + 1,

@@ -6,8 +6,11 @@ set(includes
     "${examples_common}"
 )
 
+set(freertos_include "${idf_path}/components/freertos/FreeRTOS-Kernel/include/freertos")
+
 set(srcs
     "app_main.c"
+    "fw_update.c"
     "${esp_idf_common}/shell.c"
     "${esp_idf_common}/wifi.c"
     "${esp_idf_common}/nvs.c"
@@ -16,6 +19,7 @@ set(srcs
 
 set(deps
     "golioth_sdk"
+    "app_update"
     "console"
     "spi_flash"
     "nvs_flash"
@@ -27,6 +31,7 @@ set(deps
 
 idf_component_register(
     INCLUDE_DIRS "${includes}"
+    PRIV_INCLUDE_DIRS "${freertos_include}"
     SRCS "${srcs}"
     PRIV_REQUIRES "${deps}"
 )

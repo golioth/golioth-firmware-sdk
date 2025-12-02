@@ -8,7 +8,6 @@
 #include <inttypes.h>
 
 #include <golioth/client.h>
-#include <golioth/fw_update.h>
 #include <golioth/lightdb_state.h>
 #include <golioth/stream.h>
 #include <golioth/payload_utils.h>
@@ -17,6 +16,7 @@
 #include <golioth/golioth_sys.h>
 
 #include "golioth_basics.h"
+#include "fw_update.h"
 
 LOG_TAG_DEFINE(golioth_basics);
 

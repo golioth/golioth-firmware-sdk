@@ -3,7 +3,7 @@
  *
  * SPDX-License-Identifier: Apache-2.0
  */
-#include <golioth/fw_update.h>
+#include "fw_update.h"
 #include "bootutil/bootutil.h"
 #include "bootutil/image.h"
 #include "sysflash/sysflash.h"

@@ -19,7 +19,6 @@ set(zcbor_srcs
 # Build Golioth SDK
 set(sdk_srcs
     "${sdk_port}/linux//golioth_sys_linux.c"
-    "${sdk_port}/linux/fw_update_linux.c"
     "${sdk_port}/utils/hex.c"
     "${sdk_src}/golioth_status.c"
     "${sdk_src}/coap_client.c"
@@ -34,7 +33,6 @@ set(sdk_srcs
     "${sdk_src}/rpc.c"
     "${sdk_src}/ota.c"
     "${sdk_src}/payload_utils.c"
-    "${sdk_src}/fw_update.c"
     "${sdk_src}/settings.c"
     "${sdk_src}/pki.c"
     "${sdk_src}/ringbuf.c"

@@ -3,10 +3,11 @@
 // One idea is to do a "lightweight" OTA, where there is a loader process
 // that dynamically loads the app as a .so.
 
-#include <golioth/fw_update.h>
 #include <unistd.h>  // readlink
 #include <fcntl.h>   // open
 #include <string.h>  // memcpy
+
+#include "fw_update.h"
 
 #define TAG "fw_update_linux"
 
