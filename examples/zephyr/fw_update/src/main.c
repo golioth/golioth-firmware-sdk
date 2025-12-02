@@ -8,7 +8,6 @@
 LOG_MODULE_REGISTER(fw_update_sample, LOG_LEVEL_DBG);
 
 #include <golioth/client.h>
-#include <golioth/fw_update.h>
 #include <samples/common/sample_credentials.h>
 #include <string.h>
 #include <zephyr/kernel.h>
@@ -16,6 +15,8 @@ LOG_MODULE_REGISTER(fw_update_sample, LOG_LEVEL_DBG);
 #include <samples/common/net_connect.h>
 
 #include <app_version.h>
+
+#include "fw_update.h"
 
 // Current firmware version; update in VERSION
 static const char *_current_version =
