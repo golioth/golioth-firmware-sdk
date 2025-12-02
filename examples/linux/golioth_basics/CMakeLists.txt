@@ -9,6 +9,8 @@ set(repo_root ../../..)
 set(srcs
     main.c
     ${repo_root}/examples/common/golioth_basics.c
+    ${repo_root}/examples/common/fw_update.c
+    fw_update_linux.c
 )
 
 get_filename_component(user_config_file "golioth_user_config.h" ABSOLUTE)

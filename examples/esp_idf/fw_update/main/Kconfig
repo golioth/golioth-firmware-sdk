@@ -1,11 +1,5 @@
-# Copyright (c) 2021 Golioth, Inc.
-# SPDX-License-Identifier: Apache-2.0
-
-source "${ZEPHYR_GOLIOTH_FIRMWARE_SDK_MODULE_DIR}/examples/zephyr/common/Kconfig.defconfig"
-
 config GOLIOTH_FW_UPDATE_PACKAGE_NAME
     string "Package name of the main firmware component"
-    default BOARD if GOLIOTH_SAMPLE_TWISTER_TEST
     default "main"
     help
       The Package Name used by the Golioth Cloud to indicate the binary to use for device firmware
@@ -36,5 +30,3 @@ config GOLIOTH_FW_UPDATE_ROLLBACK_TIMER_S
         Golioth after the first boot into a new firmware image. If a connection is not established
         within this period, the firmware update module will roll back the firmware to the previous
         version.
-
-source "Kconfig.zephyr"

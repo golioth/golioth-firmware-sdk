@@ -10,8 +10,9 @@
 #include "freertos/FreeRTOS.h"
 #include "freertos/semphr.h"
 #include <golioth/client.h>
-#include <golioth/fw_update.h>
 #include <string.h>
+
+#include "fw_update.h"
 
 #define TAG "fw_update"
 
