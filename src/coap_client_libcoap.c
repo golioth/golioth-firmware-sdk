@@ -1266,7 +1266,7 @@ static void golioth_coap_client_thread(void *arg)
             coap_session_init_token(coap_session,
                                     (GOLIOTH_COAP_TOKEN_LEN <= 8) ? GOLIOTH_COAP_TOKEN_LEN : 8,
                                     seed_token);
-            free(seed_token);
+            golioth_sys_free(seed_token);
         }
 
         // Enqueue an asynchronous EMPTY request immediately.
