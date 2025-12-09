@@ -312,18 +312,17 @@ static void test_reason_and_state(void)
         if (status != GOLIOTH_OK)
         {
             GLTH_LOGE(TAG, "Unable to report ota status: %d", status);
+            break;
         }
-        else
-        {
-            GLTH_LOGI(TAG, "OTA status reported successfully");
-        }
-        golioth_sys_msleep(4000);
+        golioth_sys_msleep(500);
     }
 
+    /* The log of this state check used as trigger by pytest and must come before null test */
     GLTH_LOGI(TAG, "golioth_ota_get_state: %d", golioth_ota_get_state());
 
-    golioth_sys_msleep(5000);
+    golioth_sys_msleep(1000);
 
+    /* The log of this null test is used as a trigger by pytest and must always be last */
     status = golioth_ota_report_state_sync(NULL, 0, 0, "lobster", "2.3.4", "5.6.7", 2);
     GLTH_LOGE(TAG, "GOLIOTH_ERR_NULL: %d", status);
 }
