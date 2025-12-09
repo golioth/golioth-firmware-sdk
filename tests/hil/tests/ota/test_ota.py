@@ -1,5 +1,9 @@
+import datetime
+import logging
 import pytest
 import trio
+
+LOGGER = logging.getLogger(__name__)
 
 UPDATE_PACKAGE = 'main'
 DUMMY_VER_OLDER = '1.2.2'
@@ -112,6 +116,17 @@ async def verify_component_values(board, info):
     assert None != await board.wait_for_regex_in_line(f'component.size: {b_info["size"]}', timeout_s=2)
     assert None != await board.wait_for_regex_in_line(f'component.hash: {b_info["digests"]["sha256"]["digest"]}', timeout_s=2)
 
+def verify_dfu_status_logs(logs):
+    assert len(logs) == len(golioth_ota_reason)
+
+    for i, r in enumerate(golioth_ota_reason):
+        assert int(logs[i].metadata['reasonCode']) == i
+        assert int(logs[i].metadata['stateCode']) == i % GOLIOTH_OTA_STATE_CNT
+        assert logs[i].metadata['state'] == golioth_ota_state[ i % GOLIOTH_OTA_STATE_CNT ]
+        assert logs[i].metadata['package'] == "lobster"
+        assert logs[i].metadata['version'] == "2.3.4"
+        assert logs[i].metadata['target'] == "5.6.7"
+
 ##### Tests #####
 
 async def test_manifest(artifacts, board, project, cohort):
@@ -175,42 +190,34 @@ async def test_resume(board, project, artifacts, cohort):
     assert None != await board.wait_for_regex_in_line('Block download successful', timeout_s=2)
 
 async def test_reason_and_state(board, device, project, artifacts, cohort):
-    await cohort.deployments.create("test_reasons", [artifacts["test_reasons"].id])
     # Test reason and state code updates
 
-    for i, r in enumerate(golioth_ota_reason):
-        retries_left = 20
+    # Record timestamp and use rollout to trigger the test
 
-        while retries_left:
-            await trio.sleep(1)
-            retries_left -= 1
+    start = datetime.datetime.now(datetime.UTC)
+    await cohort.deployments.create("test_reasons", [artifacts["test_reasons"].id])
 
-            await device.refresh()
+    # After publishing all status/response updates, device will log its own last state
 
-            try:
-                latest_reason_code = int(device.metadata['update']['lobster']['reasonCode'])
-            except:
-                if retries_left == 0:
-                    assert False, "Unable to get reason/state using REST API"
-                continue
+    await board.wait_for_regex_in_line(f"golioth_ota_get_state: {(GOLIOTH_OTA_REASON_CNT - 1) %
+                                                                 GOLIOTH_OTA_STATE_CNT}",
+                                       timeout_s=(GOLIOTH_OTA_REASON_CNT * 2))
 
-            if retries_left == 0 or latest_reason_code == i:
-                print(f"Test reason code: {r}")
-                print(f"Received reason: {device.metadata['update']['lobster']['reason']}")
+    # The last status test will be an error condition, monitor serial for this event
 
-                assert int(device.metadata['update']['lobster']['reasonCode']) == i
-                assert int(device.metadata['update']['lobster']['stateCode']) == i % GOLIOTH_OTA_STATE_CNT
-                assert device.metadata['update']['lobster']['state'] == golioth_ota_state[ i % GOLIOTH_OTA_STATE_CNT ]
-                assert device.metadata['update']['lobster']['package'] == "lobster"
-                assert device.metadata['update']['lobster']['version'] == "2.3.4"
-                assert device.metadata['update']['lobster']['target'] == "5.6.7"
+    await board.wait_for_regex_in_line("GOLIOTH_ERR_NULL: 5", timeout_s=6)
 
-                break
+    # Pause to ensure logs propagate to cloud
 
-    # Test golioth_ota_get_state()
+    await trio.sleep(5)
 
-    await board.wait_for_regex_in_line(f"golioth_ota_get_state: {(GOLIOTH_OTA_REASON_CNT - 1) % GOLIOTH_OTA_STATE_CNT}", timeout_s=12)
+    # Check logs for firmware status updates
 
-    # Test NULL client
+    end = datetime.datetime.now(datetime.UTC)
 
-    await board.wait_for_regex_in_line("GOLIOTH_ERR_NULL: 5", timeout_s=12)
+    logs = await device.get_logs({'start': start.strftime('%Y-%m-%dT%H:%M:%S.%fZ'), 'end':
+                                  end.strftime('%Y-%m-%dT%H:%M:%S.%fZ'), 'module': 'golioth_dfu'})
+
+    # Test logs received from server
+
+    verify_dfu_status_logs(logs)
