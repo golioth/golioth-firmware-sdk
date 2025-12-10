@@ -1467,7 +1467,8 @@ static int credentials_set_pki(const struct golioth_pki_credential *pki)
                              pki->ca_cert_len);
     if (err)
     {
-        return 0;
+        GLTH_LOGE(TAG, "Failed to add CA certificate: %d", err);
+        return err;
     }
 
     err = tls_credential_add(sec_tag_list[0],
@@ -1476,7 +1477,8 @@ static int credentials_set_pki(const struct golioth_pki_credential *pki)
                              pki->public_cert_len);
     if (err)
     {
-        return 0;
+        GLTH_LOGE(TAG, "Failed to add certificate: %d", err);
+        return err;
     }
 
     err = tls_credential_add(sec_tag_list[0],
@@ -1485,7 +1487,8 @@ static int credentials_set_pki(const struct golioth_pki_credential *pki)
                              pki->private_key_len);
     if (err)
     {
-        return 0;
+        GLTH_LOGE(TAG, "Failed to add private key: %d", err);
+        return err;
     }
 
 #if CONFIG_GOLIOTH_SECONDARY_CA_CRT
@@ -1496,12 +1499,13 @@ static int credentials_set_pki(const struct golioth_pki_credential *pki)
                              pki->secondary_ca_cert_len);
     if (err)
     {
-        return 0;
+        GLTH_LOGE(TAG, "Failed to add secondary CA certificate: %d", err);
+        return err;
     }
 
 #endif  // CONFIG_GOLIOTH_SECONDARY_CA_CRT
 
-    return 1;
+    return 0;
 }
 
 static int credentials_set_tag(int tag)
@@ -1528,6 +1532,89 @@ static int credentials_set(const struct golioth_client_config *config)
     return -ENOTSUP;
 }
 
+static int credentials_delete_psk(void)
+{
+    int err;
+
+    err = tls_credential_delete(sec_tag_list[0], TLS_CREDENTIAL_PSK_ID);
+    if ((err) && (err != -ENOENT))
+    {
+        GLTH_LOGE(TAG, "Failed to delete PSK ID: %d", err);
+        return err;
+    }
+
+    err = tls_credential_delete(sec_tag_list[0], TLS_CREDENTIAL_PSK);
+    if ((err) && (err != -ENOENT))
+    {
+        GLTH_LOGE(TAG, "Failed to delete PSK: %d", err);
+        return err;
+    }
+
+    return 0;
+}
+
+static int credentials_delete_pki(void)
+{
+    int err;
+
+    err = tls_credential_delete(sec_tag_list[0], TLS_CREDENTIAL_CA_CERTIFICATE);
+    if ((err) && (err != -ENOENT))
+    {
+        GLTH_LOGE(TAG, "Failed to delete CA certificate: %d", err);
+        return err;
+    }
+
+    err = tls_credential_delete(sec_tag_list[0], TLS_CREDENTIAL_SERVER_CERTIFICATE);
+    if ((err) && (err != -ENOENT))
+    {
+        GLTH_LOGE(TAG, "Failed to delete certificate: %d", err);
+        return err;
+    }
+
+    err = tls_credential_delete(sec_tag_list[0], TLS_CREDENTIAL_PRIVATE_KEY);
+    if ((err) && (err != -ENOENT))
+    {
+        GLTH_LOGE(TAG, "Failed to delete private key: %d", err);
+        return err;
+    }
+
+#if CONFIG_GOLIOTH_SECONDARY_CA_CRT
+
+    err = tls_credential_delete(sec_tag_list[1], TLS_CREDENTIAL_CA_CERTIFICATE);
+    if ((err) && (err != -ENOENT))
+    {
+        GLTH_LOGE(TAG, "Failed to delete secondary CA certificate: %d", err);
+        return err;
+    }
+
+#endif  // CONFIG_GOLIOTH_SECONDARY_CA_CRT
+
+    return 0;
+}
+
+static int credentials_delete_tag(void)
+{
+    sec_tag_list[0] = CONFIG_GOLIOTH_COAP_CLIENT_CREDENTIALS_TAG;
+    return 0;
+}
+
+static int credentials_delete(const struct golioth_client_config *config)
+{
+    const struct golioth_credential *credentials = &config->credentials;
+
+    switch (credentials->auth_type)
+    {
+        case GOLIOTH_TLS_AUTH_TYPE_PSK:
+            return credentials_delete_psk();
+        case GOLIOTH_TLS_AUTH_TYPE_PKI:
+            return credentials_delete_pki();
+        case GOLIOTH_TLS_AUTH_TYPE_TAG:
+            return credentials_delete_tag();
+    }
+
+    return -EINVAL;
+}
+
 struct golioth_client *golioth_client_create(const struct golioth_client_config *config)
 {
     if (!_initialized)
@@ -1541,13 +1628,12 @@ struct golioth_client *golioth_client_create(const struct golioth_client_config 
         GLTH_LOGE(TAG, "Failed to allocate memory for client");
         goto error;
     }
-    memset(new_client, 0, sizeof(struct golioth_client));
+    golioth_init(new_client);
 
     new_client->config = *config;
 
     credentials_set(&new_client->config);
 
-    golioth_init(new_client);
     new_client->rx_buffer = rx_buffer;
     new_client->rx_buffer_len = sizeof(rx_buffer);
 
@@ -1685,6 +1771,9 @@ void golioth_client_destroy(struct golioth_client *client)
         purge_request_mbox(client->request_queue);
         golioth_mbox_destroy(client->request_queue);
     }
+
+    credentials_delete(&client->config);
+
     golioth_sys_free(client);
 }
 
