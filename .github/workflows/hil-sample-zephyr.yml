@@ -124,6 +124,7 @@ jobs:
                 --platform ${{ inputs.west_board }}                             \
                 -T modules/lib/golioth-firmware-sdk/examples/zephyr             \
                 --build-only                                                    \
+                --detailed-test-id                                              \
                 $EXTRA_BUILD_ARGS
 
           # Save lfs.hex, which otherwise is cleaned up by twister with
@@ -142,6 +143,7 @@ jobs:
                 --platform ${{ inputs.west_board }}                             \
                 -T modules/lib/golioth-firmware-sdk/examples/zephyr             \
                 --prep-artifacts-for-testing                                    \
+                --detailed-test-id                                              \
                 $EXTRA_BUILD_ARGS
 
           # Re-add lfx.hex files
@@ -236,6 +238,7 @@ jobs:
                 --device-testing                                                                  \
                 --device-serial ${!PORT_VAR}                                                      \
                 --test-only                                                                       \
+                --detailed-test-id                                                                \
                 ${{ inputs.extra_twister_args }}                                                  \
                 --pytest-args="--api-url=${{ inputs.api-url }}"                                   \
                 --pytest-args="--api-key=${{ secrets[inputs.api-key-id] }}"                       \
