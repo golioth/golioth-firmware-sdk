@@ -142,6 +142,7 @@ jobs:
                 --platform ${{ inputs.west_board }}                             \
                 -T modules/lib/golioth-firmware-sdk/examples/zephyr             \
                 --prep-artifacts-for-testing                                    \
+                --detailed-test-id                                              \
                 $EXTRA_BUILD_ARGS
 
           # Re-add lfx.hex files
