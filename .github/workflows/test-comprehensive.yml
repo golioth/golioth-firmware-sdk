@@ -208,7 +208,7 @@ jobs:
             manifest: .ci-west-zephyr.yml
             extra_twister_args: >-
               --flash-before
-              --west-flash=--esp-tool=$(which esptool.py),--esp-device=${!PORT_VAR}
+              --west-flash=--esp-device=${!PORT_VAR}
             binary_blob: hal_espressif
             run_tests: true
 

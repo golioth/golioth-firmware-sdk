@@ -122,6 +122,9 @@ jobs:
             jinja2 \
             click
 
+          # Needed for ESP32 builds
+          uv pip install esptool
+
       - name: Download binary blobs
         if: ${{ inputs.binary_blob }}
         run: |
