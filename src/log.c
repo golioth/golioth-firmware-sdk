@@ -14,6 +14,14 @@ LOG_TAG_DEFINE(golioth_log);
 
 #define CBOR_LOG_MAX_LEN 1024
 
+#if defined(CONFIG_GOLIOTH_LOG_LEGACY)
+#define GOLIOTH_LOG_PATH_PREFIX ""
+#define GOLIOTH_LOG_PATH "logs"
+#else
+#define GOLIOTH_LOG_PATH_PREFIX ".s/"
+#define GOLIOTH_LOG_PATH CONFIG_GOLIOTH_LOG_PIPELINES_PATH
+#endif  // CONFIG_GOLIOTH_LOG_LEGACY
+
 // Important Note!
 //
 // Do not use GLTH_LOGX statements in this file, as it can cause an infinite
@@ -82,8 +90,8 @@ static enum golioth_status golioth_log_internal(struct golioth_client *client,
 
     status = golioth_coap_client_set(client,
                                      token,
-                                     "",  // path-prefix unused
-                                     "logs",
+                                     GOLIOTH_LOG_PATH_PREFIX,
+                                     GOLIOTH_LOG_PATH,
                                      GOLIOTH_CONTENT_TYPE_CBOR,
                                      cbor_buf,
                                      zse->payload - cbor_buf,
