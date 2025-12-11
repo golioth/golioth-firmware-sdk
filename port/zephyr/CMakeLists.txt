@@ -54,6 +54,7 @@ zephyr_library_sources(
     ../../src/ringbuf.c
     ../../src/rpc.c
     ../../src/settings.c
+    ../../src/pki.c
     ../../src/golioth_status.c
     ../../src/zcbor_utils.c
     golioth_sys_zephyr.c
