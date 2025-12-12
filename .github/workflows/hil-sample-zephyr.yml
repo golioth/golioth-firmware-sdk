@@ -108,6 +108,9 @@ jobs:
             jinja2 \
             click
 
+          # Needed for ESP32 builds
+          uv pip install esptool
+
       - name: Download binary blobs
         if: ${{ inputs.binary_blob }}
         run: |
@@ -142,6 +145,7 @@ jobs:
                 --platform ${{ inputs.west_board }}                             \
                 -T modules/lib/golioth-firmware-sdk/examples/zephyr             \
                 --prep-artifacts-for-testing                                    \
+                --detailed-test-id                                              \
                 $EXTRA_BUILD_ARGS
 
           # Re-add lfx.hex files
