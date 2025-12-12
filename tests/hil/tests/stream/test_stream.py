@@ -46,11 +46,11 @@ async def test_block_upload(board, device):
     await trio.sleep(6)
 
     # Get Stream entry of the block upload from cloud
-    stream = await device.stream.get(path=BLOCK_UPLOAD_PATH, interval="1m")
+    stream = await device.stream.get(path='data.'+BLOCK_UPLOAD_PATH, interval="1m")
     print(stream)
     assert 'list' in stream and len(stream.keys()) > 0
 
-    blockwise_json = stream['list'][0]['data'][BLOCK_UPLOAD_PATH]
+    blockwise_json = stream['list'][0]['data']['data'][BLOCK_UPLOAD_PATH]
 
     # Get hash of the JSON string we received
     blockwise_hash = hash_from_dict(blockwise_json)
@@ -65,11 +65,11 @@ async def test_block_upload(board, device):
 
 async def test_multi_block_upload(board, device):
     # Get Stream entry of the block upload from cloud
-    stream = await device.stream.get(path=MULTI_BLOCK_UPLOAD_PATH, interval="1m")
+    stream = await device.stream.get(path='data.'+MULTI_BLOCK_UPLOAD_PATH, interval="1m")
     print(stream)
     assert 'list' in stream and len(stream.keys()) > 0
 
-    blockwise_json = stream['list'][0]['data'][MULTI_BLOCK_UPLOAD_PATH]
+    blockwise_json = stream['list'][0]['data']['data'][MULTI_BLOCK_UPLOAD_PATH]
 
     # Get hash of the JSON string we received
     blockwise_hash = hash_from_dict(blockwise_json)
