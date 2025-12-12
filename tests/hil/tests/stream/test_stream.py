@@ -4,8 +4,8 @@ import json
 import hashlib
 import os
 
-BLOCK_UPLOAD_PATH='block_upload'
-MULTI_BLOCK_UPLOAD_PATH='multi_upload'
+BLOCK_UPLOAD_PATH='data/block_upload'
+MULTI_BLOCK_UPLOAD_PATH='data/multi_upload'
 
 pytestmark = pytest.mark.anyio
 
