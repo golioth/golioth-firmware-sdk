@@ -149,11 +149,11 @@ static void temperature_push_cbor(const struct sensor_value *temp, bool async)
 
     size_t payload_size = (intptr_t) zse->payload - (intptr_t) buf;
 
-    /* Empty path ("") is used to send the payload to the Stream root path */
+    /* Data is sent to Pipelines on the "/data" path */
     if (async)
     {
         err = golioth_stream_set_async(client,
-                                       "",
+                                       "data",
                                        GOLIOTH_CONTENT_TYPE_CBOR,
                                        buf,
                                        payload_size,
@@ -163,7 +163,7 @@ static void temperature_push_cbor(const struct sensor_value *temp, bool async)
     else
     {
         err = golioth_stream_set_sync(client,
-                                      "",
+                                      "data",
                                       GOLIOTH_CONTENT_TYPE_CBOR,
                                       buf,
                                       payload_size,
