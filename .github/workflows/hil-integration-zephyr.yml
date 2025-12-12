@@ -274,7 +274,7 @@ jobs:
             -ex "set confirm off" \
             -ex "target extended-remote "${CI_BLACKMAGICPROBE_PORT} \
             -ex "monitor swdp_scan" \
-            -ex "attach 1" \
+            -ex "attach 2" \
             -ex "monitor erase_mass" \
             -ex "kill" \
             -ex "quit" \
