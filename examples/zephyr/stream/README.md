@@ -8,9 +8,10 @@ temperature measurements will be displayed on the `/temp` stream
 path. For platforms that do not have a temperature sensor, a value is
 generated from 20 up to 30.
 
-> :information-source: To receive stream data, a Pipeline must be
-> configured for the project on Golioth. This example is configured
-> to work with the default Pipeline present for every project upon creation.
+> [!NOTE]
+> To receive stream data, a Pipeline must be configured for the project
+> on Golioth. This example is configured to work with the default
+> Pipeline present for every project upon creation.
 
 ## Requirements
 
@@ -204,4 +205,3 @@ $ goliothctl stream query --interval 5m --field time --field temp | jq ''
   }
 ]
 ```
-```console

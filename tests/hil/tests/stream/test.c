@@ -71,7 +71,7 @@ void test_block_upload(struct golioth_client *client)
                                             .len = test_data_json_len};
 
     int err = golioth_stream_set_blockwise_sync(client,
-                                                "block_upload",
+                                                "data/block_upload",
                                                 GOLIOTH_CONTENT_TYPE_JSON,
                                                 block_upload_read_chunk,
                                                 (void *) &bu_source);
@@ -112,7 +112,7 @@ void test_multi_block_upload(struct golioth_client *client)
     bool is_last = false;
 
     struct blockwise_transfer *ctx =
-        golioth_stream_blockwise_start(client, "multi_upload", GOLIOTH_CONTENT_TYPE_JSON);
+        golioth_stream_blockwise_start(client, "data/multi_upload", GOLIOTH_CONTENT_TYPE_JSON);
     if (!ctx)
     {
         GLTH_LOGE(TAG, "Error allocating context");
