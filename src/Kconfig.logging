@@ -47,3 +47,23 @@ config GOLIOTH_DEBUG_DEFAULT_LOG_LEVEL
         5: Verbose
 
         This value can be overriden at runtime with golioth_debug_set_log_level().
+
+config GOLIOTH_LOG_LEGACY
+    bool "Enable legacy Golioth logs ingestion [DEPRECATED]"
+    default n
+    help
+        Send log messages to Golioth legacy logging ingestion system. Enabling
+        removes the ability to process logs in Golioth Pipelines and deliver
+        them to external destinations.
+
+if !GOLIOTH_LOG_LEGACY
+
+config GOLIOTH_LOG_PIPELINES_PATH
+    string "Logs Pipelines path"
+    default "logs"
+    help
+        Path to use when delivering log messages to Golioth Pipelines.
+        A Pipeline that filters on this path and application/cbor content type
+        should exist in the target Golioth project.
+
+endif
