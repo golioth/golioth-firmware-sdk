@@ -260,7 +260,7 @@ int main(void)
                                                 .len = golioth_net_info_get_buf_len(info)};
 
         int err = golioth_stream_set_blockwise_sync(client,
-                                                    "loc/net",
+                                                    "data/loc/net",
                                                     GOLIOTH_CONTENT_TYPE_CBOR,
                                                     block_upload_read_chunk,
                                                     (void *) &bu_source);
