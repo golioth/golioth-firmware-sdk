@@ -4,6 +4,58 @@ All notable changes to this project will be documented in this file.
 The format is based on [Keep a Changelog](https://keepachangelog.com/en/1.0.0/),
 and this project adheres to [Semantic Versioning](https://semver.org/spec/v2.0.0.html).
 
+## [0.22.0] 2025-12-16
+
+### Highlights
+- Added a new Golioth PKI service. Golioth PKI can be used to
+  securely rotate certificates by sending Certificate Signing
+  Requests to be signed by the PKI provider configured in your
+  Golioth project.
+- Logs are sent through Pipelines by default. This allows
+  seamless routing of logs to the destination of your choice.
+
+  NOTE: Existing projects will need to create a new Pipeline
+  in order to continue to have logs stored in the Golioth
+  Logs service. Alternatively, you may set
+  `CONFIG_GOLIOTH_LOG_LEGACY=y` to preserve the existing
+  functionality. Add the new Pipeline to your project by
+  clicking [here](https://console.golioth.io/pipeline?name=Default%20CBOR%20Logs&pipeline=ZmlsdGVyOgogIHBhdGg6ICIvbG9ncyIKICBjb250ZW50X3R5cGU6IGFwcGxpY2F0aW9uL2Nib3IKc3RlcHM6CiAgLSBuYW1lOiBzdGVwLTAKICAgIHRyYW5zZm9ybWVyOgogICAgICB0eXBlOiBjYm9yLXRvLWpzb24KICAgICAgdmVyc2lvbjogdjEKICAgIGRlc3RpbmF0aW9uOgogICAgICB0eXBlOiBsb2dzCiAgICAgIHZlcnNpb246IHYx&enabled=1)
+  or manually enter the Pipeline YAML below:
+
+```
+filter:
+  path: "/logs"
+  content_type: application/cbor
+steps:
+  - name: step-0
+    transformer:
+      type: cbor-to-json
+      version: v1
+    destination:
+      type: logs
+      version: v1
+```
+
+### Added
+- New Kconfig options for setting min/max DTLS handshake timeout
+- New Zephyr example for Certificate Rotation
+- More readable error messages
+
+### Changed
+- The Firmware Update reference design has been moved to the samples
+- ESP-IDF: ESP32 and ESP32C3 have been removed from the Continuously Verified Boards
+- Zephyr: ESP32S3 replaces ESP32 as a Continuously Verified Board
+- Stream and Location examples: use `/data` prefix for paths
+
+### Fixed
+- Various fixes and stabilizations for tests
+- Fixed potential buffer overrun during logging
+- Fixed potential buffer overrun when receiving LightDB payloads
+- Fixed out-of-bounds read for maximum length blockwise paths
+- Avoid calling duplicate error callbacks during blockwise operations
+- Fixed missing abstraction in SHA calculation on ESP-IDF
+- Fixed bug that prevented re-creating the Golioth Client with new credentials at runtime
+
 ## [0.21.1] 2025-10-17
 
 ### Fixed

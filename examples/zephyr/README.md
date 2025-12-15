@@ -27,7 +27,7 @@ Execute this command to download this repository together with all
 dependencies:
 
 ```console
-west init -m https://github.com/golioth/golioth-firmware-sdk.git --mr v0.21.1 --mf west-zephyr.yml
+west init -m https://github.com/golioth/golioth-firmware-sdk.git --mr v0.22.0 --mf west-zephyr.yml
 west update
 cd modules/lib/golioth-firmware-sdk && git submodule update --init --recursive
 ```
@@ -42,7 +42,7 @@ Execute this command to download this repository together with all
 dependencies:
 
 ```console
-west init -m https://github.com/golioth/golioth-firmware-sdk.git --mr v0.21.1 --mf west-ncs.yml
+west init -m https://github.com/golioth/golioth-firmware-sdk.git --mr v0.22.0 --mf west-ncs.yml
 west update
 cd modules/lib/golioth-firmware-sdk && git submodule update --init --recursive
 ```
@@ -62,7 +62,7 @@ based project (e.g. Zephyr RTOS):
 # Golioth repository.
 - name: golioth
   path: modules/lib/golioth-firmware-sdk
-  revision: v0.21.1
+  revision: v0.22.0
   url: https://github.com/golioth/golioth-firmware-sdk.git
   submodules: true
 ```
