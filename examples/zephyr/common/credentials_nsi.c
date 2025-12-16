@@ -12,7 +12,7 @@ LOG_MODULE_REGISTER(golioth_credentials_nsi, CONFIG_GOLIOTH_DEBUG_DEFAULT_LOG_LE
 #include <zephyr/init.h>
 #include <zephyr/net/tls_credentials.h>
 
-#include "nsi_host_getenv.h"
+#include <nsi_host_trampolines.h>
 
 /*
  * TLS credentials subsystem just remembers pointers to memory areas where
