@@ -93,3 +93,8 @@ async def test_cert_provisioning(lfs_flash_empty, request, shell,
     # Check cloud to verify device was created
     device = await project.device_by_name(device_name)
     assert device.name == device_name
+
+    # Remove credentials from device
+    shell.exec_command('fs rm /lfs1/credentials/key.der')
+    shell.exec_command('fs rm /lfs1/credentials/crt.der')
+    shell.exec_command('fs rm /lfs1/credentials')
