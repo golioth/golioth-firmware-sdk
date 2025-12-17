@@ -46,7 +46,7 @@ def lfs_flash_empty(device_object: DeviceAdapter, request):
 
 async def test_cert_provisioning(lfs_flash_empty, request, shell,
                                  project, device_name,
-                                 mcumgr_conn_args, certificate_cred,
+                                 smpmgr_conn_args, certificate_cred,
                                  wifi_ssid, wifi_psk):
     # Check cloud to verify device does not exist
 
@@ -73,13 +73,12 @@ async def test_cert_provisioning(lfs_flash_empty, request, shell,
     shell.exec_command('log halt')
 
     for component in ["crt", "key"]:
-        result = subprocess.run(["mcumgr"] + mcumgr_conn_args +
-                                ["--tries=3", "--timeout=2",
-                                 "fs", "upload",
+        result = subprocess.run(["smpmgr"] + smpmgr_conn_args +
+                                [ "file", "upload",
                                  f"{project.info['id']}-{device_name}.{component}.der", f"{FS_SUBDIR}/{component}.der"],
                                 capture_output=True, text=True,
                                 cwd=request.config.option.build_dir)
-        subprocess_logger(result, f'mcumgr {component}')
+        subprocess_logger(result, f'smpmgr {component}')
         assert result.returncode == 0
 
     shell.exec_command('log go')

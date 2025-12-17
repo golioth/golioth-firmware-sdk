@@ -16,7 +16,7 @@ sys.path.insert(0, str(WEST_TOPDIR / 'zephyr' / 'scripts' / 'west_commands'))
 from runners.core import BuildConfiguration
 
 @pytest.fixture
-def mcumgr_conn_args(request, dut):
+def smpmgr_conn_args(request, dut):
     build_conf = BuildConfiguration(request.config.option.build_dir)
 
     if isinstance(dut, NativeSimulatorAdapter):
@@ -25,16 +25,15 @@ def mcumgr_conn_args(request, dut):
         else:
             ip = build_conf['CONFIG_NET_CONFIG_MY_IPV4_ADDR']
 
-        port = build_conf['CONFIG_MCUMGR_TRANSPORT_UDP_PORT']
-
         return [
-            "--conntype=udp",
-            f"--connstring={ip}:{port}",
+            f"--ip={ip}",
+            "--mtu=128"
         ]
 
     return [
-        "--conntype=serial",
-        f"--connstring=dev={request.config.option.device_serial},baud=115200"
+        f"--port={request.config.option.device_serial}",
+        "--baudrate=115200",
+        "--mtu=128"
     ]
 
 @pytest.fixture(scope='session')

@@ -66,6 +66,8 @@ jobs:
           git config --global user.email user@git-scm.com
           git config --global user.name "Git User"
 
+          west patch apply
+
           uv pip install \
             -r zephyr/scripts/requirements-base.txt \
             -r zephyr/scripts/requirements-build-test.txt \
@@ -73,6 +75,9 @@ jobs:
             modules/lib/golioth-firmware-sdk/tests/hil/scripts/pytest-zephyr-samples \
             git+https://github.com/golioth/python-golioth-tools@v0.8.1 \
             asyncclick==8.1.8
+
+          # Needed for certificate_provisioning
+          uv pip install smpmgr
 
       - name: Run tests
         run: |
