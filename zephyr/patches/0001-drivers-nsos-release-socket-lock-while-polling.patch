@@ -1,0 +1,50 @@
+From 514ce1bb487e2843c5584f7daa471d14fe8b71bc Mon Sep 17 00:00:00 2001
+From: Marcin Niestroj <m.niestroj@emb.dev>
+Date: Sat, 24 Aug 2024 12:31:39 +0200
+Subject: [PATCH] drivers: nsos: release socket lock while polling
+
+So far using recvfrom() and send() from two different threads was not
+possible, since thread attempting send() was blocked by the thread
+executing recvfrom(). All other APIs were also blocking each other, while
+it was not necessary. One example use case in Zephyr tree is MCUMGR SMP
+over UDP implementation, which resuled in communication timeouts.
+
+Release socket lock while actively polling, so other APIs executed from
+other threads can safely progress.
+
+Signed-off-by: Marcin Niestroj <m.niestroj@emb.dev>
+---
+ drivers/net/nsos_sockets.c | 17 ++++++++++++++++-
+ 1 file changed, 16 insertions(+), 1 deletion(-)
+
+diff --git a/drivers/net/nsos_sockets.c b/drivers/net/nsos_sockets.c
+index 9f50512cda5..bc41bfabcaf 100644
+--- a/drivers/net/nsos_sockets.c
++++ b/drivers/net/nsos_sockets.c
+@@ -623,7 +623,22 @@ static int nsos_poll_if_blocking(struct nsos_socket *sock, int events,
+ 	}
+ 
+ 	if (!non_blocking) {
+-		return nsos_wait_for_poll(sock, events, timeout);
++		struct k_mutex *lock = NULL;
++		bool lock_acquired;
++		int ret;
++
++		lock_acquired = zvfs_get_obj_lock_and_cond(sock,
++							   &nsos_socket_fd_op_vtable.fd_vtable,
++							   &lock, NULL);
++		__ASSERT(lock_acquired, "zvfs_get_obj_lock_and_cond() failed");
++		__ASSERT_NO_MSG(lock);
++
++		/* Release lock while waiting for some socket activity */
++		k_mutex_unlock(lock);
++		ret = nsos_wait_for_poll(sock, events, timeout);
++		k_mutex_lock(lock, K_FOREVER);
++
++		return ret;
+ 	}
+ 
+ 	return 0;
+-- 
+2.52.0
+

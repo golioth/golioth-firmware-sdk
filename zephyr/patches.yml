@@ -1,0 +1,9 @@
+patches:
+  - module: zephyr
+    path: 0001-drivers-nsos-release-socket-lock-while-polling.patch
+    sha256sum: 57ef319ba59ea3287e1c235e62196bf1100ef5a8befd6db041e149485f4a09a2
+    author: Marcin Niestroj
+    email: m.niestroj@emb.dev
+    date: 2025-12-18
+    comments: |
+      Fix timeout when using smpmgr with nsim during CI runs of the certificate_provisioning sample.
