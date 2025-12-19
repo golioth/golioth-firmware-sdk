@@ -5,6 +5,8 @@ import trio
 
 LOGGER = logging.getLogger(__name__)
 
+LOG_FETCH_POLLING_LIMIT = datetime.timedelta(seconds=60)
+
 UPDATE_PACKAGE = 'main'
 DUMMY_VER_OLDER = '1.2.2'
 DUMMY_VER_SAME = '1.2.3'
@@ -211,12 +213,30 @@ async def test_reason_and_state(board, device, project, artifacts, cohort):
 
     await trio.sleep(5)
 
-    # Check logs for firmware status updates
+    # Fetch logs
 
-    end = datetime.datetime.now(datetime.UTC)
+    log_fetch_start = datetime.datetime.now(datetime.UTC)
 
-    logs = await device.get_logs({'start': start.strftime('%Y-%m-%dT%H:%M:%S.%fZ'), 'end':
-                                  end.strftime('%Y-%m-%dT%H:%M:%S.%fZ'), 'module': 'golioth_dfu'})
+    while True:
+        end = datetime.datetime.now(datetime.UTC)
+
+        logs = await device.get_logs(
+            {
+                "start": start.strftime("%Y-%m-%dT%H:%M:%S.%fZ"),
+                "end": end.strftime("%Y-%m-%dT%H:%M:%S.%fZ"),
+                "module": "golioth_dfu",
+            }
+        )
+
+        if len(logs) == GOLIOTH_OTA_REASON_CNT:
+            break
+
+        assert (
+            LOG_FETCH_POLLING_LIMIT
+            > datetime.datetime.now(datetime.UTC) - log_fetch_start
+        )
+
+        await trio.sleep(1)
 
     # Test logs received from server
 
