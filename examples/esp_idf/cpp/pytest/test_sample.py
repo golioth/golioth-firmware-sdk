@@ -3,6 +3,9 @@ import pytest
 from datetime import datetime, timezone
 import re
 
+LOG_FETCH_COUNT_LIMIT = 5
+LOG_EXPECTED_COUNT = 2
+
 pytestmark = pytest.mark.anyio
 
 async def test_hello(board, device):
@@ -14,9 +17,26 @@ async def test_hello(board, device):
     start = datetime.now(timezone.utc)
     await board.wait_for_regex_in_line('.*Hello, Golioth 2!', timeout_s=90.0)
 
-    # Check logs for hello messages
-    end = datetime.now(timezone.utc)
-    logs = await device.get_logs({'start': start.strftime('%Y-%m-%dT%H:%M:%S.%fZ'), 'end': end.strftime('%Y-%m-%dT%H:%M:%S.%fZ')})
+    # Fetch logs
+
+    log_fetch_count = 0
+    while True:
+        end = datetime.datetime.now(datetime.UTC)
+
+        logs = await device.get_logs(
+            {
+                "start": start.strftime("%Y-%m-%dT%H:%M:%S.%fZ"),
+                "end": end.strftime("%Y-%m-%dT%H:%M:%S.%fZ"),
+                "module": "app_main",
+            }
+        )
+
+        if len(logs) >= LOG_EXPECTED_COUNT:
+            break
+
+        assert log_fetch_count < LOG_FETCH_COUNT_LIMIT, (
+            f"After {log_fetch_count} retries, got {len(logs)} logs but expected {LOG_EXPECTED_COUNT}"
+        )
 
     # Test logs received from server
     r = re.compile(".*Hello, Golioth 1!")
