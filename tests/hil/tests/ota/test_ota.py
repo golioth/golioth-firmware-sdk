@@ -48,7 +48,7 @@ async def setup(board, device):
     await board.set_golioth_psk_credentials(golioth_cred.identity, golioth_cred.key)
 
     # Confirm connection to Golioth
-    assert None != await board.wait_for_regex_in_line('Golioth CoAP client connected', timeout_s=120)
+    assert None is not await board.wait_for_regex_in_line('Golioth CoAP client connected', timeout_s=120)
 
 @pytest.fixture(scope="module")
 async def tag(project, device):
@@ -61,7 +61,7 @@ async def tag(project, device):
 
     try:
         await device.remove_tag(tag.id)
-    except:
+    except Exception:
         pass
 
     await project.tags.delete(tag.id)
@@ -74,7 +74,7 @@ async def artifacts(project):
 
     all_artifacts = await project.artifacts.get_all()
     for a in all_artifacts:
-        if a.blueprint == None:
+        if a.blueprint is None:
             if a.version == DUMMY_VER_OLDER and a.package == UPDATE_PACKAGE:
                 artifacts["test_manifest"] = a
             elif a.version == DUMMY_VER_SAME and a.package == UPDATE_PACKAGE:
@@ -101,7 +101,7 @@ async def cohort(project, device):
 
     try:
         await device.remove_cohort()
-    except Exception as e:
+    except Exception:
         pass
 
     await project.cohorts.delete(cohort.id)
@@ -111,10 +111,10 @@ async def verify_component_values(board, info):
     version_info = info["version"]
     b_info = info["binaryInfo"]
 
-    assert None != await board.wait_for_regex_in_line(f'component.package: {package_info}', timeout_s=2)
-    assert None != await board.wait_for_regex_in_line(f'component.version: {version_info}', timeout_s=2)
-    assert None != await board.wait_for_regex_in_line(f'component.size: {b_info["size"]}', timeout_s=2)
-    assert None != await board.wait_for_regex_in_line(f'component.hash: {b_info["digests"]["sha256"]["digest"]}', timeout_s=2)
+    assert None is not await board.wait_for_regex_in_line(f'component.package: {package_info}', timeout_s=2)
+    assert None is not await board.wait_for_regex_in_line(f'component.version: {version_info}', timeout_s=2)
+    assert None is not await board.wait_for_regex_in_line(f'component.size: {b_info["size"]}', timeout_s=2)
+    assert None is not await board.wait_for_regex_in_line(f'component.hash: {b_info["digests"]["sha256"]["digest"]}', timeout_s=2)
 
 def verify_dfu_status_logs(logs):
     assert len(logs) == len(golioth_ota_reason)
@@ -132,14 +132,14 @@ def verify_dfu_status_logs(logs):
 async def test_manifest(artifacts, board, project, cohort):
     await cohort.deployments.create("test_manifest", [artifacts["test_manifest"].id])
 
-    assert None != await board.wait_for_regex_in_line('Manifest received', timeout_s=30)
+    assert None is not await board.wait_for_regex_in_line('Manifest received', timeout_s=30)
 
-    assert None != await board.wait_for_regex_in_line('Manifest successfully decoded', timeout_s=2)
+    assert None is not await board.wait_for_regex_in_line('Manifest successfully decoded', timeout_s=2)
 
     # We may need to wait for the second manifest to trigger this line (the first has no rollouts)
 
-    assert None != await board.wait_for_regex_in_line('Found main component', timeout_s=30)
-    assert None != await board.wait_for_regex_in_line('No absent component found', timeout_s=2)
+    assert None is not await board.wait_for_regex_in_line('Found main component', timeout_s=30)
+    assert None is not await board.wait_for_regex_in_line('No absent component found', timeout_s=2)
 
     # Test all parts of OTA component
 
@@ -149,45 +149,45 @@ async def test_multiple_artifacts(artifacts, board, project, cohort):
     await cohort.deployments.create("test_multiple", [artifacts["test_multiple"].id,
                                                       artifacts["multi_artifact"].id])
 
-    assert None != await board.wait_for_regex_in_line('Manifest received', timeout_s=30)
-    assert None != await board.wait_for_regex_in_line('Manifest successfully decoded', timeout_s=2)
-    assert None != await board.wait_for_regex_in_line('Found main component', timeout_s=30)
-    assert None != await board.wait_for_regex_in_line('Found walrus component', timeout_s=2)
+    assert None is not await board.wait_for_regex_in_line('Manifest received', timeout_s=30)
+    assert None is not await board.wait_for_regex_in_line('Manifest successfully decoded', timeout_s=2)
+    assert None is not await board.wait_for_regex_in_line('Found main component', timeout_s=30)
+    assert None is not await board.wait_for_regex_in_line('Found walrus component', timeout_s=2)
 
     # Test all parts of OTA component
 
     await verify_component_values(board, artifacts["multi_artifact"].info)
 
     # Test manifest get
-    assert None != await board.wait_for_regex_in_line('Manifest get SHA matches stored SHA', timeout_s=30)
+    assert None is not await board.wait_for_regex_in_line('Manifest get SHA matches stored SHA', timeout_s=30)
 
     # Test manifest blockwise
-    assert None != await board.wait_for_regex_in_line('Manifest blockwise SHA matches stored SHA', timeout_s=30)
+    assert None is not await board.wait_for_regex_in_line('Manifest blockwise SHA matches stored SHA', timeout_s=30)
 
 async def test_block_operations(board, project, artifacts, cohort):
     await cohort.deployments.create("test_blocks", [artifacts["test_blocks"].id])
-    assert None != await board.wait_for_regex_in_line(f"golioth_ota_size_to_nblocks: {TEST_BLOCK_CNT + 1}", timeout_s=12)
+    assert None is not await board.wait_for_regex_in_line(f"golioth_ota_size_to_nblocks: {TEST_BLOCK_CNT + 1}", timeout_s=12)
 
     # Test NULL client
 
-    assert None != await board.wait_for_regex_in_line("Block sync failed: 5", timeout_s=12)
+    assert None is not await board.wait_for_regex_in_line("Block sync failed: 5", timeout_s=12)
 
     # Test block download
 
-    assert None != await board.wait_for_regex_in_line("Received block 0", timeout_s=4)
-    assert None != await board.wait_for_regex_in_line("is_last: 0", timeout_s=4)
-    assert None != await board.wait_for_regex_in_line("Received block 1", timeout_s=4)
-    assert None != await board.wait_for_regex_in_line("is_last: 1", timeout_s=40)
+    assert None is not await board.wait_for_regex_in_line("Received block 0", timeout_s=4)
+    assert None is not await board.wait_for_regex_in_line("is_last: 0", timeout_s=4)
+    assert None is not await board.wait_for_regex_in_line("Received block 1", timeout_s=4)
+    assert None is not await board.wait_for_regex_in_line("is_last: 1", timeout_s=40)
 
 async def test_resume(board, project, artifacts, cohort):
     await cohort.deployments.create("test_resume", [artifacts["multi_artifact"].id])
 
-    assert None != await board.wait_for_regex_in_line('Manifest received', timeout_s=30)
-    assert None != await board.wait_for_regex_in_line('Manifest successfully decoded', timeout_s=2)
-    assert None != await board.wait_for_regex_in_line('Start resumable blockwise download test', timeout_s=10)
-    assert None != await board.wait_for_regex_in_line('Block download failed', timeout_s=10)
-    assert None != await board.wait_for_regex_in_line('SHA256 matches as expected', timeout_s=20)
-    assert None != await board.wait_for_regex_in_line('Block download successful', timeout_s=2)
+    assert None is not await board.wait_for_regex_in_line('Manifest received', timeout_s=30)
+    assert None is not  await board.wait_for_regex_in_line('Manifest successfully decoded', timeout_s=2)
+    assert None is not  await board.wait_for_regex_in_line('Start resumable blockwise download test', timeout_s=10)
+    assert None is not  await board.wait_for_regex_in_line('Block download failed', timeout_s=10)
+    assert None is not  await board.wait_for_regex_in_line('SHA256 matches as expected', timeout_s=20)
+    assert None is not  await board.wait_for_regex_in_line('Block download successful', timeout_s=2)
 
 async def test_reason_and_state(board, device, project, artifacts, cohort):
     # Test reason and state code updates
