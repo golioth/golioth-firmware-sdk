@@ -5,6 +5,8 @@ import trio
 
 LOGGER = logging.getLogger(__name__)
 
+LOG_FETCH_COUNT_LIMIT = 5
+
 UPDATE_PACKAGE = 'main'
 DUMMY_VER_OLDER = '1.2.2'
 DUMMY_VER_SAME = '1.2.3'
@@ -213,10 +215,31 @@ async def test_reason_and_state(board, device, project, artifacts, cohort):
 
     # Check logs for firmware status updates
 
-    end = datetime.datetime.now(datetime.UTC)
+    log_fetch_count = 0
+    while 1:
+        end = datetime.datetime.now(datetime.UTC)
 
-    logs = await device.get_logs({'start': start.strftime('%Y-%m-%dT%H:%M:%S.%fZ'), 'end':
-                                  end.strftime('%Y-%m-%dT%H:%M:%S.%fZ'), 'module': 'golioth_dfu'})
+        logs = await device.get_logs(
+            {
+                "start": start.strftime("%Y-%m-%dT%H:%M:%S.%fZ"),
+                "end": end.strftime("%Y-%m-%dT%H:%M:%S.%fZ"),
+                "module": "golioth_dfu",
+            }
+        )
+
+        if len(logs) == GOLIOTH_OTA_REASON_CNT:
+            break
+
+        assert log_fetch_count < LOG_FETCH_COUNT_LIMIT, (
+            f"After {log_fetch_count} retries, got {len(logs)} dfu updates but expected {GOLIOTH_OTA_REASON_CNT}"
+        )
+
+        LOGGER.info(
+            f"Fetched {len(logs)} dfu updates but expected {GOLIOTH_OTA_REASON_CNT}... will retry"
+        )
+
+        log_fetch_count += 1
+        await trio.sleep(5)
 
     # Test logs received from server
 
