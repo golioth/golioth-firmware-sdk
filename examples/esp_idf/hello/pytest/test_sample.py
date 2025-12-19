@@ -9,6 +9,9 @@ import datetime
 
 LOGGER = logging.getLogger(__name__)
 
+LOG_FETCH_COUNT_LIMIT = 5
+LOG_EXPECTED_COUNT = 6 # we expect 4 hello messages plus waiting for conn and client connected
+
 pytestmark = pytest.mark.anyio
 
 async def test_hello(board, device):
@@ -20,9 +23,30 @@ async def test_hello(board, device):
     start = datetime.datetime.now(datetime.UTC)
     await board.wait_for_regex_in_line('.*Sending hello! 3', timeout_s=90.0)
 
-    # Check logs for hello messages
-    end = datetime.datetime.now(datetime.UTC)
-    logs = await device.get_logs({'start': start.strftime('%Y-%m-%dT%H:%M:%S.%fZ'), 'end': end.strftime('%Y-%m-%dT%H:%M:%S.%fZ')})
+    # Fetch logs
+
+    log_fetch_count = 0
+    while True:
+        end = datetime.datetime.now(datetime.UTC)
+
+        logs = await device.get_logs(
+            {
+                "start": start.strftime("%Y-%m-%dT%H:%M:%S.%fZ"),
+                "end": end.strftime("%Y-%m-%dT%H:%M:%S.%fZ"),
+                "module": "hello",
+            }
+        )
+
+        if len(logs) >= LOG_EXPECTED_COUNT:
+            break
+
+        assert log_fetch_count < LOG_FETCH_COUNT_LIMIT, (
+            f"After {log_fetch_count} retries, got {len(logs)} logs but expected {LOG_EXPECTED_COUNT}"
+        )
+
+        LOGGER.info(
+            f"Fetched {len(logs)} logs but expected {LOG_EXPECTED_COUNT}... will retry"
+        )
 
     # Test logs received from server
     LOGGER.info("Searching log messages from end to start:")
