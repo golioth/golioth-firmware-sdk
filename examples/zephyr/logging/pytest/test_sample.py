@@ -8,6 +8,9 @@ from golioth import LogLevel, LogEntry
 
 LOGGER = logging.getLogger(__name__)
 
+LOG_FETCH_POLLING_LIMIT = datetime.timedelta(seconds=60)
+LOG_EXPECTED_COUNT = 6  # verify_log_messages() tests 6 log messages with a counter value of 0
+
 pytestmark = pytest.mark.anyio
 
 def verify_log_messages(logs):
@@ -70,11 +73,30 @@ async def test_logging(shell, device, wifi_ssid, wifi_psk):
     start = datetime.datetime.now(datetime.UTC)
     shell._device.readlines_until(regex=".*Debug info! 2", timeout=90.0)
 
-    # Check logs for hello messages
+    # Fetch logs
 
-    end = datetime.datetime.now(datetime.UTC)
+    log_fetch_start = datetime.datetime.now(datetime.UTC)
 
-    logs = await device.get_logs({'start': start.strftime('%Y-%m-%dT%H:%M:%S.%fZ'), 'end': end.strftime('%Y-%m-%dT%H:%M:%S.%fZ')})
+    while True:
+        end = datetime.datetime.now(datetime.UTC)
+
+        logs = await device.get_logs(
+            {
+                "start": start.strftime("%Y-%m-%dT%H:%M:%S.%fZ"),
+                "end": end.strftime("%Y-%m-%dT%H:%M:%S.%fZ"),
+                "module": "golioth_logging",
+            }
+        )
+
+        if len(logs) >= LOG_EXPECTED_COUNT:
+            break
+
+        assert (
+            LOG_FETCH_POLLING_LIMIT
+            > datetime.datetime.now(datetime.UTC) - log_fetch_start
+        )
+
+        await trio.sleep(1)
 
     # Test logs received from server
 
