@@ -50,11 +50,9 @@ static void counter_set_handler(struct golioth_client *client,
     return;
 }
 
-static void counter_set_async(int counter)
+static void counter_set(int counter)
 {
-    int err;
-
-    err = golioth_lightdb_set_int_async(client, "counter", counter, counter_set_handler, NULL);
+    int err = golioth_lightdb_set_int(client, "counter", counter, counter_set_handler, NULL);
     if (err)
     {
         GLTH_LOGW(TAG, "Failed to set counter: %d (%s)", err, golioth_status_to_str(err));
@@ -62,34 +60,19 @@ static void counter_set_async(int counter)
     }
 }
 
-static void counter_set_sync(int counter)
-{
-    int err;
-
-    err = golioth_lightdb_set_int_sync(client, "counter", counter, APP_TIMEOUT_S);
-    if (err)
-    {
-        GLTH_LOGW(TAG, "Failed to set counter: %d (%s)", err, golioth_status_to_str(err));
-        return;
-    }
-
-    GLTH_LOGI(TAG, "Counter successfully set");
-}
-
-static void counter_set_json_async(int counter)
+static void counter_set_json(int counter)
 {
     char sbuf[sizeof("{\"counter\":4294967295}")];
-    int err;
 
     snprintf(sbuf, sizeof(sbuf), "{\"counter\":%d}", counter);
 
-    err = golioth_lightdb_set_async(client,
-                                    "",
-                                    GOLIOTH_CONTENT_TYPE_JSON,
-                                    (const uint8_t *) sbuf,
-                                    strlen(sbuf),
-                                    counter_set_handler,
-                                    NULL);
+    int err = golioth_lightdb_set(client,
+                                  "",
+                                  GOLIOTH_CONTENT_TYPE_JSON,
+                                  (const uint8_t *) sbuf,
+                                  strlen(sbuf),
+                                  counter_set_handler,
+                                  NULL);
     if (err)
     {
         GLTH_LOGW(TAG, "Failed to set counter: %d (%s)", err, golioth_status_to_str(err));
@@ -97,7 +80,7 @@ static void counter_set_json_async(int counter)
     }
 }
 
-static void counter_set_cbor_sync(int counter)
+static void counter_set_cbor(int counter)
 {
     uint8_t buf[32];
     ZCBOR_STATE_E(zse, 1, buf, sizeof(buf), 1);
@@ -132,19 +115,16 @@ static void counter_set_cbor_sync(int counter)
 
     size_t payload_size = (intptr_t) zse->payload - (intptr_t) buf;
 
-    int err = golioth_lightdb_set_sync(client,
-                                       "",
-                                       GOLIOTH_CONTENT_TYPE_CBOR,
-                                       buf,
-                                       payload_size,
-                                       APP_TIMEOUT_S);
+    int err = golioth_lightdb_set(client,
+                                  "",
+                                  GOLIOTH_CONTENT_TYPE_CBOR,
+                                  buf,
+                                  payload_size,
+                                  counter_set_handler,
+                                  NULL);
     if (err != 0)
     {
         GLTH_LOGW(TAG, "Failed to set counter: %d (%s)", err, golioth_status_to_str(err));
-    }
-    else
-    {
-        GLTH_LOGI(TAG, "Counter successfully set");
     }
 }
 
@@ -195,42 +175,32 @@ void app_main(void)
 
     while (true)
     {
-        /* Callback-based using int */
+        /* Using int */
         GLTH_LOGI(TAG, "Setting counter to %d", counter);
 
-        GLTH_LOGI(TAG, "Before request (async)");
-        counter_set_async(counter);
-        GLTH_LOGI(TAG, "After request (async)");
+        GLTH_LOGI(TAG, "Before request");
+        counter_set(counter);
+        GLTH_LOGI(TAG, "After request");
 
         counter++;
         vTaskDelay(5000 / portTICK_PERIOD_MS);
 
-        /* Synchrnous using int */
+        /* Using JSON object */
         GLTH_LOGI(TAG, "Setting counter to %d", counter);
 
-        GLTH_LOGI(TAG, "Before request (sync)");
-        counter_set_sync(counter);
-        GLTH_LOGI(TAG, "After request (sync)");
+        GLTH_LOGI(TAG, "Before request (JSON)");
+        counter_set_json(counter);
+        GLTH_LOGI(TAG, "After request (JSON)");
 
         counter++;
         vTaskDelay(5000 / portTICK_PERIOD_MS);
 
-        /* Callback-based using JSON object */
+        /* Using CBOR object */
         GLTH_LOGI(TAG, "Setting counter to %d", counter);
 
-        GLTH_LOGI(TAG, "Before request (json async)");
-        counter_set_json_async(counter);
-        GLTH_LOGI(TAG, "After request (json async)");
-
-        counter++;
-        vTaskDelay(5000 / portTICK_PERIOD_MS);
-
-        /* Synchronous using CBOR object */
-        GLTH_LOGI(TAG, "Setting counter to %d", counter);
-
-        GLTH_LOGI(TAG, "Before request (cbor sync)");
-        counter_set_cbor_sync(counter);
-        GLTH_LOGI(TAG, "After request (cbor sync)");
+        GLTH_LOGI(TAG, "Before request (CBOR)");
+        counter_set_cbor(counter);
+        GLTH_LOGI(TAG, "After request (CBOR)");
 
         counter++;
         vTaskDelay(5000 / portTICK_PERIOD_MS);

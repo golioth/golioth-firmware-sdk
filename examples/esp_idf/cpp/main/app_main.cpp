@@ -49,7 +49,7 @@ extern "C" void app_main(void) {
     int counter = 0;
     while (1) {
         GLTH_LOGI(TAG, "Hello, Golioth %d!", counter);
-        golioth_lightdb_set_int_async(client, "counter", counter, NULL, NULL);
+        golioth_lightdb_set_int(client, "counter", counter, NULL, NULL);
         vTaskDelay(5000 / portTICK_PERIOD_MS);
         counter++;
     }

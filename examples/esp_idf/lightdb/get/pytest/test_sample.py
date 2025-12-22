@@ -27,21 +27,16 @@ async def test_lightdb_get(board, device):
 
     # Verify lightdb reads
 
-    await board.wait_for_regex_in_line(r'.*Failed to get counter \(async\): 0', timeout_s=10.0)
-
-    await device.lightdb.set("counter", 13)
-
-    await board.wait_for_regex_in_line(r'.*Counter \(sync\): 13', timeout_s=10.0)
+    await board.wait_for_regex_in_line(r'.*Failed to get counter: 0', timeout_s=10.0)
 
     await device.lightdb.set("counter", 27)
 
-    await board.wait_for_regex_in_line(r'.*7b 22 63 6f 75 6e 74 65  72 22 3a 32 37 7d       |{\"counte r\":27}',
-                                  timeout_s=10.0)
+    await board.wait_for_regex_in_line(r'LightDB JSON: {\"counter\":27}', timeout_s=10.0)
 
     await device.lightdb.set("counter", 99)
 
-    await board.wait_for_regex_in_line(r'.*Counter \(CBOR async\): 99', timeout_s=10.0)
+    await board.wait_for_regex_in_line(r'.*Counter \(CBOR\): 99', timeout_s=10.0)
 
     await device.lightdb.set("counter", 42)
 
-    await board.wait_for_regex_in_line(r'.*Counter \(async\): 42', timeout_s=10.0)
+    await board.wait_for_regex_in_line(r'.*Counter: 42', timeout_s=10.0)

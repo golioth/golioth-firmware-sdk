@@ -192,7 +192,6 @@ static int finalize_and_send_response(struct golioth_client *client,
                                    response->zse->payload - response->buf,
                                    NULL,
                                    NULL,
-                                   false,
                                    GOLIOTH_SYS_WAIT_FOREVER);
 }
 
@@ -460,7 +459,6 @@ static enum golioth_status request_settings(struct golioth_settings *settings)
                                    GOLIOTH_CONTENT_TYPE_CBOR,
                                    on_settings,
                                    settings,
-                                   false,
                                    GOLIOTH_SYS_WAIT_FOREVER);
 }
 

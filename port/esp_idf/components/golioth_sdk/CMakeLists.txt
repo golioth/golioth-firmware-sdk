@@ -43,7 +43,6 @@ idf_component_register(
         "${sdk_src}/pki.c"
         "${sdk_src}/golioth_debug.c"
         "${sdk_src}/ringbuf.c"
-        "${sdk_src}/event_group.c"
         "${sdk_src}/mbox.c"
         "${sdk_src}/coap_blockwise.c"
         "${sdk_src}/zcbor_utils.c"

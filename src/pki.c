@@ -34,7 +34,6 @@ enum golioth_status golioth_pki_issue_cert(struct golioth_client *client,
                                     csr_size,
                                     callback,
                                     callback_arg,
-                                    false,
                                     GOLIOTH_SYS_WAIT_FOREVER);
 }
 

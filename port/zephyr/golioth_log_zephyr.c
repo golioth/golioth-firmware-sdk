@@ -57,13 +57,13 @@ static const glth_log_fn log_to_log_func(struct log_msg *log)
     switch (level)
     {
         case LOG_LEVEL_ERR:
-            return golioth_log_error_async;
+            return golioth_log_error;
         case LOG_LEVEL_WRN:
-            return golioth_log_warn_async;
+            return golioth_log_warn;
         case LOG_LEVEL_INF:
-            return golioth_log_info_async;
+            return golioth_log_info;
         case LOG_LEVEL_DBG:
-            return golioth_log_debug_async;
+            return golioth_log_debug;
         default:
             return golioth_log_drop;
     }

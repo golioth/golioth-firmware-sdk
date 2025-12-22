@@ -166,21 +166,6 @@ async def test_multiple_artifacts(artifacts, board, project, cohort):
     # Test manifest blockwise
     assert None is not await board.wait_for_regex_in_line('Manifest blockwise SHA matches stored SHA', timeout_s=30)
 
-async def test_block_operations(board, project, artifacts, cohort):
-    await cohort.deployments.create("test_blocks", [artifacts["test_blocks"].id])
-    assert None is not await board.wait_for_regex_in_line(f"golioth_ota_size_to_nblocks: {TEST_BLOCK_CNT + 1}", timeout_s=12)
-
-    # Test NULL client
-
-    assert None is not await board.wait_for_regex_in_line("Block sync failed: 5", timeout_s=12)
-
-    # Test block download
-
-    assert None is not await board.wait_for_regex_in_line("Received block 0", timeout_s=4)
-    assert None is not await board.wait_for_regex_in_line("is_last: 0", timeout_s=4)
-    assert None is not await board.wait_for_regex_in_line("Received block 1", timeout_s=4)
-    assert None is not await board.wait_for_regex_in_line("is_last: 1", timeout_s=40)
-
 async def test_resume(board, project, artifacts, cohort):
     await cohort.deployments.create("test_resume", [artifacts["multi_artifact"].id])
 

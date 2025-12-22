@@ -41,26 +41,9 @@ async def test_lightdb_delete(shell, device, wifi_ssid, wifi_psk):
 
     shell._device.readlines_until(regex=".*Golioth CoAP client connected", timeout=90.0)
 
-    # Verify lightdb delete (async)
+    # Verify lightdb delete
 
     shell._device.readlines_until(regex=".*Counter deleted successfully", timeout=10.0)
     await trio.sleep(2)
     counter = await device.lightdb.get("counter")
-    assert counter is None
-
-    # Set and verify counter
-
-    await counter_set_and_verify(device, 62)
-
-    # Verify lightdb delete (sync)
-
-    shell._device.readlines_until(regex=".*Counter deleted successfully", timeout=10.0)
-    await trio.sleep(2)
-    counter = await device.lightdb.get("counter")
-    if counter is not None:
-        # Try again, since previous counter value might get reassigned in counter_set_and_verify()
-        shell._device.readlines_until(regex=".*Counter deleted successfully", timeout=10.0)
-        await trio.sleep(2)
-        counter = await device.lightdb.get("counter")
-
     assert counter is None

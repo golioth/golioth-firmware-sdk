@@ -18,8 +18,6 @@
 
 #define TAG "lightdb"
 
-#define APP_TIMEOUT_S 5
-
 struct golioth_client *client;
 static SemaphoreHandle_t _connected_sem = NULL;
 
@@ -45,64 +43,60 @@ static void counter_get_handler(struct golioth_client *client,
 {
     if ((status != GOLIOTH_OK) || golioth_payload_is_null(payload, payload_size))
     {
-        GLTH_LOGW(TAG,
-                  "Failed to get counter (async): %d (%s)",
+        GLTH_LOGW(TAG, "Failed to get counter: %d (%s)", status, golioth_status_to_str(status));
+    }
+    else
+    {
+        GLTH_LOGI(TAG, "Counter: %" PRId32, golioth_payload_as_int(payload, payload_size));
+    }
+}
+
+static void counter_get(struct golioth_client *client)
+{
+    int err;
+
+    err = golioth_lightdb_get(client,
+                              "counter",
+                              GOLIOTH_CONTENT_TYPE_JSON,
+                              counter_get_handler,
+                              NULL);
+    if (err)
+    {
+        GLTH_LOGW(TAG, "failed to get data from LightDB: %d (%s)", err, golioth_status_to_str(err));
+    }
+}
+
+static void counter_get_json_handler(struct golioth_client *client,
+                                     enum golioth_status status,
+                                     const struct golioth_coap_rsp_code *coap_rsp_code,
+                                     const char *path,
+                                     const uint8_t *payload,
+                                     size_t payload_size,
+                                     void *arg)
+{
+    if ((GOLIOTH_OK != status) || golioth_payload_is_null(payload, payload_size))
+    {
+        GLTH_LOGE(TAG,
+                  "Error fetching LightDB JSON: %d (%s)",
                   status,
                   golioth_status_to_str(status));
     }
     else
     {
-        GLTH_LOGI(TAG, "Counter (async): %" PRId32, golioth_payload_as_int(payload, payload_size));
+        char sbuf[128];
+        snprintf(sbuf, sizeof(sbuf), "LightDB JSON: %.*s", payload_size, payload);
+        GLTH_LOGI(TAG, "LightDB JSON: %s", payload);
     }
 }
 
-static void counter_get_async(struct golioth_client *client)
+static void counter_get_json(struct golioth_client *client)
 {
-    int err;
-
-    err = golioth_lightdb_get_async(client,
-                                    "counter",
-                                    GOLIOTH_CONTENT_TYPE_JSON,
-                                    counter_get_handler,
-                                    NULL);
-    if (err)
-    {
-        GLTH_LOGW(TAG, "failed to get data from LightDB: %d (%s)", err, golioth_status_to_str(err));
-    }
-}
-
-static void counter_get_sync(struct golioth_client *client)
-{
-    int32_t value;
-    int err;
-
-    err = golioth_lightdb_get_int_sync(client, "counter", &value, APP_TIMEOUT_S);
-    if (err)
-    {
-        GLTH_LOGW(TAG, "failed to get data from LightDB: %d (%s)", err, golioth_status_to_str(err));
-    }
-    else
-    {
-        GLTH_LOGI(TAG, "Counter (sync): %" PRId32, value);
-    }
-}
-
-static void counter_get_json_sync(struct golioth_client *client)
-{
-    uint8_t sbuf[128];
-    size_t len = sizeof(sbuf);
-    int err;
-
     /* Get root of LightDB State, but JSON can be returned for any path */
-    err =
-        golioth_lightdb_get_sync(client, "", GOLIOTH_CONTENT_TYPE_JSON, sbuf, &len, APP_TIMEOUT_S);
-    if (err || (0 == strlen((char *) sbuf)))
+    int err =
+        golioth_lightdb_get(client, "", GOLIOTH_CONTENT_TYPE_JSON, counter_get_json_handler, NULL);
+    if (err)
     {
         GLTH_LOGW(TAG, "failed to get JSON data from LightDB: %d", err);
-    }
-    else
-    {
-        GLTH_LOG_BUFFER_HEXDUMP(TAG, sbuf, len, GOLIOTH_DEBUG_LOG_LEVEL_INFO);
     }
 }
 
@@ -116,10 +110,7 @@ static void counter_get_cbor_handler(struct golioth_client *client,
 {
     if ((status != GOLIOTH_OK) || golioth_payload_is_null(payload, payload_size))
     {
-        GLTH_LOGW(TAG,
-                  "Failed to get counter (async): %d (%s)",
-                  status,
-                  golioth_status_to_str(status));
+        GLTH_LOGW(TAG, "Failed to get counter: %d (%s)", status, golioth_status_to_str(status));
         return;
     }
 
@@ -134,16 +125,13 @@ static void counter_get_cbor_handler(struct golioth_client *client,
         GLTH_LOGW(TAG, "Failed to decode CBOR data: %d", err);
     }
 
-    GLTH_LOGI(TAG, "Counter (CBOR async): %" PRId64, counter);
+    GLTH_LOGI(TAG, "Counter (CBOR): %" PRId64, counter);
 }
 
-static void counter_get_cbor_async(struct golioth_client *client)
+static void counter_get_cbor(struct golioth_client *client)
 {
-    int err = golioth_lightdb_get_async(client,
-                                        "",
-                                        GOLIOTH_CONTENT_TYPE_CBOR,
-                                        counter_get_cbor_handler,
-                                        NULL);
+    int err =
+        golioth_lightdb_get(client, "", GOLIOTH_CONTENT_TYPE_CBOR, counter_get_cbor_handler, NULL);
     if (err)
     {
         GLTH_LOGW(TAG, "Failed to get data from LightDB: %d (%s)", err, golioth_status_to_str(err));
@@ -195,27 +183,21 @@ void app_main(void)
 
     while (true)
     {
-        GLTH_LOGI(TAG, "Before request (async)");
-        counter_get_async(client);
-        GLTH_LOGI(TAG, "After request (async)");
+        GLTH_LOGI(TAG, "Before request");
+        counter_get(client);
+        GLTH_LOGI(TAG, "After request");
 
         vTaskDelay(5000 / portTICK_PERIOD_MS);
 
-        GLTH_LOGI(TAG, "Before request (sync)");
-        counter_get_sync(client);
-        GLTH_LOGI(TAG, "After request (sync)");
+        GLTH_LOGI(TAG, "Before JSON request");
+        counter_get_json(client);
+        GLTH_LOGI(TAG, "After JSON request");
 
         vTaskDelay(5000 / portTICK_PERIOD_MS);
 
-        GLTH_LOGI(TAG, "Before JSON request (sync)");
-        counter_get_json_sync(client);
-        GLTH_LOGI(TAG, "After JSON request (sync)");
-
-        vTaskDelay(5000 / portTICK_PERIOD_MS);
-
-        GLTH_LOGI(TAG, "Before CBOR request (async)");
-        counter_get_cbor_async(client);
-        GLTH_LOGI(TAG, "After CBOR request (async)");
+        GLTH_LOGI(TAG, "Before CBOR request");
+        counter_get_cbor(client);
+        GLTH_LOGI(TAG, "After CBOR request");
 
         vTaskDelay(5000 / portTICK_PERIOD_MS);
     }

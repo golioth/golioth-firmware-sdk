@@ -19,8 +19,6 @@
 
 #define TAG "stream"
 
-#define SYNC_TIMEOUT_S 2
-
 static SemaphoreHandle_t _connected_sem = NULL;
 
 static void on_client_event(struct golioth_client *client,
@@ -69,7 +67,7 @@ static void temperature_push_handler(struct golioth_client *client,
     return;
 }
 
-static void temperature_push_cbor(struct golioth_client *client, float temp, bool async)
+static void temperature_push_cbor(struct golioth_client *client, float temp)
 {
     uint8_t buf[15];
     int err;
@@ -112,35 +110,18 @@ static void temperature_push_cbor(struct golioth_client *client, float temp, boo
     size_t payload_size = (intptr_t) zse->payload - (intptr_t) buf;
 
     /* Data is sent to Pipelines on the "/data" path */
-    if (async)
-    {
-        err = golioth_stream_set_async(client,
-                                       "data",
-                                       GOLIOTH_CONTENT_TYPE_CBOR,
-                                       buf,
-                                       payload_size,
-                                       temperature_push_handler,
-                                       NULL);
-    }
-    else
-    {
-        err = golioth_stream_set_sync(client,
-                                      "data",
-                                      GOLIOTH_CONTENT_TYPE_CBOR,
-                                      buf,
-                                      payload_size,
-                                      SYNC_TIMEOUT_S);
-    }
+    err = golioth_stream_set(client,
+                             "data",
+                             GOLIOTH_CONTENT_TYPE_CBOR,
+                             buf,
+                             payload_size,
+                             temperature_push_handler,
+                             NULL);
 
     if (err)
     {
         GLTH_LOGW(TAG, "Failed to push temperature: %d (%s)", err, golioth_status_to_str(err));
         return;
-    }
-
-    if (!async)
-    {
-        GLTH_LOGI(TAG, "Temperature successfully pushed");
     }
 }
 
@@ -189,21 +170,13 @@ void app_main(void)
 
     while (true)
     {
-        /* Synchronous using CBOR object */
+        /* Using CBOR object */
         temp = get_temperature();
 
         GLTH_LOGI(TAG, "Sending temperature %f", temp);
 
-        temperature_push_cbor(client, temp, false);
+        temperature_push_cbor(client, temp);
 
-        vTaskDelay(5000 / portTICK_PERIOD_MS);
-
-        /* Callback-based using CBOR object */
-        temp = get_temperature();
-
-        GLTH_LOGI(TAG, "Sending temperature %f", temp);
-
-        temperature_push_cbor(client, temp, true);
         vTaskDelay(5000 / portTICK_PERIOD_MS);
     }
 }

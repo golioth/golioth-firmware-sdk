@@ -943,12 +943,6 @@ static enum golioth_status coap_io_loop_once(struct golioth_client *client,
             golioth_sys_free(request_msg.post_block.payload);
         }
 
-        if (request_msg.request_complete_event)
-        {
-            assert(request_msg.request_complete_ack_sem);
-            golioth_event_group_destroy(request_msg.request_complete_event);
-            golioth_sys_sem_destroy(request_msg.request_complete_ack_sem);
-        }
         return GOLIOTH_OK;
     }
 
@@ -1063,29 +1057,6 @@ static enum golioth_status coap_io_loop_once(struct golioth_client *client,
         }
     }
     client->pending_req = NULL;
-
-    if (request_msg.request_complete_event)
-    {
-        assert(request_msg.request_complete_ack_sem);
-
-        if (request_msg.got_response)
-        {
-            golioth_event_group_set_bits(request_msg.request_complete_event,
-                                         RESPONSE_RECEIVED_EVENT_BIT);
-        }
-        else
-        {
-            golioth_event_group_set_bits(request_msg.request_complete_event,
-                                         RESPONSE_TIMEOUT_EVENT_BIT);
-        }
-
-        // Wait for user thread to receive the event.
-        golioth_sys_sem_take(request_msg.request_complete_ack_sem, GOLIOTH_SYS_WAIT_FOREVER);
-
-        // Now it's safe to delete the event and semaphore.
-        golioth_event_group_destroy(request_msg.request_complete_event);
-        golioth_sys_sem_destroy(request_msg.request_complete_ack_sem);
-    }
 
     if (io_error)
     {
@@ -1203,7 +1174,7 @@ static void on_keepalive(golioth_sys_timer_t timer, void *arg)
     if (client->is_running && golioth_client_num_items_in_request_queue(client) == 0
         && !client->pending_req)
     {
-        golioth_coap_client_empty(client, false, GOLIOTH_SYS_WAIT_FOREVER);
+        golioth_coap_client_empty(client);
     }
 }
 
@@ -1276,7 +1247,7 @@ static void golioth_coap_client_thread(void *arg)
         // for some reason, so this is a workaround for that).
         if (golioth_client_num_items_in_request_queue(client) == 0)
         {
-            golioth_coap_client_empty(client, false, GOLIOTH_SYS_WAIT_FOREVER);
+            golioth_coap_client_empty(client);
         }
 
         // If we are re-connecting and had prior observations, set

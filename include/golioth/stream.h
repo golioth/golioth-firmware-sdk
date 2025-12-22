@@ -41,34 +41,13 @@ extern "C"
 /// @retval GOLIOTH_ERR_INVALID_STATE client is not running, currently stopped
 /// @retval GOLIOTH_ERR_MEM_ALLOC memory allocation error
 /// @retval GOLIOTH_ERR_QUEUE_FULL request queue is full, this request is dropped
-enum golioth_status golioth_stream_set_async(struct golioth_client *client,
-                                             const char *path,
-                                             enum golioth_content_type content_type,
-                                             const uint8_t *buf,
-                                             size_t buf_len,
-                                             golioth_set_cb_fn callback,
-                                             void *callback_arg);
-
-/// Set an object in stream at a particular path synchronously
-///
-/// This function will block until one of three things happen (whichever comes first):
-///
-/// 1. A response is received from the server
-/// 2. The user-provided timeout_s period expires without receiving a response
-/// 3. The default GOLIOTH_COAP_RESPONSE_TIMEOUT_S period expires without receiving a response
-///
-/// @param client The client handle from @ref golioth_client_create
-/// @param path The path in stream to set (e.g. "my_obj")
-/// @param content_type The serialization format of buf
-/// @param buf A buffer containing the object to send
-/// @param buf_len Length of buf
-/// @param timeout_s The timeout, in seconds, for receiving a server response
-enum golioth_status golioth_stream_set_sync(struct golioth_client *client,
-                                            const char *path,
-                                            enum golioth_content_type content_type,
-                                            const uint8_t *buf,
-                                            size_t buf_len,
-                                            int32_t timeout_s);
+enum golioth_status golioth_stream_set(struct golioth_client *client,
+                                       const char *path,
+                                       enum golioth_content_type content_type,
+                                       const uint8_t *buf,
+                                       size_t buf_len,
+                                       golioth_set_cb_fn callback,
+                                       void *callback_arg);
 
 /// Read block callback
 ///
@@ -132,7 +111,7 @@ struct blockwise_transfer *golioth_stream_blockwise_start(struct golioth_client 
 /// @param ctx Block upload context to be destroyed
 void golioth_stream_blockwise_finish(struct blockwise_transfer *ctx);
 
-/// Set an object in stream at a particular path by sending each block asynchronously
+/// Set an object in stream at a particular path by sending each block
 ///
 /// Call this function for each block. For each call you must increment the \p block_idx, adjust the
 /// \p block_buffer pointer and update the \p data_len. On the final block, set \p is_last to true.
@@ -155,13 +134,13 @@ void golioth_stream_blockwise_finish(struct blockwise_transfer *ctx);
 /// @param callback A callback that will be called after each block is sent (can be NULL)
 /// @param callback_arg An optional user provided argument that will be passed to \p callback (can
 ///        be NULL)
-enum golioth_status golioth_stream_blockwise_set_block_async(struct blockwise_transfer *ctx,
-                                                             uint32_t block_idx,
-                                                             const uint8_t *block_buffer,
-                                                             size_t data_len,
-                                                             bool is_last,
-                                                             golioth_set_block_cb_fn callback,
-                                                             void *callback_arg);
+enum golioth_status golioth_stream_blockwise_set_block(struct blockwise_transfer *ctx,
+                                                       uint32_t block_idx,
+                                                       const uint8_t *block_buffer,
+                                                       size_t data_len,
+                                                       bool is_last,
+                                                       golioth_set_block_cb_fn callback,
+                                                       void *callback_arg);
 
 /// @}
 
