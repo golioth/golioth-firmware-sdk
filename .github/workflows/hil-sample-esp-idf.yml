@@ -47,14 +47,19 @@ on:
         default: "firmware_ci"
 
 jobs:
-  rand_name:
+  matrix:
+    name: espidf-${{ inputs.hil_board }}-sample-matrix
     runs-on: ubuntu-24.04
-    name: esp-idf-device-name
 
     outputs:
       device_name: ${{ steps.generate-name.outputs.device_name }}
+      sample_list: ${{ steps.gather-samples.outputs.sample_list }}
 
     steps:
+      - name: Checkout repository
+        uses: actions/checkout@v4
+
+
       - name: Generate device name
         id: generate-name
         shell: python
@@ -72,10 +77,41 @@ jobs:
           with open(os.environ['GITHUB_OUTPUT'], 'a') as github_output:
             print(f'device_name={device_name}', file=github_output)
 
+      - name: Prepare tests matrix
+        id: gather-samples
+        shell: python
+
+        run: |
+          import json
+          import os
+
+          SAMPLES_ROOT = 'examples/esp_idf'
+          sample_dirs = list()
+          for root, dirs, files in os.walk(SAMPLES_ROOT):
+            if 'pytest' in dirs:
+             sample_dirs.append(root)
+
+          sample_list = list()
+
+          for directory in sample_dirs:
+            name = os.path.relpath(directory, SAMPLES_ROOT).replace('/', '_')
+            sample_list.append({"name":name, "dir":directory})
+
+          with open(os.environ['GITHUB_OUTPUT'], 'a') as github_output:
+            print('sample_list=' + json.dumps(sample_list), file=github_output)
+
   build:
-    name: esp-idf-${{ inputs.hil_board }}-sample-build
+    name: espidf-${{ inputs.hil_board }}-sample-build (${{ matrix.name }})
+    needs: matrix
+    strategy:
+      fail-fast: false
+      matrix:
+        include: ${{ fromJSON(needs.matrix.outputs.sample_list) }}
+
+    env:
+      DEVICE_NAME: ${{ needs.matrix.outputs.device_name }}
+
     runs-on: ubuntu-24.04
-    needs: rand_name
     steps:
       - name: Checkout Repository and Submodules
         uses: actions/checkout@v4
@@ -87,12 +123,9 @@ jobs:
         run: |
           rm -rf test_binaries
           mkdir test_binaries
-          echo sample_list=$(find examples/esp_idf -type d -name pytest -exec dirname "{}" \;) \
-            >> "$GITHUB_OUTPUT"
 
       - name: Generate certificates
-        env:
-          DEVICE_NAME: ${{ needs.rand_name.outputs.device_name }}
+        if: ${{ matrix.name == 'certificate_auth' }}
         shell: bash
         run: |
           scripts/certificates/generate_root_certificate.sh
@@ -111,35 +144,53 @@ jobs:
           esp_idf_version: v5.4.1
           target: ${{ inputs.idf_target }}
           command: |
-            for sample in ${{ steps.build_prep.outputs.sample_list }};
-            do
-              echo CONFIG_GOLIOTH_COAP_HOST_URI=\"${{ inputs.coap_gateway_url }}\" \
-                >> ${sample}/sdkconfig.defaults
+              export SAMPLE_NAME="${{ matrix.name }}"
+              export SAMPLE_DIR="${{ matrix.dir }}"
+              echo -e "SAMPLE_NAME=$SAMPLE_NAME"
+              echo -e "SAMPLE_DIR=$SAMPLE_DIR"
 
-              if [[ "${sample##*/}" == "fw_update" ]]; then echo
+              echo CONFIG_GOLIOTH_COAP_HOST_URI=\"${{ inputs.coap_gateway_url }}\" \
+                >> ${SAMPLE_DIR}/sdkconfig.defaults
+
+              if [[ "${SAMPLE_NAME}" == "fw_update" ]]; then echo
                 echo CONFIG_GOLIOTH_FW_UPDATE_PACKAGE_NAME=\"${{ inputs.hil_board }}_espidf\" \
-                  >> ${sample}/sdkconfig.defaults
-                echo CONFIG_GOLIOTH_OTA_MAX_PACKAGE_NAME_LEN=32 >> ${sample}/sdkconfig.defaults
+                  >> ${SAMPLE_DIR}/sdkconfig.defaults
+                echo CONFIG_GOLIOTH_OTA_MAX_PACKAGE_NAME_LEN=32 >> ${SAMPLE_DIR}/sdkconfig.defaults
               fi
 
-              idf.py -C $sample build
+              idf.py -C ${SAMPLE_DIR} build
 
-              mv ${sample}/build/merged.bin test_binaries/$(basename $sample).bin || \
-                EXITCODE=$?
-            done
-            exit $EXITCODE
+              mv ${SAMPLE_DIR}/build/merged.bin test_binaries/${SAMPLE_NAME}.bin
 
       - name: Save Artifacts
         uses: actions/upload-artifact@v4
         with:
-          name: ${{ inputs.hil_board }}-sample-esp-idf
+          name: ${{ inputs.hil_board }}-sample-espidf-${{ matrix.name }}
           path: test_binaries/*
 
-  test:
-    name: esp-idf-${{ inputs.hil_board }}-sample-test
+  verify_build:
+    name: espidf-${{ inputs.hil_board }}-sample-verify-build
+    if: always()
     needs:
+      - matrix
       - build
-      - rand_name
+    runs-on: ubuntu-24.04
+
+    steps:
+      - name: Decide whether the needed jobs succeeded or failed
+        uses: re-actors/alls-green@05ac9388f0aebcb5727afa17fcccfecd6f8ec5fe
+        with:
+          jobs: ${{ toJSON(needs) }}
+
+  test:
+    name: espidf-${{ inputs.hil_board }}-sample-test (${{ matrix.name }})
+    needs:
+      - matrix
+      - build
+    strategy:
+      fail-fast: false
+      matrix:
+        include: ${{ fromJSON(needs.matrix.outputs.sample_list) }}
     runs-on:
       - is_active
       - has_${{ inputs.hil_board }}
@@ -155,6 +206,7 @@ jobs:
     steps:
       - name: Checkout repository
         uses: actions/checkout@v4
+
       - name: Setup Python dependencies
         run: |
           uv pip install \
@@ -162,49 +214,50 @@ jobs:
             pytest-timeout \
             tests/hil/scripts/pytest-hil \
             git+https://github.com/golioth/python-golioth-tools@v0.8.1
+
       - name: Power On USB Hub
         run: python3 /opt/golioth-scripts/usb_hub_power.py on
+
       - name: Download build
         uses: actions/download-artifact@v4
         with:
-          name: ${{ inputs.hil_board }}-sample-esp-idf
+          name: ${{ inputs.hil_board }}-sample-espidf-${{ matrix.name }}
           path: .
+
       - name: Run test
         shell: bash
         env:
           hil_board: ${{ inputs.hil_board }}
-          GOLIOTH_DEVICE_CERT_NAME: ${{ needs.rand_name.outputs.device_name }}
+          SAMPLE_NAME: ${{ matrix.name }}
+          SAMPLE_DIR: ${{ matrix.dir }}
+          GOLIOTH_DEVICE_CERT_NAME: ${{ needs.matrix.outputs.device_name }}
           GOLIOTH_ROOT_CERTIFICATE: "golioth.crt.pem"
         run: |
           rm -rf allure-reports
           source /opt/credentials/runner_env.sh
           PORT_VAR=CI_${hil_board^^}_PORT
-          for sample in $(find examples/esp_idf -type d -name pytest -exec dirname "{}" \;)
-          do
-            pytest --rootdir . $sample/pytest                                   \
-              --board ${{ inputs.hil_board }}_espidf                            \
-              --port ${!PORT_VAR}                                               \
-              --fw-image $(basename $sample).bin                                \
-              --api-url ${{ inputs.api-url }}                                   \
-              --api-key ${{ secrets[inputs.api-key-id] }}                       \
-              --wifi-ssid ${{ secrets[format('{0}_WIFI_SSID', runner.name)] }}  \
-              --wifi-psk ${{ secrets[format('{0}_WIFI_PSK', runner.name)] }}    \
-              --mask-secrets                                                    \
-              --timeout=600                                                     \
-              --alluredir=allure-reports                                        \
-              --allure-platform=esp-idf                                         \
-              --runner-name ${{ runner.name }}                                  \
-              --custom-suitename=sample                                         \
-              || EXITCODE=$?
-          done
-          exit $EXITCODE
+
+          pytest --rootdir . ${SAMPLE_DIR}/pytest                             \
+            --board ${{ inputs.hil_board }}_espidf                            \
+            --port ${!PORT_VAR}                                               \
+            --fw-image ${SAMPLE_NAME}.bin                                     \
+            --api-url ${{ inputs.api-url }}                                   \
+            --api-key ${{ secrets[inputs.api-key-id] }}                       \
+            --wifi-ssid ${{ secrets[format('{0}_WIFI_SSID', runner.name)] }}  \
+            --wifi-psk ${{ secrets[format('{0}_WIFI_PSK', runner.name)] }}    \
+            --mask-secrets                                                    \
+            --timeout=600                                                     \
+            --alluredir=allure-reports                                        \
+            --allure-platform=esp-idf                                         \
+            --runner-name ${{ runner.name }}                                  \
+            --custom-suitename=sample
 
       - name: Safe upload Allure reports
         if: success() || failure()
         uses: ./.github/actions/safe-upload-artifacts
         with:
           secrets-json: ${{ toJson(secrets) }}
-          name: allure-reports-samples-espidf-${{ inputs.hil_board }}
+          name: allure-reports-samples-espidf-${{ inputs.hil_board }}-${{ matrix.name }}
           path: allure-reports
 
       - name: Erase flash
