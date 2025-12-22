@@ -9,7 +9,6 @@ This SDK can be used on any preemptive operating system that provides an
 Internet stack. Golioth maintains ports for the following platforms:
 
 * Espressif ESP-IDF
-* Infineon ModusToolbox
 * Zephyr & NCS
 * Linux (Experimental)
 
@@ -51,7 +50,7 @@ git submodule update --init --recursive
 ### Trying the SDK examples
 
 The `examples` directory contains example apps which you can build and run.
-It is organized by platform (e.g. ESP-IDF, ModusToolbox, etc),
+It is organized by platform (e.g. Zephyr, ESP-IDF, etc),
 so navigate to a specific platform directory and check out the README for further
 instructions to build and run the examples.
 
@@ -85,4 +84,3 @@ each of the samples is also continously verified on target.
 | nRF52840 DK + ESP32  | Zephyr (v4.2.1)          |
 | RAK5010              | Zephyr (v4.2.1)          |
 | nRF9160 DK           | nRF Connect SDK (v3.1.1) |
-| CY8CPROTO-062-4343W  | ModusToolbox (3.3.0)     |
