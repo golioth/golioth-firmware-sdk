@@ -32,21 +32,16 @@ async def test_lightdb_get(shell, device, wifi_ssid, wifi_psk):
 
     # Verify lightdb reads
 
-    shell._device.readlines_until(regex=".*Failed to get counter \(async\): 0", timeout=10.0)
-
-    await device.lightdb.set("counter", 13)
-
-    shell._device.readlines_until(regex=".*Counter \(sync\): 13", timeout=10.0)
+    shell._device.readlines_until(regex=".*Failed to get counter: 0", timeout=10.0)
 
     await device.lightdb.set("counter", 27)
 
-    shell._device.readlines_until(regex=".*7b 22 63 6f 75 6e 74 65  72 22 3a 32 37 7d       |{\"counte r\":27}",
-                                  timeout=10.0)
+    shell._device.readlines_until(regex="LightDB JSON: {\"counter\":27}", timeout=10.0)
 
     await device.lightdb.set("counter", 99)
 
-    shell._device.readlines_until(regex=".*Counter \(CBOR async\): 99", timeout=10.0)
+    shell._device.readlines_until(regex=".*Counter \(CBOR\): 99", timeout=10.0)
 
     await device.lightdb.set("counter", 42)
 
-    shell._device.readlines_until(regex=".*Counter \(async\): 42", timeout=10.0)
+    shell._device.readlines_until(regex=".*Counter: 42", timeout=10.0)

@@ -53,24 +53,11 @@ static void counter_delete_async(struct golioth_client *client)
 {
     int err;
 
-    err = golioth_lightdb_delete_async(client, "counter", counter_handler, NULL);
+    err = golioth_lightdb_delete(client, "counter", counter_handler, NULL);
     if (err)
     {
         LOG_WRN("failed to delete data from LightDB: %d (%s)", err, golioth_status_to_str(err));
     }
-}
-
-static void counter_delete_sync(struct golioth_client *client)
-{
-    int err;
-
-    err = golioth_lightdb_delete_sync(client, "counter", APP_TIMEOUT_S);
-    if (err)
-    {
-        LOG_WRN("failed to delete data from LightDB: %d (%s)", err, golioth_status_to_str(err));
-    }
-
-    LOG_DBG("Counter deleted successfully");
 }
 
 int main(void)
@@ -92,15 +79,9 @@ int main(void)
 
     while (true)
     {
-        LOG_DBG("Before request (async)");
+        LOG_DBG("Before request");
         counter_delete_async(client);
-        LOG_DBG("After request (async)");
-
-        k_sleep(K_SECONDS(5));
-
-        LOG_DBG("Before request (sync)");
-        counter_delete_sync(client);
-        LOG_DBG("After request (sync)");
+        LOG_DBG("After request");
 
         k_sleep(K_SECONDS(5));
     }

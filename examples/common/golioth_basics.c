@@ -83,7 +83,7 @@ static enum golioth_rpc_status on_multiply(zcbor_state_t *request_params_array,
 }
 
 
-// Callback function for asynchronous get request of LightDB path "my_int"
+// Callback function for get request of LightDB path "my_int"
 static void on_get_my_int(struct golioth_client *client,
                           enum golioth_status status,
                           const struct golioth_coap_rsp_code *coap_rsp_code,
@@ -104,7 +104,7 @@ static void on_get_my_int(struct golioth_client *client,
     GLTH_LOGI(TAG, "Callback got my_int = %" PRId32, value);
 }
 
-// Callback function for asynchronous observation of LightDB path "desired/my_config"
+// Callback function for observation of LightDB path "desired/my_config"
 static void on_my_config(struct golioth_client *client,
                          enum golioth_status status,
                          const struct golioth_coap_rsp_code *coap_rsp_code,
@@ -127,7 +127,7 @@ static void on_my_config(struct golioth_client *client,
     int32_t desired_value = golioth_payload_as_int(payload, payload_size);
     GLTH_LOGI(TAG, "Cloud desires %s = %" PRId32 ". Setting now.", path, desired_value);
     _my_config = desired_value;
-    golioth_lightdb_delete_async(client, path, NULL, NULL);
+    golioth_lightdb_delete(client, path, NULL, NULL);
 }
 
 
@@ -170,50 +170,19 @@ void golioth_basics(struct golioth_client *client)
     // There are a number of different functions you can call to get and set values in
     // LightDB state, based on the type of value (e.g. int, bool, float, string, JSON).
     //
-    // This is an "asynchronous" function, meaning that the function will return
+    // This is an asynchronous function, meaning that the function will return
     // immediately and the integer will be sent to Golioth at a later time.
     // Internally, the request is added to a queue which is processed
     // by the Golioth client thread.
-    //
-    // Any functions provided by this SDK ending in _async behave the same way.
     //
     // The last two arguments are for an optional callback function and argument,
     // in case the user wants to be notified when the set request has completed
     // and received acknowledgement from the Golioth server. In this case
     // we set them to NULL, which makes this a "fire-and-forget" request.
-    golioth_lightdb_set_int_async(client, "my_int", 42, NULL, NULL);
+    golioth_lightdb_set_int(client, "my_int", 42, NULL, NULL);
 
-    // We can also send requests "synchronously", meaning the function will block
-    // until one of 3 things happen (whichever comes first):
-    //
-    //  1. We receive a response to the request from the server
-    //  2. The user-provided timeout expires
-    //  3. The default client thread timeout expires (GOLIOTH_COAP_RESPONSE_TIMEOUT_S)
-    //
-    // In this case, we will block for up to 2 seconds waiting for the server response.
-    // We'll check the return code to know whether a timeout happened.
-    //
-    // Any function provided by this SDK ending in _sync will have the same meaning.
-    enum golioth_status status = golioth_lightdb_set_string_sync(client, "my_string", "asdf", 4, 5);
-    if (status != GOLIOTH_OK)
-    {
-        GLTH_LOGE(TAG, "Error setting string: %s", golioth_status_to_str(status));
-    }
-
-    // Read back the integer we set above
-    int32_t readback_int = 0;
-    status = golioth_lightdb_get_int_sync(client, "my_int", &readback_int, 5);
-    if (status == GOLIOTH_OK)
-    {
-        GLTH_LOGI(TAG, "Synchronously got my_int = %" PRId32, readback_int);
-    }
-    else
-    {
-        GLTH_LOGE(TAG, "Synchronous get my_int failed: %s", golioth_status_to_str(status));
-    }
-
-    // To asynchronously get a value from LightDB, a callback function must be provided
-    golioth_lightdb_get_async(client, "my_int", GOLIOTH_CONTENT_TYPE_JSON, on_get_my_int, NULL);
+    // To get a value from LightDB, a callback function must be provided
+    golioth_lightdb_get(client, "my_int", GOLIOTH_CONTENT_TYPE_JSON, on_get_my_int, NULL);
 
     // We can also "observe" paths in LightDB state. The Golioth cloud will notify
     // our client whenever the resource at that path changes, without needing
@@ -229,21 +198,21 @@ void golioth_basics(struct golioth_client *client)
     // If you want to try this out, log into Golioth console (console.golioth.io),
     // go to the "LightDB State" tab, and add a new item for desired/my_config.
     // Once set, the on_my_config callback function should be called here.
-    golioth_lightdb_observe_async(client,
-                                  "desired/my_config",
-                                  GOLIOTH_CONTENT_TYPE_JSON,
-                                  on_my_config,
-                                  NULL);
+    golioth_lightdb_observe(client,
+                            "desired/my_config",
+                            GOLIOTH_CONTENT_TYPE_JSON,
+                            on_my_config,
+                            NULL);
 
     // Golioth Stream functions are similar to LightDB state.
     const char *sbuf = "{\"my_stream_int\":15}";
-    golioth_stream_set_async(client,
-                             "/",
-                             GOLIOTH_CONTENT_TYPE_JSON,
-                             (uint8_t *) sbuf,
-                             strlen(sbuf),
-                             NULL,
-                             NULL);
+    golioth_stream_set(client,
+                       "/",
+                       GOLIOTH_CONTENT_TYPE_JSON,
+                       (uint8_t *) sbuf,
+                       strlen(sbuf),
+                       NULL,
+                       NULL);
 
     // We can register Remote Procedure Call (RPC) methods. RPCs allow
     // remote users to "call a function" on the device.
@@ -262,7 +231,7 @@ void golioth_basics(struct golioth_client *client)
     int32_t counter = 0;
     while (1)
     {
-        golioth_lightdb_set_int_async(client, "counter", counter, NULL, NULL);
+        golioth_lightdb_set_int(client, "counter", counter, NULL, NULL);
         GLTH_LOGI(TAG, "Sending hello! %" PRId32, counter);
         counter++;
         golioth_sys_msleep(_loop_delay_s * 1000);

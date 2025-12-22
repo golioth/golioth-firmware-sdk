@@ -15,8 +15,6 @@
 
 #define TAG "lightdb"
 
-#define APP_TIMEOUT_S 5
-
 struct golioth_client *client;
 static SemaphoreHandle_t _connected_sem = NULL;
 
@@ -49,31 +47,15 @@ static void counter_handler(struct golioth_client *client,
     return;
 }
 
-static void counter_delete_async(struct golioth_client *client)
+static void counter_delete(struct golioth_client *client)
 {
     int err;
 
-    err = golioth_lightdb_delete_async(client, "counter", counter_handler, NULL);
+    err = golioth_lightdb_delete(client, "counter", counter_handler, NULL);
     if (err)
     {
         GLTH_LOGW(TAG, "failed to delete data from LightDB: %d", err);
     }
-}
-
-static void counter_delete_sync(struct golioth_client *client)
-{
-    int err;
-
-    err = golioth_lightdb_delete_sync(client, "counter", APP_TIMEOUT_S);
-    if (err)
-    {
-        GLTH_LOGW(TAG,
-                  "failed to delete data from LightDB: %d (%s)",
-                  err,
-                  golioth_status_to_str(err));
-    }
-
-    GLTH_LOGI(TAG, "Counter deleted successfully");
 }
 
 void app_main(void)
@@ -121,15 +103,9 @@ void app_main(void)
 
     while (true)
     {
-        GLTH_LOGI(TAG, "Before request (async)");
-        counter_delete_async(client);
-        GLTH_LOGI(TAG, "After request (async)");
-
-        vTaskDelay(5000 / portTICK_PERIOD_MS);
-
-        GLTH_LOGI(TAG, "Before request (sync)");
-        counter_delete_sync(client);
-        GLTH_LOGI(TAG, "After request (sync)");
+        GLTH_LOGI(TAG, "Before request");
+        counter_delete(client);
+        GLTH_LOGI(TAG, "After request");
 
         vTaskDelay(5000 / portTICK_PERIOD_MS);
     }

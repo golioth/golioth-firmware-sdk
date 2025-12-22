@@ -76,90 +76,6 @@ static void int_cbor_cb(struct golioth_client *client,
     golioth_sys_sem_give(observed_sem);
 }
 
-static void test_lightdb_desired_reported_sync(struct golioth_client *client)
-{
-    enum golioth_status status;
-    bool val_bool;
-    int32_t val_int;
-    float val_float;
-    uint8_t val_buf[256];
-    size_t val_buf_len;
-
-    status = golioth_lightdb_get_bool_sync(client, "hil/lightdb/desired/true", &val_bool, TIMEOUT);
-    if (status == GOLIOTH_OK)
-    {
-        golioth_lightdb_set_bool_sync(client, "hil/lightdb/reported/sync/true", val_bool, TIMEOUT);
-    }
-
-    golioth_lightdb_get_bool_sync(client, "hil/lightdb/desired/false", &val_bool, TIMEOUT);
-    if (status == GOLIOTH_OK)
-    {
-        golioth_lightdb_set_bool_sync(client, "hil/lightdb/reported/sync/false", val_bool, TIMEOUT);
-    }
-
-    golioth_lightdb_get_int_sync(client, "hil/lightdb/desired/int", &val_int, TIMEOUT);
-    if (status == GOLIOTH_OK)
-    {
-        golioth_lightdb_set_int_sync(client, "hil/lightdb/reported/sync/int", val_int, TIMEOUT);
-    }
-
-    golioth_lightdb_get_float_sync(client, "hil/lightdb/desired/float", &val_float, TIMEOUT);
-    if (status == GOLIOTH_OK)
-    {
-        golioth_lightdb_set_float_sync(client,
-                                       "hil/lightdb/reported/sync/float",
-                                       val_float,
-                                       TIMEOUT);
-    }
-
-    golioth_lightdb_get_string_sync(client,
-                                    "hil/lightdb/desired/str",
-                                    (char *) val_buf,
-                                    sizeof(val_buf),
-                                    TIMEOUT);
-    if (status == GOLIOTH_OK)
-    {
-        golioth_lightdb_set_string_sync(client,
-                                        "hil/lightdb/reported/sync/str",
-                                        (char *) val_buf,
-                                        strlen((char *) val_buf),
-                                        TIMEOUT);
-    }
-
-    val_buf_len = sizeof(val_buf);
-    golioth_lightdb_get_sync(client,
-                             "hil/lightdb/desired/obj",
-                             GOLIOTH_CONTENT_TYPE_JSON,
-                             val_buf,
-                             &val_buf_len,
-                             TIMEOUT);
-    if (status == GOLIOTH_OK)
-    {
-        golioth_lightdb_set_sync(client,
-                                 "hil/lightdb/reported/sync/obj",
-                                 GOLIOTH_CONTENT_TYPE_JSON,
-                                 val_buf,
-                                 val_buf_len,
-                                 TIMEOUT);
-    }
-
-    status =
-        golioth_lightdb_get_bool_sync(client, "hil/lightdb/desired///invalid", &val_bool, TIMEOUT);
-    golioth_lightdb_set_string_sync(client,
-                                    "hil/lightdb/reported/sync/invalid",
-                                    golioth_status_to_str(status),
-                                    strlen(golioth_status_to_str(status)),
-                                    TIMEOUT);
-
-    status =
-        golioth_lightdb_get_bool_sync(client, "hil/lightdb/desired/nothing", &val_bool, TIMEOUT);
-    golioth_lightdb_set_string_sync(client,
-                                    "hil/lightdb/reported/sync/nothing",
-                                    golioth_status_to_str(status),
-                                    strlen(golioth_status_to_str(status)),
-                                    TIMEOUT);
-}
-
 enum lightdb_get_type
 {
     LIGHTDB_GET_TYPE_BOOL,
@@ -234,7 +150,7 @@ static void set_cb(struct golioth_client *client,
     golioth_sys_sem_give(sem);
 }
 
-static void test_lightdb_desired_reported_async(struct golioth_client *client)
+static void test_lightdb_desired_reported(struct golioth_client *client)
 {
     enum golioth_status status;
     bool val_bool;
@@ -250,147 +166,122 @@ static void test_lightdb_desired_reported_async(struct golioth_client *client)
         return;
     }
 
-    status = golioth_lightdb_get_async(client,
-                                       "hil/lightdb/desired/true",
-                                       GOLIOTH_CONTENT_TYPE_JSON,
-                                       get_cb,
-                                       &(struct lightdb_get_rsp){
-                                           .type = LIGHTDB_GET_TYPE_BOOL,
-                                           .b = &val_bool,
-                                           .sem = sem,
-                                       });
+    status = golioth_lightdb_get(client,
+                                 "hil/lightdb/desired/true",
+                                 GOLIOTH_CONTENT_TYPE_JSON,
+                                 get_cb,
+                                 &(struct lightdb_get_rsp) {
+                                     .type = LIGHTDB_GET_TYPE_BOOL,
+                                     .b = &val_bool,
+                                     .sem = sem,
+                                 });
     if (status == GOLIOTH_OK)
     {
         golioth_sys_sem_take(sem, TIMEOUT * 1000);
-        golioth_lightdb_set_bool_async(client,
-                                       "hil/lightdb/reported/async/true",
-                                       val_bool,
-                                       set_cb,
-                                       sem);
+        golioth_lightdb_set_bool(client, "hil/lightdb/reported/true", val_bool, set_cb, sem);
         golioth_sys_sem_take(sem, TIMEOUT * 1000);
     }
 
-    status = golioth_lightdb_get_async(client,
-                                       "hil/lightdb/desired/false",
-                                       GOLIOTH_CONTENT_TYPE_JSON,
-                                       get_cb,
-                                       &(struct lightdb_get_rsp){
-                                           .type = LIGHTDB_GET_TYPE_BOOL,
-                                           .b = &val_bool,
-                                           .sem = sem,
-                                       });
+    status = golioth_lightdb_get(client,
+                                 "hil/lightdb/desired/false",
+                                 GOLIOTH_CONTENT_TYPE_JSON,
+                                 get_cb,
+                                 &(struct lightdb_get_rsp) {
+                                     .type = LIGHTDB_GET_TYPE_BOOL,
+                                     .b = &val_bool,
+                                     .sem = sem,
+                                 });
     if (status == GOLIOTH_OK)
     {
         golioth_sys_sem_take(sem, TIMEOUT * 1000);
-        golioth_lightdb_set_bool_async(client,
-                                       "hil/lightdb/reported/async/false",
-                                       val_bool,
-                                       set_cb,
-                                       sem);
+        golioth_lightdb_set_bool(client, "hil/lightdb/reported/false", val_bool, set_cb, sem);
         golioth_sys_sem_take(sem, TIMEOUT * 1000);
     }
 
-    status = golioth_lightdb_get_async(client,
-                                       "hil/lightdb/desired/int",
-                                       GOLIOTH_CONTENT_TYPE_JSON,
-                                       get_cb,
-                                       &(struct lightdb_get_rsp){
-                                           .type = LIGHTDB_GET_TYPE_INT32,
-                                           .i32 = &val_int32,
-                                           .sem = sem,
-                                       });
+    status = golioth_lightdb_get(client,
+                                 "hil/lightdb/desired/int",
+                                 GOLIOTH_CONTENT_TYPE_JSON,
+                                 get_cb,
+                                 &(struct lightdb_get_rsp) {
+                                     .type = LIGHTDB_GET_TYPE_INT32,
+                                     .i32 = &val_int32,
+                                     .sem = sem,
+                                 });
     if (status == GOLIOTH_OK)
     {
         golioth_sys_sem_take(sem, TIMEOUT * 1000);
-        golioth_lightdb_set_int_async(client,
-                                      "hil/lightdb/reported/async/int",
-                                      val_int32,
-                                      set_cb,
-                                      sem);
+        golioth_lightdb_set_int(client, "hil/lightdb/reported/int", val_int32, set_cb, sem);
         golioth_sys_sem_take(sem, TIMEOUT * 1000);
     }
 
-    status = golioth_lightdb_get_async(client,
-                                       "hil/lightdb/desired/float",
-                                       GOLIOTH_CONTENT_TYPE_JSON,
-                                       get_cb,
-                                       &(struct lightdb_get_rsp){
-                                           .type = LIGHTDB_GET_TYPE_FLOAT,
-                                           .f = &val_float,
-                                           .sem = sem,
-                                       });
+    status = golioth_lightdb_get(client,
+                                 "hil/lightdb/desired/float",
+                                 GOLIOTH_CONTENT_TYPE_JSON,
+                                 get_cb,
+                                 &(struct lightdb_get_rsp) {
+                                     .type = LIGHTDB_GET_TYPE_FLOAT,
+                                     .f = &val_float,
+                                     .sem = sem,
+                                 });
     if (status == GOLIOTH_OK)
     {
         golioth_sys_sem_take(sem, TIMEOUT * 1000);
-        golioth_lightdb_set_float_async(client,
-                                        "hil/lightdb/reported/async/float",
-                                        val_float,
-                                        set_cb,
-                                        sem);
+        golioth_lightdb_set_float(client, "hil/lightdb/reported/float", val_float, set_cb, sem);
         golioth_sys_sem_take(sem, TIMEOUT * 1000);
     }
 
     val_buf_len = sizeof(val_buf);
-    status = golioth_lightdb_get_async(client,
-                                       "hil/lightdb/desired/str",
-                                       GOLIOTH_CONTENT_TYPE_JSON,
-                                       get_cb,
-                                       &(struct lightdb_get_rsp){
-                                           .type = LIGHTDB_GET_TYPE_STRING,
-                                           .buf = val_buf,
-                                           .buf_size = &val_buf_len,
-                                           .sem = sem,
-                                       });
+    status = golioth_lightdb_get(client,
+                                 "hil/lightdb/desired/str",
+                                 GOLIOTH_CONTENT_TYPE_JSON,
+                                 get_cb,
+                                 &(struct lightdb_get_rsp) {
+                                     .type = LIGHTDB_GET_TYPE_STRING,
+                                     .buf = val_buf,
+                                     .buf_size = &val_buf_len,
+                                     .sem = sem,
+                                 });
     if (status == GOLIOTH_OK)
     {
         golioth_sys_sem_take(sem, TIMEOUT * 1000);
         val_buf[val_buf_len] = 0;
-        golioth_lightdb_set_string_async(client,
-                                         "hil/lightdb/reported/async/str",
-                                         (char *) val_buf,
-                                         val_buf_len,
-                                         set_cb,
-                                         sem);
+        golioth_lightdb_set_string(client,
+                                   "hil/lightdb/reported/str",
+                                   (char *) val_buf,
+                                   val_buf_len,
+                                   set_cb,
+                                   sem);
         golioth_sys_sem_take(sem, TIMEOUT * 1000);
     }
 
     val_buf_len = sizeof(val_buf);
-    status = golioth_lightdb_get_async(client,
-                                       "hil/lightdb/desired/obj",
-                                       GOLIOTH_CONTENT_TYPE_JSON,
-                                       get_cb,
-                                       &(struct lightdb_get_rsp){
-                                           .type = LIGHTDB_GET_TYPE_RAW,
-                                           .buf = val_buf,
-                                           .buf_size = &val_buf_len,
-                                           .sem = sem,
-                                       });
+    status = golioth_lightdb_get(client,
+                                 "hil/lightdb/desired/obj",
+                                 GOLIOTH_CONTENT_TYPE_JSON,
+                                 get_cb,
+                                 &(struct lightdb_get_rsp) {
+                                     .type = LIGHTDB_GET_TYPE_RAW,
+                                     .buf = val_buf,
+                                     .buf_size = &val_buf_len,
+                                     .sem = sem,
+                                 });
     if (status == GOLIOTH_OK)
     {
         golioth_sys_sem_take(sem, TIMEOUT * 1000);
-        golioth_lightdb_set_async(client,
-                                  "hil/lightdb/reported/async/obj",
-                                  GOLIOTH_CONTENT_TYPE_JSON,
-                                  val_buf,
-                                  val_buf_len,
-                                  set_cb,
-                                  sem);
+        golioth_lightdb_set(client,
+                            "hil/lightdb/reported/obj",
+                            GOLIOTH_CONTENT_TYPE_JSON,
+                            val_buf,
+                            val_buf_len,
+                            set_cb,
+                            sem);
         golioth_sys_sem_take(sem, TIMEOUT * 1000);
     }
 
     golioth_sys_sem_destroy(sem);
 }
 
-static void test_lightdb_delete_sync(struct golioth_client *client)
-{
-    golioth_lightdb_delete_sync(client, "hil/lightdb/to_delete/sync/true", TIMEOUT);
-    golioth_lightdb_delete_sync(client, "hil/lightdb/to_delete/sync/false", TIMEOUT);
-    golioth_lightdb_delete_sync(client, "hil/lightdb/to_delete/sync/int", TIMEOUT);
-    golioth_lightdb_delete_sync(client, "hil/lightdb/to_delete/sync/str", TIMEOUT);
-    golioth_lightdb_delete_sync(client, "hil/lightdb/to_delete/sync/obj", TIMEOUT);
-}
-
-static void test_lightdb_delete_async(struct golioth_client *client)
+static void test_lightdb_delete(struct golioth_client *client)
 {
     golioth_sys_sem_t sem;
 
@@ -400,51 +291,33 @@ static void test_lightdb_delete_async(struct golioth_client *client)
         return;
     }
 
-    golioth_lightdb_delete_async(client, "hil/lightdb/to_delete/async/true", set_cb, sem);
+    golioth_lightdb_delete(client, "hil/lightdb/to_delete/true", set_cb, sem);
     golioth_sys_sem_take(sem, TIMEOUT * 1000);
-    golioth_lightdb_delete_async(client, "hil/lightdb/to_delete/async/false", set_cb, sem);
+    golioth_lightdb_delete(client, "hil/lightdb/to_delete/false", set_cb, sem);
     golioth_sys_sem_take(sem, TIMEOUT * 1000);
-    golioth_lightdb_delete_async(client, "hil/lightdb/to_delete/async/int", set_cb, sem);
+    golioth_lightdb_delete(client, "hil/lightdb/to_delete/int", set_cb, sem);
     golioth_sys_sem_take(sem, TIMEOUT * 1000);
-    golioth_lightdb_delete_async(client, "hil/lightdb/to_delete/async/str", set_cb, sem);
+    golioth_lightdb_delete(client, "hil/lightdb/to_delete/str", set_cb, sem);
     golioth_sys_sem_take(sem, TIMEOUT * 1000);
-    golioth_lightdb_delete_async(client, "hil/lightdb/to_delete/async/obj", set_cb, sem);
+    golioth_lightdb_delete(client, "hil/lightdb/to_delete/obj", set_cb, sem);
     golioth_sys_sem_take(sem, TIMEOUT * 1000);
 
     golioth_sys_sem_destroy(sem);
 }
 
-static void test_lightdb_invalid(struct golioth_client *client)
-{
-    enum golioth_status status;
-
-    status = golioth_lightdb_set_sync(client,
-                                      "hil/lightdb/invalid/dot",
-                                      GOLIOTH_CONTENT_TYPE_JSON,
-                                      (const uint8_t *) ".",
-                                      1,
-                                      TIMEOUT);
-
-    golioth_lightdb_set_string_sync(client,
-                                    "hil/lightdb/invalid/sync/set_dot",
-                                    golioth_status_to_str(status),
-                                    strlen(golioth_status_to_str(status)),
-                                    TIMEOUT);
-}
-
 static void test_lightdb_observe_setup(struct golioth_client *client)
 {
-    golioth_lightdb_observe_async(client,
-                                  "hil/lightdb/observed/int",
-                                  GOLIOTH_CONTENT_TYPE_JSON,
-                                  int_cb,
-                                  NULL);
+    golioth_lightdb_observe(client,
+                            "hil/lightdb/observed/int",
+                            GOLIOTH_CONTENT_TYPE_JSON,
+                            int_cb,
+                            NULL);
 
-    golioth_lightdb_observe_async(client,
-                                  "hil/lightdb/observed/cbor/int",
-                                  GOLIOTH_CONTENT_TYPE_CBOR,
-                                  int_cbor_cb,
-                                  NULL);
+    golioth_lightdb_observe(client,
+                            "hil/lightdb/observed/cbor/int",
+                            GOLIOTH_CONTENT_TYPE_CBOR,
+                            int_cbor_cb,
+                            NULL);
 }
 
 static void test_lightdb_observe(struct golioth_client *client)
@@ -461,59 +334,69 @@ static void test_lightdb_observe(struct golioth_client *client)
         if (observed_data[events_count].type == GOLIOTH_CONTENT_TYPE_JSON)
         {
             /* Use JSON */
-            golioth_lightdb_set_sync(client,
-                                     event_path,
-                                     GOLIOTH_CONTENT_TYPE_JSON,
-                                     observed_data[events_count].observed_payload,
-                                     observed_data[events_count].observed_payload_size,
-                                     TIMEOUT);
+            golioth_lightdb_set(client,
+                                event_path,
+                                GOLIOTH_CONTENT_TYPE_JSON,
+                                observed_data[events_count].observed_payload,
+                                observed_data[events_count].observed_payload_size,
+                                NULL,
+                                NULL);
         }
         else
         {
             /* Use CBOR */
-            golioth_lightdb_set_sync(client,
-                                     event_path,
-                                     GOLIOTH_CONTENT_TYPE_CBOR,
-                                     observed_data[events_count].observed_payload,
-                                     observed_data[events_count].observed_payload_size,
-                                     TIMEOUT);
+            golioth_lightdb_set(client,
+                                event_path,
+                                GOLIOTH_CONTENT_TYPE_CBOR,
+                                observed_data[events_count].observed_payload,
+                                observed_data[events_count].observed_payload_size,
+                                NULL,
+                                NULL);
         }
 
-        golioth_lightdb_set_int_sync(client,
-                                     "hil/lightdb/observed/events/count",
-                                     events_count,
-                                     TIMEOUT);
+        golioth_lightdb_set_int(client,
+                                "hil/lightdb/observed/events/count",
+                                events_count,
+                                NULL,
+                                NULL);
+    }
+}
+
+static void on_ready(struct golioth_client *client,
+                     enum golioth_status status,
+                     const struct golioth_coap_rsp_code *coap_rsp_code,
+                     const char *path,
+                     const uint8_t *payload,
+                     size_t payload_size,
+                     void *arg)
+{
+    if (golioth_payload_as_bool(payload, payload_size))
+    {
+        golioth_sys_sem_t *ready_sem = arg;
+        golioth_sys_sem_give(*ready_sem);
     }
 }
 
 void hil_test_entry(const struct golioth_client_config *config)
 {
     struct golioth_client *client = golioth_client_create(config);
-    enum golioth_status status;
-    bool val_bool;
 
     observed_sem = golioth_sys_sem_create(10, 0);
 
-    while (true)
-    {
-        status =
-            golioth_lightdb_get_bool_sync(client, "hil/lightdb/desired/ready", &val_bool, TIMEOUT);
-        if (status == GOLIOTH_OK && val_bool == true)
-        {
-            GLTH_LOGI(TAG, "LightDB State desired data is ready");
-            break;
-        }
+    golioth_sys_sem_t ready_sem = golioth_sys_sem_create(1, 0);
 
-        golioth_sys_msleep(1000);
-    }
+    golioth_lightdb_observe(client,
+                            "hil/lightdb/desired/ready",
+                            GOLIOTH_CONTENT_TYPE_JSON,
+                            on_ready,
+                            &ready_sem);
+
+    golioth_sys_sem_take(ready_sem, GOLIOTH_SYS_WAIT_FOREVER);
 
     test_lightdb_observe_setup(client);
 
-    test_lightdb_desired_reported_sync(client);
-    test_lightdb_desired_reported_async(client);
-    test_lightdb_delete_sync(client);
-    test_lightdb_delete_async(client);
-    test_lightdb_invalid(client);
+    test_lightdb_desired_reported(client);
+    test_lightdb_delete(client);
 
     GLTH_LOGI(TAG, "LightDB State reported data is ready");
 

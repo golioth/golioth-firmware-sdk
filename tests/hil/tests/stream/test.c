@@ -137,13 +137,13 @@ void test_multi_block_upload(struct golioth_client *client)
                   bu_data_remaining);
 
 
-        status = golioth_stream_blockwise_set_block_async(ctx,
-                                                          block_idx,
-                                                          ((uint8_t *) test_data_json) + bu_offset,
-                                                          bu_data_len,
-                                                          is_last,
-                                                          on_multi_block,
-                                                          (void *) block_idx);
+        status = golioth_stream_blockwise_set_block(ctx,
+                                                    block_idx,
+                                                    ((uint8_t *) test_data_json) + bu_offset,
+                                                    bu_data_len,
+                                                    is_last,
+                                                    on_multi_block,
+                                                    (void *) block_idx);
 
         if (status)
         {
