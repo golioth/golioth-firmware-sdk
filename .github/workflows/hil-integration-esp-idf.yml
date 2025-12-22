@@ -37,14 +37,44 @@ on:
         type: string
 
 jobs:
+  matrix:
+    name: espidf-${{ inputs.hil_board }}-hil-matrix
+    runs-on: ubuntu-24.04
+
+    outputs:
+      tests: ${{ steps.output-tests.outputs.tests }}
+
+    steps:
+      - name: Checkout repository
+        uses: actions/checkout@v4
+
+      - name: Prepare tests matrix
+        id: output-tests
+        shell: python
+        run: |
+          import json
+          import os
+          from pathlib import Path
+
+          tests = [p.name for p in Path('tests/hil/tests').iterdir()]
+
+          with open(os.environ['GITHUB_OUTPUT'], 'a') as github_output:
+            print('tests=' + json.dumps(tests), file=github_output)
+
   build:
-    name: esp-idf-${{ inputs.hil_board }}-build
+    name: espidf-${{ inputs.hil_board }}-hil-build (${{ matrix.test }})
+    needs: matrix
+    strategy:
+      fail-fast: false
+      matrix:
+        test: ${{ fromJSON(needs.matrix.outputs.tests) }}
     runs-on: ubuntu-24.04
     steps:
       - name: Checkout Repository and Submodules
         uses: actions/checkout@v4
         with:
           submodules: 'recursive'
+
       - name: Prep for build
         id: build_prep
         run: |
@@ -53,7 +83,7 @@ jobs:
 
           rm -rf test_binaries
           mkdir test_binaries
-          echo test_list=$(ls tests/hil/tests) >> "$GITHUB_OUTPUT"
+
       - name: Build Test Firmware
         uses: espressif/esp-idf-ci-action@v1
         with:
@@ -61,21 +91,38 @@ jobs:
           target: ${{ inputs.idf_target }}
           path: 'tests/hil/platform/esp-idf'
           command: |
-            for test in ${{ steps.build_prep.outputs.test_list }}; do
-              idf.py -DGOLIOTH_HIL_TEST=$test build && \
-                mv build/merged.bin ../../../../test_binaries/${test}.bin || \
-                EXITCODE=$?
-            done
-            exit $EXITCODE
+            idf.py -DGOLIOTH_HIL_TEST=${{ matrix.test }} build && \
+              mv build/merged.bin ../../../../test_binaries/${{ matrix.test }}.bin
+
       - name: Save Artifacts
         uses: actions/upload-artifact@v4
         with:
-          name: ${{ inputs.hil_board }}-esp-idf
+          name: ${{ inputs.hil_board }}-hil-espidf-${{ matrix.test }}
           path: test_binaries/*
 
+  verify_build:
+    name: espidf-${{ inputs.hil_board }}-hil-verify-build
+    if: always()
+    needs:
+      - matrix
+      - build
+    runs-on: ubuntu-24.04
+
+    steps:
+      - name: Decide whether the needed jobs succeeded or failed
+        uses: re-actors/alls-green@05ac9388f0aebcb5727afa17fcccfecd6f8ec5fe
+        with:
+          jobs: ${{ toJSON(needs) }}
+
   test:
-    name: esp-idf-${{ inputs.hil_board }}-test
-    needs: build
+    name: espidf-${{ inputs.hil_board }}-hil-test (${{ matrix.test }})
+    needs:
+      - matrix
+      - build
+    strategy:
+      fail-fast: false
+      matrix:
+        test: ${{ fromJSON(needs.matrix.outputs.tests) }}
     runs-on:
       - is_active
       - has_${{ inputs.hil_board }}
@@ -91,6 +138,7 @@ jobs:
     steps:
       - name: Checkout repository
         uses: actions/checkout@v4
+
       - name: Setup Python dependencies
         run: |
           uv pip install \
@@ -98,13 +146,16 @@ jobs:
             pytest-timeout \
             tests/hil/scripts/pytest-hil \
             git+https://github.com/golioth/python-golioth-tools@v0.8.1
+
       - name: Power On USB Hub
         run: python3 /opt/golioth-scripts/usb_hub_power.py on
+
       - name: Download build
         uses: actions/download-artifact@v4
         with:
-          name: ${{ inputs.hil_board }}-esp-idf
+          name: ${{ inputs.hil_board }}-hil-espidf-${{ matrix.test }}
           path: .
+
       - name: Run test
         shell: bash
         env:
@@ -115,59 +166,35 @@ jobs:
           rm -rf allure-reports
           source /opt/credentials/runner_env.sh
           PORT_VAR=CI_${hil_board^^}_PORT
-          for test in $(ls tests/hil/tests)
-          do
-            pytest --rootdir . tests/hil/tests/$test                            \
-              --board ${{ inputs.hil_board }}_espidf                            \
-              --port ${!PORT_VAR}                                               \
-              --fw-image ${test}.bin                                            \
-              --api-url ${{ inputs.api-url }}                                   \
-              --api-key ${{ secrets[inputs.api-key-id] }}                       \
-              --wifi-ssid ${{ secrets[format('{0}_WIFI_SSID', runner.name)] }}  \
-              --wifi-psk ${{ secrets[format('{0}_WIFI_PSK', runner.name)] }}    \
-              --mask-secrets                                                    \
-              --timeout=600                                                     \
-              --junitxml=summary/hil-espidf-${{ inputs.hil_board }}-${test}.xml \
-              --alluredir=allure-reports                                        \
-              --allure-platform esp-idf                                         \
-              --runner-name ${{ runner.name }}                                  \
-              || EXITCODE=$?
-          done
-          exit $EXITCODE
 
-      - name: Prepare summary
-        if: success() || failure()
-        shell: bash
-        run: |
-          if ! command -v sudo; then
-            # Self-hosted runner docker images don't have sudo installed
-            mkdir -p -m 777 /tmp && apt update && apt install -y xml-twig-tools
-          else
-            sudo apt install -y xml-twig-tools
-          fi
-
-          xml_grep \
-            --pretty_print indented \
-            --wrap testsuites \
-            --descr '' \
-            --cond "testsuite" \
-            summary/*.xml \
-            > combined.xml
-          mv combined.xml summary/hil-espidf-${{ inputs.hil_board }}.xml
+          pytest --rootdir . tests/hil/tests/${{ matrix.test }}                          \
+            --board ${{ inputs.hil_board }}_espidf                                       \
+            --port ${!PORT_VAR}                                                          \
+            --fw-image ${{ matrix.test }}.bin                                            \
+            --api-url ${{ inputs.api-url }}                                              \
+            --api-key ${{ secrets[inputs.api-key-id] }}                                  \
+            --wifi-ssid ${{ secrets[format('{0}_WIFI_SSID', runner.name)] }}             \
+            --wifi-psk ${{ secrets[format('{0}_WIFI_PSK', runner.name)] }}               \
+            --mask-secrets                                                               \
+            --timeout=600                                                                \
+            --junitxml=summary/hil-espidf-${{ inputs.hil_board }}-${{ matrix.test }}.xml \
+            --alluredir=allure-reports                                                   \
+            --allure-platform esp-idf                                                    \
+            --runner-name ${{ runner.name }}                                             \
 
       - name: Safe upload CI report summary
         uses: ./.github/actions/safe-upload-artifacts
         if: success() || failure()
         with:
-          name: ci-summary-hil-espidf-${{ inputs.hil_board }}
-          path: summary/hil-espidf-${{ inputs.hil_board }}.xml
+          name: ci-individual-hil-espidf-${{ inputs.hil_board }}-${{ matrix.test }}
+          path: summary/*.xml
 
       - name: Safe upload Allure reports
         if: success() || failure()
         uses: ./.github/actions/safe-upload-artifacts
         with:
           secrets-json: ${{ toJson(secrets) }}
-          name: allure-reports-hil-espidf-${{ inputs.hil_board }}
+          name: allure-reports-hil-espidf-${{ inputs.hil_board }}-${{ matrix.test }}
           path: allure-reports
 
       - name: Erase flash
@@ -179,6 +206,42 @@ jobs:
           source /opt/credentials/runner_env.sh
           PORT_VAR=CI_${hil_board^^}_PORT
           esptool.py --port ${!PORT_VAR} erase_flash
+
       - name: Power Off USB Hub
         if: always()
         run: python3 /opt/golioth-scripts/usb_hub_power.py off
+
+  summary:
+    name: espidf-${{ inputs.hil_board }}-hil-summary
+    runs-on: ubuntu-24.04
+    needs: test
+    if: success() || failure()
+
+    steps:
+      - name: Collect JUnit reports
+        uses: actions/download-artifact@v4
+        with:
+          path: summary
+          pattern: ci-individual-hil-espidf-${{ inputs.hil_board }}-*
+          merge-multiple: true
+
+      - name: Prepare CI report summary
+        if: success() || failure()
+        shell: bash
+        run: |
+          sudo apt install -y xml-twig-tools
+
+          xml_grep \
+            --pretty_print indented \
+            --wrap testsuites \
+            --descr '' \
+            --cond "testsuite" \
+            summary/*.xml \
+            > combined.xml
+          mv combined.xml summary/hil-espidf-${{ inputs.hil_board }}.xml
+
+      - name: Upload CI report summary
+        uses: actions/upload-artifact@v4
+        with:
+          name: ci-summary-hil-espidf-${{ inputs.hil_board }}
+          path: summary/hil-espidf-${{ inputs.hil_board }}.xml
