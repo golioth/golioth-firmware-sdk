@@ -38,8 +38,20 @@ on:
         type: string
 
 jobs:
+  matrix:
+    name: zephyr-${{ inputs.west_board }}-sample-matrix
+    uses: ./.github/workflows/misc-locate-twister-samples.yml
+    with:
+      west_board: ${{ inputs.west_board }}
+
   build_and_test:
-    name: zephyr-${{ inputs.west_board }}-twister
+    name: zephyr-${{ inputs.west_board }}-twister (${{ matrix.name }})
+    needs:
+      - matrix
+    strategy:
+      fail-fast: false
+      matrix:
+        include: ${{ fromJSON(needs.matrix.outputs.sample_list) }}
     runs-on: ubuntu-24.04
     container:
       image: golioth/golioth-zephyr-base:0.17.4-SDK-v0
@@ -80,7 +92,7 @@ jobs:
           zephyr/scripts/twister                                                    \
               -v                                                                    \
               --platform ${{ inputs.west_board }}                                   \
-              -T modules/lib/golioth-firmware-sdk/examples/zephyr                   \
+              -T ${{ matrix.dir }}                                                  \
               -C --coverage-basedir modules/lib/golioth-firmware-sdk                \
               --coverage-formats txt                                                \
               ${EXTRA_TWISTER_ARGS}                                                 \
@@ -97,7 +109,7 @@ jobs:
         uses: ./modules/lib/golioth-firmware-sdk/.github/actions/safe-upload-artifacts
         with:
           secrets-json: ${{ toJson(secrets) }}
-          name: twister-run-artifacts-${{ inputs.platform }}
+          name: twister-run-artifacts-${{ inputs.platform }}-${{ matrix.name }}
           path: |
             reports/*
             twister-out/coverage.json
@@ -110,7 +122,7 @@ jobs:
         uses: ./modules/lib/golioth-firmware-sdk/.github/actions/safe-upload-artifacts
         if: success() || failure()
         with:
-          name: ci-individual-samples-zephyr-${{ inputs.platform }}
+          name: ci-individual-samples-zephyr-${{ inputs.platform }}-${{ matrix.name }}
           path: twister-out/twister_suite_report.xml
 
       - name: Safe upload Allure reports
@@ -118,13 +130,15 @@ jobs:
         uses: ./modules/lib/golioth-firmware-sdk/.github/actions/safe-upload-artifacts
         with:
           secrets-json: ${{ toJson(secrets) }}
-          name: allure-reports-samples-zephyr-${{ inputs.platform }}
+          name: allure-reports-samples-zephyr-${{ inputs.platform }}-${{ matrix.name }}
           path: allure-reports
 
   hil_sample_zephyr_nsim_summary:
     name: zephyr-${{ inputs.platform }}-twister-summary
     runs-on: ubuntu-24.04
-    needs: build_and_test
+    needs:
+      - matrix
+      - build_and_test
     if: success() || failure()
 
     steps:
