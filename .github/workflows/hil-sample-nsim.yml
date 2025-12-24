@@ -133,6 +133,20 @@ jobs:
           name: allure-reports-samples-zephyr-${{ inputs.platform }}-${{ matrix.name }}
           path: allure-reports
 
+  verify_build_and_test:
+    name: zephyr-${{ inputs.west_board }}-twister-verify-build-and-test
+    if: always()
+    needs:
+      - matrix
+      - build_and_test
+    runs-on: ubuntu-24.04
+
+    steps:
+      - name: Decide whether the needed jobs succeeded or failed
+        uses: re-actors/alls-green@05ac9388f0aebcb5727afa17fcccfecd6f8ec5fe
+        with:
+          jobs: ${{ toJSON(needs) }}
+
   hil_sample_zephyr_nsim_summary:
     name: zephyr-${{ inputs.platform }}-twister-summary
     runs-on: ubuntu-24.04
