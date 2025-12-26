@@ -226,73 +226,6 @@ static int flash_img_prepare(struct flash_img_context *flash)
     return 0;
 }
 
-/*
- * @note This is similar to Zephyr's flash_img_check() but uses the Golioth
- * port's sha256 API.
- */
-static enum golioth_status fw_update_check_candidate(const uint8_t *hash, size_t img_size)
-{
-    enum golioth_status status = GOLIOTH_OK;
-    int err;
-    int buf_size;
-    int pos;
-    uint8_t calc_sha256[GOLIOTH_OTA_COMPONENT_BIN_HASH_LEN];
-
-    err = flash_area_open(flash_img_get_upload_slot(),
-                          (const struct flash_area **) &(_flash_img_context.flash_area));
-    if (err)
-    {
-        return GOLIOTH_ERR_IO;
-    };
-
-    golioth_sys_sha256_t hash_ctx = golioth_sys_sha256_create();
-
-    buf_size = sizeof(_flash_img_context.buf);
-
-    for (pos = 0; pos < img_size; pos += buf_size)
-    {
-        if (pos + buf_size > img_size)
-        {
-            buf_size = img_size - pos;
-        }
-
-        err = flash_read(_flash_img_context.flash_area->fa_dev,
-                         (_flash_img_context.flash_area->fa_off + pos),
-                         _flash_img_context.buf,
-                         buf_size);
-        if (err != 0)
-        {
-            status = GOLIOTH_ERR_IO;
-            goto error;
-        }
-
-        err = golioth_sys_sha256_update(hash_ctx, _flash_img_context.buf, buf_size);
-        if (err != GOLIOTH_OK)
-        {
-            status = GOLIOTH_ERR_FAIL;
-            goto error;
-        }
-    }
-
-    err = golioth_sys_sha256_finish(hash_ctx, calc_sha256);
-    if (err != GOLIOTH_OK)
-    {
-        status = GOLIOTH_ERR_FAIL;
-        goto error;
-    }
-
-    if (memcmp(hash, calc_sha256, sizeof(calc_sha256)))
-    {
-        status = GOLIOTH_ERR_FAIL;
-        goto error;
-    }
-
-error:
-    golioth_sys_sha256_destroy(hash_ctx);
-
-    return status;
-}
-
 static enum golioth_status fw_write_block_cb(const struct golioth_ota_component *component,
                                              uint32_t block_idx,
                                              const uint8_t *block_buffer,
@@ -744,10 +677,12 @@ void golioth_fw_update_run(struct golioth_client *client, const char *version)
                 continue;
             }
 
-            // clang-format off
-            if (fw_update_check_candidate(_component_ctx.target_component.hash,
-                                          _component_ctx.target_component.size) == GOLIOTH_OK)
-            // clang-format on
+            struct flash_img_check fic =
+            {
+                .match = _component_ctx.target_component.hash,
+                .clen = _component_ctx.target_component.size,
+            };
+            if (0 == flash_img_check(&_flash_img_context, &fic, flash_img_get_upload_slot()))
             {
                 LOG_INF("Target component already downloaded. Attempting to update.");
                 if (fw_change_image_and_reboot() != GOLIOTH_OK)
