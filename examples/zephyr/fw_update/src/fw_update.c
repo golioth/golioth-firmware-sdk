@@ -39,6 +39,15 @@ LOG_MODULE_REGISTER(fw_update);
 #define FW_REPORT_TARGET_VERSION 1 << 1
 #define FW_REPORT_CURRENT_VERSION 1 << 2
 
+struct golioth_fw_update_config
+{
+    /// The current firmware version, NULL-terminated, shallow-copied from user. (e.g. "1.2.3")
+    const char *current_version;
+    /// The name of the package in the manifest for the main firmware, NULL-terminated,
+    /// shallow-copied from user (e.g. "main").
+    const char *fw_package_name;
+};
+
 struct fw_update_component_context
 {
     struct golioth_fw_update_config config;
@@ -622,8 +631,19 @@ static enum golioth_status fw_change_image_and_reboot()
 }
 
 
-static void fw_update_thread(void *arg)
+void golioth_fw_update_run(struct golioth_client *client, const char *version)
 {
+    _client = client;
+
+    _component_ctx.config.fw_package_name = CONFIG_GOLIOTH_FW_UPDATE_PACKAGE_NAME;
+    _component_ctx.config.current_version = version;
+
+    backoff_reset(&_component_ctx);
+
+    LOG_INF("Current firmware version: %s - %s",
+            _component_ctx.config.fw_package_name,
+            _component_ctx.config.current_version);
+
     // If it's the first time booting a new OTA image,
     // wait for successful connection to Golioth.
     //
@@ -843,51 +863,6 @@ static void fw_update_thread(void *arg)
         if (fw_change_image_and_reboot() != GOLIOTH_OK)
         {
             LOG_ERR("Failed to reboot into new image.");
-        }
-    }
-}
-
-void golioth_fw_update_init(struct golioth_client *client, const char *current_version)
-{
-    struct golioth_fw_update_config config = {
-        .current_version = current_version,
-        .fw_package_name = CONFIG_GOLIOTH_FW_UPDATE_PACKAGE_NAME,
-    };
-    golioth_fw_update_init_with_config(client, &config);
-}
-
-void golioth_fw_update_init_with_config(struct golioth_client *client,
-                                        const struct golioth_fw_update_config *config)
-{
-    static bool initialized = false;
-
-    _client = client;
-
-    _component_ctx.config = *config;
-    backoff_reset(&_component_ctx);
-
-    LOG_INF("Current firmware version: %s - %s",
-            _component_ctx.config.fw_package_name,
-            _component_ctx.config.current_version);
-
-    if (!initialized)
-    {
-        struct golioth_thread_config thread_cfg = {
-            .name = "fw_update",
-            .fn = fw_update_thread,
-            .user_arg = NULL,
-            .stack_size = CONFIG_GOLIOTH_FW_UPDATE_THREAD_STACK_SIZE,
-            .prio = 3,
-        };
-
-        golioth_sys_thread_t thread = golioth_sys_thread_create(&thread_cfg);
-        if (!thread)
-        {
-            LOG_ERR("Failed to create firmware update thread");
-        }
-        else
-        {
-            initialized = true;
         }
     }
 }
