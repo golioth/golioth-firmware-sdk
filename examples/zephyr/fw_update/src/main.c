@@ -4,19 +4,21 @@
  * SPDX-License-Identifier: Apache-2.0
  */
 
-#include <zephyr/logging/log.h>
-LOG_MODULE_REGISTER(fw_update_sample, LOG_LEVEL_DBG);
-
-#include <golioth/client.h>
-#include <samples/common/sample_credentials.h>
+#include <assert.h>
 #include <string.h>
+
 #include <zephyr/kernel.h>
-
-#include <samples/common/net_connect.h>
-
 #include <app_version.h>
 
+#include <golioth/client.h>
+
+#include <samples/common/sample_credentials.h>
+#include <samples/common/net_connect.h>
+
 #include "fw_update.h"
+
+#include <zephyr/logging/log.h>
+LOG_MODULE_REGISTER(fw_update_sample, LOG_LEVEL_DBG);
 
 // Current firmware version; update in VERSION
 static const char *_current_version =
@@ -52,11 +54,11 @@ int main(void)
 
     golioth_client_register_event_callback(client, on_client_event, NULL);
 
-    golioth_fw_update_init(client, _current_version);
-
     k_sem_take(&connected, K_FOREVER);
 
-    /* No while(true) loop needed, the Golioth client thread will handle updates */
+    /* Does not return */
+    golioth_fw_update_run(client, _current_version);
 
-    return 0;
+    /* Unreachable */
+    assert(0);
 }

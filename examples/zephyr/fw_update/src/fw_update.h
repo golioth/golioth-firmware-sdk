@@ -13,27 +13,17 @@ extern "C"
 
 #include <golioth/client.h>
 #include <golioth/ota.h>
-#include <stdbool.h>
-
-struct golioth_fw_update_config
-{
-    /// The current firmware version, NULL-terminated, shallow-copied from user. (e.g. "1.2.3")
-    const char *current_version;
-    /// The name of the package in the manifest for the main firmware, NULL-terminated,
-    /// shallow-copied from user (e.g. "main").
-    const char *fw_package_name;
-};
 
 /// @defgroup golioth_fw_update golioth_fw_update
-/// Create a background thread that will execute Over-the-Air (OTA) updates
+/// Demonstrate how to interact with the OTA service to perform firmware updates
 ///
 /// https://docs.golioth.io/reference/protocols/coap/ota
 /// @{
 
-/// Create a thread that will perform firmware updates.
+/// Run Firmware Update.
 ///
-/// The thread will observe OTA manifests then execute the OTA update,
-/// including state reporting to Golioth and updating firmware on the device.
+/// This function does not return. It will observe OTA manifests then execute the OTA
+/// update, including state reporting to Golioth and updating firmware on the device.
 ///
 /// Will ignore any received OTA manifests where the firmware already
 /// matches current_version.
@@ -46,14 +36,7 @@ struct golioth_fw_update_config
 /// @param client The client handle from @ref golioth_client_create
 /// @param current_version The current firmware version (e.g. "1.2.3"), shallow copy, must be
 ///     NULL-terminated
-void golioth_fw_update_init(struct golioth_client *client, const char *current_version);
-
-/// Same as golioth_fw_update_init, but with additional configuration specified via struct.
-///
-/// @param client The client handle from @ref golioth_client_create
-/// @param config The configuration struct (see @ref golioth_fw_update_config).
-void golioth_fw_update_init_with_config(struct golioth_client *client,
-                                        const struct golioth_fw_update_config *config);
+void golioth_fw_update_run(struct golioth_client *client, const char *version);
 
 /// Function callback type, for FW update state change listeners
 ///
