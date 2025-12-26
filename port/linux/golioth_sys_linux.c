@@ -192,15 +192,15 @@ int golioth_sys_sem_get_fd(golioth_sys_sem_t sem)
  *------------------------------------------------*/
 
 // Wrap timer_t to also capture user's config
-typedef struct
+struct wrapped_timer
 {
     timer_t timer;
     struct golioth_timer_config config;
-} wrapped_timer_t;
+};
 
 static void on_timer(int sig, siginfo_t *si, void *uc)
 {
-    wrapped_timer_t *wt = (wrapped_timer_t *) si->si_value.sival_ptr;
+    struct wrapped_timer *wt = (struct wrapped_timer *) si->si_value.sival_ptr;
     if (wt->config.fn)
     {
         wt->config.fn(wt, wt->config.user_arg);
@@ -230,7 +230,7 @@ golioth_sys_timer_t golioth_sys_timer_create(const struct golioth_timer_config *
     }
 
     // Note: config.name is unused
-    wrapped_timer_t *wt = (wrapped_timer_t *) golioth_sys_malloc(sizeof(wrapped_timer_t));
+    struct wrapped_timer *wt = golioth_sys_malloc(sizeof(struct wrapped_timer));
     memcpy(&wt->config, config, sizeof(wt->config));
     int err = timer_create(CLOCK_REALTIME,
                            &(struct sigevent){
@@ -268,7 +268,7 @@ error:
 
 bool golioth_sys_timer_start(golioth_sys_timer_t timer)
 {
-    wrapped_timer_t *wt = (wrapped_timer_t *) timer;
+    struct wrapped_timer *wt = (struct wrapped_timer *) timer;
 
     struct timespec spec = {
         .tv_sec = wt->config.expiration_ms / 1000,
@@ -292,7 +292,7 @@ bool golioth_sys_timer_start(golioth_sys_timer_t timer)
 
 bool golioth_sys_timer_reset(golioth_sys_timer_t timer)
 {
-    wrapped_timer_t *wt = (wrapped_timer_t *) timer;
+    struct wrapped_timer *wt = (struct wrapped_timer *) timer;
 
     struct timespec spec = {
         .tv_sec = wt->config.expiration_ms / 1000,
@@ -317,7 +317,7 @@ bool golioth_sys_timer_reset(golioth_sys_timer_t timer)
 
 void golioth_sys_timer_destroy(golioth_sys_timer_t timer)
 {
-    wrapped_timer_t *wt = (wrapped_timer_t *) timer;
+    struct wrapped_timer *wt = (struct wrapped_timer *) timer;
     if (!wt)
     {
         return;
@@ -333,16 +333,16 @@ void golioth_sys_timer_destroy(golioth_sys_timer_t timer)
 // Wrap pthread due to incompatibility with thread function type.
 //   pthread fn returns void*
 //   golioth_sys_thread_fn_t returns void
-typedef struct
+struct wrapped_pthread
 {
     pthread_t pthread;
     golioth_sys_thread_fn_t fn;
     void *user_arg;
-} wrapped_pthread_t;
+};
 
 static void *pthread_callback(void *arg)
 {
-    wrapped_pthread_t *wt = (wrapped_pthread_t *) arg;
+    struct wrapped_pthread *wt = arg;
     assert(wt);
     assert(wt->fn);
     wt->fn(wt->user_arg);
@@ -354,7 +354,7 @@ golioth_sys_thread_t golioth_sys_thread_create(const struct golioth_thread_confi
     //      name
     //      stack_size
     //      prio
-    wrapped_pthread_t *wt = (wrapped_pthread_t *) golioth_sys_malloc(sizeof(wrapped_pthread_t));
+    struct wrapped_pthread *wt = golioth_sys_malloc(sizeof(struct wrapped_pthread));
 
     wt->fn = config->fn;
     wt->user_arg = config->user_arg;
