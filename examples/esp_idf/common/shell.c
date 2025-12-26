@@ -46,16 +46,16 @@ static struct
     struct arg_end *end;
 } _ping_args;
 
-typedef struct
+struct shell_to_nvs_key_map
 {
     const char *shell_key;
     const char *nvs_key;
-} shell_to_nvs_key_map_t;
+};
 
 // Map from CLI key to internal NVS keys.
 // Can't use CLI keys directly in NVS due to character length
 // limitation in NVS.
-static const shell_to_nvs_key_map_t _key_map[4] = {
+static const struct shell_to_nvs_key_map _key_map[4] = {
     {"wifi/ssid", NVS_WIFI_SSID_KEY},
     {"wifi/psk", NVS_WIFI_PASS_KEY},
     {"golioth/psk-id", NVS_GOLIOTH_PSK_ID_KEY},

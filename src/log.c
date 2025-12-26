@@ -29,13 +29,13 @@ LOG_TAG_DEFINE(golioth_log);
 //
 // If you must log, use printf instead.
 
-typedef enum
+enum golioth_log_level
 {
     GOLIOTH_LOG_LEVEL_ERROR,
     GOLIOTH_LOG_LEVEL_WARN,
     GOLIOTH_LOG_LEVEL_INFO,
     GOLIOTH_LOG_LEVEL_DEBUG
-} golioth_log_level_t;
+};
 
 static const char *_level_to_str[GOLIOTH_LOG_LEVEL_DEBUG + 1] = {
     [GOLIOTH_LOG_LEVEL_ERROR] = "error",
@@ -44,7 +44,7 @@ static const char *_level_to_str[GOLIOTH_LOG_LEVEL_DEBUG + 1] = {
     [GOLIOTH_LOG_LEVEL_DEBUG] = "debug"};
 
 static enum golioth_status golioth_log_internal(struct golioth_client *client,
-                                                golioth_log_level_t level,
+                                                enum golioth_log_level level,
                                                 const char *tag,
                                                 const char *log_message,
                                                 bool is_synchronous,

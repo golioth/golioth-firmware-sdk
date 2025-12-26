@@ -93,18 +93,18 @@ int golioth_sys_sem_get_fd(golioth_sys_sem_t sem)
 // embedded inside of the TimerHandle_t as the "TimerID").
 //
 // This wrapped timer is the underlying type of opaque golioth_sys_timer_t.
-typedef struct
+struct wrapped_timer
 {
     TimerHandle_t timer;
     golioth_sys_timer_fn_t fn;
     void *user_arg;
-} wrapped_timer_t;
+};
 
 // Same callback used for all timers. We extract the user arg from
 // the underlying freertos timer and call the callback with it.
 static void freertos_timer_callback(TimerHandle_t xTimer)
 {
-    wrapped_timer_t *wt = (wrapped_timer_t *) pvTimerGetTimerID(xTimer);
+    struct wrapped_timer *wt = (struct wrapped_timer *) pvTimerGetTimerID(xTimer);
     wt->fn(wt, wt->user_arg);
 }
 
@@ -124,9 +124,8 @@ golioth_sys_timer_t golioth_sys_timer_create(const struct golioth_timer_config *
 {
     assert(config->fn);  // timer callback function is required
 
-    wrapped_timer_t *wrapped_timer =
-        (wrapped_timer_t *) golioth_sys_malloc(sizeof(wrapped_timer_t));
-    memset(wrapped_timer, 0, sizeof(wrapped_timer_t));
+    struct wrapped_timer *wrapped_timer = golioth_sys_malloc(sizeof(struct wrapped_timer));
+    memset(wrapped_timer, 0, sizeof(struct wrapped_timer));
 
     TimerHandle_t timer = xTimerCreate(config->name,
                                        ms_to_ticks(config->expiration_ms),
@@ -143,7 +142,7 @@ golioth_sys_timer_t golioth_sys_timer_create(const struct golioth_timer_config *
 
 bool golioth_sys_timer_start(golioth_sys_timer_t timer)
 {
-    wrapped_timer_t *wt = (wrapped_timer_t *) timer;
+    struct wrapped_timer *wt = (struct wrapped_timer *) timer;
     if (!wt)
     {
         return false;
@@ -153,7 +152,7 @@ bool golioth_sys_timer_start(golioth_sys_timer_t timer)
 
 bool golioth_sys_timer_reset(golioth_sys_timer_t timer)
 {
-    wrapped_timer_t *wt = (wrapped_timer_t *) timer;
+    struct wrapped_timer *wt = (struct wrapped_timer *) timer;
     if (!wt)
     {
         return false;
@@ -163,7 +162,7 @@ bool golioth_sys_timer_reset(golioth_sys_timer_t timer)
 
 void golioth_sys_timer_destroy(golioth_sys_timer_t timer)
 {
-    wrapped_timer_t *wt = (wrapped_timer_t *) timer;
+    struct wrapped_timer *wt = (struct wrapped_timer *) timer;
     if (!wt)
     {
         return;
