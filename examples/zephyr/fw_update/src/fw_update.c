@@ -14,6 +14,8 @@
 #include <zephyr/storage/flash_map.h>
 #include <zephyr/sys/reboot.h>
 
+#include <psa/crypto.h>
+
 #include <golioth/golioth_sys.h>
 #include <golioth/ota.h>
 
@@ -62,7 +64,7 @@ struct download_progress_context
     uint32_t block_idx;
     uint8_t retries;
     enum golioth_status result;
-    golioth_sys_sha256_t sha;
+    psa_hash_operation_t sha;
     golioth_sys_timer_t block_retry_timer;
 };
 
@@ -261,7 +263,7 @@ static enum golioth_status fw_write_block_cb(const struct golioth_ota_component 
 
     ctx->retries = 0;
     ctx->bytes_downloaded += block_buffer_len;
-    golioth_sys_sha256_update(ctx->sha, block_buffer, block_buffer_len);
+    psa_hash_update(&ctx->sha, block_buffer, block_buffer_len);
 
     return GOLIOTH_OK;
 }
@@ -682,8 +684,7 @@ void golioth_fw_update_run(struct golioth_client *client, const char *version)
                 continue;
             }
 
-            struct flash_img_check fic =
-            {
+            struct flash_img_check fic = {
                 .match = _component_ctx.target_component.hash,
                 .clen = _component_ctx.target_component.size,
             };
@@ -709,7 +710,8 @@ void golioth_fw_update_run(struct golioth_client *client, const char *version)
         uint64_t start_time_ms = golioth_sys_now_ms();
         download_ctx.bytes_downloaded = 0;
         download_ctx.retries = 0;
-        download_ctx.sha = golioth_sys_sha256_create();
+        download_ctx.sha = psa_hash_operation_init();
+        psa_hash_setup(&download_ctx.sha, PSA_ALG_SHA_256);
 
         int err;
 
@@ -762,12 +764,11 @@ void golioth_fw_update_run(struct golioth_client *client, const char *version)
                     break;
             }
 
-            golioth_sys_sha256_destroy(download_ctx.sha);
             continue;
         }
 
-        golioth_sys_sha256_finish(download_ctx.sha, calc_sha256);
-        golioth_sys_sha256_destroy(download_ctx.sha);
+        size_t hash_length = 0;
+        psa_hash_finish(&download_ctx.sha, calc_sha256, sizeof(calc_sha256), &hash_length);
 
         if (GOLIOTH_OK
             != fw_verify_component_hash(calc_sha256, _component_ctx.target_component.hash))
