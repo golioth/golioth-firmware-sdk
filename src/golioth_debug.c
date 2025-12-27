@@ -146,17 +146,17 @@ void golioth_debug_printf(uint64_t tstamp_ms,
     switch (level)
     {
         case GOLIOTH_DEBUG_LOG_LEVEL_ERROR:
-            golioth_log_error_async(_client, tag, msg_buffer, NULL, NULL);
+            golioth_log_error(_client, tag, msg_buffer, NULL, NULL);
             break;
         case GOLIOTH_DEBUG_LOG_LEVEL_WARN:
-            golioth_log_warn_async(_client, tag, msg_buffer, NULL, NULL);
+            golioth_log_warn(_client, tag, msg_buffer, NULL, NULL);
             break;
         case GOLIOTH_DEBUG_LOG_LEVEL_INFO:
-            golioth_log_info_async(_client, tag, msg_buffer, NULL, NULL);
+            golioth_log_info(_client, tag, msg_buffer, NULL, NULL);
             break;
         case GOLIOTH_DEBUG_LOG_LEVEL_VERBOSE:  // fallthrough
         case GOLIOTH_DEBUG_LOG_LEVEL_DEBUG:
-            golioth_log_debug_async(_client, tag, msg_buffer, NULL, NULL);
+            golioth_log_debug(_client, tag, msg_buffer, NULL, NULL);
             break;
         case GOLIOTH_DEBUG_LOG_LEVEL_NONE:  // fallthrough
         default:

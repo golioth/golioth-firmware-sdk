@@ -32,7 +32,7 @@ async def test_lightdb_set(shell, device, wifi_ssid, wifi_psk):
 
     # Verify lightdb writes
 
-    for i in range(0,4):
+    for i in range(0,3):
         shell._device.readlines_until(regex=f".*Setting counter to {i}", timeout=10.0)
         shell._device.readlines_until(regex=f".*Counter successfully set", timeout=10.0)
 

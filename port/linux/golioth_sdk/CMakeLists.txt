@@ -36,7 +36,6 @@ set(sdk_srcs
     "${sdk_src}/settings.c"
     "${sdk_src}/pki.c"
     "${sdk_src}/ringbuf.c"
-    "${sdk_src}/event_group.c"
     "${sdk_src}/mbox.c"
     "${sdk_src}/golioth_debug.c"
     "${sdk_src}/coap_blockwise.c"

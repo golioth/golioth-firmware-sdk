@@ -46,7 +46,6 @@ enum golioth_status golioth_blockwise_upload_block(struct blockwise_transfer *ct
                                                    golioth_end_block_cb_fn end_cb,
                                                    void *callback_arg,
                                                    void *rsp_callback_arg,
-                                                   bool is_synchronous,
                                                    int32_t timeout_s);
 
 /* Blockwise Download */

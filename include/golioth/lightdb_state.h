@@ -24,7 +24,7 @@ extern "C"
 // LightDB State
 //-------------------------------------------------------------------------------
 
-/// Set an integer in LightDB state at a particular path asynchronously
+/// Set an integer in LightDB state at a particular path
 ///
 /// This function will enqueue a request and return immediately without
 /// waiting for a response from the server. Optionally, the user may supply
@@ -43,89 +43,46 @@ extern "C"
 /// @retval GOLIOTH_ERR_INVALID_STATE client is not running, currently stopped
 /// @retval GOLIOTH_ERR_MEM_ALLOC memory allocation error
 /// @retval GOLIOTH_ERR_QUEUE_FULL request queue is full, this request is dropped
-enum golioth_status golioth_lightdb_set_int_async(struct golioth_client *client,
-                                                  const char *path,
-                                                  int32_t value,
-                                                  golioth_set_cb_fn callback,
-                                                  void *callback_arg);
+enum golioth_status golioth_lightdb_set_int(struct golioth_client *client,
+                                            const char *path,
+                                            int32_t value,
+                                            golioth_set_cb_fn callback,
+                                            void *callback_arg);
 
-/// Set an integer in LightDB state at a particular path synchronously
+/// Set a bool in LightDB state at a particular path
 ///
-/// This function will block until one of three things happen (whichever comes first):
-///
-/// 1. A response is received from the server
-/// 2. The user-provided timeout_s period expires without receiving a response
-/// 3. The default GOLIOTH_COAP_RESPONSE_TIMEOUT_S period expires without receiving a response
-///
-/// @param client The client handle from @ref golioth_client_create
-/// @param path The path in LightDB state to set (e.g. "my_integer")
-/// @param value The value to set at path
-/// @param timeout_s The timeout, in seconds, for receiving a server response
-///
-/// @retval GOLIOTH_OK response received from server, set was successful
-/// @retval GOLIOTH_ERR_NULL invalid client handle
-/// @retval GOLIOTH_ERR_INVALID_STATE client is not running, currently stopped
-/// @retval GOLIOTH_ERR_MEM_ALLOC memory allocation error
-/// @retval GOLIOTH_ERR_QUEUE_FULL request queue is full, this request is dropped
-/// @retval GOLIOTH_ERR_TIMEOUT response not received from server, timeout occurred
-enum golioth_status golioth_lightdb_set_int_sync(struct golioth_client *client,
-                                                 const char *path,
-                                                 int32_t value,
-                                                 int32_t timeout_s);
+/// Same as @ref golioth_lightdb_set_int, but for type bool
+enum golioth_status golioth_lightdb_set_bool(struct golioth_client *client,
+                                             const char *path,
+                                             bool value,
+                                             golioth_set_cb_fn callback,
+                                             void *callback_arg);
 
-/// Set a bool in LightDB state at a particular path asynchronously
+/// Set a float in LightDB state at a particular path
 ///
-/// Same as @ref golioth_lightdb_set_int_async, but for type bool
-enum golioth_status golioth_lightdb_set_bool_async(struct golioth_client *client,
-                                                   const char *path,
-                                                   bool value,
-                                                   golioth_set_cb_fn callback,
-                                                   void *callback_arg);
+/// Same as @ref golioth_lightdb_set_int, but for type float
+enum golioth_status golioth_lightdb_set_float(struct golioth_client *client,
+                                              const char *path,
+                                              float value,
+                                              golioth_set_cb_fn callback,
+                                              void *callback_arg);
 
-/// Set a bool in LightDB state at a particular path synchronously
+/// Set a string in LightDB state at a particular path
 ///
-/// Same as @ref golioth_lightdb_set_int_sync, but for type bool
-enum golioth_status golioth_lightdb_set_bool_sync(struct golioth_client *client,
-                                                  const char *path,
-                                                  bool value,
-                                                  int32_t timeout_s);
+/// Same as @ref golioth_lightdb_set_int, but for type string
+enum golioth_status golioth_lightdb_set_string(struct golioth_client *client,
+                                               const char *path,
+                                               const char *str,
+                                               size_t str_len,
+                                               golioth_set_cb_fn callback,
+                                               void *callback_arg);
 
-/// Set a float in LightDB state at a particular path asynchronously
-///
-/// Same as @ref golioth_lightdb_set_int_async, but for type float
-enum golioth_status golioth_lightdb_set_float_async(struct golioth_client *client,
-                                                    const char *path,
-                                                    float value,
-                                                    golioth_set_cb_fn callback,
-                                                    void *callback_arg);
-
-enum golioth_status golioth_lightdb_set_float_sync(struct golioth_client *client,
-                                                   const char *path,
-                                                   float value,
-                                                   int32_t timeout_s);
-
-/// Set a string in LightDB state at a particular path asynchronously
-///
-/// Same as @ref golioth_lightdb_set_int_async, but for type string
-enum golioth_status golioth_lightdb_set_string_async(struct golioth_client *client,
-                                                     const char *path,
-                                                     const char *str,
-                                                     size_t str_len,
-                                                     golioth_set_cb_fn callback,
-                                                     void *callback_arg);
-
-enum golioth_status golioth_lightdb_set_string_sync(struct golioth_client *client,
-                                                    const char *path,
-                                                    const char *str,
-                                                    size_t str_len,
-                                                    int32_t timeout_s);
-
-/// Set an object in LightDB state at a particular path asynchronously
+/// Set an object in LightDB state at a particular path
 ///
 /// The serialization format of the object is specified by the content_type argument.
 /// Currently this is either JSON or CBOR.
 ///
-/// Similar to @ref golioth_lightdb_set_int_async.
+/// Similar to @ref golioth_lightdb_set_int.
 ///
 /// @param client The client handle from @ref golioth_client_create
 /// @param path The path in LightDB state to set (e.g. "my_integer")
@@ -140,35 +97,15 @@ enum golioth_status golioth_lightdb_set_string_sync(struct golioth_client *clien
 /// @retval GOLIOTH_ERR_INVALID_STATE client is not running, currently stopped
 /// @retval GOLIOTH_ERR_MEM_ALLOC memory allocation error
 /// @retval GOLIOTH_ERR_QUEUE_FULL request queue is full, this request is dropped
-enum golioth_status golioth_lightdb_set_async(struct golioth_client *client,
-                                              const char *path,
-                                              enum golioth_content_type content_type,
-                                              const uint8_t *buf,
-                                              size_t buf_len,
-                                              golioth_set_cb_fn callback,
-                                              void *callback_arg);
+enum golioth_status golioth_lightdb_set(struct golioth_client *client,
+                                        const char *path,
+                                        enum golioth_content_type content_type,
+                                        const uint8_t *buf,
+                                        size_t buf_len,
+                                        golioth_set_cb_fn callback,
+                                        void *callback_arg);
 
-/// Set am object in LightDB state at a particular path synchronously
-///
-/// The serialization format of the object is specified by the content_type argument.
-/// Currently this is either JSON or CBOR.
-///
-/// Similar to @ref golioth_lightdb_set_int_sync.
-///
-/// @param client The client handle from @ref golioth_client_create
-/// @param path The path in LightDB state to set (e.g. "my_integer")
-/// @param content_type The serialization format of buf
-/// @param buf A buffer containing the object to send
-/// @param buf_len Length of buf
-/// @param timeout_s The timeout, in seconds, for receiving a server response
-enum golioth_status golioth_lightdb_set_sync(struct golioth_client *client,
-                                             const char *path,
-                                             enum golioth_content_type content_type,
-                                             const uint8_t *buf,
-                                             size_t buf_len,
-                                             int32_t timeout_s);
-
-/// Get data in LightDB state at a particular path asynchronously.
+/// Get data in LightDB state at a particular path
 ///
 /// This function will enqueue a request and return immediately without
 /// waiting for a response from the server. The callback will be invoked when a response
@@ -184,63 +121,13 @@ enum golioth_status golioth_lightdb_set_sync(struct golioth_client *client,
 /// @param content_type The serialization format to request for the path
 /// @param callback Callback to call on response received or timeout. Can be NULL.
 /// @param callback_arg Callback argument, passed directly when callback invoked. Can be NULL.
-enum golioth_status golioth_lightdb_get_async(struct golioth_client *client,
-                                              const char *path,
-                                              enum golioth_content_type content_type,
-                                              golioth_get_cb_fn callback,
-                                              void *callback_arg);
+enum golioth_status golioth_lightdb_get(struct golioth_client *client,
+                                        const char *path,
+                                        enum golioth_content_type content_type,
+                                        golioth_get_cb_fn callback,
+                                        void *callback_arg);
 
-/// Get an integer in LightDB state at a particular path synchronously.
-///
-/// This function will block until one of three things happen (whichever comes first):
-///
-/// 1. A response is received from the server
-/// 2. The user-provided timeout_s period expires without receiving a response
-/// 3. The default GOLIOTH_COAP_RESPONSE_TIMEOUT_S period expires without receiving a response
-///
-/// @param client The client handle from @ref golioth_client_create
-/// @param path The path in LightDB state to get (e.g. "my_integer")
-/// @param value Output parameter, memory allocated by caller, populated with value of integer
-/// @param timeout_s The timeout, in seconds, for receiving a server response
-///
-/// @retval GOLIOTH_OK response received from server, set was successful
-/// @retval GOLIOTH_ERR_NULL invalid client handle
-/// @retval GOLIOTH_ERR_INVALID_STATE client is not running, currently stopped
-/// @retval GOLIOTH_ERR_QUEUE_FULL request queue is full, this request is dropped
-/// @retval GOLIOTH_ERR_TIMEOUT response not received from server, timeout occurred
-enum golioth_status golioth_lightdb_get_int_sync(struct golioth_client *client,
-                                                 const char *path,
-                                                 int32_t *value,
-                                                 int32_t timeout_s);
-
-/// Similar to @ref golioth_lightdb_get_int_sync, but for type bool
-enum golioth_status golioth_lightdb_get_bool_sync(struct golioth_client *client,
-                                                  const char *path,
-                                                  bool *value,
-                                                  int32_t timeout_s);
-
-/// Similar to @ref golioth_lightdb_get_int_sync, but for type float
-enum golioth_status golioth_lightdb_get_float_sync(struct golioth_client *client,
-                                                   const char *path,
-                                                   float *value,
-                                                   int32_t timeout_s);
-
-/// Similar to @ref golioth_lightdb_get_int_sync, but for type string
-enum golioth_status golioth_lightdb_get_string_sync(struct golioth_client *client,
-                                                    const char *path,
-                                                    char *strbuf,
-                                                    size_t strbuf_size,
-                                                    int32_t timeout_s);
-
-/// Similar to @ref golioth_lightdb_get_int_sync, but for objects
-enum golioth_status golioth_lightdb_get_sync(struct golioth_client *client,
-                                             const char *path,
-                                             enum golioth_content_type content_type,
-                                             uint8_t *buf,
-                                             size_t *buf_size,
-                                             int32_t timeout_s);
-
-/// Delete a path in LightDB state asynchronously
+/// Delete a path in LightDB state
 ///
 /// This function will enqueue a request and return immediately without
 /// waiting for a response from the server. The callback will be invoked when a response
@@ -258,33 +145,12 @@ enum golioth_status golioth_lightdb_get_sync(struct golioth_client *client,
 /// @retval GOLIOTH_ERR_INVALID_STATE client is not running, currently stopped
 /// @retval GOLIOTH_ERR_MEM_ALLOC memory allocation error
 /// @retval GOLIOTH_ERR_QUEUE_FULL request queue is full, this request is dropped
-enum golioth_status golioth_lightdb_delete_async(struct golioth_client *client,
-                                                 const char *path,
-                                                 golioth_set_cb_fn callback,
-                                                 void *callback_arg);
+enum golioth_status golioth_lightdb_delete(struct golioth_client *client,
+                                           const char *path,
+                                           golioth_set_cb_fn callback,
+                                           void *callback_arg);
 
-/// Delete a path in LightDB state synchronously
-///
-/// This function will block until one of three things happen (whichever comes first):
-///
-/// 1. A response is received from the server
-/// 2. The user-provided timeout_s period expires without receiving a response
-/// 3. The default GOLIOTH_COAP_RESPONSE_TIMEOUT_S period expires without receiving a response
-///
-/// @param client The client handle from @ref golioth_client_create
-/// @param path The path in LightDB state to delete (e.g. "my_integer")
-/// @param timeout_s The timeout, in seconds, for receiving a server response
-///
-/// @retval GOLIOTH_OK response received from server, set was successful
-/// @retval GOLIOTH_ERR_NULL invalid client handle
-/// @retval GOLIOTH_ERR_INVALID_STATE client is not running, currently stopped
-/// @retval GOLIOTH_ERR_QUEUE_FULL request queue is full, this request is dropped
-/// @retval GOLIOTH_ERR_TIMEOUT response not received from server, timeout occurred
-enum golioth_status golioth_lightdb_delete_sync(struct golioth_client *client,
-                                                const char *path,
-                                                int32_t timeout_s);
-
-/// Observe a path in LightDB state asynchronously
+/// Observe a path in LightDB state
 ///
 /// Observations allow the Golioth server to notify clients of a change in data
 /// at a particular path, without the client having to poll for changes.
@@ -309,11 +175,11 @@ enum golioth_status golioth_lightdb_delete_sync(struct golioth_client *client,
 /// @retval GOLIOTH_ERR_INVALID_STATE client is not running, currently stopped
 /// @retval GOLIOTH_ERR_MEM_ALLOC memory allocation error
 /// @retval GOLIOTH_ERR_QUEUE_FULL request queue is full, this request is dropped
-enum golioth_status golioth_lightdb_observe_async(struct golioth_client *client,
-                                                  const char *path,
-                                                  enum golioth_content_type content_type,
-                                                  golioth_get_cb_fn callback,
-                                                  void *callback_arg);
+enum golioth_status golioth_lightdb_observe(struct golioth_client *client,
+                                            const char *path,
+                                            enum golioth_content_type content_type,
+                                            golioth_get_cb_fn callback,
+                                            void *callback_arg);
 
 /// @}
 

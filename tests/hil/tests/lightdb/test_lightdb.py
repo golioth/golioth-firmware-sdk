@@ -18,17 +18,11 @@ async def setup(project, board, device):
     await device.lightdb.set('hil/lightdb/desired/str', '15')
     await device.lightdb.set('hil/lightdb/desired/obj', {'c': '26', 'd': -12})
 
-    await device.lightdb.set('hil/lightdb/to_delete/sync/true', True)
-    await device.lightdb.set('hil/lightdb/to_delete/sync/false', False)
-    await device.lightdb.set('hil/lightdb/to_delete/sync/int', 14)
-    await device.lightdb.set('hil/lightdb/to_delete/sync/str', '16')
-    await device.lightdb.set('hil/lightdb/to_delete/sync/obj', {'a': '16', 'b': 12})
-
-    await device.lightdb.set('hil/lightdb/to_delete/async/true', True)
-    await device.lightdb.set('hil/lightdb/to_delete/async/false', False)
-    await device.lightdb.set('hil/lightdb/to_delete/async/int', 14)
-    await device.lightdb.set('hil/lightdb/to_delete/async/str', '16')
-    await device.lightdb.set('hil/lightdb/to_delete/async/obj', {'a': '16', 'b': 12})
+    await device.lightdb.set('hil/lightdb/to_delete/true', True)
+    await device.lightdb.set('hil/lightdb/to_delete/false', False)
+    await device.lightdb.set('hil/lightdb/to_delete/int', 14)
+    await device.lightdb.set('hil/lightdb/to_delete/str', '16')
+    await device.lightdb.set('hil/lightdb/to_delete/obj', {'a': '16', 'b': 12})
 
     await device.lightdb.set('hil/lightdb/observed/int', 0)
     await device.lightdb.set('hil/lightdb/observed/cbor/int', 0)
@@ -53,38 +47,19 @@ async def setup(project, board, device):
 
 async def test_lightdb_reported(device):
     # Check if all values in desired state were replicated
-    assert (await device.lightdb.get('hil/lightdb/reported/sync/true')) is True
-    assert (await device.lightdb.get('hil/lightdb/reported/sync/false')) is False
-    assert (await device.lightdb.get('hil/lightdb/reported/sync/int')) == 13
-    assert (await device.lightdb.get('hil/lightdb/reported/sync/float')) == -234.25
-    assert (await device.lightdb.get('hil/lightdb/reported/sync/str')) == '15'
-    assert (await device.lightdb.get('hil/lightdb/reported/sync/obj')) == {'c': '26', 'd': -12}
-
-    assert (await device.lightdb.get('hil/lightdb/reported/sync/invalid')) in ('GOLIOTH_ERR_NULL', 'GOLIOTH_ERR_BAD_REQUEST')
-    assert (await device.lightdb.get('hil/lightdb/reported/sync/nothing')) == 'GOLIOTH_ERR_NULL'
-
-    assert (await device.lightdb.get('hil/lightdb/reported/async/true')) is True
-    assert (await device.lightdb.get('hil/lightdb/reported/async/false')) is False
-    assert (await device.lightdb.get('hil/lightdb/reported/async/int')) == 13
-    assert (await device.lightdb.get('hil/lightdb/reported/async/float')) == -234.25
-    assert (await device.lightdb.get('hil/lightdb/reported/async/str')) == '15'
-    assert (await device.lightdb.get('hil/lightdb/reported/async/obj')) == {'c': '26', 'd': -12}
+    assert (await device.lightdb.get('hil/lightdb/reported/true')) is True
+    assert (await device.lightdb.get('hil/lightdb/reported/false')) is False
+    assert (await device.lightdb.get('hil/lightdb/reported/int')) == 13
+    assert (await device.lightdb.get('hil/lightdb/reported/float')) == -234.25
+    assert (await device.lightdb.get('hil/lightdb/reported/str')) == '15'
+    assert (await device.lightdb.get('hil/lightdb/reported/obj')) == {'c': '26', 'd': -12}
 
 async def test_lightdb_deleted(device):
-    assert (await device.lightdb.get('hil/lightdb/to_delete/sync/true')) is None
-    assert (await device.lightdb.get('hil/lightdb/to_delete/sync/false')) is None
-    assert (await device.lightdb.get('hil/lightdb/to_delete/sync/int')) is None
-    assert (await device.lightdb.get('hil/lightdb/to_delete/sync/str')) is None
-    assert (await device.lightdb.get('hil/lightdb/to_delete/sync/obj')) is None
-
-    assert (await device.lightdb.get('hil/lightdb/to_delete/async/true')) is None
-    assert (await device.lightdb.get('hil/lightdb/to_delete/async/false')) is None
-    assert (await device.lightdb.get('hil/lightdb/to_delete/async/int')) is None
-    assert (await device.lightdb.get('hil/lightdb/to_delete/async/str')) is None
-    assert (await device.lightdb.get('hil/lightdb/to_delete/async/obj')) is None
-
-async def test_lightdb_invalid(device):
-    assert (await device.lightdb.get('hil/lightdb/invalid/sync/set_dot')) == 'GOLIOTH_ERR_COAP_RESPONSE'
+    assert (await device.lightdb.get('hil/lightdb/to_delete/true')) is None
+    assert (await device.lightdb.get('hil/lightdb/to_delete/false')) is None
+    assert (await device.lightdb.get('hil/lightdb/to_delete/int')) is None
+    assert (await device.lightdb.get('hil/lightdb/to_delete/str')) is None
+    assert (await device.lightdb.get('hil/lightdb/to_delete/obj')) is None
 
 class Coap_Content_Type(Enum):
     JSON = 1

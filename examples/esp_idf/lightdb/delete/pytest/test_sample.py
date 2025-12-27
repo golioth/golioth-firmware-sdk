@@ -35,24 +35,8 @@ async def test_lightdb_delete(board, device):
     # Wait for device to connect
     await board.wait_for_regex_in_line(r'.*Golioth client connected', timeout_s=30.0)
 
-    # Verify lightdb delete (async)
+    # Verify lightdb delete
 
     await board.wait_for_regex_in_line(r'.*Counter deleted successfully', timeout_s=10.0)
     counter = await device.lightdb.get("counter")
-    assert counter is None
-
-    # Set and verify counter
-
-    await counter_set_and_verify(device, 62)
-
-    # Verify lightdb delete (sync)
-
-    await board.wait_for_regex_in_line(r'.*Counter deleted successfully', timeout_s=10.0)
-    counter = await device.lightdb.get("counter")
-    if counter is not None:
-        # Try again, since previous counter value might get reassigned in counter_set_and_verify()
-        await board.wait_for_regex_in_line(r'.*Counter deleted successfully', timeout_s=10.0)
-        await trio.sleep(2)
-        counter = await device.lightdb.get("counter")
-
     assert counter is None

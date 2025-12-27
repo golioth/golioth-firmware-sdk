@@ -43,13 +43,6 @@ enum
     COMPONENT_KEY_URI = 5,
 };
 
-typedef struct
-{
-    uint8_t *buf;
-    size_t *block_nbytes;
-    bool *is_last;
-} block_get_output_params_t;
-
 struct component_tstr_value
 {
     char *value;
@@ -102,7 +95,7 @@ static void ota_manifest_timer_expiry(golioth_sys_timer_t timer, void *user_arg)
     if (golioth_client_is_running(get_args->client))
     {
         enum golioth_status status =
-            golioth_ota_get_manifest_async(get_args->client, get_args->cb, get_args->arg);
+            golioth_ota_get_manifest(get_args->client, get_args->cb, get_args->arg);
 
         if (GOLIOTH_OK != status)
         {
@@ -164,9 +157,9 @@ enum golioth_status golioth_ota_manifest_subscribe(struct golioth_client *client
     return GOLIOTH_OK;
 }
 
-enum golioth_status golioth_ota_get_manifest_async(struct golioth_client *client,
-                                                   golioth_get_cb_fn callback,
-                                                   void *arg)
+enum golioth_status golioth_ota_get_manifest(struct golioth_client *client,
+                                             golioth_get_cb_fn callback,
+                                             void *arg)
 {
     uint8_t token[GOLIOTH_COAP_TOKEN_LEN];
     golioth_coap_next_token(token);
@@ -183,15 +176,14 @@ enum golioth_status golioth_ota_get_manifest_async(struct golioth_client *client
                                    GOLIOTH_CONTENT_TYPE_CBOR,
                                    callback,
                                    arg,
-                                   false,
                                    GOLIOTH_SYS_WAIT_FOREVER);
 }
 
-enum golioth_status golioth_ota_blockwise_manifest_async(struct golioth_client *client,
-                                                         size_t block_idx,
-                                                         golioth_get_block_cb_fn block_cb,
-                                                         golioth_end_block_cb_fn end_cb,
-                                                         void *arg)
+enum golioth_status golioth_ota_blockwise_manifest(struct golioth_client *client,
+                                                   size_t block_idx,
+                                                   golioth_get_block_cb_fn block_cb,
+                                                   golioth_end_block_cb_fn end_cb,
+                                                   void *arg)
 {
     if (manifest_timer_initialized)
     {
@@ -208,13 +200,14 @@ enum golioth_status golioth_ota_blockwise_manifest_async(struct golioth_client *
                                  arg);
 }
 
-enum golioth_status golioth_ota_report_state_sync(struct golioth_client *client,
-                                                  enum golioth_ota_state state,
-                                                  enum golioth_ota_reason reason,
-                                                  const char *package,
-                                                  const char *current_version,
-                                                  const char *target_version,
-                                                  int32_t timeout_s)
+enum golioth_status golioth_ota_report_state(struct golioth_client *client,
+                                             enum golioth_ota_state state,
+                                             enum golioth_ota_reason reason,
+                                             const char *package,
+                                             const char *current_version,
+                                             const char *target_version,
+                                             golioth_set_cb_fn callback,
+                                             void *callback_arg)
 {
     uint8_t encode_buf[64];
     ZCBOR_STATE_E(zse, 1, encode_buf, sizeof(encode_buf), 1);
@@ -279,10 +272,9 @@ enum golioth_status golioth_ota_report_state_sync(struct golioth_client *client,
                                    GOLIOTH_CONTENT_TYPE_CBOR,
                                    encode_buf,
                                    zse->payload - encode_buf,
-                                   NULL,
-                                   NULL,
-                                   true,
-                                   timeout_s);
+                                   callback,
+                                   callback_arg,
+                                   GOLIOTH_SYS_WAIT_FOREVER);
 }
 
 static int component_entry_decode_value(zcbor_state_t *zsd, void *void_value)
@@ -413,36 +405,6 @@ enum golioth_status golioth_ota_payload_as_manifest(const uint8_t *payload,
     return GOLIOTH_OK;
 }
 
-static void on_block_rcvd(struct golioth_client *client,
-                          enum golioth_status status,
-                          const struct golioth_coap_rsp_code *coap_rsp_code,
-                          const char *path,
-                          const uint8_t *payload,
-                          size_t payload_size,
-                          bool is_last,
-                          void *arg)
-{
-    assert(arg);
-    assert(payload_size <= CONFIG_GOLIOTH_BLOCKWISE_DOWNLOAD_MAX_BLOCK_SIZE);
-
-    if (status != GOLIOTH_OK)
-    {
-        return;
-    }
-
-    block_get_output_params_t *out_params = (block_get_output_params_t *) arg;
-    assert(out_params->buf);
-    assert(out_params->block_nbytes);
-
-    if (out_params->is_last)
-    {
-        *out_params->is_last = is_last;
-    }
-
-    memcpy(out_params->buf, payload, payload_size);
-    *out_params->block_nbytes = payload_size;
-}
-
 struct ota_component_blockwise_ctx
 {
     const struct golioth_ota_component *component;
@@ -512,42 +474,6 @@ enum golioth_status golioth_ota_download_component(struct golioth_client *client
                                  ota_component_write_cb_wrapper,
                                  ota_component_download_end_cb_wrapper,
                                  ctx);
-}
-
-enum golioth_status golioth_ota_get_block_sync(struct golioth_client *client,
-                                               const char *package,
-                                               const char *version,
-                                               size_t block_index,
-                                               uint8_t *buf,
-                                               size_t *block_nbytes,
-                                               bool *is_last,
-                                               int32_t timeout_s)
-{
-    char path[GOLIOTH_OTA_MAX_COMPONENT_URI_LEN] = {};
-    snprintf(path, sizeof(path), "%s@%s", package, version);
-    block_get_output_params_t out_params = {
-        .buf = buf,
-        .block_nbytes = block_nbytes,
-        .is_last = is_last,
-    };
-
-    uint8_t token[GOLIOTH_COAP_TOKEN_LEN];
-    golioth_coap_next_token(token);
-
-    enum golioth_status status = GOLIOTH_OK;
-    status = golioth_coap_client_get_block(client,
-                                           token,
-                                           GOLIOTH_OTA_COMPONENT_PATH_PREFIX,
-                                           path,
-                                           GOLIOTH_CONTENT_TYPE_JSON,
-                                           block_index,
-                                           CONFIG_GOLIOTH_BLOCKWISE_DOWNLOAD_MAX_BLOCK_SIZE,
-                                           on_block_rcvd,
-                                           &out_params,
-                                           true,
-                                           timeout_s);
-
-    return status;
 }
 
 enum golioth_ota_state golioth_ota_get_state(void)

@@ -8,7 +8,6 @@
 #include <golioth/client.h>
 #include <golioth/config.h>
 #include <golioth/golioth_sys.h>
-#include "event_group.h"
 
 /// Event group bits for request_complete_event
 #define RESPONSE_RECEIVED_EVENT_BIT (1 << 0)
@@ -162,23 +161,6 @@ struct golioth_coap_request_msg
     bool got_response;
     bool got_nack;
     enum golioth_status *status;
-
-    /// (sync request only) Notification from coap thread to user sync function that
-    /// request is completed.
-    /// Created in user sync function, deleted by coap thread.
-    ///
-    /// Bit 0: response received
-    /// Bit 1: timeout
-    golioth_event_group_t request_complete_event;
-
-    /// (sync request only) Notification from user sync function to coap thread, acknowledge it
-    /// received request_complete_event.
-    ///
-    /// Created in user sync function, deleted by coap thread.
-    ///
-    /// Used by the coap thread to know when it's safe
-    /// to delete request_complete_event and this semaphore.
-    golioth_sys_sem_t request_complete_ack_sem;
 };
 
 struct golioth_coap_observe_info
@@ -195,9 +177,7 @@ void golioth_coap_token_mutex_create(void);
 /// @param token byte array where new token will be stored.
 void golioth_coap_next_token(uint8_t token[GOLIOTH_COAP_TOKEN_LEN]);
 
-enum golioth_status golioth_coap_client_empty(struct golioth_client *client,
-                                              bool is_synchronous,
-                                              int32_t timeout_s);
+enum golioth_status golioth_coap_client_empty(struct golioth_client *client);
 
 enum golioth_status golioth_coap_client_post(struct golioth_client *client,
                                              const uint8_t token[GOLIOTH_COAP_TOKEN_LEN],
@@ -208,7 +188,6 @@ enum golioth_status golioth_coap_client_post(struct golioth_client *client,
                                              size_t payload_size,
                                              golioth_post_cb_fn callback,
                                              void *callback_arg,
-                                             bool is_synchronous,
                                              int32_t timeout_s);
 
 enum golioth_status golioth_coap_client_set(struct golioth_client *client,
@@ -220,7 +199,6 @@ enum golioth_status golioth_coap_client_set(struct golioth_client *client,
                                             size_t payload_size,
                                             golioth_set_cb_fn callback,
                                             void *callback_arg,
-                                            bool is_synchronous,
                                             int32_t timeout_s);
 
 enum golioth_status golioth_coap_client_set_block(struct golioth_client *client,
@@ -237,7 +215,6 @@ enum golioth_status golioth_coap_client_set_block(struct golioth_client *client,
                                                   void *callback_arg,
                                                   coap_get_block_cb_fn rsp_callback,
                                                   void *rsp_cb_arg,
-                                                  bool is_synchronous,
                                                   int32_t timeout_s);
 
 enum golioth_status golioth_coap_client_delete(struct golioth_client *client,
@@ -245,7 +222,6 @@ enum golioth_status golioth_coap_client_delete(struct golioth_client *client,
                                                const char *path,
                                                golioth_set_cb_fn callback,
                                                void *callback_arg,
-                                               bool is_synchronous,
                                                int32_t timeout_s);
 
 enum golioth_status golioth_coap_client_get(struct golioth_client *client,
@@ -255,7 +231,6 @@ enum golioth_status golioth_coap_client_get(struct golioth_client *client,
                                             enum golioth_content_type content_type,
                                             golioth_get_cb_fn callback,
                                             void *callback_arg,
-                                            bool is_synchronous,
                                             int32_t timeout_s);
 
 enum golioth_status golioth_coap_client_get_block(struct golioth_client *client,
@@ -267,7 +242,6 @@ enum golioth_status golioth_coap_client_get_block(struct golioth_client *client,
                                                   size_t block_size,
                                                   coap_get_block_cb_fn callback,
                                                   void *callback_arg,
-                                                  bool is_synchronous,
                                                   int32_t timeout_s);
 
 enum golioth_status golioth_coap_client_get_rsp_block(struct golioth_client *client,
@@ -279,7 +253,6 @@ enum golioth_status golioth_coap_client_get_rsp_block(struct golioth_client *cli
                                                       size_t block_size,
                                                       coap_get_block_cb_fn callback,
                                                       void *arg,
-                                                      bool is_synchronous,
                                                       int32_t timeout_s);
 
 enum golioth_status golioth_coap_client_observe(struct golioth_client *client,

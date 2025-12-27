@@ -39,7 +39,6 @@ enum golioth_status golioth_coap_client_set_custom_fake(struct golioth_client *c
                                                         size_t payload_size,
                                                         golioth_set_cb_fn callback,
                                                         void *callback_arg,
-                                                        bool is_synchronous,
                                                         int32_t timeout_s)
 {
     memcpy(last_coap_payload, payload, payload_size);

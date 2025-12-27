@@ -16,8 +16,6 @@ LOG_MODULE_REGISTER(lightdb_set, LOG_LEVEL_DBG);
 
 #include <samples/common/net_connect.h>
 
-#define APP_TIMEOUT_S 5
-
 struct golioth_client *client;
 static K_SEM_DEFINE(connected, 0, 1);
 
@@ -50,11 +48,11 @@ static void counter_set_handler(struct golioth_client *client,
     return;
 }
 
-static void counter_set_async(int counter)
+static void counter_set(int counter)
 {
     int err;
 
-    err = golioth_lightdb_set_int_async(client, "counter", counter, counter_set_handler, NULL);
+    err = golioth_lightdb_set_int(client, "counter", counter, counter_set_handler, NULL);
     if (err)
     {
         LOG_WRN("Failed to set counter: %d (%s)", err, golioth_status_to_str(err));
@@ -62,34 +60,20 @@ static void counter_set_async(int counter)
     }
 }
 
-static void counter_set_sync(int counter)
-{
-    int err;
-
-    err = golioth_lightdb_set_int_sync(client, "counter", counter, APP_TIMEOUT_S);
-    if (err)
-    {
-        LOG_WRN("Failed to set counter: %d (%s)", err, golioth_status_to_str(err));
-        return;
-    }
-
-    LOG_DBG("Counter successfully set");
-}
-
-static void counter_set_json_async(int counter)
+static void counter_set_json(int counter)
 {
     char sbuf[sizeof("{\"counter\":4294967295}")];
     int err;
 
     snprintk(sbuf, sizeof(sbuf), "{\"counter\":%d}", counter);
 
-    err = golioth_lightdb_set_async(client,
-                                    "",
-                                    GOLIOTH_CONTENT_TYPE_JSON,
-                                    sbuf,
-                                    strlen(sbuf),
-                                    counter_set_handler,
-                                    NULL);
+    err = golioth_lightdb_set(client,
+                              "",
+                              GOLIOTH_CONTENT_TYPE_JSON,
+                              sbuf,
+                              strlen(sbuf),
+                              counter_set_handler,
+                              NULL);
     if (err)
     {
         LOG_WRN("Failed to set counter: %d (%s)", err, golioth_status_to_str(err));
@@ -97,7 +81,7 @@ static void counter_set_json_async(int counter)
     }
 }
 
-static void counter_set_cbor_sync(int counter)
+static void counter_set_cbor(int counter)
 {
     uint8_t buf[32];
     ZCBOR_STATE_E(zse, 1, buf, sizeof(buf), 1);
@@ -132,19 +116,16 @@ static void counter_set_cbor_sync(int counter)
 
     size_t payload_size = (intptr_t) zse->payload - (intptr_t) buf;
 
-    int err = golioth_lightdb_set_sync(client,
-                                       "",
-                                       GOLIOTH_CONTENT_TYPE_CBOR,
-                                       buf,
-                                       payload_size,
-                                       APP_TIMEOUT_S);
-    if (err != 0)
+    int err = golioth_lightdb_set(client,
+                                  "",
+                                  GOLIOTH_CONTENT_TYPE_CBOR,
+                                  buf,
+                                  payload_size,
+                                  counter_set_handler,
+                                  NULL);
+    if (err)
     {
         LOG_WRN("Failed to set counter: %d (%s)", err, golioth_status_to_str(err));
-    }
-    else
-    {
-        LOG_DBG("Counter successfully set");
     }
 }
 
@@ -169,43 +150,33 @@ int main(void)
 
     while (true)
     {
-        /* Callback-based using int */
+        /* Using int */
         LOG_DBG("Setting counter to %d", counter);
 
-        LOG_DBG("Before request (async)");
-        counter_set_async(counter);
-        LOG_DBG("After request (async)");
+        LOG_DBG("Before request");
+        counter_set(counter);
+        LOG_DBG("After request");
 
         counter++;
         k_sleep(K_SECONDS(5));
 
-        /* Synchrnous using int */
+        /* Using JSON object */
         LOG_DBG("Setting counter to %d", counter);
 
-        LOG_DBG("Before request (sync)");
-        counter_set_sync(counter);
-        LOG_DBG("After request (sync)");
+        LOG_DBG("Before request (json)");
+        counter_set_json(counter);
+        LOG_DBG("After request (json)");
 
         counter++;
         k_sleep(K_SECONDS(5));
 
-        /* Callback-based using JSON object */
-        LOG_DBG("Setting counter to %d", counter);
-
-        LOG_DBG("Before request (json async)");
-        counter_set_json_async(counter);
-        LOG_DBG("After request (json async)");
-
-        counter++;
-        k_sleep(K_SECONDS(5));
-
-        /* Synchronous using CBOR object */
+        /* Using CBOR object */
         LOG_DBG("Setting counter to %d", counter);
 
 
-        LOG_DBG("Before request (cbor sync)");
-        counter_set_cbor_sync(counter);
-        LOG_DBG("After request (cbor sync)");
+        LOG_DBG("Before request (cbor)");
+        counter_set_cbor(counter);
+        LOG_DBG("After request (cbor)");
 
         counter++;
         k_sleep(K_SECONDS(5));

@@ -239,7 +239,6 @@ static void on_rpc(struct golioth_client *client,
                             zse->payload - response_buf,
                             NULL,
                             NULL,
-                            false,
                             GOLIOTH_SYS_WAIT_FOREVER);
 }
 

@@ -175,7 +175,6 @@ static enum golioth_status upload_single_block(struct golioth_client *client,
                                                             ctx,
                                                             NULL,
                                                             NULL,
-                                                            false,
                                                             GOLIOTH_SYS_WAIT_FOREVER);
 
     if (GOLIOTH_OK == err)
@@ -359,7 +358,6 @@ enum golioth_status golioth_blockwise_upload_block(struct blockwise_transfer *ct
                                                    golioth_end_block_cb_fn end_cb,
                                                    void *callback_arg,
                                                    void *rsp_callback_arg,
-                                                   bool is_synchronous,
                                                    int32_t timeout_s)
 {
     if (NULL == ctx || NULL == block_buffer)
@@ -398,7 +396,6 @@ enum golioth_status golioth_blockwise_upload_block(struct blockwise_transfer *ct
         callback_arg,
         rsp_cb,
         rsp_ctx,
-        is_synchronous,
         timeout_s);
 }
 
@@ -475,7 +472,6 @@ static enum golioth_status download_single_block(struct golioth_client *client,
                                              ctx->block_size,
                                              on_block_rcvd,
                                              ctx,
-                                             false,
                                              GOLIOTH_SYS_WAIT_FOREVER);
     }
     else
@@ -489,7 +485,6 @@ static enum golioth_status download_single_block(struct golioth_client *client,
                                                  ctx->block_size,
                                                  on_block_rcvd,
                                                  ctx,
-                                                 false,
                                                  GOLIOTH_SYS_WAIT_FOREVER);
     }
 }

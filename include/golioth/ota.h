@@ -139,7 +139,7 @@ enum golioth_status golioth_ota_manifest_subscribe(struct golioth_client *client
                                                    golioth_get_cb_fn callback,
                                                    void *arg);
 
-/// Get the OTA manifest asynchronously
+/// Get the OTA manifest
 ///
 /// This function will enqueue a request and return immediately without waiting for a response from
 /// the server. The callback will be invoked when the manifest is received from the Golioth server.
@@ -147,11 +147,11 @@ enum golioth_status golioth_ota_manifest_subscribe(struct golioth_client *client
 /// @param client The client handle from @ref golioth_client_create
 /// @param callback Callback function to register
 /// @param arg Optional argument, forwarded directly to the callback when invoked. Can be NULL.
-enum golioth_status golioth_ota_get_manifest_async(struct golioth_client *client,
-                                                   golioth_get_cb_fn callback,
-                                                   void *arg);
+enum golioth_status golioth_ota_get_manifest(struct golioth_client *client,
+                                             golioth_get_cb_fn callback,
+                                             void *arg);
 
-/// Get the OTA manifest asynchronously using blockwise download
+/// Get the OTA manifest using blockwise download
 ///
 /// Use this function to perform a blockwise get of the OTA manifest in CBOR format. This may be
 /// used to retrieve manifests of any size, but is required to get a manifest that is larger than
@@ -168,11 +168,11 @@ enum golioth_status golioth_ota_get_manifest_async(struct golioth_client *client
 /// @param block_cb Callback for receiving a block of data. See @ref golioth_get_block_cb_fn
 /// @param end_cb Callabck for the end of a download. See @ref golioth_end_block_cb_fn
 /// @param arg Optional argument, forwarded directly to the callback when invoked. Can be NULL.
-enum golioth_status golioth_ota_blockwise_manifest_async(struct golioth_client *client,
-                                                         size_t block_idx,
-                                                         golioth_get_block_cb_fn block_cb,
-                                                         golioth_end_block_cb_fn end_cb,
-                                                         void *arg);
+enum golioth_status golioth_ota_blockwise_manifest(struct golioth_client *client,
+                                                   size_t block_idx,
+                                                   golioth_get_block_cb_fn block_cb,
+                                                   golioth_end_block_cb_fn end_cb,
+                                                   void *arg);
 
 /// Callback for OTA download component request
 ///
@@ -243,43 +243,6 @@ enum golioth_status golioth_ota_download_component(struct golioth_client *client
                                                    ota_component_download_end_cb end_cb,
                                                    void *arg);
 
-/// Get a single artfifact block synchronously
-///
-/// Since some artifacts (e.g. "main" firmware) are larger than the amount of RAM
-/// the device has, it is assumed the user will call this function multiple times
-/// to handle blocks one at a time.
-///
-/// This function will block until one of three things happen (whichever comes first):
-///
-/// 1. A response is received from the server
-/// 2. The user-provided timeout_s period expires without receiving a response
-/// 3. The default GOLIOTH_COAP_RESPONSE_TIMEOUT_S period expires without receiving a response
-///
-/// @param client The client handle from @ref golioth_client_create
-/// @param package Package name, to identify the artifact
-/// @param version Version of package, to identify the artifact
-/// @param block_index 0-based index of block to get
-/// @param buf Output param, memory allocated by caller, block data will be copied here.
-///           Must be at least GOLIOTH_BLOCKWISE_DOWNLOAD_MAX_BLOCK_SIZE bytes.
-/// @param block_nbytes Output param, memory allocated by caller, populated with number
-///             of bytes in the block, 0 to GOLIOTH_BLOCKWISE_DOWNLOAD_MAX_BLOCK_SIZE.
-/// @param is_last Set to true, if this is the last block
-/// @param timeout_s The timeout, in seconds, for receiving a server response
-///
-/// @retval GOLIOTH_OK response received from server, get was successful
-/// @retval GOLIOTH_ERR_NULL invalid client handle
-/// @retval GOLIOTH_ERR_INVALID_STATE client is not running, currently stopped
-/// @retval GOLIOTH_ERR_QUEUE_FULL request queue is full, this request is dropped
-/// @retval GOLIOTH_ERR_TIMEOUT response not received from server, timeout occurred
-enum golioth_status golioth_ota_get_block_sync(struct golioth_client *client,
-                                               const char *package,
-                                               const char *version,
-                                               size_t block_index,
-                                               uint8_t *buf,
-                                               size_t *block_nbytes,
-                                               bool *is_last,
-                                               int32_t timeout_s);
-
 /// Report the state of OTA update to Golioth server synchronously
 ///
 /// @param client The client handle from @ref golioth_client_create
@@ -288,20 +251,21 @@ enum golioth_status golioth_ota_get_block_sync(struct golioth_client *client,
 /// @param package The artifact package name
 /// @param current_version The artifact current_version. Can be NULL.
 /// @param target_version The artifact new/target version from manifest. Can be NULL.
-/// @param timeout_s The timeout, in seconds, for receiving a server response
+/// @param callback Callback to call on response received or timeout. Can be NULL.
+/// @param callback_arg Callback argument, passed directly when callback invoked. Can be NULL.
 ///
 /// @retval GOLIOTH_OK response received from server, get was successful
 /// @retval GOLIOTH_ERR_NULL invalid client handle
 /// @retval GOLIOTH_ERR_INVALID_STATE client is not running, currently stopped
 /// @retval GOLIOTH_ERR_QUEUE_FULL request queue is full, this request is dropped
-/// @retval GOLIOTH_ERR_TIMEOUT response not received from server, timeout occurred
-enum golioth_status golioth_ota_report_state_sync(struct golioth_client *client,
-                                                  enum golioth_ota_state state,
-                                                  enum golioth_ota_reason reason,
-                                                  const char *package,
-                                                  const char *current_version,
-                                                  const char *target_version,
-                                                  int32_t timeout_s);
+enum golioth_status golioth_ota_report_state(struct golioth_client *client,
+                                             enum golioth_ota_state state,
+                                             enum golioth_ota_reason reason,
+                                             const char *package,
+                                             const char *current_version,
+                                             const char *target_version,
+                                             golioth_set_cb_fn callback,
+                                             void *callback_arg);
 
 /// Get the current state of OTA update
 ///

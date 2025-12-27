@@ -17,8 +17,6 @@ LOG_MODULE_REGISTER(golioth_stream, LOG_LEVEL_DBG);
 #include <zephyr/drivers/sensor.h>
 #include <zephyr/kernel.h>
 
-#define SYNC_TIMEOUT_S 2
-
 struct golioth_client *client;
 static K_SEM_DEFINE(connected, 0, 1);
 
@@ -90,11 +88,11 @@ static int get_temperature(struct sensor_value *val)
 
 #endif
 
-static void temperature_async_push_handler(struct golioth_client *client,
-                                           enum golioth_status status,
-                                           const struct golioth_coap_rsp_code *coap_rsp_code,
-                                           const char *path,
-                                           void *arg)
+static void temperature_push_handler(struct golioth_client *client,
+                                     enum golioth_status status,
+                                     const struct golioth_coap_rsp_code *coap_rsp_code,
+                                     const char *path,
+                                     void *arg)
 {
     if (status != GOLIOTH_OK)
     {
@@ -150,35 +148,18 @@ static void temperature_push_cbor(const struct sensor_value *temp, bool async)
     size_t payload_size = (intptr_t) zse->payload - (intptr_t) buf;
 
     /* Data is sent to Pipelines on the "/data" path */
-    if (async)
-    {
-        err = golioth_stream_set_async(client,
-                                       "data",
-                                       GOLIOTH_CONTENT_TYPE_CBOR,
-                                       buf,
-                                       payload_size,
-                                       temperature_async_push_handler,
-                                       NULL);
-    }
-    else
-    {
-        err = golioth_stream_set_sync(client,
-                                      "data",
-                                      GOLIOTH_CONTENT_TYPE_CBOR,
-                                      buf,
-                                      payload_size,
-                                      SYNC_TIMEOUT_S);
-    }
+    err = golioth_stream_set(client,
+                             "data",
+                             GOLIOTH_CONTENT_TYPE_CBOR,
+                             buf,
+                             payload_size,
+                             temperature_push_handler,
+                             NULL);
 
     if (err)
     {
         LOG_WRN("Failed to push temperature: %d (%s)", err, golioth_status_to_str(err));
         return;
-    }
-
-    if (!async)
-    {
-        LOG_DBG("Temperature successfully pushed");
     }
 }
 

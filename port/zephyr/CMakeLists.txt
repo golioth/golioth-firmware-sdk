@@ -38,7 +38,6 @@ zephyr_library_sources(
     ../../src/coap_client.c
     ../../src/coap_client_zephyr.c
     ../../src/golioth_debug.c
-    ../../src/event_group.c
     ../../src/coap_blockwise.c
     ../../src/gateway.c
     ../../src/lightdb_state.c

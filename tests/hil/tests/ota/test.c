@@ -17,21 +17,18 @@ LOG_TAG_DEFINE(test_ota);
 
 static golioth_sys_sem_t connected_sem;
 static golioth_sys_sem_t reason_test_sem;
-static golioth_sys_sem_t block_test_sem;
 static golioth_sys_sem_t resume_test_sem;
 static golioth_sys_sem_t manifest_get_test_sem;
 static golioth_sys_sem_t manifest_get_cb_sem;
 
 #define GOLIOTH_OTA_REASON_CNT 10
 #define GOLIOTH_OTA_STATE_CNT 4
-#define TEST_BLOCK_CNT 42
 #define DUMMY_VER_OLDER "1.2.2"
 #define DUMMY_VER_SAME "1.2.3"
 #define DUMMY_VER_UPDATE "1.2.4"
 #define DUMMY_VER_EXTRA "1.2.5"
 
 static uint8_t callback_arg = 17;
-static uint8_t block_buf[CONFIG_GOLIOTH_BLOCKWISE_DOWNLOAD_MAX_BLOCK_SIZE];
 
 #define SHA256_LEN 32
 static uint8_t _saved_manifest_sha256[SHA256_LEN];
@@ -266,7 +263,7 @@ static void test_manifest_get(void)
 {
     enum golioth_status err;
 
-    err = golioth_ota_get_manifest_async(client, on_manifest_get, (void *) GOLIOTH_OTA_REASON_CNT);
+    err = golioth_ota_get_manifest(client, on_manifest_get, (void *) GOLIOTH_OTA_REASON_CNT);
     if (GOLIOTH_OK != err)
     {
         GLTH_LOGE(TAG, "Failed to get manifest: %d", err);
@@ -286,7 +283,7 @@ static void test_manifest_get(void)
 
     *bytes_cached_p = 0;
 
-    err = golioth_ota_blockwise_manifest_async(client, 0, on_block, on_end, bytes_cached_p);
+    err = golioth_ota_blockwise_manifest(client, 0, on_block, on_end, bytes_cached_p);
     if (GOLIOTH_OK != err)
     {
         GLTH_LOGE(TAG, "Failed to get manifest: %d", err);
@@ -306,8 +303,14 @@ static void test_reason_and_state(void)
         enum golioth_ota_state state = i % GOLIOTH_OTA_STATE_CNT;
         enum golioth_ota_reason reason = i;
         GLTH_LOGI(TAG, "Updating status. Reason: %d State: %d", reason, state);
-        status =
-            golioth_ota_report_state_sync(client, state, reason, "lobster", "2.3.4", "5.6.7", 2);
+        status = golioth_ota_report_state(client,
+                                          state,
+                                          reason,
+                                          "lobster",
+                                          "2.3.4",
+                                          "5.6.7",
+                                          NULL,
+                                          NULL);
 
         if (status != GOLIOTH_OK)
         {
@@ -323,67 +326,8 @@ static void test_reason_and_state(void)
     golioth_sys_msleep(1000);
 
     /* The log of this null test is used as a trigger by pytest and must always be last */
-    status = golioth_ota_report_state_sync(NULL, 0, 0, "lobster", "2.3.4", "5.6.7", 2);
+    status = golioth_ota_report_state(NULL, 0, 0, "lobster", "2.3.4", "5.6.7", NULL, NULL);
     GLTH_LOGE(TAG, "GOLIOTH_ERR_NULL: %d", status);
-}
-
-static void test_block_ops(void)
-{
-    enum golioth_status status;
-    size_t block_index = 0;
-    size_t block_nbytes;
-    bool is_last = false;
-
-    GLTH_LOGI(TAG,
-              "golioth_ota_size_to_nblocks: %zu",
-              golioth_ota_size_to_nblocks(
-                  (TEST_BLOCK_CNT * CONFIG_GOLIOTH_BLOCKWISE_DOWNLOAD_MAX_BLOCK_SIZE) + 1));
-
-    // Test NULL client
-    status = golioth_ota_get_block_sync(NULL,
-                                        "main",
-                                        DUMMY_VER_SAME,
-                                        block_index,
-                                        block_buf,
-                                        &block_nbytes,
-                                        &is_last,
-                                        10);
-    if (status != GOLIOTH_OK)
-    {
-        GLTH_LOGE(TAG, "Block sync failed: %d", status);
-    }
-    else
-    {
-        GLTH_LOGW(TAG, "We expected to receive an error but got a block instead");
-    }
-
-    // Test Download block
-
-    status = GOLIOTH_OK;
-    block_index = 0;
-
-    while ((is_last == false) && (status == GOLIOTH_OK))
-    {
-        status = golioth_ota_get_block_sync(client,
-                                            "main",
-                                            DUMMY_VER_SAME,
-                                            block_index,
-                                            block_buf,
-                                            &block_nbytes,
-                                            &is_last,
-                                            10);
-        if (status != GOLIOTH_OK)
-        {
-            GLTH_LOGE(TAG, "Block sync failed: %d", status);
-        }
-        else
-        {
-            GLTH_LOGI(TAG, "Received block %zu", block_index);
-            GLTH_LOGI(TAG, "is_last: %d", is_last);
-        }
-
-        ++block_index;
-    }
 }
 
 static enum golioth_status write_artifact_block_cb(const struct golioth_ota_component *component,
@@ -577,7 +521,7 @@ static void on_manifest(struct golioth_client *client,
         }
         else if (strcmp(main->version, DUMMY_VER_SAME) == 0)
         {
-            golioth_sys_sem_give(block_test_sem);
+            // TODO: replace?
         }
         else if (strcmp(main->version, DUMMY_VER_UPDATE) == 0)
         {
@@ -600,7 +544,6 @@ void hil_test_entry(const struct golioth_client_config *config)
 {
     connected_sem = golioth_sys_sem_create(1, 0);
     reason_test_sem = golioth_sys_sem_create(1, 0);
-    block_test_sem = golioth_sys_sem_create(1, 0);
     resume_test_sem = golioth_sys_sem_create(1, 0);
     manifest_get_test_sem = golioth_sys_sem_create(1, 0);
     manifest_get_cb_sem = golioth_sys_sem_create(1, 0);
@@ -619,10 +562,6 @@ void hil_test_entry(const struct golioth_client_config *config)
         if (golioth_sys_sem_take(reason_test_sem, 0))
         {
             test_reason_and_state();
-        }
-        if (golioth_sys_sem_take(block_test_sem, 0))
-        {
-            test_block_ops();
         }
         if (golioth_sys_sem_take(resume_test_sem, 0))
         {

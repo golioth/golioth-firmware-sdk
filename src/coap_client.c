@@ -76,9 +76,7 @@ void golioth_coap_next_token(uint8_t token[GOLIOTH_COAP_TOKEN_LEN])
     golioth_sys_mutex_unlock(token_mut);
 }
 
-enum golioth_status golioth_coap_client_empty(struct golioth_client *client,
-                                              bool is_synchronous,
-                                              int32_t timeout_s)
+enum golioth_status golioth_coap_client_empty(struct golioth_client *client)
 {
     if (!client)
     {
@@ -92,73 +90,19 @@ enum golioth_status golioth_coap_client_empty(struct golioth_client *client,
     }
 
     uint64_t ageout_ms = GOLIOTH_SYS_WAIT_FOREVER;
-    if (timeout_s != GOLIOTH_SYS_WAIT_FOREVER)
-    {
-        ageout_ms = golioth_sys_now_ms() + (1000 * timeout_s);
-    }
 
     struct golioth_coap_request_msg request_msg = {
         .type = GOLIOTH_COAP_REQUEST_EMPTY,
         .ageout_ms = ageout_ms,
     };
-    enum golioth_status status = GOLIOTH_OK;
-
-    if (is_synchronous)
-    {
-        // Created here, deleted by coap thread (or here if fail to create or enqueue)
-        request_msg.request_complete_event = golioth_event_group_create();
-        if (!request_msg.request_complete_event)
-        {
-            GLTH_LOGW(TAG, "Failed to create event group");
-            return GOLIOTH_ERR_MEM_ALLOC;
-        }
-
-        request_msg.request_complete_ack_sem = golioth_sys_sem_create(1, 0);
-        if (!request_msg.request_complete_ack_sem)
-        {
-            GLTH_LOGW(TAG, "Failed to create semaphore");
-            golioth_event_group_destroy(request_msg.request_complete_event);
-            return GOLIOTH_ERR_MEM_ALLOC;
-        }
-
-        request_msg.status = &status;
-    }
 
     bool sent = golioth_mbox_try_send(client->request_queue, &request_msg);
     if (!sent)
     {
         GLTH_LOGW(TAG, "Failed to enqueue request, queue full");
-        if (is_synchronous)
-        {
-            golioth_event_group_destroy(request_msg.request_complete_event);
-            golioth_sys_sem_destroy(request_msg.request_complete_ack_sem);
-        }
         return GOLIOTH_ERR_QUEUE_FULL;
     }
 
-    if (is_synchronous)
-    {
-        int32_t tmo_ms = timeout_s * 1000;
-        if (timeout_s == GOLIOTH_SYS_WAIT_FOREVER)
-        {
-            tmo_ms = GOLIOTH_SYS_WAIT_FOREVER;
-        }
-        uint32_t bits =
-            golioth_event_group_wait_bits(request_msg.request_complete_event,
-                                          RESPONSE_RECEIVED_EVENT_BIT | RESPONSE_TIMEOUT_EVENT_BIT,
-                                          true,  // clear bits after waiting
-                                          tmo_ms);
-
-        // Notify CoAP thread that we received the event
-        golioth_sys_sem_give(request_msg.request_complete_ack_sem);
-
-        if ((bits == 0) || (bits & RESPONSE_TIMEOUT_EVENT_BIT))
-        {
-            return GOLIOTH_ERR_TIMEOUT;
-        }
-
-        return status;
-    }
     return GOLIOTH_OK;
 }
 
@@ -171,7 +115,6 @@ static enum golioth_status golioth_coap_client_set_internal(
     size_t payload_size,
     enum golioth_coap_request_type type,
     void *request_params,
-    bool is_synchronous,
     int32_t timeout_s)
 {
     if (!client || !token || !path)
@@ -180,7 +123,6 @@ static enum golioth_status golioth_coap_client_set_internal(
     }
 
     struct golioth_coap_request_msg request_msg = {};
-    enum golioth_status status = GOLIOTH_OK;
     uint8_t *request_payload = NULL;
 
     memcpy(request_msg.token, token, GOLIOTH_COAP_TOKEN_LEN);
@@ -226,35 +168,6 @@ static enum golioth_status golioth_coap_client_set_internal(
 
     strncpy(request_msg.path, path, sizeof(request_msg.path) - 1);
 
-    if (is_synchronous)
-    {
-        // Created here, deleted by coap thread (or here if fail to create or enqueue)
-        request_msg.request_complete_event = golioth_event_group_create();
-        if (!request_msg.request_complete_event)
-        {
-            GLTH_LOGW(TAG, "Failed to create event group");
-            if (request_payload)
-            {
-                golioth_sys_free(request_payload);
-            }
-            return GOLIOTH_ERR_MEM_ALLOC;
-        }
-
-        request_msg.request_complete_ack_sem = golioth_sys_sem_create(1, 0);
-        if (!request_msg.request_complete_ack_sem)
-        {
-            GLTH_LOGW(TAG, "Failed to create semaphore");
-            golioth_event_group_destroy(request_msg.request_complete_event);
-            if (request_payload)
-            {
-                golioth_sys_free(request_payload);
-            }
-            return GOLIOTH_ERR_MEM_ALLOC;
-        }
-
-        request_msg.status = &status;
-    }
-
     if (type == GOLIOTH_COAP_REQUEST_POST_BLOCK)
     {
         request_msg.post_block = *(struct golioth_coap_post_block_params *) request_params;
@@ -281,37 +194,9 @@ static enum golioth_status golioth_coap_client_set_internal(
         {
             golioth_sys_free(request_payload);
         }
-        if (is_synchronous)
-        {
-            golioth_event_group_destroy(request_msg.request_complete_event);
-            golioth_sys_sem_destroy(request_msg.request_complete_ack_sem);
-        }
         return GOLIOTH_ERR_QUEUE_FULL;
     }
 
-    if (is_synchronous)
-    {
-        int32_t tmo_ms = timeout_s * 1000;
-        if (timeout_s == GOLIOTH_SYS_WAIT_FOREVER)
-        {
-            tmo_ms = GOLIOTH_SYS_WAIT_FOREVER;
-        }
-        uint32_t bits =
-            golioth_event_group_wait_bits(request_msg.request_complete_event,
-                                          RESPONSE_RECEIVED_EVENT_BIT | RESPONSE_TIMEOUT_EVENT_BIT,
-                                          true,  // clear bits after waiting
-                                          tmo_ms);
-
-        // Notify CoAP thread that we received the event
-        golioth_sys_sem_give(request_msg.request_complete_ack_sem);
-
-        if ((bits == 0) || (bits & RESPONSE_TIMEOUT_EVENT_BIT))
-        {
-            return GOLIOTH_ERR_TIMEOUT;
-        }
-
-        return status;
-    }
     return GOLIOTH_OK;
 }
 
@@ -324,7 +209,6 @@ enum golioth_status golioth_coap_client_post(struct golioth_client *client,
                                              size_t payload_size,
                                              golioth_post_cb_fn callback,
                                              void *callback_arg,
-                                             bool is_synchronous,
                                              int32_t timeout_s)
 {
     struct golioth_coap_post_params params = {
@@ -341,7 +225,6 @@ enum golioth_status golioth_coap_client_post(struct golioth_client *client,
                                             payload_size,
                                             GOLIOTH_COAP_REQUEST_POST,
                                             &params,
-                                            is_synchronous,
                                             timeout_s);
 }
 
@@ -354,7 +237,6 @@ enum golioth_status golioth_coap_client_set(struct golioth_client *client,
                                             size_t payload_size,
                                             golioth_set_cb_fn callback,
                                             void *callback_arg,
-                                            bool is_synchronous,
                                             int32_t timeout_s)
 {
     struct golioth_coap_post_params params = {
@@ -370,7 +252,6 @@ enum golioth_status golioth_coap_client_set(struct golioth_client *client,
                                             payload_size,
                                             GOLIOTH_COAP_REQUEST_POST,
                                             &params,
-                                            is_synchronous,
                                             timeout_s);
 }
 
@@ -388,7 +269,6 @@ enum golioth_status golioth_coap_client_set_block(struct golioth_client *client,
                                                   void *callback_arg,
                                                   coap_get_block_cb_fn rsp_callback,
                                                   void *rsp_cb_arg,
-                                                  bool is_synchronous,
                                                   int32_t timeout_s)
 {
     struct golioth_coap_post_block_params params = {
@@ -409,7 +289,6 @@ enum golioth_status golioth_coap_client_set_block(struct golioth_client *client,
                                             payload_size,
                                             GOLIOTH_COAP_REQUEST_POST_BLOCK,
                                             &params,
-                                            is_synchronous,
                                             timeout_s);
 }
 
@@ -418,7 +297,6 @@ enum golioth_status golioth_coap_client_delete(struct golioth_client *client,
                                                const char *path,
                                                golioth_set_cb_fn callback,
                                                void *callback_arg,
-                                               bool is_synchronous,
                                                int32_t timeout_s)
 {
     if (!client || !path)
@@ -459,64 +337,14 @@ enum golioth_status golioth_coap_client_delete(struct golioth_client *client,
     }
     strncpy(request_msg.path, path, sizeof(request_msg.path) - 1);
 
-    enum golioth_status status = GOLIOTH_OK;
-
-    if (is_synchronous)
-    {
-        // Created here, deleted by coap thread (or here if fail to create or enqueue)
-        request_msg.request_complete_event = golioth_event_group_create();
-        if (!request_msg.request_complete_event)
-        {
-            GLTH_LOGW(TAG, "Failed to create event group");
-            return GOLIOTH_ERR_MEM_ALLOC;
-        }
-
-        request_msg.request_complete_ack_sem = golioth_sys_sem_create(1, 0);
-        if (!request_msg.request_complete_ack_sem)
-        {
-            GLTH_LOGW(TAG, "Failed to create semaphore");
-            golioth_event_group_destroy(request_msg.request_complete_event);
-            return GOLIOTH_ERR_MEM_ALLOC;
-        }
-
-        request_msg.status = &status;
-    }
-
     bool sent = golioth_mbox_try_send(client->request_queue, &request_msg);
     if (!sent)
     {
         GLTH_LOGW(TAG, "Failed to enqueue request, queue full");
-        if (is_synchronous)
-        {
-            golioth_event_group_destroy(request_msg.request_complete_event);
-            golioth_sys_sem_destroy(request_msg.request_complete_ack_sem);
-        }
+
         return GOLIOTH_ERR_QUEUE_FULL;
     }
 
-    if (is_synchronous)
-    {
-        int32_t tmo_ms = timeout_s * 1000;
-        if (timeout_s == GOLIOTH_SYS_WAIT_FOREVER)
-        {
-            tmo_ms = GOLIOTH_SYS_WAIT_FOREVER;
-        }
-        uint32_t bits =
-            golioth_event_group_wait_bits(request_msg.request_complete_event,
-                                          RESPONSE_RECEIVED_EVENT_BIT | RESPONSE_TIMEOUT_EVENT_BIT,
-                                          true,  // clear bits after waiting
-                                          tmo_ms);
-
-        // Notify CoAP thread that we received the event
-        golioth_sys_sem_give(request_msg.request_complete_ack_sem);
-
-        if ((bits == 0) || (bits & RESPONSE_TIMEOUT_EVENT_BIT))
-        {
-            return GOLIOTH_ERR_TIMEOUT;
-        }
-
-        return status;
-    }
     return GOLIOTH_OK;
 }
 
@@ -527,7 +355,6 @@ static enum golioth_status golioth_coap_client_get_internal(
     const char *path,
     enum golioth_coap_request_type type,
     void *request_params,
-    bool is_synchronous,
     int32_t timeout_s)
 {
     if (!client || !token || !path)
@@ -548,7 +375,6 @@ static enum golioth_status golioth_coap_client_get_internal(
     }
 
     struct golioth_coap_request_msg request_msg = {};
-    enum golioth_status status = GOLIOTH_OK;
     request_msg.type = type;
     request_msg.path_prefix = path_prefix;
 
@@ -560,27 +386,6 @@ static enum golioth_status golioth_coap_client_get_internal(
         return GOLIOTH_ERR_INVALID_FORMAT;
     }
     strncpy(request_msg.path, path, sizeof(request_msg.path) - 1);
-
-    if (is_synchronous)
-    {
-        // Created here, deleted by coap thread (or here if fail to create or enqueue)
-        request_msg.request_complete_event = golioth_event_group_create();
-        if (!request_msg.request_complete_event)
-        {
-            GLTH_LOGW(TAG, "Failed to create event group");
-            return GOLIOTH_ERR_MEM_ALLOC;
-        }
-
-        request_msg.request_complete_ack_sem = golioth_sys_sem_create(1, 0);
-        if (!request_msg.request_complete_ack_sem)
-        {
-            GLTH_LOGW(TAG, "Failed to create semaphore");
-            golioth_event_group_destroy(request_msg.request_complete_event);
-            return GOLIOTH_ERR_MEM_ALLOC;
-        }
-
-        request_msg.status = &status;
-    }
 
     request_msg.ageout_ms = ageout_ms;
     if (type == GOLIOTH_COAP_REQUEST_GET_BLOCK || type == GOLIOTH_COAP_REQUEST_POST_BLOCK_RSP)
@@ -597,37 +402,10 @@ static enum golioth_status golioth_coap_client_get_internal(
     if (!sent)
     {
         GLTH_LOGE(TAG, "Failed to enqueue request, queue full");
-        if (is_synchronous)
-        {
-            golioth_event_group_destroy(request_msg.request_complete_event);
-            golioth_sys_sem_destroy(request_msg.request_complete_ack_sem);
-        }
+
         return GOLIOTH_ERR_QUEUE_FULL;
     }
 
-    if (is_synchronous)
-    {
-        int32_t tmo_ms = timeout_s * 1000;
-        if (timeout_s == GOLIOTH_SYS_WAIT_FOREVER)
-        {
-            tmo_ms = GOLIOTH_SYS_WAIT_FOREVER;
-        }
-        uint32_t bits =
-            golioth_event_group_wait_bits(request_msg.request_complete_event,
-                                          RESPONSE_RECEIVED_EVENT_BIT | RESPONSE_TIMEOUT_EVENT_BIT,
-                                          true,  // clear bits after waiting
-                                          tmo_ms);
-
-        // Notify CoAP thread that we received the event
-        golioth_sys_sem_give(request_msg.request_complete_ack_sem);
-
-        if ((bits == 0) || (bits & RESPONSE_TIMEOUT_EVENT_BIT))
-        {
-            return GOLIOTH_ERR_TIMEOUT;
-        }
-
-        return status;
-    }
     return GOLIOTH_OK;
 }
 
@@ -638,7 +416,6 @@ enum golioth_status golioth_coap_client_get(struct golioth_client *client,
                                             enum golioth_content_type content_type,
                                             golioth_get_cb_fn callback,
                                             void *arg,
-                                            bool is_synchronous,
                                             int32_t timeout_s)
 {
     struct golioth_coap_get_params params = {
@@ -652,7 +429,6 @@ enum golioth_status golioth_coap_client_get(struct golioth_client *client,
                                             path,
                                             GOLIOTH_COAP_REQUEST_GET,
                                             &params,
-                                            is_synchronous,
                                             timeout_s);
 }
 
@@ -665,7 +441,6 @@ enum golioth_status golioth_coap_client_get_block(struct golioth_client *client,
                                                   size_t block_size,
                                                   coap_get_block_cb_fn callback,
                                                   void *arg,
-                                                  bool is_synchronous,
                                                   int32_t timeout_s)
 {
     struct golioth_coap_get_block_params params = {
@@ -681,7 +456,6 @@ enum golioth_status golioth_coap_client_get_block(struct golioth_client *client,
                                             path,
                                             GOLIOTH_COAP_REQUEST_GET_BLOCK,
                                             &params,
-                                            is_synchronous,
                                             timeout_s);
 }
 
@@ -694,7 +468,6 @@ enum golioth_status golioth_coap_client_get_rsp_block(struct golioth_client *cli
                                                       size_t block_size,
                                                       coap_get_block_cb_fn callback,
                                                       void *arg,
-                                                      bool is_synchronous,
                                                       int32_t timeout_s)
 {
     struct golioth_coap_get_block_params params = {
@@ -710,7 +483,6 @@ enum golioth_status golioth_coap_client_get_rsp_block(struct golioth_client *cli
                                             path,
                                             GOLIOTH_COAP_REQUEST_POST_BLOCK_RSP,
                                             &params,
-                                            is_synchronous,
                                             timeout_s);
 }
 
