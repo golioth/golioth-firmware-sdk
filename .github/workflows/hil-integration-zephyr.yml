@@ -212,8 +212,8 @@ jobs:
             --serial-number ${!SNR_VAR}                                                  \
             --api-url ${{ inputs.api-url }}                                              \
             --api-key ${{ secrets[inputs.api-key-id] }}                                  \
-            --wifi-ssid ${{ secrets[format('{0}_WIFI_SSID', runner.name)] }}             \
-            --wifi-psk ${{ secrets[format('{0}_WIFI_PSK', runner.name)] }}               \
+            --wifi-ssid "${{ secrets[format('{0}_WIFI_SSID', runner.name)] }}"           \
+            --wifi-psk "${{ secrets[format('{0}_WIFI_PSK', runner.name)] }}"             \
             --mask-secrets                                                               \
             --timeout=600                                                                \
             --junitxml=summary/hil-zephyr-${{ inputs.hil_board }}-${{ matrix.test }}.xml \
