@@ -377,9 +377,27 @@ static void on_ready(struct golioth_client *client,
     }
 }
 
+static void on_client_event(struct golioth_client *client,
+                            enum golioth_client_event event,
+                            void *arg)
+{
+    golioth_sys_sem_t *connected_sem = arg;
+
+    bool is_connected = (event == GOLIOTH_CLIENT_EVENT_CONNECTED);
+    if (is_connected)
+    {
+        golioth_sys_sem_give(*connected_sem);
+    }
+}
+
 void hil_test_entry(const struct golioth_client_config *config)
 {
+    golioth_sys_sem_t connected_sem = golioth_sys_sem_create(1, 0);
+
     struct golioth_client *client = golioth_client_create(config);
+
+    golioth_client_register_event_callback(client, on_client_event, &connected_sem);
+    golioth_sys_sem_take(connected_sem, GOLIOTH_SYS_WAIT_FOREVER);
 
     observed_sem = golioth_sys_sem_create(10, 0);
 
