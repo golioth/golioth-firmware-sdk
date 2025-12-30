@@ -1,6 +1,7 @@
 import pytest
 import allure
 import os
+from pathlib import Path
 from contextlib import suppress
 
 def pytest_addoption(parser):
@@ -26,6 +27,20 @@ def wifi_psk(request):
 @pytest.fixture(scope="session")
 def runner_name(request):
     return request.config.getoption("--runner-name")
+
+@pytest.fixture(scope="session", autouse=True)
+def log_files(twister_harness_config):
+    yield
+
+    for file in os.listdir(twister_harness_config.devices[0].build_dir):
+        if '.log' in file:
+            path: Path = twister_harness_config.devices[0].build_dir / file
+            allure.attach.file(
+                path,
+                name=file,
+                attachment_type=allure.attachment_type.TEXT,
+                extension='log'
+            )
 
 @pytest.hookimpl(wrapper=True)
 def pytest_runtest_setup(item):
