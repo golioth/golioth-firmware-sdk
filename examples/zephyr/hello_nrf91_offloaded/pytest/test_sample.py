@@ -5,6 +5,9 @@ import trio
 
 LOGGER = logging.getLogger(__name__)
 
+LOG_FETCH_POLLING_LIMIT = datetime.timedelta(seconds=60)
+LOG_EXPECTED_COUNT = 5 # we expect 4 hello messages plus client connection log
+
 pytestmark = pytest.mark.anyio
 
 async def test_hello(shell, device, build_conf):
@@ -38,11 +41,26 @@ async def test_hello(shell, device, build_conf):
     start = datetime.datetime.now(datetime.UTC)
     shell._device.readlines_until(regex=".*Sending hello! 3", timeout=110.0)
 
-    # Check logs for hello messages
+    # Fetch logs
 
-    end = datetime.datetime.now(datetime.UTC)
+    log_fetch_start = datetime.datetime.now(datetime.UTC)
 
-    logs = await device.get_logs({'start': start.strftime('%Y-%m-%dT%H:%M:%S.%fZ'), 'end': end.strftime('%Y-%m-%dT%H:%M:%S.%fZ')})
+    while True:
+        end = datetime.datetime.now(datetime.UTC)
+
+        logs = await device.get_logs(
+            {
+                "start": start.strftime("%Y-%m-%dT%H:%M:%S.%fZ"),
+                "end": end.strftime("%Y-%m-%dT%H:%M:%S.%fZ"),
+                "module": "hello_zephyr",
+            }
+        )
+
+        if len(logs) >= LOG_EXPECTED_COUNT:
+            break
+
+        duration = datetime.datetime.now(datetime.UTC) - log_fetch_start
+        assert (LOG_FETCH_POLLING_LIMIT > duration)
 
     # Test logs received from server
 
