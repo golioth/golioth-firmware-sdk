@@ -1,0 +1,96 @@
+name: Locate Twister Samples
+
+on:
+  workflow_call:
+    inputs:
+      west_board:
+        required: true
+        type: string
+    outputs:
+      # Map the workflow output(s) to job output(s)
+      sample_list:
+        description: 'Twister samples based on supplied west_board'
+        value: ${{ jobs.locate-samples.outputs.sample_list }}
+
+jobs:
+  locate-samples:
+    name: zephyr-${{ inputs.west_board }}-sample-matrix
+    runs-on: ubuntu-24.04
+    container:
+      image: golioth/golioth-zephyr-base:0.17.4-SDK-v0
+
+    outputs:
+      sample_list: ${{ steps.locate-samples.outputs.sample_list }}
+
+    steps:
+      - name: Checkout repository
+        uses: actions/checkout@v4
+        with:
+          path: modules/lib/golioth-firmware-sdk
+
+      - name: Init and update west
+        run: |
+          mkdir -p .west
+          cat <<EOF > .west/config
+          [manifest]
+          path = modules/lib/golioth-firmware-sdk
+          file = .ci-west-zephyr-twister.yml
+          EOF
+
+          west update -o=--depth=1 -n
+
+          git config --global user.email user@git-scm.com
+          git config --global user.name "Git User"
+
+          uv pip install \
+            -r zephyr/scripts/requirements-base.txt \
+            -r zephyr/scripts/requirements-build-test.txt \
+            -r zephyr/scripts/requirements-run-test.txt
+
+      - name: Locate twister samples
+        id: locate-samples
+        shell: python
+        run: |
+          import json
+          import os
+          import subprocess
+          import sys
+          from pathlib import Path
+
+          SAMPLE_PATH_PREFIX = '../' # Twister returns path relative to zephyr directory
+          SAMPLES_ROOT = 'modules/lib/golioth-firmware-sdk/examples/zephyr'
+
+          result = subprocess.run(['zephyr/scripts/twister',
+                                   '--platform',
+                                   '${{ inputs.west_board }}',
+                                   '--save-tests',
+                                   'test_info.txt',
+                                   '-T',
+                                   SAMPLES_ROOT])
+
+          if 0 != result.returncode:
+            sys.exit(result.returncode)
+
+          with open('test_info.txt', 'r') as f:
+            test_data = json.load(f)
+
+          sample_dirs = list()
+          for test in test_data['testsuites']:
+            path = os.path.relpath(test['path'], SAMPLE_PATH_PREFIX)
+            if path not in sample_dirs:
+              sample_dirs.append(path)
+
+          sample_dirs.sort()
+          sample_list = list()
+
+          for directory in sample_dirs:
+            name = os.path.relpath(directory, SAMPLES_ROOT).replace('/', '_')
+            sample_list.append({"name":name, "dir":directory})
+
+          with open(os.environ['GITHUB_OUTPUT'], 'a') as github_output:
+            print('sample_list=' + json.dumps(sample_list), file=github_output)
+
+          print("###### Sample Matrix #####")
+          for sample in sample_list:
+            print("{:28} {}".format(sample['name'], sample['dir']))
+          print("##########################")
