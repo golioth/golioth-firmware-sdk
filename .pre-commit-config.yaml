@@ -11,3 +11,8 @@ repos:
     rev: v1.5.5
     hooks:
       - id: forbid-crlf
+
+exclude: |
+  (?x)(
+            ^zephyr/patches/
+  )

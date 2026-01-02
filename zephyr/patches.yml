@@ -1,0 +1,7 @@
+patches:
+  - path: 0001-twister-honor-keep-artifacts-when-using-prep-artifac.patch
+    sha256sum: 51ab863104edad57cf700d4a5b2ccbd26b69b29ae52784693052d2911125551f
+    module: zephyr
+    author: Mike Szczys
+    email: mike@golioth.io
+    date: 2026-01-02

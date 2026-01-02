@@ -86,12 +86,10 @@ jobs:
           EOF
 
           west update -o=--depth=1 -n
+          git config --global user.email user@git-scm.com
+          git config --global user.name "Git User"
 
-          # Patch but only for Zephyr (patch will fail on NCS builds)
-          if west config manifest.file | grep -q '.ci-west-zephyr.yml'; then
-            git config --global user.email user@git-scm.com
-            git config --global user.name "Git User"
-          fi
+          west patch apply
 
           uv pip install \
             -r zephyr/scripts/requirements-base.txt \
