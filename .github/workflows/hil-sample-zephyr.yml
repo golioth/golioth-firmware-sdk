@@ -64,8 +64,20 @@ on:
         type: string
 
 jobs:
+  matrix:
+    name: zephyr-${{ inputs.west_board }}-sample-matrix
+    uses: ./.github/workflows/misc-locate-twister-samples.yml
+    with:
+      west_board: ${{ inputs.west_board }}
+
   build:
-    name: zephyr-${{ inputs.hil_board }}-twister-build
+    name: zephyr-${{ inputs.west_board }}-twister (${{ matrix.name }})
+    needs:
+      - matrix
+    strategy:
+      fail-fast: false
+      matrix:
+        include: ${{ fromJSON(needs.matrix.outputs.sample_list) }}
     container: golioth/golioth-zephyr-base:0.17.4-SDK-v0
     env:
       ZEPHYR_SDK_INSTALL_DIR: /opt/toolchains/zephyr-sdk-0.17.4
@@ -123,7 +135,7 @@ jobs:
                 -v                                                              \
                 --overflow-as-errors                                            \
                 --platform ${{ inputs.west_board }}                             \
-                -T modules/lib/golioth-firmware-sdk/examples/zephyr             \
+                -T ${{ matrix.dir }}                                            \
                 --detailed-test-id                                              \
                 --prep-artifacts-for-testing                                    \
                 --keep-artifacts lfs.hex                                        \
@@ -131,19 +143,25 @@ jobs:
                 $EXTRA_BUILD_ARGS
 
           # Package for testing
-          tar -cjf test_artifacts_${{ inputs.hil_board }}.tar twister-out
+          tar -cjf test_artifacts_${{ inputs.hil_board }}-${{ matrix.name }}.tar twister-out
 
       - name: Save artifacts
         if: success() || failure()
         uses: actions/upload-artifact@v4
         with:
-          name: test_artifacts_${{ inputs.hil_board }}
-          path: test_artifacts_${{ inputs.hil_board }}.tar
+          name: test_artifacts_${{ inputs.hil_board }}-${{ matrix.name }}
+          path: test_artifacts_${{ inputs.hil_board }}-${{ matrix.name }}.tar
 
   test:
-    name: zephyr-${{ inputs.hil_board }}-twister-run
+    name: zephyr-${{ inputs.hil_board }}-twister-run (${{ matrix.name }})
     if: ${{ inputs.run_tests && !cancelled() }}
-    needs: build
+    needs:
+      - matrix
+      - build
+    strategy:
+      fail-fast: false
+      matrix:
+        include: ${{ fromJSON(needs.matrix.outputs.sample_list) }}
     runs-on:
       - is_active
       - has_${{ inputs.hil_board }}
@@ -192,12 +210,12 @@ jobs:
       - name: Download build
         uses: actions/download-artifact@v4
         with:
-          name: test_artifacts_${{ inputs.hil_board }}
+          name: test_artifacts_${{ inputs.hil_board }}-${{ matrix.name }}
           path: .
       - name: Extract artifacts
         run: |
           rm -rf twister-out
-          tar -xvf test_artifacts_${{ inputs.hil_board }}.tar
+          tar -xvf test_artifacts_${{ inputs.hil_board }}-${{ matrix.name }}.tar
       - name: Run test
         shell: bash
         env:
@@ -213,7 +231,7 @@ jobs:
           zephyr/scripts/twister                                                                  \
                 -v                                                                                \
                 -p ${{ inputs.west_board }}                                                       \
-                -T modules/lib/golioth-firmware-sdk/examples/zephyr                               \
+                -T ${{ matrix.dir }}                                                              \
                 --device-testing                                                                  \
                 --device-serial ${!PORT_VAR}                                                      \
                 --test-only                                                                       \
@@ -233,7 +251,7 @@ jobs:
         uses: ./modules/lib/golioth-firmware-sdk/.github/actions/safe-upload-artifacts
         with:
           secrets-json: ${{ toJson(secrets) }}
-          name: twister-run-artifacts-${{ inputs.hil_board }}
+          name: twister-run-artifacts-${{ inputs.hil_board }}-${{ matrix.name }}
           path: |
             reports/*
             twister-out/**/*.log
@@ -246,13 +264,14 @@ jobs:
         run: |
           rm -rf summary
           mkdir summary
-          cp twister-out/twister_suite_report.xml summary/samples-zephyr-${{ inputs.hil_board }}.xml
+          cp twister-out/twister_suite_report.xml \
+             summary/samples-zephyr-${{ inputs.hil_board }}-${{ matrix.name }}.xml
 
       - name: Safe upload CI report summary
         uses: ./modules/lib/golioth-firmware-sdk/.github/actions/safe-upload-artifacts
         if: success() || failure()
         with:
-          name: ci-summary-samples-zephyr-${{ inputs.hil_board }}
+          name: ci-summary-samples-zephyr-${{ inputs.hil_board }}-${{ matrix.name }}
           path: summary/*
 
       - name: Safe upload Allure reports
@@ -260,7 +279,7 @@ jobs:
         uses: ./modules/lib/golioth-firmware-sdk/.github/actions/safe-upload-artifacts
         with:
           secrets-json: ${{ toJson(secrets) }}
-          name: allure-reports-samples-zephyr-${{ inputs.hil_board }}
+          name: allure-reports-samples-zephyr-${{ inputs.hil_board }}-${{ matrix.name }}
           path: allure-reports
 
       - name: Erase flash
@@ -314,3 +333,17 @@ jobs:
       - name: Power Off USB Hub
         if: always()
         run: python3 /opt/golioth-scripts/usb_hub_power.py off
+
+  verify_build:
+    name: zephyr-${{ inputs.west_board }}-twister-verify-build
+    if: always()
+    needs:
+      - matrix
+      - build
+    runs-on: ubuntu-24.04
+
+    steps:
+      - name: Decide whether the needed jobs succeeded or failed
+        uses: re-actors/alls-green@05ac9388f0aebcb5727afa17fcccfecd6f8ec5fe
+        with:
+          jobs: ${{ toJSON(needs) }}
