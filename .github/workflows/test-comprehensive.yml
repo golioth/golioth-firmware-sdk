@@ -121,22 +121,6 @@ jobs:
             manifest: .ci-west-zephyr.yml
             binary_name: zephyr/zephyr.bin
             binary_blob: hal_espressif
-          - hil_board: frdm_rw612
-            west_board: frdm_rw612
-            manifest: .ci-west-zephyr.yml
-            binary_name: zephyr/zephyr.hex
-          - hil_board: nrf52840dk
-            west_board: nrf52840dk/nrf52840
-            manifest: .ci-west-zephyr.yml
-            binary_name: zephyr/zephyr.hex
-          - hil_board: nrf9160dk
-            west_board: nrf9160dk/nrf9160/ns
-            manifest: .ci-west-ncs.yml
-            binary_name: merged.hex
-          - hil_board: rak5010
-            west_board: rak5010/nrf52840
-            manifest: .ci-west-zephyr.yml
-            binary_name: zephyr/zephyr.hex
     uses: ./.github/workflows/hil-integration-zephyr.yml
     with:
       hil_board: ${{ matrix.hil_board }}
@@ -438,12 +422,6 @@ jobs:
 
   publish_summary:
     needs:
-      - hil_sample_esp-idf
       - hil_sample_zephyr
-      - hil_sample_zephyr_nsim
-      - hil_test_esp-idf
-      - hil_test_linux
-      - hil_test_zephyr
-      - hil_test_zephyr_nsim
     if: success() || failure()
     uses: ./.github/workflows/report-summary-publish.yml

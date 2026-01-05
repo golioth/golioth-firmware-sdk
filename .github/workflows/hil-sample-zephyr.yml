@@ -340,7 +340,7 @@ jobs:
         with:
           jobs: ${{ toJSON(needs) }}
 
-  hil_sample_zephyr_nsim_summary:
+  hil_sample_zephyr_summary:
     name: zephyr-${{ inputs.hil_board }}-twister-summary
     runs-on: ubuntu-24.04
     needs:
