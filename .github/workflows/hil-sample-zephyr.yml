@@ -259,20 +259,12 @@ jobs:
             twister-out/*.xml
             twister-out/*.json
 
-      - name: Prepare CI report summary
-        if: success() || failure()
-        run: |
-          rm -rf summary
-          mkdir summary
-          cp twister-out/twister_suite_report.xml \
-             summary/samples-zephyr-${{ inputs.hil_board }}-${{ matrix.name }}.xml
-
       - name: Safe upload CI report summary
         uses: ./modules/lib/golioth-firmware-sdk/.github/actions/safe-upload-artifacts
         if: success() || failure()
         with:
-          name: ci-summary-samples-zephyr-${{ inputs.hil_board }}-${{ matrix.name }}
-          path: summary/*
+          name: ci-individual-samples-zephyr-${{ inputs.hil_board }}-${{ matrix.name }}
+          path: twister-out/twister_suite_report.xml
 
       - name: Safe upload Allure reports
         if: success() || failure()
@@ -347,3 +339,44 @@ jobs:
         uses: re-actors/alls-green@05ac9388f0aebcb5727afa17fcccfecd6f8ec5fe
         with:
           jobs: ${{ toJSON(needs) }}
+
+  hil_sample_zephyr_nsim_summary:
+    name: zephyr-${{ inputs.hil_board }}-twister-summary
+    runs-on: ubuntu-24.04
+    needs:
+      - matrix
+      - build
+      - test
+    if: success() || failure()
+
+    steps:
+      - name: Collect JUnit reports
+        uses: actions/download-artifact@v4
+        with:
+          pattern: ci-individual-samples-zephyr-*
+
+      - name: Prepare CI report summary
+        if: success() || failure()
+        run: |
+          sudo apt install -y xml-twig-tools
+
+          rm -rf summary
+          mkdir summary
+
+          if [[ -f "ci-individual-samples-zephyr-${{ inputs.hil_board }}/twister_suite_report.xml" ]]; then
+            # If the build step fails, this missing file will not be present.
+            # Prevent summary job from failing for all devices by skipping when file is missing
+
+            xml_grep --pretty_print indented \
+              --wrap testsuites --descr '' \
+              --cond "testsuite" \
+              ci-individual-samples-zephyr-${{ inputs.hil_board }}*/*.xml \
+              > samples-zephyr-${{ inputs.hil_board }}.xml
+          fi
+
+      - name: Upload CI report summary
+        uses: actions/upload-artifact@v4
+        if: success() || failure()
+        with:
+          name: ci-summary-samples-zephyr-${{ inputs.hil_board }}
+          path: samples-zephyr-*.xml
