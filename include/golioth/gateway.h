@@ -86,10 +86,15 @@ enum golioth_status golioth_gateway_server_cert_get(struct golioth_client *clien
 /// @param client The client handle from @ref golioth_client_create
 /// @param buf Pointer to buffer where certificate is stored
 /// @param len Certificate length
+/// @param set_cb A callback that will be called after certificate is set (can be NULL)
+/// @param callback_arg An optional user provided argument that will be passed to \p set_cb (can
+///        be NULL)
 /// @param timeout_s Timeout in seconds for API call
 enum golioth_status golioth_gateway_device_cert_set(struct golioth_client *client,
                                                     const void *buf,
                                                     size_t len,
+                                                    golioth_set_cb_fn set_cb,
+                                                    void *callback_arg,
                                                     int32_t timeout_s);
 
 #ifdef __cplusplus
