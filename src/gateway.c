@@ -133,7 +133,6 @@ enum golioth_status golioth_gateway_uplink_block(struct gateway_uplink *uplink,
                                           end_block_cb,
                                           callback_arg,
                                           uplink->downlink,
-                                          false,
                                           GOLIOTH_SYS_WAIT_FOREVER);
 }
 
@@ -218,6 +217,8 @@ enum golioth_status golioth_gateway_server_cert_get(struct golioth_client *clien
 enum golioth_status golioth_gateway_device_cert_set(struct golioth_client *client,
                                                     const void *buf,
                                                     size_t len,
+                                                    golioth_set_cb_fn set_cb,
+                                                    void *callback_arg,
                                                     int32_t timeout_s)
 {
     uint8_t token[GOLIOTH_COAP_TOKEN_LEN];
@@ -230,9 +231,8 @@ enum golioth_status golioth_gateway_device_cert_set(struct golioth_client *clien
                                    GOLIOTH_CONTENT_TYPE_OCTET_STREAM,
                                    buf,
                                    len,
-                                   NULL,
-                                   NULL,
-                                   true,
+                                   set_cb,
+                                   callback_arg,
                                    timeout_s);
 }
 
