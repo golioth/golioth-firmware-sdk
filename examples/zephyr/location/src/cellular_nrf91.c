@@ -24,12 +24,14 @@ static const char *lte_mode_to_str(enum lte_lc_lte_mode mode)
 {
     switch (mode)
     {
+        case LTE_LC_LTE_MODE_NONE:
+            return "NONE";
         case LTE_LC_LTE_MODE_LTEM:
             return "LTEM";
         case LTE_LC_LTE_MODE_NBIOT:
             return "NBIOT";
-        case LTE_LC_LTE_MODE_NONE:
-            return "NONE";
+        case LTE_LC_LTE_MODE_NTN_NBIOT:
+            return "NTN_NBIOT";
     }
 
     return "unknown";

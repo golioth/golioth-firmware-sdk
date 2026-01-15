@@ -34,12 +34,6 @@ config GOLIOTH_SAMPLE_DHCP_BIND
 	help
 	  Obtain an IPv4 address from the DHCP server.
 
-# NCS and Zephyr use different integer sizes for network management events
-config GOLIOTH_SAMPLE_NET_EVENT_SIZE
-	int
-	default 64 if !NRF_SECURITY
-	default 32 if NRF_SECURITY
-
 config GOLIOTH_SAMPLE_NRF91_LTE_MONITOR
 	bool "nRF91 LTE monitor"
 	default y
