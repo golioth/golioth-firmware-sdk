@@ -23,6 +23,9 @@ config DNS_SERVER_IP_ADDRESSES
 config DNS_SERVER1
 	default "1.1.1.1"
 
+configdefault HEAP_MEM_POOL_SIZE
+	default 1024
+
 endif # DNS_RESOLVER
 
 configdefault ZVFS_EVENTFD_MAX
