@@ -17,11 +17,6 @@ configdefault WIFI_ESP_AT_SCAN_MAC_ADDRESS
 configdefault WIFI_ESP_AT_SCAN_RESULT_RSSI_ORDERED
 	default y
 
-config GOLIOTH_LOCATION_SAMPLE_NET_EVENT_SIZE
-    int
-    default 32 if NRF_SECURITY
-    default 64 if !NRF_SECURITY
-
 source "${ZEPHYR_GOLIOTH_FIRMWARE_SDK_MODULE_DIR}/examples/zephyr/common/Kconfig.defconfig"
 
 config APP_LOCATION_GET_INTERVAL
