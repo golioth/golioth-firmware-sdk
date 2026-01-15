@@ -20,6 +20,7 @@ menuconfig GOLIOTH_FIRMWARE_SDK
 	imply DNS_RESOLVER if NET_NATIVE
 	imply NET_SOCKETS_SOCKOPT_TLS
 	imply NET_SOCKETS_ENABLE_DTLS
+	imply NRF_SECURITY if ZEPHYR_NRF_MODULE
 	help
 	  Enable library for communication with Golioth cloud.
 
