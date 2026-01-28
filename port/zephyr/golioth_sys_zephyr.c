@@ -134,6 +134,58 @@ int golioth_sys_sem_get_fd(golioth_sys_sem_t sem)
 }
 
 /*--------------------------------------------------
+ * Signals
+ *------------------------------------------------*/
+
+golioth_sys_signal_t golioth_sys_signal_create(void)
+{
+    struct k_poll_signal *sig = golioth_sys_malloc(sizeof(struct k_poll_signal));
+    k_poll_signal_init(sig);
+    return sig;
+}
+
+bool golioth_sys_signal_poll(golioth_sys_signal_t sig, int32_t ms_to_wait)
+{
+    if (!sig)
+    {
+        return false;
+    }
+
+    k_timeout_t timeout = (ms_to_wait <= GOLIOTH_SYS_WAIT_FOREVER ? K_FOREVER : K_MSEC(ms_to_wait));
+
+    struct k_poll_event events[1] = {
+        K_POLL_EVENT_INITIALIZER(K_POLL_TYPE_SIGNAL, K_POLL_MODE_NOTIFY_ONLY, sig),
+    };
+
+    k_poll(events, 1, timeout);
+
+    int signaled, result;
+    k_poll_signal_check(sig, &signaled, &result);
+
+    return (signaled != 0 ? true : false);
+}
+
+bool golioth_sys_signal_raise(golioth_sys_signal_t sig)
+{
+    return (0 == k_poll_signal_raise(sig, 0));
+}
+
+void golioth_sys_signal_reset(golioth_sys_signal_t sig)
+{
+    if (!sig)
+    {
+        return;
+    }
+
+    k_poll_signal_reset(sig);
+}
+
+void golioth_sys_signal_destroy(golioth_sys_signal_t sig)
+{
+    golioth_sys_free(sig);
+}
+
+/*--------------------------------------------------
  * Software Timers
  *------------------------------------------------*/
 
