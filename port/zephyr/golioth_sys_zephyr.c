@@ -5,7 +5,7 @@
  */
 #include <zephyr/kernel.h>
 #include <zephyr/net/socket.h>
-#include <zephyr/posix/sys/eventfd.h>
+#include <zephyr/zvfs/eventfd.h>
 
 #include <mbedtls/sha256.h>
 
@@ -67,7 +67,7 @@ golioth_sys_sem_t golioth_sys_sem_create(uint32_t sem_max_count, uint32_t sem_in
 {
     int fd;
 
-    fd = eventfd(sem_initial_count, EFD_SEMAPHORE);
+    fd = zvfs_eventfd(sem_initial_count, ZVFS_EFD_SEMAPHORE);
     if (fd < 0)
     {
         GLTH_LOGE(TAG, "eventfd creation failed, errno: %d", errno);
@@ -86,7 +86,7 @@ bool golioth_sys_sem_take(golioth_sys_sem_t sem, int32_t ms_to_wait)
             .fd = fd,
             .events = ZSOCK_POLLIN,
         };
-        eventfd_t val;
+        zvfs_eventfd_t val;
         int ret;
 
         ret = zsock_poll(&pfd, 1, ms_to_wait);
@@ -105,7 +105,7 @@ bool golioth_sys_sem_take(golioth_sys_sem_t sem, int32_t ms_to_wait)
             return false;
         }
 
-        ret = eventfd_read(fd, &val);
+        ret = zvfs_eventfd_read(fd, &val);
         if (ret < 0)
         {
             GLTH_LOGE(TAG, "sem eventfd_read failed, errno: %d", errno);
@@ -120,7 +120,7 @@ bool golioth_sys_sem_take(golioth_sys_sem_t sem, int32_t ms_to_wait)
 
 bool golioth_sys_sem_give(golioth_sys_sem_t sem)
 {
-    return (0 == eventfd_write(SEM_TO_FD(sem), 1));
+    return (0 == zvfs_eventfd_write(SEM_TO_FD(sem), 1));
 }
 
 void golioth_sys_sem_destroy(golioth_sys_sem_t sem)
