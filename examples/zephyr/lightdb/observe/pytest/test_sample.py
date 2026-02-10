@@ -32,10 +32,10 @@ async def test_lightdb_observe(shell, device, wifi_ssid, wifi_psk):
 
     # Verify lightdb observe
 
-    shell._device.readlines_until(regex=".*lightdb_observe: Counter \(async\)", timeout=10.0)
-    shell._device.readlines_until(regex=".*6e 75 6c 6c\s+\|null", timeout=1.0)
+    shell._device.readlines_until(regex=r".*lightdb_observe: Counter \(async\)", timeout=10.0)
+    shell._device.readlines_until(regex=r".*6e 75 6c 6c\s+\|null", timeout=1.0)
 
     await device.lightdb.set("counter", 87)
 
-    shell._device.readlines_until(regex=".*lightdb_observe: Counter \(async\)", timeout=5.0)
-    shell._device.readlines_until(regex=".*38 37\s+|87", timeout=1.0)
+    shell._device.readlines_until(regex=r".*lightdb_observe: Counter \(async\)", timeout=5.0)
+    shell._device.readlines_until(regex=r".*38 37\s+|87", timeout=1.0)
