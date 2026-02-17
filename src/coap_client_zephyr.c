@@ -17,7 +17,7 @@
 #include "zephyr_coap_utils.h"
 
 #include <zephyr/net/socket.h>
-#include <zephyr/posix/sys/eventfd.h>
+#include <zephyr/zvfs/eventfd.h>
 #include <zephyr/sys/atomic.h>
 #include <zephyr/net/tls_credentials.h>
 
@@ -76,12 +76,12 @@ struct golioth_client _golioth_client;
 
 static inline void client_notify_timeout(void)
 {
-    eventfd_write(fds[POLLFD_EVENT].fd, 1);
+    zvfs_eventfd_write(fds[POLLFD_EVENT].fd, 1);
 }
 
 static void golioth_client_wakeup(struct golioth_client *client)
 {
-    eventfd_write(fds[POLLFD_EVENT].fd, 1);
+    zvfs_eventfd_write(fds[POLLFD_EVENT].fd, 1);
 }
 
 static void eventfd_timeout_handle(struct k_work *work)
@@ -1238,7 +1238,7 @@ static void golioth_coap_client_thread(void *arg)
     int timeout;
     int64_t recv_expiry = 0;
     int64_t golioth_timeout;
-    eventfd_t eventfd_value;
+    zvfs_eventfd_t eventfd_value;
     int err;
     int ret;
 
@@ -1257,7 +1257,7 @@ static void golioth_coap_client_thread(void *arg)
         client->is_running = true;
 
         /* Flush pending events */
-        (void) eventfd_read(fds[POLLFD_EVENT].fd, &eventfd_value);
+        (void) zvfs_eventfd_read(fds[POLLFD_EVENT].fd, &eventfd_value);
 
         err = golioth_connect(client);
         if (err)
@@ -1327,7 +1327,7 @@ static void golioth_coap_client_thread(void *arg)
 
             if (fds[POLLFD_EVENT].revents)
             {
-                (void) eventfd_read(fds[POLLFD_EVENT].fd, &eventfd_value);
+                (void) zvfs_eventfd_read(fds[POLLFD_EVENT].fd, &eventfd_value);
                 GLTH_LOGD(TAG, "Event in eventfd");
                 event_occurred = true;
             }
@@ -1615,7 +1615,7 @@ struct golioth_client *golioth_client_create(const struct golioth_client_config 
     new_client->resend_report_count = 0;
     new_client->resend_report_last_ms = 0;
 
-    fds[POLLFD_EVENT].fd = eventfd(0, EFD_NONBLOCK);
+    fds[POLLFD_EVENT].fd = zvfs_eventfd(0, ZVFS_EFD_NONBLOCK);
     fds[POLLFD_EVENT].events = ZSOCK_POLLIN;
 
     k_sem_init(&new_client->run_sem, 1, 1);
