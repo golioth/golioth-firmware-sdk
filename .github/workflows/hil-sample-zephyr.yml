@@ -84,7 +84,7 @@ jobs:
     runs-on: ubuntu-24.04
     steps:
       - name: Checkout repository and submodules
-        uses: actions/checkout@v4
+        uses: actions/checkout@v6
         with:
           path: modules/lib/golioth-firmware-sdk
           submodules: 'recursive'
@@ -147,7 +147,7 @@ jobs:
 
       - name: Save artifacts
         if: success() || failure()
-        uses: actions/upload-artifact@v4
+        uses: actions/upload-artifact@v6
         with:
           name: test_artifacts_${{ inputs.hil_board }}-${{ matrix.name }}
           path: test_artifacts_${{ inputs.hil_board }}-${{ matrix.name }}.tar
@@ -178,7 +178,7 @@ jobs:
 
     steps:
       - name: Checkout repository and submodules
-        uses: actions/checkout@v4
+        uses: actions/checkout@v6
         with:
           path: modules/lib/golioth-firmware-sdk
       - name: Init and update west
@@ -379,7 +379,7 @@ jobs:
           fi
 
       - name: Upload CI report summary
-        uses: actions/upload-artifact@v4
+        uses: actions/upload-artifact@v6
         if: success() || failure()
         with:
           name: ci-summary-samples-zephyr-${{ inputs.hil_board }}

@@ -13,7 +13,7 @@ jobs:
       image: kiwicom/pre-commit:3.6.0
 
     steps:
-      - uses: actions/checkout@v4
+      - uses: actions/checkout@v6
         with:
           fetch-depth: 0
 

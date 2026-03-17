@@ -46,7 +46,7 @@ jobs:
 
     steps:
       - name: Checkout repository
-        uses: actions/checkout@v4
+        uses: actions/checkout@v6
 
       - name: Prepare tests matrix
         id: output-tests
@@ -71,7 +71,7 @@ jobs:
     runs-on: ubuntu-24.04
     steps:
       - name: Checkout Repository and Submodules
-        uses: actions/checkout@v4
+        uses: actions/checkout@v6
         with:
           submodules: 'recursive'
 
@@ -95,7 +95,7 @@ jobs:
               mv build/merged.bin ../../../../test_binaries/${{ matrix.test }}.bin
 
       - name: Save Artifacts
-        uses: actions/upload-artifact@v4
+        uses: actions/upload-artifact@v6
         with:
           name: ${{ inputs.hil_board }}-hil-espidf-${{ matrix.test }}
           path: test_binaries/*
@@ -138,7 +138,7 @@ jobs:
 
     steps:
       - name: Checkout repository
-        uses: actions/checkout@v4
+        uses: actions/checkout@v6
 
       - name: Setup Python dependencies
         run: |
@@ -242,7 +242,7 @@ jobs:
           mv combined.xml summary/hil-espidf-${{ inputs.hil_board }}.xml
 
       - name: Upload CI report summary
-        uses: actions/upload-artifact@v4
+        uses: actions/upload-artifact@v6
         with:
           name: ci-summary-hil-espidf-${{ inputs.hil_board }}
           path: summary/hil-espidf-${{ inputs.hil_board }}.xml

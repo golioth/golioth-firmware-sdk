@@ -78,7 +78,7 @@ jobs:
 
     steps:
       - name: Checkout repository and submodules
-        uses: actions/checkout@v4
+        uses: actions/checkout@v6
         with:
           submodules: 'recursive'
 
@@ -105,7 +105,7 @@ jobs:
 
       - name: Upload test coverage artifacts
         if: success() || failure()
-        uses: actions/upload-artifact@v4
+        uses: actions/upload-artifact@v6
         with:
           name: unit-test-coverage
           path: coverage.json
@@ -295,7 +295,7 @@ jobs:
     name: coverage
     steps:
       - name: Checkout repository
-        uses: actions/checkout@v4
+        uses: actions/checkout@v6
 
       - name: Download HIL Linux coverage artifacts
         uses: actions/download-artifact@v4
@@ -365,7 +365,7 @@ jobs:
           gcovr --txt-summary --xml coverage.xml --html-details coverage/index.html
 
       - name: Upload coverage artifacts
-        uses: actions/upload-artifact@v4
+        uses: actions/upload-artifact@v6
         if: success() || failure()
         with:
           name: coverage-native-sim
