@@ -7,7 +7,7 @@ jobs:
   deploy_doxygen_prod:
     runs-on: ubuntu-24.04
     steps:
-      - uses: actions/checkout@v4
+      - uses: actions/checkout@v6
       - name: Install Doxygen
         run: |
           sudo apt install wget graphviz

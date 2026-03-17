@@ -12,7 +12,7 @@ jobs:
     container: golioth/golioth-coverity-base:bda7b71
 
     steps:
-      - uses: actions/checkout@v4
+      - uses: actions/checkout@v6
         with:
           path: modules/lib/golioth-firmware-sdk
           submodules: recursive
@@ -55,7 +55,7 @@ jobs:
             --form version="0" \
             --form description="Description" \
             https://scan.coverity.com/builds?project=golioth%2Fgolioth-firmware-sdk
-      - uses: actions/upload-artifact@v4
+      - uses: actions/upload-artifact@v6
         with:
           name: coverity_output
           path: golioth-firmware-sdk.tgz

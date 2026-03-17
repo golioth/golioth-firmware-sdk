@@ -57,7 +57,7 @@ jobs:
 
     steps:
       - name: Checkout repository
-        uses: actions/checkout@v4
+        uses: actions/checkout@v6
 
 
       - name: Generate device name
@@ -114,7 +114,7 @@ jobs:
     runs-on: ubuntu-24.04
     steps:
       - name: Checkout Repository and Submodules
-        uses: actions/checkout@v4
+        uses: actions/checkout@v6
         with:
           submodules: 'recursive'
 
@@ -163,7 +163,7 @@ jobs:
               mv ${SAMPLE_DIR}/build/merged.bin test_binaries/${SAMPLE_NAME}.bin
 
       - name: Save Artifacts
-        uses: actions/upload-artifact@v4
+        uses: actions/upload-artifact@v6
         with:
           name: ${{ inputs.hil_board }}-sample-espidf-${{ matrix.name }}
           path: test_binaries/*
@@ -206,7 +206,7 @@ jobs:
 
     steps:
       - name: Checkout repository
-        uses: actions/checkout@v4
+        uses: actions/checkout@v6
 
       - name: Setup Python dependencies
         run: |

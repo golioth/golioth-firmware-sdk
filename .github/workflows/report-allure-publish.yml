@@ -21,7 +21,7 @@ jobs:
 
     steps:
       - name: Load Allure report history
-        uses: actions/checkout@v4
+        uses: actions/checkout@v6
         continue-on-error: true
         with:
           repository: golioth/allure-reports
@@ -37,7 +37,7 @@ jobs:
           merge-multiple: true
 
       - name: Upload collected reports
-        uses: actions/upload-artifact@v4
+        uses: actions/upload-artifact@v6
         with:
           name: allure-reports-alltest
           path: reports/allure-results
