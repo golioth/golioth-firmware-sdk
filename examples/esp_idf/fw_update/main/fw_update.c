@@ -688,13 +688,13 @@ static void fw_update_thread(void *arg)
         esp_err_t esp_err = esp_ota_end(_update_handle);
         if (ESP_OK != esp_err)
         {
-            if (ESP_ERR_OTA_VALIDATE_FAILED == err)
+            if (ESP_ERR_OTA_VALIDATE_FAILED == esp_err)
             {
                 GLTH_LOGE(TAG, "Image validation failed, image is corrupted");
             }
             else
             {
-                GLTH_LOGE(TAG, "esp_ota_end failed (%s)!", esp_err_to_name(err));
+                GLTH_LOGE(TAG, "esp_ota_end failed (%s)!", esp_err_to_name(esp_err));
             }
             fw_download_failed(GOLIOTH_OTA_REASON_FIRMWARE_UPDATE_FAILED);
             continue;
