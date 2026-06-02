@@ -8,7 +8,8 @@ jobs:
       - name: Install Doxygen
         run: |
           sudo apt install wget graphviz
-          wget https://www.doxygen.nl/files/doxygen-1.10.0.linux.bin.tar.gz
+          wget \
+            https://github.com/doxygen/doxygen/releases/download/Release_1_10_0/doxygen-1.10.0.linux.bin.tar.gz
           tar -xvf doxygen-1.10.0.linux.bin.tar.gz
           cd doxygen-1.10.0
           sudo make install
