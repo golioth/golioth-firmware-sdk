@@ -104,9 +104,9 @@ class OrphanCleaner:
                                 project: Project | None,
                                 delta: timedelta | None = None) -> int:
         if not (project and self.certificates):
-            return -1;
+            return -1
 
-        removal_count = 0;
+        removal_count = 0
         print("Processing Certificates:")
         for c in self.certificates:
             id = await self.remove_expired_ids(c, project.certificates.delete, delta)
@@ -119,9 +119,9 @@ class OrphanCleaner:
         if not (project and self.cohorts):
             if self.verbose:
                 print("No cohorts found.")
-            return -1;
+            return -1
 
-        removal_count = 0;
+        removal_count = 0
         print("Processing Cohorts:")
         for c in self.cohorts:
             id = await self.remove_expired_ids(c, project.cohorts.delete, delta)
@@ -134,9 +134,9 @@ class OrphanCleaner:
         if not (project and self.devices):
             if self.verbose:
                 print("No devices found.")
-            return -1;
+            return -1
 
-        removal_count = 0;
+        removal_count = 0
         print("Processing Devices:")
         for d in self.devices:
             id = await self.remove_expired_ids(d, project.delete_device_by_id, delta)
@@ -149,9 +149,9 @@ class OrphanCleaner:
         if not (project and self.releases):
             if self.verbose:
                 print("No releases found.")
-            return -1;
+            return -1
 
-        removal_count = 0;
+        removal_count = 0
         print("Processing Releases:")
         for r in self.releases:
             id = await self.remove_expired_ids(r, project.releases.delete, delta)
@@ -164,9 +164,9 @@ class OrphanCleaner:
         if not (project and self.tags):
             if self.verbose:
                 print("No tags found.")
-            return -1;
+            return -1
 
-        removal_count = 0;
+        removal_count = 0
         print("Processing Tags:")
         for t in self.tags:
             id = await self.remove_expired_ids(t, project.tags.delete, delta)
@@ -180,7 +180,7 @@ async def main(api_url: str, api_key: str, days_old: int, verbose: bool) -> int:
     await oc.fetch_all_project_info()
     if not oc.project:
         print("Unable to initialize project.")
-        return -1;
+        return -1
 
     print("\nStarting removal process.")
     print(f"  Org: {oc.project.organization}")
