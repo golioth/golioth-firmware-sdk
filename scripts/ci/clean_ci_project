@@ -6,8 +6,9 @@ __license__ = "Apache-2.0"
 
 import argparse, sys
 
-from golioth import Client, Project, Device, Certificate, Cohort, Release, Tag
+from golioth import Client, Project, Artifact, Device, Certificate, Cohort, Release, Tag
 import asyncio
+import re
 
 from datetime import datetime, timedelta, timezone
 from typing import Callable, Any, Awaitable
@@ -21,9 +22,11 @@ class OrphanCleaner:
         self.client = Client(api_url, api_key)
         self.project = None
 
+        self.artifacts = None
         self.certificates = None
         self.cohorts = None
         self.devices = None
+        self.releases = None
         self.tags = None
 
         self.default_delta = default_delta or EXPIRY_AGE
@@ -36,6 +39,7 @@ class OrphanCleaner:
                 print("No project found")
             return
 
+        self.artifacts = await self.project.artifacts.get_all()
         self.devices = await self.project.get_devices()
         self.certificates = await self.project.certificates.get_all()
         self.cohorts = await self.project.cohorts.get_all()
@@ -53,7 +57,7 @@ class OrphanCleaner:
         return datetime.now(timezone.utc) - created_dt
 
     async def remove_expired_ids(self,
-                                 member: Certificate | Cohort | Device | Release | Tag,
+                                 member: Artifact | Certificate | Cohort | Device | Release | Tag,
                                  remove: RemFunc,
                                  delta: timedelta | None = None) -> str | None:
             age = self.get_age(member.info['createdAt'])
@@ -65,6 +69,36 @@ class OrphanCleaner:
                 except:
                     print(f"Unable to remove: {member.id}")
                     return None
+
+    async def cull_artifacts(self,
+                             project: Project | None,
+                             delta: timedelta | None = None) -> int:
+        if not (project and self.artifacts):
+            if self.verbose:
+                print("No artifacts found.")
+            return -1
+
+        # Pouch CI generated artifacts: 2.0.0-generated-<16 alnum>-<16 hex>
+        # Pouch CI generated artifacts: 2.0.0-generated-<16 alnum>
+        LEAKED_MAIN_RE = re.compile(r"^2\.0\.0-generated-[A-Za-z0-9]{16}(?:-[0-9A-Fa-f]{16})?$")
+
+        removal_count = 0
+        print("Processing Artifacts:")
+        for artifact in self.artifacts:
+            if artifact.package != "main":
+                continue
+            if not LEAKED_MAIN_RE.match(artifact.version):
+                continue
+
+            try:
+                id = await self.remove_expired_ids(artifact, project.artifacts.delete, delta)
+                if id:
+                    print(f"Deleted leaked artifact: {artifact}")
+                    removal_count += 1
+            except Exception as err:
+                print(f"Failed deleting artifact {artifact.id}: {err}")
+        print("Complete.\n")
+        return removal_count
 
     async def cull_certificates(self,
                                 project: Project | None,
@@ -165,6 +199,10 @@ async def main(api_url: str, api_key: str, days_old: int, verbose: bool) -> int:
     if oc.cohorts:
         cohorts_count = await oc.cull_cohorts(oc.project, timedelta(days=days_old))
 
+    artifact_count = 0
+    if oc.artifacts:
+        artifact_count = await oc.cull_artifacts(oc.project, timedelta(days=days_old))
+
     tag_count = 0
     if oc.tags:
         tag_count = await oc.cull_tags(oc.project, timedelta(days=days_old))
@@ -176,6 +214,7 @@ async def main(api_url: str, api_key: str, days_old: int, verbose: bool) -> int:
     print(f"Devices removed: {device_count}")
     print(f"Releases removed: {release_count}")
     print(f"Cohorts removed: {cohorts_count}")
+    print(f"Artifacts removed: {artifact_count}")
     print(f"Tags removed: {tag_count}")
     print(f"Certificates removed: {certificate_count}")
 
