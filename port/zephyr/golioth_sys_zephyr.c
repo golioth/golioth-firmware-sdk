@@ -208,6 +208,7 @@ void golioth_sys_timer_destroy(golioth_sys_timer_t gtimer)
 struct golioth_thread
 {
     struct k_thread thread;
+    int stack_idx;
     k_tid_t tid;
     golioth_sys_thread_fn_t fn;
     void *user_arg;
@@ -216,18 +217,40 @@ struct golioth_thread
 K_THREAD_STACK_ARRAY_DEFINE(golioth_thread_stacks,
                             CONFIG_GOLIOTH_ZEPHYR_THREAD_STACKS,
                             CONFIG_GOLIOTH_ZEPHYR_THREAD_STACK_SIZE);
-static atomic_t golioth_thread_idx;
 
-static k_thread_stack_t *stack_alloc(void)
+K_MUTEX_DEFINE(golioth_thread_stacks_lock);
+static bool golioth_stack_in_use[CONFIG_GOLIOTH_ZEPHYR_THREAD_STACKS];
+
+static int stack_alloc(void)
 {
-    atomic_val_t idx = atomic_inc(&golioth_thread_idx);
+    k_mutex_lock(&golioth_thread_stacks_lock, K_FOREVER);
 
-    if (idx > ARRAY_SIZE(golioth_thread_stacks))
+    int stack_idx = -1;
+    for (int i = 0; i < CONFIG_GOLIOTH_ZEPHYR_THREAD_STACKS; i++)
     {
-        return NULL;
+        if (golioth_stack_in_use[i] == false)
+        {
+            golioth_stack_in_use[i] = true;
+            stack_idx = i;
+            break;
+        }
     }
 
-    return golioth_thread_stacks[idx];
+    k_mutex_unlock(&golioth_thread_stacks_lock);
+
+    return stack_idx;
+}
+
+static void stack_free(int stack_idx)
+{
+    if ((stack_idx >= CONFIG_GOLIOTH_ZEPHYR_THREAD_STACKS) || (stack_idx < 0))
+    {
+        return;
+    }
+
+    k_mutex_lock(&golioth_thread_stacks_lock, K_FOREVER);
+    golioth_stack_in_use[stack_idx] = false;
+    k_mutex_unlock(&golioth_thread_stacks_lock);
 }
 
 static void golioth_thread_main(void *p1, void *p2, void *p3)
@@ -245,16 +268,15 @@ golioth_sys_thread_t golioth_sys_thread_create(const struct golioth_thread_confi
     //      stack_size
     //      prio
     struct golioth_thread *thread = golioth_sys_malloc(sizeof(*thread));
-    k_thread_stack_t *stack;
 
-    stack = stack_alloc();
-    if (!stack)
+    thread->stack_idx = stack_alloc();
+    if (thread->stack_idx < 0)
     {
         goto free_thread;
     }
 
     thread->tid = k_thread_create(&thread->thread,
-                                  stack,
+                                  golioth_thread_stacks[thread->stack_idx],
                                   CONFIG_GOLIOTH_ZEPHYR_THREAD_STACK_SIZE,
                                   golioth_thread_main,
                                   config->fn,
@@ -281,6 +303,7 @@ void golioth_sys_thread_destroy(golioth_sys_thread_t gthread)
     struct golioth_thread *thread = gthread;
 
     k_thread_abort(thread->tid);
+    stack_free(thread->stack_idx);
     golioth_sys_free(thread);
 }
 
