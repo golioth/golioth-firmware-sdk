@@ -80,9 +80,9 @@ each of the samples is also continously verified on target.
 | Board                | Platform                 |
 | ---                  | ---                      |
 | ESP32-S3-DevKitC-1   | ESP-IDF (v5.4.1)         |
-| ESP32-S3-DevKitC-1   | Zephyr (v4.3.0)          |
-| FRDM-RW612           | Zephyr (v4.3.0)          |
-| nRF52840 DK + ESP32  | Zephyr (v4.3.0)          |
-| RAK5010              | Zephyr (v4.3.0)          |
+| ESP32-S3-DevKitC-1   | Zephyr (v4.3.1)          |
+| FRDM-RW612           | Zephyr (v4.3.1)          |
+| nRF52840 DK + ESP32  | Zephyr (v4.3.1)          |
+| RAK5010              | Zephyr (v4.3.1)          |
 | nRF9160 DK           | nRF Connect SDK (v3.2.4) |
 | CY8CPROTO-062-4343W  | ModusToolbox (3.3.0)     |
