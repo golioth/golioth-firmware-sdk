@@ -48,6 +48,12 @@ void net_connect(void)
 {
     struct net_if *iface = net_if_get_default();
 
+    if (!iface)
+    {
+        LOG_ERR("No network interface found");
+        return;
+    }
+
     if (!net_if_is_up(iface))
     {
         LOG_INF("Bringing up network interface");
