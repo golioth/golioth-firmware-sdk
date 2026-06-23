@@ -32,6 +32,10 @@ on:
       coap_gateway_url:
         required: true
         type: string
+      skip_tests_on_pr:
+        required: false
+        type: boolean
+        default: false
   workflow_call:
     inputs:
       hil_board:
@@ -62,6 +66,10 @@ on:
       coap_gateway_url:
         required: true
         type: string
+      skip_tests_on_pr:
+        required: false
+        type: boolean
+        default: false
 
 jobs:
   matrix:
@@ -154,7 +162,9 @@ jobs:
 
   test:
     name: zephyr-${{ inputs.hil_board }}-twister-run (${{ matrix.name }})
-    if: ${{ inputs.run_tests && !cancelled() }}
+    if: >-
+      ${{ inputs.run_tests && !cancelled()
+      && !(inputs.skip_tests_on_pr && github.event_name == 'pull_request') }}
     needs:
       - matrix
       - build
