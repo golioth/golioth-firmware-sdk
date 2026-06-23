@@ -168,9 +168,38 @@ static void wifi_mgmt_connecting_update(struct wifi_manager_data *wifi_mgmt, boo
     }
 }
 
+static bool wifi_iface_ready(struct wifi_manager_data *wifi_mgmt)
+{
+    struct wifi_iface_status status = {0};
+    int err;
+
+    err = net_mgmt(NET_REQUEST_WIFI_IFACE_STATUS, wifi_mgmt->iface, &status, sizeof(status));
+    if (err)
+    {
+        LOG_DBG("WiFi iface status not ready yet: %d", err);
+        return false;
+    }
+
+    switch (status.state)
+    {
+        case WIFI_STATE_INTERFACE_DISABLED:
+        case WIFI_STATE_UNKNOWN:
+            return false;
+        default:
+            LOG_DBG("WiFi iface not ready, state=%d", status.state);
+            return true;
+    }
+}
+
 static void wifi_connect(struct wifi_manager_data *wifi_mgmt)
 {
     int err;
+
+    if (!wifi_iface_ready(wifi_mgmt))
+    {
+        wifi_event_notify(wifi_mgmt, WIFI_EVENT_DISCONNECTED);
+        return;
+    }
 
     LOG_INF("Connecting to stored WiFi network");
 
