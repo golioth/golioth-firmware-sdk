@@ -137,6 +137,7 @@ jobs:
             west_board: rak5010/nrf52840
             manifest: .ci-west-zephyr.yml
             binary_name: zephyr/zephyr.hex
+            skip_tests_on_pr: true
     uses: ./.github/workflows/hil-integration-zephyr.yml
     with:
       hil_board: ${{ matrix.hil_board }}
@@ -254,6 +255,7 @@ jobs:
               --west-flash=--gdb=/usr/bin/gdb
               --west-runner blackmagicprobe
             run_tests: true
+            skip_tests_on_pr: true
     uses: ./.github/workflows/hil-sample-zephyr.yml
     with:
       hil_board: ${{ matrix.hil_board }}
