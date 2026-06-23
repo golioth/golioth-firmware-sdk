@@ -27,6 +27,10 @@ on:
       coap_gateway_url:
         required: true
         type: string
+      skip_tests_on_pr:
+        required: false
+        type: boolean
+        default: false
   workflow_call:
     inputs:
       hil_board:
@@ -53,6 +57,10 @@ on:
       coap_gateway_url:
         required: true
         type: string
+      skip_tests_on_pr:
+        required: false
+        type: boolean
+        default: false
 
 jobs:
   matrix:
@@ -170,6 +178,7 @@ jobs:
 
   test:
     name: zephyr-${{ inputs.hil_board }}-test (${{ matrix.test }})
+    if: ${{ !(inputs.skip_tests_on_pr && github.event_name == 'pull_request') }}
     needs:
       - matrix
       - build

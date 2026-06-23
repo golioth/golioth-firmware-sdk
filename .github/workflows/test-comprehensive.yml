@@ -147,6 +147,7 @@ jobs:
       api-url: ${{ inputs.api-url }}
       api-key-id: ${{ inputs.api-key-id }}
       coap_gateway_url: ${{ inputs.coap_gateway_url }}
+      skip_tests_on_pr: ${{ matrix.skip_tests_on_pr || false }}
     secrets: inherit
 
   hil_test_zephyr_nsim:
@@ -264,6 +265,7 @@ jobs:
       api-url: ${{ inputs.api-url }}
       api-key-id: ${{ inputs.api-key-id }}
       coap_gateway_url: ${{ inputs.coap_gateway_url }}
+      skip_tests_on_pr: ${{ matrix.skip_tests_on_pr || false }}
     secrets: inherit
 
   hil_sample_zephyr_nsim:
