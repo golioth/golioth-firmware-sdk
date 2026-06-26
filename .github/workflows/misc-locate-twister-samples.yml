@@ -17,7 +17,7 @@ jobs:
     name: zephyr-${{ inputs.west_board }}-sample-matrix
     runs-on: ubuntu-24.04
     container:
-      image: golioth/golioth-zephyr-base:0.17.4-SDK-v0
+      image: golioth/golioth-zephyr-base:pr-71-sdk-0.17.4
 
     outputs:
       sample_list: ${{ steps.locate-samples.outputs.sample_list }}

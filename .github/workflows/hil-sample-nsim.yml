@@ -54,7 +54,7 @@ jobs:
         include: ${{ fromJSON(needs.matrix.outputs.sample_list) }}
     runs-on: ubuntu-24.04
     container:
-      image: golioth/golioth-zephyr-base:0.17.4-SDK-v0
+      image: golioth/golioth-zephyr-base:pr-71-sdk-0.17.4
     env:
       ZEPHYR_SDK_INSTALL_DIR: /opt/toolchains/zephyr-sdk-0.17.4
       EXTRA_TWISTER_ARGS: ${{ github.event_name == 'pull_request' && '-e nightly' || '' }}
