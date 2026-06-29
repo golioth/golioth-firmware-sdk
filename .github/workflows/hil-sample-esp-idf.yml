@@ -198,7 +198,8 @@ jobs:
     timeout-minutes: 30
 
     container:
-      image: golioth/golioth-hil-base:bda7b71
+      # yamllint disable-line rule:line-length
+      image: golioth/golioth-hil-base:bda7b71@sha256:9eb8fcac14e734196c5cb29074221c5c3983cc59d8408bcfb4b0c8028a20b142
       volumes:
         - /dev:/dev
         - /home/golioth/credentials:/opt/credentials

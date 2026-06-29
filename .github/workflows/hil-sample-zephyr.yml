@@ -86,7 +86,8 @@ jobs:
       fail-fast: false
       matrix:
         include: ${{ fromJSON(needs.matrix.outputs.sample_list) }}
-    container: golioth/golioth-zephyr-base:0.17.4-SDK-v0
+    # yamllint disable-line rule:line-length
+    container: golioth/golioth-zephyr-base:0.17.4-SDK-v0@sha256:4b734cfd4784affb0df6a8d631db267d97bcec7fbfa67783ee85153592acb388
     env:
       ZEPHYR_SDK_INSTALL_DIR: /opt/toolchains/zephyr-sdk-0.17.4
     runs-on: ubuntu-24.04
@@ -178,7 +179,8 @@ jobs:
     timeout-minutes: 30
 
     container:
-      image: golioth/golioth-twister-base:bda7b71
+      # yamllint disable-line rule:line-length
+      image: golioth/golioth-twister-base:bda7b71@sha256:e2df86f4fc795fd159dc984f1e7bc345983b26efee1090dd9793028c5ff7430d
       env:
         ZEPHYR_SDK_INSTALL_DIR: /opt/toolchains/zephyr-sdk-0.17.4
       volumes:

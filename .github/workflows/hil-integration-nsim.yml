@@ -66,7 +66,8 @@ jobs:
     runs-on: ubuntu-24.04
     needs: matrix
     container:
-      image: golioth/golioth-zephyr-base:0.17.4-SDK-v0
+      # yamllint disable-line rule:line-length
+      image: golioth/golioth-zephyr-base:0.17.4-SDK-v0@sha256:4b734cfd4784affb0df6a8d631db267d97bcec7fbfa67783ee85153592acb388
     env:
       ZEPHYR_SDK_INSTALL_DIR: /opt/toolchains/zephyr-sdk-0.17.4
     name: zephyr-${{ inputs.platform }}-${{ matrix.test }}-test-nsim

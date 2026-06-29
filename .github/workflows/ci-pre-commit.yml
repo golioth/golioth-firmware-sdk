@@ -10,7 +10,8 @@ jobs:
     runs-on: ubuntu-24.04
 
     container:
-      image: kiwicom/pre-commit:3.6.0
+      # yamllint disable-line rule:line-length
+      image: kiwicom/pre-commit:3.6.0@sha256:381a3406aa9e6fedfc386ca0889dd5b8e9b915cbc5490a3ecec272ed7b8a67ed
 
     steps:
       - uses: actions/checkout@9c091bb21b7c1c1d1991bb908d89e4e9dddfe3e0 # v7.0.0
