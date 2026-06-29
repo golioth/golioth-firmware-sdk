@@ -46,7 +46,7 @@ jobs:
 
     steps:
       - name: Checkout repository
-        uses: actions/checkout@v6
+        uses: actions/checkout@9c091bb21b7c1c1d1991bb908d89e4e9dddfe3e0 # v7.0.0
 
       - name: Prepare tests matrix
         id: output-tests
@@ -71,7 +71,7 @@ jobs:
     runs-on: ubuntu-24.04
     steps:
       - name: Checkout Repository and Submodules
-        uses: actions/checkout@v6
+        uses: actions/checkout@9c091bb21b7c1c1d1991bb908d89e4e9dddfe3e0 # v7.0.0
         with:
           submodules: 'recursive'
 
@@ -85,7 +85,7 @@ jobs:
           mkdir test_binaries
 
       - name: Build Test Firmware
-        uses: espressif/esp-idf-ci-action@v1
+        uses: espressif/esp-idf-ci-action@e6f5c74232b1ccd4c97ed641f1e48553853f1fd5 # v1.2.0
         with:
           esp_idf_version: v5.4.1
           target: ${{ inputs.idf_target }}
@@ -95,7 +95,7 @@ jobs:
               mv build/merged.bin ../../../../test_binaries/${{ matrix.test }}.bin
 
       - name: Save Artifacts
-        uses: actions/upload-artifact@v6
+        uses: actions/upload-artifact@043fb46d1a93c77aae656e7c1c64a875d1fc6a0a # v7.0.1
         with:
           name: ${{ inputs.hil_board }}-hil-espidf-${{ matrix.test }}
           path: test_binaries/*
@@ -138,7 +138,7 @@ jobs:
 
     steps:
       - name: Checkout repository
-        uses: actions/checkout@v6
+        uses: actions/checkout@9c091bb21b7c1c1d1991bb908d89e4e9dddfe3e0 # v7.0.0
 
       - name: Setup Python dependencies
         run: |
@@ -152,7 +152,7 @@ jobs:
         run: python3 /opt/golioth-scripts/usb_hub_power.py on
 
       - name: Download build
-        uses: actions/download-artifact@v4
+        uses: actions/download-artifact@3e5f45b2cfb9172054b4087a40e8e0b5a5461e7c # v8.0.1
         with:
           name: ${{ inputs.hil_board }}-hil-espidf-${{ matrix.test }}
           path: .
@@ -220,7 +220,7 @@ jobs:
 
     steps:
       - name: Collect JUnit reports
-        uses: actions/download-artifact@v4
+        uses: actions/download-artifact@3e5f45b2cfb9172054b4087a40e8e0b5a5461e7c # v8.0.1
         with:
           path: summary
           pattern: ci-individual-hil-espidf-${{ inputs.hil_board }}-*
@@ -242,7 +242,7 @@ jobs:
           mv combined.xml summary/hil-espidf-${{ inputs.hil_board }}.xml
 
       - name: Upload CI report summary
-        uses: actions/upload-artifact@v6
+        uses: actions/upload-artifact@043fb46d1a93c77aae656e7c1c64a875d1fc6a0a # v7.0.1
         with:
           name: ci-summary-hil-espidf-${{ inputs.hil_board }}
           path: summary/hil-espidf-${{ inputs.hil_board }}.xml

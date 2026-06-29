@@ -92,7 +92,7 @@ jobs:
     runs-on: ubuntu-24.04
     steps:
       - name: Checkout repository and submodules
-        uses: actions/checkout@v6
+        uses: actions/checkout@9c091bb21b7c1c1d1991bb908d89e4e9dddfe3e0 # v7.0.0
         with:
           path: modules/lib/golioth-firmware-sdk
           submodules: 'recursive'
@@ -155,7 +155,7 @@ jobs:
 
       - name: Save artifacts
         if: success() || failure()
-        uses: actions/upload-artifact@v6
+        uses: actions/upload-artifact@043fb46d1a93c77aae656e7c1c64a875d1fc6a0a # v7.0.1
         with:
           name: test_artifacts_${{ inputs.hil_board }}-${{ matrix.name }}
           path: test_artifacts_${{ inputs.hil_board }}-${{ matrix.name }}.tar
@@ -188,7 +188,7 @@ jobs:
 
     steps:
       - name: Checkout repository and submodules
-        uses: actions/checkout@v6
+        uses: actions/checkout@9c091bb21b7c1c1d1991bb908d89e4e9dddfe3e0 # v7.0.0
         with:
           path: modules/lib/golioth-firmware-sdk
       - name: Init and update west
@@ -218,7 +218,7 @@ jobs:
       - name: Power On USB Hub
         run: python3 /opt/golioth-scripts/usb_hub_power.py on
       - name: Download build
-        uses: actions/download-artifact@v4
+        uses: actions/download-artifact@3e5f45b2cfb9172054b4087a40e8e0b5a5461e7c # v8.0.1
         with:
           name: test_artifacts_${{ inputs.hil_board }}-${{ matrix.name }}
           path: .
@@ -362,7 +362,7 @@ jobs:
 
     steps:
       - name: Collect JUnit reports
-        uses: actions/download-artifact@v4
+        uses: actions/download-artifact@3e5f45b2cfb9172054b4087a40e8e0b5a5461e7c # v8.0.1
         with:
           pattern: ci-individual-samples-zephyr-*
 
@@ -389,7 +389,7 @@ jobs:
           fi
 
       - name: Upload CI report summary
-        uses: actions/upload-artifact@v6
+        uses: actions/upload-artifact@043fb46d1a93c77aae656e7c1c64a875d1fc6a0a # v7.0.1
         if: success() || failure()
         with:
           name: ci-summary-samples-zephyr-${{ inputs.hil_board }}
