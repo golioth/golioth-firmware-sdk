@@ -10,7 +10,8 @@ jobs:
     runs-on: ubuntu-24.04
 
     container:
-      image: jorisroovers/gitlint:0.19.1
+      # yamllint disable-line rule:line-length
+      image: jorisroovers/gitlint:0.19.1@sha256:bc451a096ba8ce380c9d9e0e6afdef47e54369b47ca5e1be95fae1b879b8e3b8
 
     steps:
       - uses: actions/checkout@9c091bb21b7c1c1d1991bb908d89e4e9dddfe3e0 # v7.0.0

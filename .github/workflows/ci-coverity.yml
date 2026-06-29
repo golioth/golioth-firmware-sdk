@@ -9,7 +9,8 @@ on:
 jobs:
   coverity:
     runs-on: ubuntu-24.04
-    container: golioth/golioth-coverity-base:bda7b71
+    # yamllint disable-line rule:line-length
+    container: golioth/golioth-coverity-base:bda7b71@sha256:fa0cbe0e64a8b3a81a0899e2e57284e661e5ddeef7dac500a22be035c5b21361
 
     steps:
       - uses: actions/checkout@9c091bb21b7c1c1d1991bb908d89e4e9dddfe3e0 # v7.0.0
