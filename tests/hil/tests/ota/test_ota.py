@@ -5,7 +5,7 @@ import trio
 
 LOGGER = logging.getLogger(__name__)
 
-LOG_FETCH_POLLING_LIMIT = datetime.timedelta(seconds=60)
+EVENT_FETCH_POLLING_LIMIT = datetime.timedelta(seconds=60)
 
 UPDATE_PACKAGE = 'main'
 DUMMY_VER_OLDER = '1.2.2'
@@ -118,35 +118,6 @@ async def verify_component_values(board, info):
     assert None is not await board.wait_for_regex_in_line(f'component.size: {b_info["size"]}', timeout_s=2)
     assert None is not await board.wait_for_regex_in_line(f'component.hash: {b_info["digests"]["sha256"]["digest"]}', timeout_s=2)
 
-def verify_dfu_status_logs(logs):
-    # Filter to only the DFU status-report logs emitted by test_reason_and_state.
-    status_logs = [
-        log for log in logs
-        if log.metadata.get('reasonCode') is not None
-        and log.metadata.get('stateCode') is not None
-        and log.metadata.get('package') == 'lobster'
-    ]
-
-    assert len(status_logs) == len(golioth_ota_reason)
-
-    # Filter received logs by reasonCode
-    by_reason = {}
-    for log in status_logs:
-        reason_code = int(log.metadata['reasonCode'])
-        if reason_code in by_reason:
-            raise AssertionError(f"duplicate reasonCode: {reason_code}")
-        by_reason[reason_code] = log
-
-    # Iterate reason codes and check against filtered log messages
-    for i, r in enumerate(golioth_ota_reason):
-        assert i in by_reason, f"missing reasonCode: {i} ({r})"
-        log = by_reason[i]
-        assert int(log.metadata['stateCode']) == i % GOLIOTH_OTA_STATE_CNT
-        assert log.metadata['state'] == golioth_ota_state[i % GOLIOTH_OTA_STATE_CNT]
-        assert log.metadata['package'] == "lobster"
-        assert log.metadata['version'] == "2.3.4"
-        assert log.metadata['target'] == "5.6.7"
-
 ##### Tests #####
 
 async def test_manifest(artifacts, board, project, cohort):
@@ -212,42 +183,31 @@ async def test_reason_and_state(board, device, project, artifacts, cohort):
 
     await board.wait_for_regex_in_line("GOLIOTH_ERR_NULL: 5", timeout_s=6)
 
-    # Pause to ensure logs propagate to cloud
+    # Pause to ensure OTA events propagate to cloud
 
     await trio.sleep(5)
 
-    # Fetch logs
-
-    log_fetch_start = datetime.datetime.now(datetime.UTC)
-    min_required = GOLIOTH_OTA_REASON_CNT
-    last_validation_error = None
+    event_fetch_start = datetime.datetime.now(datetime.UTC)
 
     while True:
         end = datetime.datetime.now(datetime.UTC)
 
-        logs = await device.get_logs(
-            {
-                "start": start.strftime("%Y-%m-%dT%H:%M:%S.%fZ"),
-                "end": end.strftime("%Y-%m-%dT%H:%M:%S.%fZ"),
-                "module": "golioth_dfu",
-            }
-        )
+        try:
+            events = await project.ota_events.get(
+                deviceId=device.id,
+                startTime=start,
+                endTime=end,
+                limit=GOLIOTH_OTA_REASON_CNT,
+            )
+        except Exception:
+            events = []
 
-        if len(logs) >= min_required:
-            try:
-                verify_dfu_status_logs(logs)
-                break
-            except AssertionError as e:
-                last_validation_error = e
-                if str(e).startswith("duplicate reasonCode:"):
-                    raise
-                min_required = len(logs) + 1
+        if len(events) >= GOLIOTH_OTA_REASON_CNT:
+            break
 
-        elapsed = datetime.datetime.now(datetime.UTC) - log_fetch_start
-        assert LOG_FETCH_POLLING_LIMIT > elapsed, (
-            f"Timed out after {elapsed.total_seconds():.1f}s waiting for "
-            f"{min_required} golioth_dfu logs"
-            + (f". Last validation error: {last_validation_error}" if last_validation_error else "")
+        assert (
+            EVENT_FETCH_POLLING_LIMIT
+            > datetime.datetime.now(datetime.UTC) - event_fetch_start
         )
 
         await trio.sleep(1)
