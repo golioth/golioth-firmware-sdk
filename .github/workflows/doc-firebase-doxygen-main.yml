@@ -1,4 +1,8 @@
 name: "Doc: Doxygen to Firebase (Main)"
+permissions:
+  deployments: write
+  statuses: write
+  checks: write
 'on':
   push:
     branches:

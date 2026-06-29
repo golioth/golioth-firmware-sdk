@@ -1,4 +1,9 @@
 name: "Doc: Doxygen to Firebase (PR)"
+permissions:
+  deployments: write
+  statuses: write
+  pull-requests: write
+  checks: write
 on: pull_request
 jobs:
   deploy_doxygen_dev:
