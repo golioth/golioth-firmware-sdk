@@ -303,14 +303,8 @@ static void test_reason_and_state(void)
         enum golioth_ota_state state = i % GOLIOTH_OTA_STATE_CNT;
         enum golioth_ota_reason reason = i;
         GLTH_LOGI(TAG, "Updating status. Reason: %d State: %d", reason, state);
-        status = golioth_ota_report_state(client,
-                                          state,
-                                          reason,
-                                          "lobster",
-                                          "2.3.4",
-                                          "5.6.7",
-                                          NULL,
-                                          NULL);
+        status =
+            golioth_ota_report_state(client, state, reason, "main", "2.3.4", "5.6.7", NULL, NULL);
 
         if (status != GOLIOTH_OK)
         {
@@ -326,7 +320,7 @@ static void test_reason_and_state(void)
     golioth_sys_msleep(1000);
 
     /* The log of this null test is used as a trigger by pytest and must always be last */
-    status = golioth_ota_report_state(NULL, 0, 0, "lobster", "2.3.4", "5.6.7", NULL, NULL);
+    status = golioth_ota_report_state(NULL, 0, 0, "main", "2.3.4", "5.6.7", NULL, NULL);
     GLTH_LOGE(TAG, "GOLIOTH_ERR_NULL: %d", status);
 }
 

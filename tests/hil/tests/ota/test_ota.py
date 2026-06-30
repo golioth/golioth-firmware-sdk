@@ -251,3 +251,13 @@ async def test_reason_and_state(board, device, project, artifacts, cohort):
         )
 
         await trio.sleep(1)
+
+    assert len(events) == GOLIOTH_OTA_REASON_CNT
+
+    # API returns newest-first
+    for i, e in enumerate(reversed(events)):
+        assert e.status == i
+        assert e.eventType == golioth_ota_state[i % GOLIOTH_OTA_STATE_CNT]
+        assert e.packageId == "main"
+        assert e.currentVersion == "2.3.4"
+        assert e.targetVersion == "5.6.7"
