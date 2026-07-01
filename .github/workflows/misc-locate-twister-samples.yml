@@ -18,7 +18,7 @@ jobs:
     runs-on: ubuntu-24.04
     container:
       # yamllint disable-line rule:line-length
-      image: golioth/golioth-zephyr-base:0.17.4-SDK-v0@sha256:4b734cfd4784affb0df6a8d631db267d97bcec7fbfa67783ee85153592acb388
+      image: golioth/golioth-zephyr-base:ee62f47-sdk-0.17.4@sha256:a8561b8de5a23f9eb28101734d672e0582328add515ce4b4788428cd126e6e2b
 
     outputs:
       sample_list: ${{ steps.locate-samples.outputs.sample_list }}
