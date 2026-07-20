@@ -265,7 +265,7 @@ enum golioth_status golioth_rpc_deinit(struct golioth_rpc *grpc)
     }
 
     golioth_coap_client_cancel_observations_by_prefix(grpc->client, GOLIOTH_RPC_PATH_PREFIX);
-    free(grpc);
+    golioth_sys_free(grpc);
     return GOLIOTH_OK;
 }
 

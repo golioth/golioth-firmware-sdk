@@ -217,7 +217,8 @@ static void on_end(struct golioth_client *client,
     }
 
 finish:
-    free(bytes_cached_p);
+    /* allocated in test_manifest_get(), freed here */
+    golioth_sys_free(bytes_cached_p);
     golioth_sys_sem_give(manifest_get_cb_sem);
 }
 
@@ -274,6 +275,7 @@ static void test_manifest_get(void)
     }
 
 
+    /* Allocated here, freed in on_end() (or in error path below) */
     size_t *bytes_cached_p = (size_t *) golioth_sys_malloc(sizeof(size_t));
     if (NULL == bytes_cached_p)
     {
@@ -287,6 +289,7 @@ static void test_manifest_get(void)
     if (GOLIOTH_OK != err)
     {
         GLTH_LOGE(TAG, "Failed to get manifest: %d", err);
+        golioth_sys_free(bytes_cached_p);
     }
     else
     {

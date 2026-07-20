@@ -293,7 +293,7 @@ enum golioth_status golioth_blockwise_post(struct golioth_client *client,
     golioth_sys_sem_destroy(ctx.sem);
 
 finish_with_block_buffer:
-    free(ctx.block_buffer);
+    golioth_sys_free(ctx.block_buffer);
 
 finish:
     return status;
