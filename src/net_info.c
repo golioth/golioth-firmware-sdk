@@ -36,7 +36,7 @@ enum golioth_status golioth_net_info_destroy(struct golioth_net_info *info)
         return GOLIOTH_ERR_NULL;
     }
 
-    free(info);
+    golioth_sys_free(info);
     return GOLIOTH_OK;
 }
 

@@ -504,7 +504,7 @@ enum golioth_status golioth_settings_deinit(struct golioth_settings *settings)
     }
 
     golioth_coap_client_cancel_observations_by_prefix(settings->client, SETTINGS_PATH_PREFIX);
-    free(settings);
+    golioth_sys_free(settings);
     return GOLIOTH_OK;
 }
 
