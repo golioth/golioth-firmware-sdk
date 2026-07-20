@@ -448,6 +448,7 @@ static void ota_component_download_end_cb_wrapper(struct golioth_client *client,
 
     ctx->end_cb(status, coap_rsp_code, ctx->component, block_idx, ctx->arg);
 
+    /* allocated in golioth_ota_download_component(), freed here */
     golioth_sys_free(ctx);
 }
 
@@ -458,22 +459,36 @@ enum golioth_status golioth_ota_download_component(struct golioth_client *client
                                                    ota_component_download_end_cb end_cb,
                                                    void *arg)
 {
+    /* Allocated here, freed in ota_component_download_end_cb_wrapper() (or the err path below) */
     struct ota_component_blockwise_ctx *ctx =
         golioth_sys_malloc(sizeof(struct ota_component_blockwise_ctx));
+
+    if (ctx == NULL)
+    {
+        return GOLIOTH_ERR_MEM_ALLOC;
+    }
+
     ctx->component = component;
     ctx->block_cb = block_cb;
     ctx->end_cb = end_cb;
     ctx->arg = arg;
 
 
-    return golioth_blockwise_get(client,
-                                 "",
-                                 component->uri,
-                                 GOLIOTH_CONTENT_TYPE_OCTET_STREAM,
-                                 block_idx,
-                                 ota_component_write_cb_wrapper,
-                                 ota_component_download_end_cb_wrapper,
-                                 ctx);
+    enum golioth_status status = golioth_blockwise_get(client,
+                                                       "",
+                                                       component->uri,
+                                                       GOLIOTH_CONTENT_TYPE_OCTET_STREAM,
+                                                       block_idx,
+                                                       ota_component_write_cb_wrapper,
+                                                       ota_component_download_end_cb_wrapper,
+                                                       ctx);
+
+    if (GOLIOTH_OK != status)
+    {
+        golioth_sys_free(ctx);
+    }
+
+    return status;
 }
 
 enum golioth_ota_state golioth_ota_get_state(void)
