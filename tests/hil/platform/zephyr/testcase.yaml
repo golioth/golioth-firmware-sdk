@@ -11,7 +11,6 @@ common:
     - native_sim/native/64
     - nrf52840dk/nrf52840
     - nrf9160dk/nrf9160/ns
-    - rak5010/nrf52840
   timeout: 600
 tests:
   golioth.hil.connection:

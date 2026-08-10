@@ -133,11 +133,6 @@ jobs:
             west_board: nrf9160dk/nrf9160/ns
             manifest: .ci-west-ncs.yml
             binary_name: merged.hex
-          - hil_board: rak5010
-            west_board: rak5010/nrf52840
-            manifest: .ci-west-zephyr.yml
-            binary_name: zephyr/zephyr.hex
-            skip_tests_on_pr: true
     uses: ./.github/workflows/hil-integration-zephyr.yml
     with:
       hil_board: ${{ matrix.hil_board }}
@@ -148,7 +143,6 @@ jobs:
       api-url: ${{ inputs.api-url }}
       api-key-id: ${{ inputs.api-key-id }}
       coap_gateway_url: ${{ inputs.coap_gateway_url }}
-      skip_tests_on_pr: ${{ matrix.skip_tests_on_pr || false }}
     secrets: inherit
 
   hil_test_zephyr_nsim:
@@ -246,16 +240,6 @@ jobs:
             west_board: nucleo_h563zi/stm32h563xx
             manifest: .ci-west-zephyr.yml
             run_tests: false
-
-          - hil_board: rak5010
-            west_board: rak5010/nrf52840
-            manifest: .ci-west-zephyr.yml
-            extra_twister_args: >-
-              --flash-before
-              --west-flash=--gdb=/usr/bin/gdb
-              --west-runner blackmagicprobe
-            run_tests: true
-            skip_tests_on_pr: true
     uses: ./.github/workflows/hil-sample-zephyr.yml
     with:
       hil_board: ${{ matrix.hil_board }}
@@ -267,7 +251,6 @@ jobs:
       api-url: ${{ inputs.api-url }}
       api-key-id: ${{ inputs.api-key-id }}
       coap_gateway_url: ${{ inputs.coap_gateway_url }}
-      skip_tests_on_pr: ${{ matrix.skip_tests_on_pr || false }}
     secrets: inherit
 
   hil_sample_zephyr_nsim:

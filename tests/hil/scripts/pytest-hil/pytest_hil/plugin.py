@@ -6,7 +6,6 @@ from pytest_hil.esp32s3_devkitc import ESP32S3DevKitC
 from pytest_hil.frdmrw612 import FRDMRW612
 from pytest_hil.nrf52840dk import nRF52840DK
 from pytest_hil.nrf9160dk  import nRF9160DK
-from pytest_hil.rak5010 import RAK5010
 from pytest_hil.linuxboard import LinuxBoard
 from pytest_hil.native_sim import NativeSimBoard
 
@@ -117,8 +116,6 @@ async def board(request, baud, wifi_ssid, wifi_psk):
         board = nRF9160DK(port, baud, wifi_ssid, wifi_psk, fw_image, serial_number=serial_number)
     elif board_name.lower() == "native_sim":
         board = NativeSimBoard(fw_image)
-    elif board_name.lower() == "rak5010":
-        board = RAK5010(port, baud, wifi_ssid, wifi_psk, fw_image, bmp_port=bmp_port)
     elif board_name.lower() == "linux":
         board = LinuxBoard(fw_image)
     else:

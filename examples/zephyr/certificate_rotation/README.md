@@ -56,16 +56,6 @@ $ west build -b nrf9160dk/nrf9160/ns examples/zephyr/certificate_rotation
 $ west flash
 ```
 
-#### RAK5010 (v2 with BG95)
-
-On your host computer open a terminal window. From the
-`golioth-firmware-sdk` folder, type:
-
-```console
-$ west build -b rak5010/nrf52840 examples/zephyr/certificate_rotation
-$ west flash
-```
-
 ## Installing `mcumgr`
 
 For full instructions, see

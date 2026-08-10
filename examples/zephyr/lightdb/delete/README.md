@@ -78,16 +78,6 @@ $ west build -b nrf9160dk/nrf9160/ns examples/zephyr/lightdb/delete
 $ west flash
 ```
 
-#### RAK5010 (v2 with BG95)
-
-On your host computer open a terminal window. From the
-`golioth-firmware-sdk` folder, type:
-
-```console
-$ west build -b rak5010/nrf52840 examples/zephyr/lightdb/delete
-$ west flash
-```
-
 ### Sample output
 
 This is the output from the serial console:
