@@ -3,7 +3,7 @@ import logging
 import pytest
 import trio
 
-from golioth import RPCStatusCode
+from golioth import RPCResultError, RPCStatusCode, RPCTimeout
 
 LOGGER = logging.getLogger(__name__)
 
@@ -42,11 +42,12 @@ async def test_rpc(shell, device, wifi_ssid, wifi_psk):
 
     # Test invalid argument RPC
 
-    error_code = None
     try:
         result = await device.rpc.call("multiply", [ 6, 'J' ])
-    except Exception as e:
-        error_code = e
-        pass
-    LOGGER.info("### Received: {0} Expected: {1}".format(error_code.status_code,  RPCStatusCode.INVALID_ARGUMENT))
-    assert error_code.status_code == RPCStatusCode.INVALID_ARGUMENT, "Didn't receive correct error code"
+    except RPCTimeout:
+        assert False, "RPC with invalid args timed out"
+    except RPCResultError as e:
+        LOGGER.info("### Received: {0} Expected: {1}".format(e.status_code,  RPCStatusCode.INVALID_ARGUMENT))
+        assert e.status_code == RPCStatusCode.INVALID_ARGUMENT, "Didn't receive correct error code"
+    else:
+        assert False, f"RPC with invalid args should have raised an error, but returned: {result}"
