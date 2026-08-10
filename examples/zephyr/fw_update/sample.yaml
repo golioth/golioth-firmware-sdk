@@ -21,11 +21,6 @@ tests:
       - nrf52840dk/nrf52840
       - nrf9160dk/nrf9160/ns
       - nucleo_h563zi/stm32h563xx
-  sample.golioth.fw_update.buildonly:
-    build_only: true
-    sysbuild: true
-    platform_allow:
-      - rak5010/nrf52840
   sample.golioth.fw_update.native:
     build_only: true
     platform_allow:

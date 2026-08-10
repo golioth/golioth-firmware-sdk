@@ -26,7 +26,6 @@ tests:
       - nrf52840dk/nrf52840
       - nrf9160dk/nrf9160/ns
       - nucleo_h563zi/stm32h563xx
-      - rak5010/nrf52840
   sample.golioth.certificate_rotation.psa_crypto:
     build_only: true
     tags:
@@ -46,4 +45,3 @@ tests:
       - nrf52840dk/nrf52840
       - nrf9160dk/nrf9160/ns
       - nucleo_h563zi/stm32h563xx
-      - rak5010/nrf52840
