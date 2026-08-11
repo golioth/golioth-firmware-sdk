@@ -24,3 +24,17 @@ tests:
       - nrf52840dk/nrf52840
       - nrf9160dk/nrf9160/ns
       - nucleo_h563zi/stm32h563xx
+  sample.golioth.lightdb_get.wifi:
+    harness: pytest
+    tags:
+      - golioth
+      - lightdb
+      - socket
+      - goliothd
+    timeout: 180
+    extra_configs:
+      - CONFIG_GOLIOTH_SAMPLE_TWISTER_TEST=y
+    extra_args:
+      - EXTRA_CONF_FILE=boards/frdm_rw612_wifi.conf
+    platform_allow:
+      - frdm_rw612
