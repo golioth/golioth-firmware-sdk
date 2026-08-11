@@ -213,6 +213,7 @@ jobs:
             manifest: .ci-west-zephyr.yml
             extra_twister_args: >-
               --west-flash="--dev-id=${!SNR_VAR}"
+            binary_blob: hal_nxp
             run_tests: true
 
           - hil_board: nrf52840dk

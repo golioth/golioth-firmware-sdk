@@ -125,7 +125,7 @@ jobs:
       - name: Download binary blobs
         if: ${{ inputs.binary_blob }}
         run: |
-          west blobs fetch ${{ inputs.binary_blob }}
+          west blobs fetch ${{ inputs.binary_blob }} --auto-accept
 
       - name: Compile Tests
         run: |
