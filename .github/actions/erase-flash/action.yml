@@ -1,0 +1,47 @@
+name: Erase flash
+description: Erase flash on the target board after testing
+
+inputs:
+  hil_board:
+    required: true
+    type: string
+
+runs:
+  using: composite
+  steps:
+    - name: Erase flash
+      shell: bash
+      env:
+        hil_board: ${{ inputs.hil_board }}
+      run: |
+        source /opt/credentials/runner_env.sh
+        export PATH=$PATH:/opt/SEGGER/JLink
+        SNR_VAR=CI_${hil_board^^}_SNR
+        PORT_VAR=CI_${hil_board^^}_PORT
+        cat <<EOF > erase_frdm_rw612.jlink
+        r
+        h
+        exec EnableEraseAllFlashBanks
+        erase 0x8000000 0x8624000
+        sleep 30
+        r
+        sleep 3
+        q
+        EOF
+
+        if [[ "${hil_board}" == "nrf9160dk" ]] || [[ "${hil_board}" == "nrf52840dk" ]]; then
+          nrfjprog --recover --snr ${!SNR_VAR}
+
+        elif [[ "${hil_board}" == "esp32s3_devkitc" ]]; then
+          esptool.py --port ${!PORT_VAR} erase_flash
+
+        elif [[ "${hil_board}" == "frdm_rw612" ]]; then
+          JLinkExe \
+            -nogui 1 \
+            -if swd \
+            -speed auto \
+            -device RW612 \
+            -CommanderScript erase_frdm_rw612.jlink \
+            -SelectEmuBySN ${!SNR_VAR}
+
+        fi
