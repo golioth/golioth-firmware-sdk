@@ -9,10 +9,6 @@
 #include <golioth/config.h>
 #include <golioth/golioth_sys.h>
 
-/// Event group bits for request_complete_event
-#define RESPONSE_RECEIVED_EVENT_BIT (1 << 0)
-#define RESPONSE_TIMEOUT_EVENT_BIT (1 << 1)
-
 #define GOLIOTH_COAP_TOKEN_LEN 8
 
 #define BLOCKSIZE_TO_SZX(blockSize) \
