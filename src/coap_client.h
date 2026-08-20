@@ -155,12 +155,10 @@ struct golioth_coap_request_msg
         struct golioth_coap_observe_params observe;
     };
     /// Time (since boot) in milliseconds when request is no longer valid.
-    /// This is checked when reqeusts are pulled out of the queue and when responses are received.
-    /// Primarily intended to be used for synchronous requests, to avoid blocking forever.
+    /// This is checked when requests are pulled out of the queue and when responses are received.
     uint64_t ageout_ms;
     bool got_response;
     bool got_nack;
-    enum golioth_status *status;
 };
 
 struct golioth_coap_observe_info
