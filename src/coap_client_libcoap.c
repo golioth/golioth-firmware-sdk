@@ -109,11 +109,6 @@ static coap_response_t coap_response_handler(coap_session_t *session,
 
     if (req)
     {
-        if (req->status)
-        {
-            *req->status = status;
-        }
-
         if (req->type == GOLIOTH_COAP_REQUEST_EMPTY)
         {
             GLTH_LOGD(TAG,
