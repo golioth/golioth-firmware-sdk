@@ -168,7 +168,7 @@ static void wifi_mgmt_connecting_update(struct wifi_manager_data *wifi_mgmt, boo
     }
 }
 
-static bool wifi_iface_ready(struct wifi_manager_data *wifi_mgmt)
+static bool wifi_iface_get_state(struct wifi_manager_data *wifi_mgmt, enum wifi_iface_state *state)
 {
     struct wifi_iface_status status = {0};
     int err;
@@ -180,14 +180,50 @@ static bool wifi_iface_ready(struct wifi_manager_data *wifi_mgmt)
         return false;
     }
 
-    switch (status.state)
+    *state = status.state;
+    return true;
+}
+
+static bool wifi_iface_ready(struct wifi_manager_data *wifi_mgmt)
+{
+    enum wifi_iface_state state;
+
+    if (!wifi_iface_get_state(wifi_mgmt, &state))
+    {
+        return false;
+    }
+
+    switch (state)
     {
         case WIFI_STATE_INTERFACE_DISABLED:
         case WIFI_STATE_UNKNOWN:
+            LOG_DBG("WiFi iface not ready, state=%d", state);
             return false;
         default:
-            LOG_DBG("WiFi iface not ready, state=%d", status.state);
             return true;
+    }
+}
+
+static bool wifi_connect_in_progress(struct wifi_manager_data *wifi_mgmt)
+{
+    enum wifi_iface_state state;
+
+    if (!wifi_iface_get_state(wifi_mgmt, &state))
+    {
+        return false;
+    }
+
+    switch (state)
+    {
+        case WIFI_STATE_SCANNING:
+        case WIFI_STATE_AUTHENTICATING:
+        case WIFI_STATE_ASSOCIATING:
+        case WIFI_STATE_ASSOCIATED:
+        case WIFI_STATE_4WAY_HANDSHAKE:
+        case WIFI_STATE_GROUP_HANDSHAKE:
+            return true;
+        default:
+            return false;
     }
 }
 
@@ -198,6 +234,13 @@ static void wifi_connect(struct wifi_manager_data *wifi_mgmt)
     if (!wifi_iface_ready(wifi_mgmt))
     {
         wifi_event_notify(wifi_mgmt, WIFI_EVENT_DISCONNECTED);
+        return;
+    }
+
+    if (wifi_connect_in_progress(wifi_mgmt))
+    {
+        LOG_DBG("connect already in progress; waiting for it to resolve");
+        wifi_mgmt_connecting_update(wifi_mgmt, true);
         return;
     }
 
