@@ -1,4 +1,13 @@
 import pytest
+import sys
+import west.configuration
+from pathlib import Path
+from twister_harness.helpers.domains_helper import get_default_domain_name
+
+WEST_TOPDIR = Path(west.configuration.west_dir()).parent
+
+sys.path.insert(0, str(WEST_TOPDIR / 'zephyr' / 'scripts' / 'west_commands'))
+from runners.core import BuildConfiguration
 
 UPDATE_VERSION = '255.8.9'
 
@@ -8,7 +17,14 @@ def anyio_backend():
 
 @pytest.fixture(scope="session")
 async def target_package(request):
-    return request.config.getoption('hil_board')
+    build_dir = Path(request.config.option.build_dir)
+    domains = build_dir / 'domains.yaml'
+    assert domains.exists()
+    app_build_dir = build_dir / get_default_domain_name(domains)
+    build_conf = BuildConfiguration(str(app_build_dir))
+    package_name = build_conf['CONFIG_GOLIOTH_FW_UPDATE_PACKAGE_NAME']
+    assert package_name != ""
+    return package_name
 
 @pytest.fixture(scope="session")
 async def fw_info(target_package):
