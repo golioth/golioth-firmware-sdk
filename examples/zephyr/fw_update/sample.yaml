@@ -26,3 +26,18 @@ tests:
     platform_allow:
       - native_sim
       - native_sim/native/64
+  sample.golioth.fw_update.wifi:
+    harness: pytest
+    sysbuild: true
+    tags:
+      - golioth
+      - socket
+      - goliothd
+    timeout: 720
+    extra_configs:
+      - CONFIG_GOLIOTH_SAMPLE_TWISTER_TEST=y
+      - CONFIG_GOLIOTH_FW_UPDATE_PACKAGE_NAME="frdm_rw612_wifi"
+    extra_args:
+      - EXTRA_CONF_FILE=boards/frdm_rw612_wifi.conf
+    platform_allow:
+      - frdm_rw612
