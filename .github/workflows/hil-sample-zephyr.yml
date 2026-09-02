@@ -187,6 +187,7 @@ jobs:
       - name: Init and update west
         run: |
           rm -rf zephyr
+          rm -rf twister-out
 
           MANIFEST=${{ inputs.manifest }}
           MANIFEST_TWISTER=${MANIFEST%.yml}-twister.yml
@@ -223,7 +224,6 @@ jobs:
           path: .
       - name: Extract artifacts
         run: |
-          rm -rf twister-out
           tar -xvf test_artifacts_${{ inputs.hil_board }}-${{ matrix.name }}.tar
       - name: Run test
         shell: bash
