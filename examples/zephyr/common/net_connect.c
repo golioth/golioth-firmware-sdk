@@ -60,13 +60,16 @@ void net_connect(void)
         int ret = net_if_up(iface);
         if ((ret < 0) && (ret != -EALREADY))
         {
-            LOG_ERR("Failed to bring up network interface: %d", ret);
+            LOG_ERR("Network link bring up request failed: %d", ret);
             return;
         }
     }
 
     if (IS_ENABLED(CONFIG_GOLIOTH_SAMPLE_DHCP_BIND))
     {
+        LOG_INF("Waiting for link to be up");
+        wait_for_net_event(iface, NET_EVENT_IF_UP);
+
         LOG_INF("Starting DHCP to obtain IP address");
         net_dhcpv4_start(iface);
     }
