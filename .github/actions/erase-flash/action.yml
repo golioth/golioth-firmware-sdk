@@ -29,7 +29,7 @@ runs:
         q
         EOF
 
-        if [[ "${hil_board}" == "nrf9160dk" ]] || [[ "${hil_board}" == "nrf52840dk" ]]; then
+        if [[ "${hil_board}" == "nrf9160dk" ]]; then
           nrfjprog --recover --snr ${!SNR_VAR}
 
         elif [[ "${hil_board}" == "esp32s3_devkitc" ]]; then

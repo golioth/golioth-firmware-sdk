@@ -20,7 +20,6 @@ Build firmware for each supported device:
 
 ```
 $ west build -b esp32s3_devkitc/esp32s3/procpu --sysbuild examples/zephyr/fw_update
-$ west build -b nrf52840dk/nrf52840 --sysbuild examples/zephyr/fw_update
 $ west build -b nrf9160dk/nrf9160/ns examples/zephyr/fw_update
 $ west build -b frdm_rw612 --sysbuild examples/zephyr/fw_update
 ```
