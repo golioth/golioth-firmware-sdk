@@ -53,20 +53,6 @@ $ west build -b esp32s3_devkitc/esp32s3/procpu examples/zephyr/lightdb/delete
 $ west flash
 ```
 
-#### nRF52840 DK + ESP32-WROOM-32
-
-See [Golioth ESP-AT WiFi
-Shield](../../../../zephyr/boards/shields/golioth_esp_at/doc/index.md).
-
-On your host computer open a terminal window, locate the source code of
-this sample application (i.e., `examples/zephyr/lightdb/delete`) and
-type:
-
-```console
-$ west build -b nrf52840dk/nrf52840 --shield golioth_esp_at examples/zephyr/lightdb/delete
-$ west flash
-```
-
 #### nRF9160 DK
 
 On your host computer open a terminal window, locate the source code of

@@ -11,14 +11,14 @@ be passed to the build system using the CMake variable `GOLIOTH_HIL_TEST`:
 west build -p -b <board> . -- -DGOLIOTH_HIL_TEST=<test_name>
 ```
 
-For example, to compile the connection HIL test for the nRF52840-DK from the
+For example, to compile the connection HIL test for the frdm_rw612 from the
 root of the SDK repository:
 
 ```sh
-west build -p -b nrf52840dk/nrf52840 tests/hil/platform/zephyr -- -DGOLIOTH_HIL_TEST=connection
+west build -p -b frdm_rw612 tests/hil/platform/zephyr -- -DGOLIOTH_HIL_TEST=connection
 ```
 
-## Example of running Zephyr RPC test locally on nRF52840dk
+## Example of running Zephyr RPC test locally on frdm_rw612
 
 ```
 cd modules/lib/golioth-firmware-sdk
@@ -27,11 +27,11 @@ cd modules/lib/golioth-firmware-sdk
 pip install tests/hil/scripts/pytest-hil/
 
 # Build
-west build -p -b nrf52840dk/nrf52840 tests/hil/platform/zephyr -- -DGOLIOTH_HIL_TEST=rpc
+west build -p -b frdm_rw612 tests/hil/platform/zephyr -- -DGOLIOTH_HIL_TEST=rpc
 
 # Run test
 pytest --rootdir . tests/hil/tests/rpc         \
-  --board nrf52840dk                           \
+  --board frwm_rw612                           \
   --port /dev/ttyACM0                          \
   --fw-image build/zephyr/zephyr.hex           \
   --serial-number 1050266122                   \

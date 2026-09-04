@@ -31,19 +31,6 @@ uart:-$ wifi cred auto_connect
 
 ### Platform specific configuration
 
-#### nRF52840 DK + ESP32-WROOM-32
-
-See [Golioth ESP-AT WiFi
-Shield](../../../zephyr/boards/shields/golioth_esp_at/doc/index.md).
-
-On your host computer open a terminal window, locate the source code of
-this sample application (i.e., `examples/zephyr/certificate_provisioning`) and type:
-
-```console
-$ west build -b nrf52840dk/nrf52840 --shield golioth_esp_at examples/zephyr/certificate_provisioning
-$ west flash
-```
-
 #### nRF9160 DK
 
 On your host computer open a terminal window, locate the source code of
@@ -128,35 +115,32 @@ The length and filesystem path of the credentials will be logged,
 indicating a successful read operation.
 
 ```console
-*** Booting Zephyr OS build zephyr-v3.4.0-553-g40d224022608 ***
-[00:00:00.426,849] <dbg> hello_zephyr: main: Start certificate provisioning sample
-[00:00:00.426,879] <inf> littlefs: LittleFS version 2.5, disk version 2.0
-[00:00:00.427,093] <inf> littlefs: FS at flash-controller@4001e000:0xf8000 is 8 0x1000-byte blocks with 512 cycle
-[00:00:00.427,124] <inf> littlefs: sizes: rd 16 ; pr 16 ; ca 64 ; la 32
-[00:00:00.429,626] <inf> hello_zephyr: Read 352 bytes from /lfs1/credentials/crt.der
-[00:00:00.431,243] <inf> hello_zephyr: Read 121 bytes from /lfs1/credentials/key.der
-[00:00:00.431,274] <inf> golioth_samples: Waiting for interface to be up
-[00:00:02.573,303] <inf> wifi_esp_at: AT version: 2.4.0.0(s-4c6eb5e - ESP32 - May 20 2022 03:12:58)
-[00:00:02.576,477] <inf> wifi_esp_at: SDK version: qa-test-v4.3.3-20220423
-[00:00:02.582,885] <inf> wifi_esp_at: Bin version: 2.4.0(WROVER-32)
-[00:00:03.017,608] <inf> wifi_esp_at: ESP Wi-Fi ready
-[00:00:03.017,700] <inf> golioth_samples: Connecting to WiFi
-[00:00:03.119,995] <inf> golioth_wifi: Connected with status: 0
-Connected
-[00:00:03.120,056] <inf> golioth_wifi: Successfully connected to WiFi
-[00:00:03.120,147] <inf> golioth_mbox: Mbox created, bufsize: 1144, num_items: 10, item_size: 104
-[00:00:03.839,843] <inf> golioth_coap_client: Start CoAP session with host: coaps://coap.golioth.io
-[00:00:03.840,209] <inf> golioth_coap_client: Entering CoAP I/O loop
-[00:00:10.388,061] <err> net_pkt: Data buffer (1225) allocation failed.
-[00:00:10.388,092] <err> wifi_esp_at: Failed to get net_pkt: len 1225
-[00:00:14.189,300] <inf> golioth_coap_client: Golioth CoAP client connected
-[00:00:14.189,514] <inf> hello_zephyr: Sending hello! 0
-[00:00:14.189,575] <inf> hello_zephyr: Golioth client connected
-[00:00:19.189,575] <inf> hello_zephyr: Sending hello! 1
-[00:00:24.189,666] <inf> hello_zephyr: Sending hello! 2
-```
+[00:21:37.239,879] <inf> littlefs: littlefs partition at /lfs1
+[00:21:37.240,006] <inf> littlefs: LittleFS version 2.11, disk version 2.1
+[00:21:37.242,840] <inf> littlefs: FS at w25q512jvfiq@0:0x620000 is 14816 0x1000-byte blocks with 512 cycle
+[00:21:37.242,848] <inf> littlefs: partition sizes: rd 16 ; pr 16 ; ca 64 ; la 32
+[00:21:37.243,248] <inf> littlefs: Automount /lfs1 succeeded
+[00:21:37.243,729] <inf> eth_nxp_enet_mac: Link is down
+*** Booting Zephyr OS build v4.3.0 ***
+*** Golioth Firmware SDK v0.22.0-81-gd36c63bee2bf ***
+[00:21:37.260,559] <dbg> cert_provisioning: main: Start certificate provisioning sample
+[00:21:37.260,593] <inf> golioth_samples: Bringing up network interface
+[00:21:37.260,612] <inf> golioth_samples: Waiting for link to be up
+[00:21:37.739,918] <inf> phy_mc_ksz8081: PHY (2) is entering autonegotiation sequence
+[00:21:40.442,887] <inf> eth_nxp_enet_mac: Link is up
+[00:21:40.442,924] <inf> phy_mc_ksz8081: PHY 2 is up
+[00:21:40.442,940] <inf> phy_mc_ksz8081: PHY (2) Link speed 100 Mb, full duplex
 
-In this example, the nRF52840 stops servicing the receive buffer while
-calculating the handshake. This causes the buffer overflow errors shown
-above. This is expected behavior and doesn't adversely affect the
-connection process.
+[00:21:40.443,142] <inf> golioth_samples: Starting DHCP to obtain IP address
+[00:21:40.443,207] <inf> golioth_samples: Waiting to obtain IP address
+[00:21:49.446,980] <inf> net_dhcpv4: Received: 192.168.1.233
+[00:21:49.447,921] <inf> cert_provisioning: Read 380 bytes from /lfs1/credentials/crt.der
+[00:21:49.448,342] <inf> cert_provisioning: Read 138 bytes from /lfs1/credentials/key.der
+[00:21:49.448,592] <inf> golioth_mbox: Mbox created, bufsize: 1232, num_items: 10, item_size: 112
+[00:21:51.031,024] <inf> golioth_coap_client_zephyr: Golioth CoAP client connected
+[00:21:51.031,180] <inf> cert_provisioning: Sending hello! 0
+[00:21:51.031,292] <inf> cert_provisioning: Golioth client connected
+[00:21:51.031,472] <inf> golioth_coap_client_zephyr: Entering CoAP I/O loop
+[00:21:56.031,406] <inf> cert_provisioning: Sending hello! 1
+[00:22:01.031,599] <inf> cert_provisioning: Sending hello! 2
+```
