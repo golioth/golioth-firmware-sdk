@@ -46,7 +46,7 @@ jobs:
           /opt/toolchains/coverity/bin/cov-configure --comptype gcc \
             --compiler /opt/toolchains/zephyr-sdk-0.17.4/arm-zephyr-eabi/bin/arm-zephyr-eabi-gcc
           /opt/toolchains/coverity/bin/cov-build --dir cov-int \
-            west build -p -b nrf52840dk/nrf52840 \
+            west build -p -b frdm_rw612 \
             modules/lib/golioth-firmware-sdk/examples/zephyr/fw_update \
             -- -DCONFIG_NET_LOG=n -DCONFIG_LOG=n
           tar czvf golioth-firmware-sdk.tgz cov-int

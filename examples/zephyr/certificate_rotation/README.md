@@ -33,19 +33,6 @@ uart:-$ wifi cred auto_connect
 
 ### Platform specific configuration
 
-#### nRF52840 DK + ESP32-WROOM-32
-
-See [Golioth ESP-AT WiFi
-Shield](../../../zephyr/boards/shields/golioth_esp_at/doc/index.md).
-
-On your host computer open a terminal window, locate the source code of
-this sample application (i.e., `examples/zephyr/certificate_rotation`) and type:
-
-```console
-$ west build -b nrf52840dk/nrf52840 --shield golioth_esp_at examples/zephyr/certificate_rotation
-$ west flash
-```
-
 #### nRF9160 DK
 
 On your host computer open a terminal window, locate the source code of

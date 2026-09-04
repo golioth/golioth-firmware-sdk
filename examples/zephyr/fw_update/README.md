@@ -59,19 +59,6 @@ $ west build -b esp32s3_devkitc/esp32s3/procpu --sysbuild examples/zephyr/fw_upd
 $ west flash
 ```
 
-#### nRF52840 DK + ESP32-WROOM-32
-
-See [Golioth ESP-AT WiFi
-Shield](../../../zephyr/boards/shields/golioth_esp_at/doc/index.md).
-
-On your host computer open a terminal window, locate the source code of
-this sample application (i.e., `examples/zephyr/fw_update`) and type:
-
-```console
-$ west build -b nrf52840dk/nrf52840 --shield golioth_esp_at --sysbuild examples/zephyr/fw_update
-$ west flash
-```
-
 #### nRF9160 DK
 
 On your host computer open a terminal window, locate the source code of
@@ -116,9 +103,6 @@ update file will be uploaded to Golioth for the OTA update.
 ```console
 # For esp32s3_devkitc/esp32s3/procpu
 $ west build -b esp32s3_devkitc/esp32s3/procpu --sysbuild examples/zephyr/fw_update
-
-# For nRF52840dk:
-$ west build -b nrf52840dk/nrf52840 --sysbuild examples/zephyr/fw_update
 
 # For nRF9160dk:
 $ west build -b nrf9160dk/nrf9160/ns --sysbuild examples/zephyr/fw_update
