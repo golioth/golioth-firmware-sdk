@@ -211,6 +211,19 @@ enum golioth_status golioth_coap_client_set_block(struct golioth_client *client,
                                                   void *rsp_cb_arg,
                                                   int32_t timeout_s);
 
+/// Get the status of a response to a Block1 upload request
+///
+/// A 2.31 (Continue) response to the last block means the server did not complete the upload
+/// (RFC 7959), so it is reported as GOLIOTH_ERR_COAP_RESPONSE instead of GOLIOTH_OK.
+///
+/// @param status Status derived from the response code
+/// @param coap_rsp_code CoAP response code received from the server
+/// @param is_last True if the request carried the last block of the upload
+enum golioth_status golioth_coap_client_post_block_status(
+    enum golioth_status status,
+    const struct golioth_coap_rsp_code *coap_rsp_code,
+    bool is_last);
+
 enum golioth_status golioth_coap_client_delete(struct golioth_client *client,
                                                const char *path_prefix,
                                                const char *path,

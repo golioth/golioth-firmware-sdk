@@ -292,6 +292,21 @@ enum golioth_status golioth_coap_client_set_block(struct golioth_client *client,
                                             timeout_s);
 }
 
+enum golioth_status golioth_coap_client_post_block_status(
+    enum golioth_status status,
+    const struct golioth_coap_rsp_code *coap_rsp_code,
+    bool is_last)
+{
+    if (status == GOLIOTH_OK && is_last && coap_rsp_code->code_class == 2
+        && coap_rsp_code->code_detail == 31)
+    {
+        GLTH_LOGE(TAG, "Server responded 2.31 (Continue) to the last block, upload incomplete");
+        return GOLIOTH_ERR_COAP_RESPONSE;
+    }
+
+    return status;
+}
+
 enum golioth_status golioth_coap_client_delete(struct golioth_client *client,
                                                const char *path_prefix,
                                                const char *path,

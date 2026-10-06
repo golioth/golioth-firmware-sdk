@@ -287,6 +287,9 @@ static int golioth_coap_cb(struct golioth_req_rsp *rsp)
             }
             break;
         case GOLIOTH_COAP_REQUEST_POST_BLOCK:
+            rsp->status = golioth_coap_client_post_block_status(rsp->status,
+                                                                &rsp->coap_rsp_code,
+                                                                req->post_block.is_last);
             if (req->post_block.callback)
             {
                 req->post_block.callback(client,

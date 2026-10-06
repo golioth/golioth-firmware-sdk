@@ -248,6 +248,10 @@ static coap_response_t coap_response_handler(coap_session_t *session,
                 coap_opt_t *block1_opt = coap_check_option(received, COAP_OPTION_BLOCK1, &opt_iter);
                 coap_opt_t *block2_opt = coap_check_option(received, COAP_OPTION_BLOCK2, &opt_iter);
 
+                status = golioth_coap_client_post_block_status(status,
+                                                               &coap_rsp_code,
+                                                               req->post_block.is_last);
+
                 /* Get block1 szx value from server; use stored value if block1 is not preset */
                 size_t server_requested_szx =
                     block1_opt ? COAP_OPT_BLOCK_SZX(block1_opt) : req->post_block.block_szx;
