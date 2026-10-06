@@ -85,6 +85,10 @@ typedef enum golioth_status (*stream_read_block_cb)(uint32_t block_idx,
 /// @param content_type The content type of the object (e.g. JSON or CBOR)
 /// @param cb A callback that will be used to fill each block in the transfer
 /// @param arg An optional user provided argument that will be passed to cb
+///
+/// @retval GOLIOTH_OK The server confirmed the complete upload
+/// @retval GOLIOTH_ERR_COAP_RESPONSE The server returned an error, or 2.31 (Continue) to the last
+///         block, meaning the upload is incomplete
 enum golioth_status golioth_stream_set_blockwise_sync(struct golioth_client *client,
                                                       const char *path,
                                                       enum golioth_content_type content_type,
@@ -122,7 +126,8 @@ void golioth_stream_blockwise_finish(struct blockwise_transfer *ctx);
 /// Free the context memory by calling \ref golioth_stream_blockwise_finish.
 ///
 /// An optional callback and callback argument may be supplied. The callback will be called after
-/// the block is uploaded to provide access to status and CoAP response codes.
+/// the block is uploaded to provide access to status and CoAP response codes. A 2.31 (Continue)
+/// response to the last block is reported as GOLIOTH_ERR_COAP_RESPONSE: the upload is incomplete.
 ///
 /// @param ctx Block upload context used for all blocks in a related upload operation
 /// @param block_idx The index of the block being sent

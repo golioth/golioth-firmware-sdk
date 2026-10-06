@@ -287,6 +287,9 @@ static int golioth_coap_cb(struct golioth_req_rsp *rsp)
             }
             break;
         case GOLIOTH_COAP_REQUEST_POST_BLOCK:
+            rsp->status = golioth_coap_client_post_block_status(rsp->status,
+                                                                &rsp->coap_rsp_code,
+                                                                req->post_block.is_last);
             if (req->post_block.callback)
             {
                 req->post_block.callback(client,
@@ -443,7 +446,9 @@ static int golioth_coap_post_block(struct golioth_coap_request_msg *req)
         goto free_req;
     }
 
-    coap_req->block_ctx.current = (req->post_block.block_index * req->post_block.payload_size);
+    coap_req->block_ctx.current =
+        req->post_block.block_index * SZX_TO_BLOCKSIZE(req->post_block.block_szx);
+    coap_req->block_ctx.block_size = (enum coap_block_size) req->post_block.block_szx;
 
     err = golioth_coap_req_append_block1_option(req, coap_req);
     if (err)

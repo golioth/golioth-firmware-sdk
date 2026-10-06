@@ -264,10 +264,12 @@ static int golioth_coap_req_reply_handler(struct golioth_coap_req *req,
         if (coap_get_option_int(response, COAP_OPTION_BLOCK1) >= 0)
         {
             /* This response has block1 */
+            struct golioth_coap_request_msg *rmsg = req->user_data;
+            bool has_more;
+            uint32_t block_number;
+
             if (coap_update_from_block(response, &req->block_ctx) == 0)
             {
-                struct golioth_coap_request_msg *rmsg = req->user_data;
-
                 if (req->block_ctx.block_size < rmsg->post_block.block_szx)
                 {
 
@@ -278,6 +280,18 @@ static int golioth_coap_req_reply_handler(struct golioth_coap_req *req,
 
                     rmsg->post_block.block_szx = req->block_ctx.block_size;
                 }
+            }
+
+            /* The response must acknowledge the block that was sent */
+            if (rmsg->type == GOLIOTH_COAP_REQUEST_POST_BLOCK
+                && (coap_get_block1_option(response, &has_more, &block_number) < 0
+                    || block_number != rmsg->post_block.block_index))
+            {
+                GLTH_LOGE(TAG,
+                          "Block1 response does not match block %zu",
+                          rmsg->post_block.block_index);
+
+                rsp.status = GOLIOTH_ERR_FAIL;
             }
         }
 
