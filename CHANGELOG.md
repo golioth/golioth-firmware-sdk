@@ -12,6 +12,8 @@ and this project adheres to [Semantic Versioning](https://semver.org/spec/v2.0.0
 ### Fixed
 - Blockwise uploads no longer report success when the server answers the last block with
   2.31 (Continue). This is now reported as `GOLIOTH_ERR_COAP_RESPONSE`.
+- Zephyr: Blockwise upload responses that don't acknowledge the block that was sent are
+  reported as errors, and the Block1 offset of a short last block is computed correctly.
 
 ## [0.22.0] 2025-12-16
 

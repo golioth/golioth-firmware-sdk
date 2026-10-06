@@ -446,7 +446,9 @@ static int golioth_coap_post_block(struct golioth_coap_request_msg *req)
         goto free_req;
     }
 
-    coap_req->block_ctx.current = (req->post_block.block_index * req->post_block.payload_size);
+    coap_req->block_ctx.current =
+        req->post_block.block_index * SZX_TO_BLOCKSIZE(req->post_block.block_szx);
+    coap_req->block_ctx.block_size = (enum coap_block_size) req->post_block.block_szx;
 
     err = golioth_coap_req_append_block1_option(req, coap_req);
     if (err)
