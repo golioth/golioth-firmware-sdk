@@ -219,12 +219,22 @@ static void block_retry_timer_expiry(golioth_sys_timer_t timer, void *arg)
 {
     struct block_retry_context *ctx = arg;
 
-    golioth_ota_download_component(_client,
-                                   &ctx->component_ctx->target_component,
-                                   ctx->download_ctx->block_idx,
-                                   fw_write_block_cb,
-                                   fw_download_end_cb,
-                                   ctx->download_ctx);
+    enum golioth_status status =
+        golioth_ota_download_component(_client,
+                                       &ctx->component_ctx->target_component,
+                                       ctx->download_ctx->block_idx,
+                                       fw_write_block_cb,
+                                       fw_download_end_cb,
+                                       ctx->download_ctx);
+    if (GOLIOTH_OK != status)
+    {
+        // The request was never queued, so nothing else will call the end callback
+        fw_download_end_cb(status,
+                           NULL,
+                           &ctx->component_ctx->target_component,
+                           ctx->download_ctx->block_idx,
+                           ctx->download_ctx);
+    }
 }
 
 enum golioth_status golioth_fw_update_report_state(struct fw_update_component_context *ctx,
