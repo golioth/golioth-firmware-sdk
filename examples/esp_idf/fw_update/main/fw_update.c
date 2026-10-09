@@ -46,6 +46,7 @@ struct download_progress_context
     size_t bytes_downloaded;
     uint32_t block_idx;
     uint8_t retries;
+    bool retry_pending;
     enum golioth_status result;
     golioth_sys_sha256_t sha;
     golioth_sys_timer_t block_retry_timer;
@@ -211,6 +212,7 @@ static void fw_download_end_cb(enum golioth_status status,
                   ctx->block_idx,
                   ctx->retries);
 
+        ctx->retry_pending = true;
         golioth_sys_timer_start(ctx->block_retry_timer);
     }
 }
@@ -218,6 +220,14 @@ static void fw_download_end_cb(enum golioth_status status,
 static void block_retry_timer_expiry(golioth_sys_timer_t timer, void *arg)
 {
     struct block_retry_context *ctx = arg;
+
+    // Some ports use auto-reload timers, which keep expiring while the restarted
+    // download is running. Only an expiry that follows a failed block may restart it.
+    if (!ctx->download_ctx->retry_pending)
+    {
+        return;
+    }
+    ctx->download_ctx->retry_pending = false;
 
     enum golioth_status status =
         golioth_ota_download_component(_client,
@@ -634,6 +644,7 @@ static void fw_update_thread(void *arg)
         uint64_t start_time_ms = golioth_sys_now_ms();
         download_ctx.bytes_downloaded = 0;
         download_ctx.retries = 0;
+        download_ctx.retry_pending = false;
         download_ctx.sha = golioth_sys_sha256_create();
 
         int err;
