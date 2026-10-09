@@ -46,6 +46,7 @@ struct download_progress_context
     size_t bytes_downloaded;
     uint32_t block_idx;
     uint8_t retries;
+    bool retry_pending;
     enum golioth_status result;
     golioth_sys_sha256_t sha;
     golioth_sys_timer_t block_retry_timer;
@@ -211,6 +212,7 @@ static void fw_download_end_cb(enum golioth_status status,
                   ctx->block_idx,
                   ctx->retries);
 
+        ctx->retry_pending = true;
         golioth_sys_timer_start(ctx->block_retry_timer);
     }
 }
@@ -219,12 +221,30 @@ static void block_retry_timer_expiry(golioth_sys_timer_t timer, void *arg)
 {
     struct block_retry_context *ctx = arg;
 
-    golioth_ota_download_component(_client,
-                                   &ctx->component_ctx->target_component,
-                                   ctx->download_ctx->block_idx,
-                                   fw_write_block_cb,
-                                   fw_download_end_cb,
-                                   ctx->download_ctx);
+    // Some ports use auto-reload timers, which keep expiring while the restarted
+    // download is running. Only an expiry that follows a failed block may restart it.
+    if (!ctx->download_ctx->retry_pending)
+    {
+        return;
+    }
+    ctx->download_ctx->retry_pending = false;
+
+    enum golioth_status status =
+        golioth_ota_download_component(_client,
+                                       &ctx->component_ctx->target_component,
+                                       ctx->download_ctx->block_idx,
+                                       fw_write_block_cb,
+                                       fw_download_end_cb,
+                                       ctx->download_ctx);
+    if (GOLIOTH_OK != status)
+    {
+        // The request was never queued, so nothing else will call the end callback
+        fw_download_end_cb(status,
+                           NULL,
+                           &ctx->component_ctx->target_component,
+                           ctx->download_ctx->block_idx,
+                           ctx->download_ctx);
+    }
 }
 
 enum golioth_status golioth_fw_update_report_state(struct fw_update_component_context *ctx,
@@ -624,6 +644,7 @@ static void fw_update_thread(void *arg)
         uint64_t start_time_ms = golioth_sys_now_ms();
         download_ctx.bytes_downloaded = 0;
         download_ctx.retries = 0;
+        download_ctx.retry_pending = false;
         download_ctx.sha = golioth_sys_sha256_create();
 
         int err;

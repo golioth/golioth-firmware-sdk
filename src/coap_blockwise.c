@@ -523,5 +523,12 @@ enum golioth_status golioth_blockwise_get(struct golioth_client *client,
     ctx->callback_arg = callback_arg;
     ctx->block_idx = block_idx;
 
-    return download_single_block(client, ctx);
+    enum golioth_status status = download_single_block(client, ctx);
+    if (GOLIOTH_OK != status)
+    {
+        // The request was never queued, so on_block_rcvd() will not run to free the context
+        golioth_sys_free(ctx);
+    }
+
+    return status;
 }
