@@ -316,6 +316,7 @@ void golioth_coap_req_process_rx(struct golioth_client *client, const struct coa
     uint8_t rx_token[COAP_TOKEN_MAX_LEN];
     uint16_t rx_id;
     uint8_t rx_tkl;
+    bool matched = false;
 
     rx_id = coap_header_get_id(rx);
     rx_tkl = coap_header_get_token(rx, rx_token);
@@ -364,10 +365,26 @@ void golioth_coap_req_process_rx(struct golioth_client *client, const struct coa
             }
         }
 
+        matched = true;
         break;
     }
 
     k_mutex_unlock(&client->coap_reqs_lock);
+
+    if (!matched)
+    {
+        uint8_t rx_code = coap_header_get_code(rx);
+
+        GLTH_LOGW(TAG,
+                  "Unmatched rx: code=%u.%02u type=%u mid=%u tkl=%u b1=%d",
+                  (rx_code & 0xe0) >> 5,
+                  rx_code & 0x1f,
+                  coap_header_get_type(rx),
+                  rx_id,
+                  rx_tkl,
+                  coap_get_option_int(rx, COAP_OPTION_BLOCK1));
+    }
+
 }
 
 /**

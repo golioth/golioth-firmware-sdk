@@ -161,6 +161,8 @@ static enum golioth_status upload_single_block(struct golioth_client *client,
                                                struct post_block_ctx *ctx,
                                                size_t block_size)
 {
+    golioth_coap_next_token(ctx->transfer_ctx.token);
+
     enum golioth_status err = golioth_coap_client_set_block(client,
                                                             ctx->transfer_ctx.token,
                                                             ctx->transfer_ctx.path_prefix,
@@ -365,6 +367,9 @@ enum golioth_status golioth_blockwise_upload_block(struct blockwise_transfer *ct
         return GOLIOTH_ERR_NULL;
     }
 
+    // New token for this block
+    golioth_coap_next_token(ctx->token);
+
     struct get_block_ctx *rsp_ctx = NULL;
     coap_get_block_cb_fn rsp_cb = NULL;
     if (is_last && NULL != get_cb && NULL != end_cb)
@@ -461,6 +466,9 @@ static void on_block_rcvd(struct golioth_client *client,
 static enum golioth_status download_single_block(struct golioth_client *client,
                                                  struct get_block_ctx *ctx)
 {
+    // New token for this block
+    golioth_coap_next_token(ctx->transfer_ctx.token);
+
     if (GOLIOTH_COAP_REQUEST_GET_BLOCK == ctx->transfer_ctx.type)
     {
         return golioth_coap_client_get_block(client,
