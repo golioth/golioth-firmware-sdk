@@ -1,0 +1,56 @@
+From 0000000000000000000000000000000000000000 Mon Sep 17 00:00:00 2001
+From: Anas Nashif <anas.nashif@intel.com>
+Date: Tue, 21 Oct 2025 17:44:34 -0400
+Subject: [PATCH] twister: prefer 'fork' on POSIX to maintain pre-3.14 behavior
+
+multiprocessing no longer defaults to fork, so force it to maintain pre
+3.14 behavior. We will need to revisit the implementation and at some
+point move to forkserver
+
+Fixes #95058
+
+Signed-off-by: Anas Nashif <anas.nashif@intel.com>
+(cherry picked from commit 6ea5f0abd72db222b0d78ad197c3358faae7926b)
+---
+ scripts/pylib/twister/twisterlib/runner.py | 12 +++++++++---
+ 1 file changed, 9 insertions(+), 3 deletions(-)
+
+diff --git a/scripts/pylib/twister/twisterlib/runner.py b/scripts/pylib/twister/twisterlib/runner.py
+index ec80d55c72b..d19a3f2168a 100644
+--- a/scripts/pylib/twister/twisterlib/runner.py
++++ b/scripts/pylib/twister/twisterlib/runner.py
+@@ -4,8 +4,9 @@
+ # Copyright 2022 NXP
+ # SPDX-License-Identifier: Apache-2.0
+ 
++import contextlib
+ import logging
+-import multiprocessing
++import multiprocessing as mp
+ import os
+ import pathlib
+ import pickle
+@@ -52,6 +53,11 @@ from twisterlib.testinstance import TestInstance
+ from twisterlib.testplan import change_skip_to_error_if_integration
+ from twisterlib.testsuite import TestSuite
+ 
++# Prefer 'fork' on POSIX to maintain pre-3.14 behavior
++if os.name == "posix":
++    with contextlib.suppress(RuntimeError):
++        mp.set_start_method("fork")
++
+ try:
+     from yaml import CSafeLoader as SafeLoader
+ except ImportError:
+@@ -1838,9 +1844,9 @@ class TwisterRunner:
+         if self.options.jobs:
+             self.jobs = self.options.jobs
+         elif self.options.build_only:
+-            self.jobs = multiprocessing.cpu_count() * 2
++            self.jobs = mp.cpu_count() * 2
+         else:
+-            self.jobs = multiprocessing.cpu_count()
++            self.jobs = mp.cpu_count()
+ 
+         if sys.platform == "linux":
+             if os.name == 'posix':
