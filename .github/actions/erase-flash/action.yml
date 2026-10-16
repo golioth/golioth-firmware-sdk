@@ -30,7 +30,7 @@ runs:
         EOF
 
         if [[ "${hil_board}" == "nrf9160dk" ]]; then
-          nrfjprog --recover --snr ${!SNR_VAR}
+          nrfutil device recover --serial-number ${!SNR_VAR}
 
         elif [[ "${hil_board}" == "esp32s3_devkitc" ]]; then
           esptool.py --port ${!PORT_VAR} erase_flash

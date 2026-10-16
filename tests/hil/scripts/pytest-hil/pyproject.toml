@@ -9,7 +9,6 @@ dependencies = [
   'allure-pytest',
   'esptool',
   'pylink-square',
-  'pynrfjprog',
   'pyserial',
   'PyYAML',
   'trio-serial',
