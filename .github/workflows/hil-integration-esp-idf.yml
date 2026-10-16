@@ -131,7 +131,7 @@ jobs:
 
     container:
       # yamllint disable-line rule:line-length
-      image: golioth/golioth-hil-base:ee62f47@sha256:8b314f3e9207302350d3ca84ca9d28c8a75aebb307eaeae5a742399400dbca57
+      image: golioth/golioth-hil-base:pr-87@sha256:8db9be18cfc57e9065484a45ca6c3c5a1d562db1b0301c10ec2add933a55e9fb
       volumes:
         - /dev:/dev
         - /home/golioth/credentials:/opt/credentials
