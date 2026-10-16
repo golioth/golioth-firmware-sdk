@@ -67,7 +67,7 @@ jobs:
     needs: matrix
     container:
       # yamllint disable-line rule:line-length
-      image: golioth/golioth-zephyr-base:ee62f47-sdk-0.17.4@sha256:a8561b8de5a23f9eb28101734d672e0582328add515ce4b4788428cd126e6e2b
+      image: golioth/golioth-zephyr-base:a202c31-sdk-0.17.4@sha256:9b3a7e4deae2a0be8a9933a85c4a406dc4ffc918b47596b4bd7970fb9e184eb1
     env:
       ZEPHYR_SDK_INSTALL_DIR: /opt/toolchains/zephyr-sdk-0.17.4
     name: zephyr-${{ inputs.platform }}-${{ matrix.test }}-test-nsim
