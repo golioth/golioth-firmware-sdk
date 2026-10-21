@@ -120,8 +120,8 @@ jobs:
             cryptography==41.0.7 \
             pyasn1 \
             pyyaml \
-            cbor>=1.0.0 \
-            imgtool>=1.9.0 \
+            'cbor>=1.0.0' \
+            'imgtool>=1.9.0' \
             jinja2 \
             click
 
