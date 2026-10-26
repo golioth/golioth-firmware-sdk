@@ -21,6 +21,8 @@ static const int64_t COAP_OBSERVE_TS_DIFF_NEWER = 128 * (int64_t) MSEC_PER_SEC;
 
 #define RESEND_REPORT_TIMEFRAME_S 10
 
+#define COAP_SEPARATE_TIMEOUT_MS 6000
+
 #define COAP_RESPONSE_CODE_CLASS(code) ((code) >> 5)
 
 void golioth_coap_reqs_init(struct golioth_client *client)
@@ -310,15 +312,39 @@ cancel_and_free:
     return 0;
 }
 
+/* The response will follow in a separate message, so stop retransmitting and wait for it */
+static void golioth_coap_req_wait_for_separate_response(struct golioth_coap_req *req)
+{
+    req->pending.t0 = k_uptime_get_32();
+    req->pending.timeout = COAP_SEPARATE_TIMEOUT_MS;
+    req->pending.retries = 0;
+}
+
 void golioth_coap_req_process_rx(struct golioth_client *client, const struct coap_packet *rx)
 {
     struct golioth_coap_req *req;
     uint8_t rx_token[COAP_TOKEN_MAX_LEN];
+    uint8_t rx_type;
+    uint8_t rx_code;
     uint16_t rx_id;
     uint8_t rx_tkl;
 
+    rx_type = coap_header_get_type(rx);
+    rx_code = coap_header_get_code(rx);
     rx_id = coap_header_get_id(rx);
     rx_tkl = coap_header_get_token(rx, rx_token);
+
+    if (COAP_RESPONSE_CODE_CLASS(rx_code) == 0 && rx_code != COAP_CODE_EMPTY)
+    {
+        /* Request can't be response */
+        return;
+    }
+
+    if (rx_type == COAP_TYPE_RESET && rx_code != COAP_CODE_EMPTY)
+    {
+        /* A Reset that is not Empty is a message format error and is silently ignored */
+        return;
+    }
 
     k_mutex_lock(&client->coap_reqs_lock, K_FOREVER);
 
@@ -334,13 +360,37 @@ void golioth_coap_req_process_rx(struct golioth_client *client, const struct coa
             continue;
         }
 
-        /* Piggybacked must match id when token is empty */
-        if (req_id != rx_id && rx_tkl == 0U)
+        /* Empty ACK and Reset carry no token and match by Message ID only */
+        if (rx_code == COAP_CODE_EMPTY && (rx_type == COAP_TYPE_ACK || rx_type == COAP_TYPE_RESET))
+        {
+            if (req_id != rx_id)
+            {
+                continue;
+            }
+
+            if (rx_type == COAP_TYPE_ACK)
+            {
+                golioth_coap_req_wait_for_separate_response(req);
+            }
+            else
+            {
+                golioth_coap_req_reply_handler(req, rx);
+            }
+
+            break;
+        }
+
+        /*
+         * In a piggybacked response, the Message ID of the Confirmable request and the
+         * Acknowledgement MUST match, and the tokens of the response and original request MUST
+         * match. In a separate response, just the tokens MUST match (RFC 7252, section 5.3.2).
+         */
+        if (rx_type == COAP_TYPE_ACK && req_id != rx_id)
         {
             continue;
         }
 
-        if (rx_tkl > 0 && memcmp(req_token, rx_token, rx_tkl))
+        if (req_tkl != rx_tkl || memcmp(req_token, rx_token, req_tkl) != 0)
         {
             continue;
         }
