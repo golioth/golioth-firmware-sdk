@@ -9,6 +9,12 @@ and this project adheres to [Semantic Versioning](https://semver.org/spec/v2.0.0
 ### Removed
 - Deprecate continuous testing of the rak5010
 
+### Fixed
+- Zephyr: fixed a duplicated or late acknowledgement completing the next
+  block of a blockwise transfer
+- Zephyr: fixed requests failing when the server answers with a separate
+  response
+
 ## [0.22.0] 2025-12-16
 
 ### Highlights
