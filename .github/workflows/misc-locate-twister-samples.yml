@@ -59,15 +59,18 @@ jobs:
           from pathlib import Path
 
           SAMPLE_PATH_PREFIX = '../' # Twister returns path relative to zephyr directory
-          SAMPLES_ROOT = 'modules/lib/golioth-firmware-sdk/examples/zephyr'
+          SDK_ROOT = 'modules/lib/golioth-firmware-sdk'
+          ROOTS = [f'{SDK_ROOT}/examples/zephyr', f'{SDK_ROOT}/tests/zephyr']
 
-          result = subprocess.run(['zephyr/scripts/twister',
-                                   '--platform',
-                                   '${{ inputs.west_board }}',
-                                   '--save-tests',
-                                   'test_info.txt',
-                                   '-T',
-                                   SAMPLES_ROOT])
+          twister_args = ['zephyr/scripts/twister',
+                          '--platform',
+                          '${{ inputs.west_board }}',
+                          '--save-tests',
+                          'test_info.txt']
+          for root in ROOTS:
+            twister_args += ['-T', root]
+
+          result = subprocess.run(twister_args)
 
           if 0 != result.returncode:
             sys.exit(result.returncode)
@@ -85,7 +88,8 @@ jobs:
           sample_list = list()
 
           for directory in sample_dirs:
-            name = os.path.relpath(directory, SAMPLES_ROOT).replace('/', '_')
+            root = next(r for r in ROOTS if Path(r) in Path(directory).parents)
+            name = os.path.relpath(directory, root).replace('/', '_')
             sample_list.append({"name":name, "dir":directory})
 
           with open(os.environ['GITHUB_OUTPUT'], 'a') as github_output:
