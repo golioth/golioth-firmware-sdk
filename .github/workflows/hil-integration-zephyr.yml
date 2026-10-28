@@ -226,7 +226,7 @@ jobs:
             --board ${hil_board}                                                         \
             --port ${!PORT_VAR}                                                          \
             --fw-image ${FW_IMAGE}                                                       \
-            --serial-number ${!SNR_VAR}                                                  \
+            ${!SNR_VAR:+--serial-number ${!SNR_VAR}}                                     \
             --api-url ${{ inputs.api-url }}                                              \
             --api-key ${{ secrets[inputs.api-key-id] }}                                  \
             --wifi-ssid "${{ secrets[format('{0}_WIFI_SSID', runner.name)] }}"           \
