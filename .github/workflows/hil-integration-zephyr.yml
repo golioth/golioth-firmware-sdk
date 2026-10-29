@@ -181,6 +181,7 @@ jobs:
     runs-on:
       - is_active
       - has_${{ inputs.hil_board }}
+      - mniestroj_hp
     timeout-minutes: 30
 
     container:
