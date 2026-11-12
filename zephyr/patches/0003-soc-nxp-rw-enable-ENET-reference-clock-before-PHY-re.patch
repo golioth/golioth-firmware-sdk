@@ -1,0 +1,39 @@
+From 0000000000000000000000000000000000000000 Mon Sep 17 00:00:00 2001
+From: =?UTF-8?q?Tobias=20Frauenschl=C3=A4ger?= <t.frauenschlaeger@me.com>
+Date: Mon, 28 Sep 2026 19:22:19 +0200
+Subject: [PATCH 3/4] soc: nxp: rw: enable ENET reference clock before PHY
+ reset
+MIME-Version: 1.0
+Content-Type: text/plain; charset=UTF-8
+Content-Transfer-Encoding: 8bit
+
+The RMII PHY takes its 50 MHz reference clock from the RW6xx ENET
+clock output and must be reset while that clock is running. The ENET
+clock gate was only opened by the ENET module device, which
+initializes after the PHY device, so the PHY driver reset the PHY
+without a clock and it stayed unresponsive.
+
+Open the TDDR ENET clock gate in clock_init() together with the
+existing ENET setup, as the MCUXpresso SDK does in
+BOARD_InitModuleClock().
+
+Signed-off-by: Tobias Frauenschläger <t.frauenschlaeger@me.com>
+(cherry picked from commit 727d0abe869a9c125d238abf8e2ed8d81b156665)
+[backport to v4.3.0: no TDDR_PDB re-assert in this context]
+---
+ soc/nxp/rw/soc.c | 2 ++
+ 1 file changed, 2 insertions(+)
+
+diff --git a/soc/nxp/rw/soc.c b/soc/nxp/rw/soc.c
+index 166c6008310..af086f142b5 100644
+--- a/soc/nxp/rw/soc.c
++++ b/soc/nxp/rw/soc.c
+@@ -290,6 +290,8 @@ __weak __ramfunc void clock_init(void)
+ #endif
+ 
+ #if DT_NODE_HAS_STATUS_OKAY(DT_NODELABEL(enet)) && CONFIG_NET_L2_ETHERNET
++	/* The PHY needs its 50 MHz reference clock running before it is reset. */
++	CLOCK_EnableClock(kCLOCK_TddrMciEnetClk);
+ 	RESET_PeripheralReset(kENET_IPG_RST_SHIFT_RSTn);
+ 	RESET_PeripheralReset(kENET_IPG_S_RST_SHIFT_RSTn);
+ #endif

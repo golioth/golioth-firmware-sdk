@@ -5,3 +5,21 @@ patches:
     author: Mike Szczys
     email: mike@golioth.io
     date: 2026-01-02
+  - path: 0002-drivers-clock_control-mcux_syscon-fix-RW6xx-ENET-clo.patch
+    sha256sum: 97f4770c2dbb2b7a9e524619edda0e77bd3ee05af0af5cad0ce990830097ef17
+    module: zephyr
+    author: Tobias Frauenschläger
+    email: t.frauenschlaeger@me.com
+    date: 2026-09-28
+  - path: 0003-soc-nxp-rw-enable-ENET-reference-clock-before-PHY-re.patch
+    sha256sum: c7388e8ba5352b868d1cd995cd9b8a0fe1a60278d5c73fcc474b4499584e7a57
+    module: zephyr
+    author: Tobias Frauenschläger
+    email: t.frauenschlaeger@me.com
+    date: 2026-09-28
+  - path: 0004-boards-nxp-frdm_rw612-fix-swapped-ENET-PHY-reset-and.patch
+    sha256sum: f25f98fc707c2454069eb0e1b0d4f7f2d054fd82ecb63410d134c1bd1dd93a44
+    module: zephyr
+    author: Tobias Frauenschläger
+    email: t.frauenschlaeger@me.com
+    date: 2026-09-28
