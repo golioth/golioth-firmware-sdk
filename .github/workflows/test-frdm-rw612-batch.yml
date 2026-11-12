@@ -1,0 +1,489 @@
+name: "Test: frdm_rw612 batch"
+
+# Repeats the frdm_rw612 integration and sample tests of the nightly run on a
+# single self-hosted runner, so that branches can be compared by failure rate.
+# Build and test steps are those of hil-integration-zephyr.yml and
+# hil-sample-zephyr.yml with the inputs test-comprehensive.yml passes for
+# frdm_rw612. Test jobs run one at a time per suite, so concurrent runs of
+# several branches interleave on the runner.
+
+on:
+  push:
+    branches:
+      - 'rw612-batch/**'
+
+env:
+  EXPECTED_RUNNER: jons_raspberry_pi
+  RUNNER_LABELS: '["is_active", "has_frdm_rw612", "jons_raspberry_pi"]'
+  INT_ITERATIONS: 4
+  SAMPLE_ITERATIONS: 1
+  # certificate_rotation is built for frdm_rw612 but none of its tests run on it
+  SKIP_SAMPLES: '["certificate_rotation"]'
+
+jobs:
+  plan:
+    if: github.repository == 'golioth/golioth-firmware-sdk'
+    runs-on: ubuntu-24.04
+
+    outputs:
+      runs_on: ${{ steps.plan.outputs.runs_on }}
+      tests: ${{ steps.plan.outputs.tests }}
+      test_runs: ${{ steps.plan.outputs.test_runs }}
+
+    steps:
+      - name: Checkout repository
+        uses: actions/checkout@9c091bb21b7c1c1d1991bb908d89e4e9dddfe3e0 # v7.0.0
+
+      - name: Plan integration test runs
+        id: plan
+        shell: python
+        run: |
+          import json
+          import os
+          from pathlib import Path
+
+          tests = sorted(p.name for p in Path('tests/hil/tests').iterdir())
+          iterations = range(1, int(os.environ['INT_ITERATIONS']) + 1)
+          test_runs = [{'iteration': i, 'test': t} for i in iterations for t in tests]
+
+          with open(os.environ['GITHUB_OUTPUT'], 'a') as github_output:
+            print('runs_on=' + json.dumps(json.loads(os.environ['RUNNER_LABELS'])),
+                  file=github_output)
+            print('tests=' + json.dumps(tests), file=github_output)
+            print('test_runs=' + json.dumps(test_runs), file=github_output)
+
+  locate_samples:
+    needs: plan
+    uses: ./.github/workflows/misc-locate-twister-samples.yml
+    with:
+      west_board: frdm_rw612
+
+  plan_samples:
+    needs: locate_samples
+    runs-on: ubuntu-24.04
+
+    outputs:
+      samples: ${{ steps.plan.outputs.samples }}
+      sample_runs: ${{ steps.plan.outputs.sample_runs }}
+
+    steps:
+      - name: Plan sample test runs
+        id: plan
+        shell: python
+        env:
+          SAMPLE_LIST: ${{ needs.locate_samples.outputs.sample_list }}
+        run: |
+          import json
+          import os
+
+          skip = json.loads(os.environ['SKIP_SAMPLES'])
+          samples = [s for s in json.loads(os.environ['SAMPLE_LIST']) if s['name'] not in skip]
+          iterations = range(1, int(os.environ['SAMPLE_ITERATIONS']) + 1)
+          sample_runs = [dict(s, iteration=i) for i in iterations for s in samples]
+
+          with open(os.environ['GITHUB_OUTPUT'], 'a') as github_output:
+            print('samples=' + json.dumps(samples), file=github_output)
+            print('sample_runs=' + json.dumps(sample_runs), file=github_output)
+
+  build_int:
+    name: build-int (${{ matrix.test }})
+    # yamllint disable-line rule:line-length
+    container: golioth/golioth-zephyr-base:ee62f47-sdk-0.17.4@sha256:a8561b8de5a23f9eb28101734d672e0582328add515ce4b4788428cd126e6e2b
+    needs: plan
+    strategy:
+      fail-fast: false
+      matrix:
+        test: ${{ fromJSON(needs.plan.outputs.tests) }}
+    env:
+      ZEPHYR_SDK_INSTALL_DIR: /opt/toolchains/zephyr-sdk-0.17.4
+    runs-on: ubuntu-24.04
+    steps:
+      - name: Checkout repository and submodules
+        uses: actions/checkout@9c091bb21b7c1c1d1991bb908d89e4e9dddfe3e0 # v7.0.0
+        with:
+          path: modules/lib/golioth-firmware-sdk
+          submodules: 'recursive'
+      - name: Init and update west
+        run: |
+          mkdir -p .west
+          cat <<EOF > .west/config
+          [manifest]
+          path = modules/lib/golioth-firmware-sdk
+          file = .ci-west-zephyr.yml
+          EOF
+
+          west update -o=--depth=1 -n
+
+          west patch apply
+
+          uv pip install \
+            -r zephyr/scripts/requirements-base.txt \
+            -r zephyr/scripts/requirements-build-test.txt \
+            -r zephyr/scripts/requirements-run-test.txt
+
+          # Needed for TF-M
+          uv pip install \
+            cryptography==41.0.7 \
+            pyasn1 \
+            pyyaml \
+            cbor>=1.0.0 \
+            imgtool>=1.9.0 \
+            jinja2 \
+            click
+
+          # Needed for ESP32 builds
+          uv pip install esptool
+
+      - name: Compile
+        shell: bash
+        run: |
+          rm -rf test_binaries
+          mkdir -p test_binaries
+
+          FW_IMAGE=${{ matrix.test }}.zephyr/zephyr.hex
+          FW_IMAGE=${FW_IMAGE/\//-}
+
+          export EXTRA_BUILD_ARGS=-DCONFIG_GOLIOTH_COAP_HOST_URI=\"coaps://coap.golioth.io\"
+
+          west build -p -b frdm_rw612 \
+            modules/lib/golioth-firmware-sdk/tests/hil/platform/zephyr \
+            -- $EXTRA_BUILD_ARGS -DGOLIOTH_HIL_TEST=${{ matrix.test }}
+          mv build/zephyr/zephyr.hex \
+            test_binaries/${FW_IMAGE}
+
+      - name: Save artifacts
+        uses: actions/upload-artifact@043fb46d1a93c77aae656e7c1c64a875d1fc6a0a # v7.0.1
+        with:
+          name: frdm_rw612-hil-zephyr-${{ matrix.test }}
+          path: test_binaries/*
+          overwrite: true
+
+  build_smp:
+    name: build-smp (${{ matrix.name }})
+    needs: plan_samples
+    strategy:
+      fail-fast: false
+      matrix:
+        include: ${{ fromJSON(needs.plan_samples.outputs.samples) }}
+    # yamllint disable-line rule:line-length
+    container: golioth/golioth-zephyr-base:ee62f47-sdk-0.17.4@sha256:a8561b8de5a23f9eb28101734d672e0582328add515ce4b4788428cd126e6e2b
+    env:
+      ZEPHYR_SDK_INSTALL_DIR: /opt/toolchains/zephyr-sdk-0.17.4
+    runs-on: ubuntu-24.04
+    steps:
+      - name: Checkout repository and submodules
+        uses: actions/checkout@9c091bb21b7c1c1d1991bb908d89e4e9dddfe3e0 # v7.0.0
+        with:
+          path: modules/lib/golioth-firmware-sdk
+          submodules: 'recursive'
+      - name: Init and update west
+        run: |
+          mkdir -p .west
+          cat <<EOF > .west/config
+          [manifest]
+          path = modules/lib/golioth-firmware-sdk
+          file = .ci-west-zephyr.yml
+          EOF
+
+          west update -o=--depth=1 -n
+          git config --global user.email user@git-scm.com
+          git config --global user.name "Git User"
+
+          west patch apply
+
+          uv pip install \
+            -r zephyr/scripts/requirements-base.txt \
+            -r zephyr/scripts/requirements-build-test.txt \
+            -r zephyr/scripts/requirements-run-test.txt
+
+          # Needed for TF-M
+          uv pip install \
+            cryptography==41.0.7 \
+            pyasn1 \
+            pyyaml \
+            cbor>=1.0.0 \
+            imgtool>=1.9.0 \
+            jinja2 \
+            click
+
+          # Needed for ESP32 builds
+          uv pip install esptool
+
+      - name: Download binary blobs
+        run: |
+          west blobs fetch hal_nxp --auto-accept
+
+      - name: Compile Tests
+        run: |
+          export EXTRA_BUILD_ARGS=-x=CONFIG_GOLIOTH_COAP_HOST_URI=\"coaps://coap.golioth.io\"
+
+          # Build
+          zephyr/scripts/twister                                                \
+                -v                                                              \
+                --overflow-as-errors                                            \
+                --platform frdm_rw612                                           \
+                -T ${{ matrix.dir }}                                            \
+                --detailed-test-id                                              \
+                --prep-artifacts-for-testing                                    \
+                --keep-artifacts lfs.hex                                        \
+                --keep-artifacts certificate_provisioning/lfs.hex               \
+                $EXTRA_BUILD_ARGS
+
+          # Package for testing
+          tar -cjf test_artifacts_frdm_rw612-${{ matrix.name }}.tar twister-out
+
+      - name: Save artifacts
+        if: success() || failure()
+        uses: actions/upload-artifact@043fb46d1a93c77aae656e7c1c64a875d1fc6a0a # v7.0.1
+        with:
+          name: test_artifacts_frdm_rw612-${{ matrix.name }}
+          path: test_artifacts_frdm_rw612-${{ matrix.name }}.tar
+          overwrite: true
+
+  test_int:
+    name: int ${{ matrix.test }} (${{ matrix.iteration }})
+    needs:
+      - plan
+      - build_int
+    strategy:
+      fail-fast: false
+      max-parallel: 1
+      matrix:
+        include: ${{ fromJSON(needs.plan.outputs.test_runs) }}
+    runs-on: ${{ fromJSON(needs.plan.outputs.runs_on) }}
+    timeout-minutes: 30
+
+    container:
+      # yamllint disable-line rule:line-length
+      image: golioth/golioth-hil-base:ee62f47@sha256:8b314f3e9207302350d3ca84ca9d28c8a75aebb307eaeae5a742399400dbca57
+      volumes:
+        - /dev:/dev
+        - /home/golioth/credentials:/opt/credentials
+      options: --privileged
+
+    steps:
+      - name: Check runner
+        id: runner
+        run: |
+          if [ "${{ runner.name }}" != "${EXPECTED_RUNNER}" ]; then
+            echo "::error::Expected runner ${EXPECTED_RUNNER}, got ${{ runner.name }}"
+            exit 1
+          fi
+      - name: Checkout repository
+        uses: actions/checkout@9c091bb21b7c1c1d1991bb908d89e4e9dddfe3e0 # v7.0.0
+      - name: Setup Python dependencies
+        run: |
+          uv pip install \
+            pytest==8.4.2 \
+            pytest-timeout \
+            tests/hil/scripts/pytest-hil \
+            git+https://github.com/golioth/python-golioth-tools@v0.9.0
+      - name: Power On USB Hub
+        run: python3 /opt/golioth-scripts/usb_hub_power.py on
+      - name: Download build
+        uses: actions/download-artifact@3e5f45b2cfb9172054b4087a40e8e0b5a5461e7c # v8.0.1
+        with:
+          name: frdm_rw612-hil-zephyr-${{ matrix.test }}
+          path: .
+      - name: Run test
+        shell: bash
+        env:
+          hil_board: frdm_rw612
+        run: |
+          rm -rf summary
+          mkdir summary
+          rm -rf allure-reports
+          source /opt/credentials/runner_env.sh
+          PORT_VAR=CI_${hil_board^^}_PORT
+          SNR_VAR=CI_${hil_board^^}_SNR
+          FW_IMAGE=${{ matrix.test }}.zephyr/zephyr.hex
+          FW_IMAGE=${FW_IMAGE/\//-}
+
+          pytest --rootdir . tests/hil/tests/${{ matrix.test }}                          \
+            --board ${hil_board}                                                         \
+            --port ${!PORT_VAR}                                                          \
+            --fw-image ${FW_IMAGE}                                                       \
+            --serial-number ${!SNR_VAR}                                                  \
+            --api-url https://api.golioth.io                                             \
+            --api-key ${{ secrets.PROD_CI_PROJECT_API_KEY }}                             \
+            --wifi-ssid "${{ secrets[format('{0}_WIFI_SSID', runner.name)] }}"           \
+            --wifi-psk "${{ secrets[format('{0}_WIFI_PSK', runner.name)] }}"             \
+            --mask-secrets                                                               \
+            --timeout=600                                                                \
+            --junitxml=summary/hil-zephyr-${hil_board}-${{ matrix.test }}.xml            \
+            --alluredir=allure-reports                                                   \
+            --allure-platform zephyr                                                     \
+            --runner-name ${{ runner.name }}
+
+      - name: Safe upload CI report summary
+        uses: ./.github/actions/safe-upload-artifacts
+        if: (success() || failure()) && steps.runner.outcome == 'success'
+        with:
+          # yamllint disable-line rule:line-length
+          name: ci-individual-hil-zephyr-frdm_rw612-${{ matrix.test }}-${{ matrix.iteration }}-${{ github.run_attempt }}
+          path: summary/*.xml
+
+      - name: Safe upload Allure reports
+        if: (success() || failure()) && steps.runner.outcome == 'success'
+        uses: ./.github/actions/safe-upload-artifacts
+        with:
+          secrets-json: ${{ toJson(secrets) }}
+          # yamllint disable-line rule:line-length
+          name: allure-reports-hil-zephyr-frdm_rw612-${{ matrix.test }}-${{ matrix.iteration }}-${{ github.run_attempt }}
+          path: allure-reports
+
+      - name: Erase flash
+        if: always() && steps.runner.outcome == 'success'
+        uses: ./.github/actions/erase-flash
+        with:
+          hil_board: frdm_rw612
+
+      - name: Power Off USB Hub
+        if: always() && steps.runner.outcome == 'success'
+        run: python3 /opt/golioth-scripts/usb_hub_power.py off
+
+  test_smp:
+    name: smp ${{ matrix.name }} (${{ matrix.iteration }})
+    if: ${{ !cancelled() && needs.plan_samples.result == 'success' }}
+    needs:
+      - plan
+      - plan_samples
+      - build_smp
+    strategy:
+      fail-fast: false
+      max-parallel: 1
+      matrix:
+        include: ${{ fromJSON(needs.plan_samples.outputs.sample_runs) }}
+    runs-on: ${{ fromJSON(needs.plan.outputs.runs_on) }}
+    timeout-minutes: 30
+
+    container:
+      # yamllint disable-line rule:line-length
+      image: golioth/golioth-twister-base:ee62f47-sdk-0.17.4@sha256:435173aace95071ae278f863d14756b27a526f8e2642d0ec916de2f8c5332a34
+      env:
+        ZEPHYR_SDK_INSTALL_DIR: /opt/toolchains/zephyr-sdk-0.17.4
+      volumes:
+        - /dev:/dev
+        - /home/golioth/credentials:/opt/credentials
+      options: --privileged
+
+    steps:
+      - name: Check runner
+        id: runner
+        run: |
+          if [ "${{ runner.name }}" != "${EXPECTED_RUNNER}" ]; then
+            echo "::error::Expected runner ${EXPECTED_RUNNER}, got ${{ runner.name }}"
+            exit 1
+          fi
+      - name: Checkout repository and submodules
+        uses: actions/checkout@9c091bb21b7c1c1d1991bb908d89e4e9dddfe3e0 # v7.0.0
+        with:
+          path: modules/lib/golioth-firmware-sdk
+      - name: Init and update west
+        run: |
+          rm -rf zephyr
+          rm -rf twister-out
+
+          mkdir -p .west
+          cat <<EOF > .west/config
+          [manifest]
+          path = modules/lib/golioth-firmware-sdk
+          file = .ci-west-zephyr-twister.yml
+          EOF
+
+          west update -o=--depth=1 -n
+          git config --global user.email user@git-scm.com
+          git config --global user.name "Git User"
+
+          uv pip install \
+            -r zephyr/scripts/requirements-base.txt \
+            -r zephyr/scripts/requirements-build-test.txt \
+            -r zephyr/scripts/requirements-run-test.txt \
+            modules/lib/golioth-firmware-sdk/tests/hil/scripts/pytest-zephyr-samples \
+            git+https://github.com/golioth/python-golioth-tools@v0.9.0
+      - name: Power On USB Hub
+        run: python3 /opt/golioth-scripts/usb_hub_power.py on
+      - name: Erase flash (pre-test)
+        if: ${{ contains(matrix.name, 'fw_update') }}
+        uses: ./modules/lib/golioth-firmware-sdk/.github/actions/erase-flash
+        with:
+          hil_board: frdm_rw612
+
+      - name: Download build
+        uses: actions/download-artifact@3e5f45b2cfb9172054b4087a40e8e0b5a5461e7c # v8.0.1
+        with:
+          name: test_artifacts_frdm_rw612-${{ matrix.name }}
+          path: .
+      - name: Extract artifacts
+        run: |
+          tar -xvf test_artifacts_frdm_rw612-${{ matrix.name }}.tar
+      - name: Run test
+        shell: bash
+        env:
+          hil_board: frdm_rw612
+        run: |
+          rm -rf allure-reports
+          source /opt/credentials/runner_env.sh
+          export PATH=$PATH:/opt/SEGGER/JLink
+          export PATH=$PATH:/usr/local/go/bin
+          export PATH=$PATH:$(go env GOPATH)/bin
+          PORT_VAR=CI_${hil_board^^}_PORT
+          SNR_VAR=CI_${hil_board^^}_SNR
+          zephyr/scripts/twister                                                                  \
+                -v                                                                                \
+                -p frdm_rw612                                                                     \
+                -T ${{ matrix.dir }}                                                              \
+                --device-testing                                                                  \
+                --device-serial ${!PORT_VAR}                                                      \
+                --test-only                                                                       \
+                --detailed-test-id                                                                \
+                --west-flash="--dev-id=${!SNR_VAR}"                                               \
+                --pytest-args="--api-url=https://api.golioth.io"                                  \
+                --pytest-args="--api-key=${{ secrets.PROD_CI_PROJECT_API_KEY }}"                  \
+                --pytest-args="--wifi-ssid=${{ secrets[format('{0}_WIFI_SSID', runner.name)] }}"  \
+                --pytest-args="--wifi-psk=${{ secrets[format('{0}_WIFI_PSK', runner.name)] }}"    \
+                --pytest-args="--mask-secrets"                                                    \
+                --pytest-args="--alluredir=allure-reports"                                        \
+                --pytest-args="--runner-name=${{ runner.name }}"                                  \
+                --pytest-args="--hil-board=${hil_board}"
+
+      - name: Safe upload twister artifacts
+        if: (success() || failure()) && steps.runner.outcome == 'success'
+        uses: ./modules/lib/golioth-firmware-sdk/.github/actions/safe-upload-artifacts
+        with:
+          secrets-json: ${{ toJson(secrets) }}
+          # yamllint disable-line rule:line-length
+          name: twister-run-artifacts-frdm_rw612-${{ matrix.name }}-${{ matrix.iteration }}-${{ github.run_attempt }}
+          path: |
+            reports/*
+            twister-out/**/*.log
+            twister-out/**/report.xml
+            twister-out/*.xml
+            twister-out/*.json
+
+      - name: Safe upload CI report summary
+        uses: ./modules/lib/golioth-firmware-sdk/.github/actions/safe-upload-artifacts
+        if: (success() || failure()) && steps.runner.outcome == 'success'
+        with:
+          # yamllint disable-line rule:line-length
+          name: ci-individual-samples-zephyr-frdm_rw612-${{ matrix.name }}-${{ matrix.iteration }}-${{ github.run_attempt }}
+          path: twister-out/twister_suite_report.xml
+
+      - name: Safe upload Allure reports
+        if: (success() || failure()) && steps.runner.outcome == 'success'
+        uses: ./modules/lib/golioth-firmware-sdk/.github/actions/safe-upload-artifacts
+        with:
+          secrets-json: ${{ toJson(secrets) }}
+          # yamllint disable-line rule:line-length
+          name: allure-reports-samples-zephyr-frdm_rw612-${{ matrix.name }}-${{ matrix.iteration }}-${{ github.run_attempt }}
+          path: allure-reports
+
+      - name: Erase flash (post-test)
+        if: always() && steps.runner.outcome == 'success'
+        uses: ./modules/lib/golioth-firmware-sdk/.github/actions/erase-flash
+        with:
+          hil_board: frdm_rw612
+
+      - name: Power Off USB Hub
+        if: always() && steps.runner.outcome == 'success'
+        run: python3 /opt/golioth-scripts/usb_hub_power.py off
