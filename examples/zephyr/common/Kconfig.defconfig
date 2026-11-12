@@ -178,4 +178,9 @@ endif # GOLIOTH_SAMPLE_TWISTER_TEST
 configdefault MCUMGR_TRANSPORT_NETBUF_USER_DATA_SIZE
 	default 112 if NET_NATIVE_OFFLOADED_SOCKETS
 
+# Restarting autonegotiation on the frdm_rw612 KSZ8081 takes up to about
+# 4 s with some link partners
+configdefault PHY_AUTONEG_TIMEOUT_MS
+	default 10000 if BOARD_FRDM_RW612
+
 endif # GOLIOTH_SAMPLE_COMMON
