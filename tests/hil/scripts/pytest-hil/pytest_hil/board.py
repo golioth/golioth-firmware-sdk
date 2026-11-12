@@ -78,6 +78,18 @@ class Board(ABC):
 
                 self.received = self.received + chunk
 
+    async def wait_for_prompt(self, attempts=10, timeout_s=3):
+        for _ in range(attempts - 1):
+            await self.send_all(b'\r\n')
+            try:
+                await self.wait_for_regex_in_line(self.PROMPT, timeout_s=timeout_s)
+                return
+            except trio.TooSlowError:
+                pass
+
+        await self.send_all(b'\r\n')
+        await self.wait_for_regex_in_line(self.PROMPT, timeout_s=timeout_s)
+
     async def send_cmd(self, cmd, wait_str=None):
         if wait_str == None:
             wait_str = self.PROMPT
