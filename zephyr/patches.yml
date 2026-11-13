@@ -21,3 +21,11 @@ patches:
     date: 2026-09-28
     apply-command: >-
       bash -c 'west list nrf >/dev/null 2>&1 || git apply "$@"' --
+  - path: 0004-drivers-clock_control-mcux_syscon-fix-RW6xx-ENET-clo.patch
+    sha256sum: 34088856651a049d9600deab51a30c46a6154b5464d459c5f0eea2c8281b80aa
+    module: zephyr
+    author: Tobias Frauenschläger
+    email: t.frauenschlaeger@me.com
+    date: 2026-09-28
+    apply-command: >-
+      bash -c 'west list nrf >/dev/null 2>&1 || git apply "$@"' --
