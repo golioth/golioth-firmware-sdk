@@ -78,7 +78,7 @@ each of the samples is also continously verified on target.
 | Board                | Platform                 |
 | ---                  | ---                      |
 | ESP32-S3-DevKitC-1   | ESP-IDF (v5.4.1)         |
-| ESP32-S3-DevKitC-1   | Zephyr (v4.2.1)          |
-| FRDM-RW612           | Zephyr (v4.2.1)          |
-| nRF9160 DK           | nRF Connect SDK (v3.1.1) |
+| ESP32-S3-DevKitC-1   | Zephyr (v4.3.0)          |
+| FRDM-RW612           | Zephyr (v4.3.0)          |
+| nRF9160 DK           | nRF Connect SDK (v3.2.3) |
 | CY8CPROTO-062-4343W  | ModusToolbox (3.3.0)     |
