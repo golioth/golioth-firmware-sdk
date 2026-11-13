@@ -7,11 +7,11 @@ API documentation: <https://firmware-sdk-docs.golioth.io/>
 
 ## Requirements:
 
-* Install the latest version of the [Zephyr
-  SDK](https://github.com/zephyrproject-rtos/sdk-ng/releases/latest).
+* Install version 0.17.4 of the [Zephyr
+  SDK](https://github.com/zephyrproject-rtos/sdk-ng/releases/tag/v0.17.4).
 * Install [Python](https://www.python.org/downloads/)
 * Install [the West
-  tool](https://docs.zephyrproject.org/latest/develop/west/install.html)
+  tool](https://docs.zephyrproject.org/4.3.0/develop/west/install.html)
 
 
 Most platforms are already supported with mainline [Zephyr
@@ -33,7 +33,7 @@ cd modules/lib/golioth-firmware-sdk && git submodule update --init --recursive
 ```
 
 Follow [Zephyr Getting
-Started](https://docs.zephyrproject.org/latest/getting_started/index.html)
+Started](https://docs.zephyrproject.org/4.3.0/develop/getting_started/index.html)
 for details on how to setup Zephyr based projects.
 
 ### Using with Nordic's nRF Connect SDK
@@ -48,14 +48,14 @@ cd modules/lib/golioth-firmware-sdk && git submodule update --init --recursive
 ```
 
 Follow [nRF Connect SDK Getting
-Started](https://developer.nordicsemi.com/nRF_Connect_SDK/doc/latest/nrf/gs_installing.html)
+Started](https://nrfconnectdocs.nordicsemi.com/ncs/3.2.3/nrf/installation/install_ncs.html)
 for details on how to setup nRF Connect SDK based projects.
 
 ### Adding the Golioth Firmware SDK to an existing Zephyr West project
 
 Alternatively, add the following entry to the `west.yml` file of an
 existing
-[West](https://docs.zephyrproject.org/latest/west/index.html)
+[West](https://docs.zephyrproject.org/4.3.0/develop/west/index.html)
 based project (e.g. Zephyr RTOS):
 
 ```yaml

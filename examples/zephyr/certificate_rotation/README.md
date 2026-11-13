@@ -21,7 +21,7 @@ Golioth, then starts pushing log messages with the new credentials.
 
 #### WiFi Configuration
 
-Devices that use WiFi use Zephyr's [WiFi Credentials](https://docs.zephyrproject.org/latest/connectivity/networking/api/wifi_credentials.html)
+Devices that use WiFi use Zephyr's [WiFi Credentials](https://docs.zephyrproject.org/4.3.0/connectivity/networking/api/wifi_credentials.html)
 library. The `wifi cred add` shell command accepts network SSID and security
 information and is compatible with a variety of WiFi security mechanisms.
 For example, to add a network that uses WPA2-PSK:
@@ -45,8 +45,9 @@ $ west flash
 
 ## Installing `mcumgr`
 
-For full instructions, see
-[mcumgr](https://docs.zephyrproject.org/latest/services/device_mgmt/mcumgr.html).
+For more about MCUmgr, see Zephyr's
+[MCUmgr](https://docs.zephyrproject.org/4.3.0/services/device_mgmt/mcumgr.html)
+documentation.
 
 1. Install go from https://go.dev/doc/install
 2. Install the mcumgr tool:
