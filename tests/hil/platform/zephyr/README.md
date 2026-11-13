@@ -31,7 +31,7 @@ west build -p -b frdm_rw612 tests/hil/platform/zephyr -- -DGOLIOTH_HIL_TEST=rpc
 
 # Run test
 pytest --rootdir . tests/hil/tests/rpc         \
-  --board frwm_rw612                           \
+  --board frdm_rw612                           \
   --port /dev/ttyACM0                          \
   --fw-image build/zephyr/zephyr.hex           \
   --serial-number 1050266122                   \
