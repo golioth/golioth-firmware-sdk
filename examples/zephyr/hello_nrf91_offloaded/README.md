@@ -32,10 +32,10 @@ Those are enabled only in specific application configurations.
 
 Build and flash [AT
 Client](https://nrfconnectdocs.nordicsemi.com/ncs/3.2.3/nrf/samples/cellular/at_client/README.html)
-sample:
+sample from the west workspace root:
 
 ```sh
-$ west build nrf/samples/cellular/at_client
+$ west build -p -b nrf9160dk/nrf9160/ns nrf/samples/cellular/at_client
 $ west flash
 ```
 
@@ -61,6 +61,9 @@ ASCII-encoded PSK is to use the following Linux command:
 $ echo "my-golioth-psk" | tr -d '\n' | xxd -ps -c 200
 6d792d676f6c696f74682d70736b
 ```
+
+Then flash this sample again by running `west flash` from the directory
+where you built it.
 
 ##### Using `nrf_modem_at` application specific shell command
 
