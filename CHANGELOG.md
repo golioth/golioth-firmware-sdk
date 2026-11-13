@@ -6,14 +6,105 @@ and this project adheres to [Semantic Versioning](https://semver.org/spec/v2.0.0
 
 ## [unreleased]
 
-### Removed
-- Deprecate continuous testing of the rak5010
+## [0.23.0] 2026-11-16
+
+### Breaking Changes
+
+- The synchronous API has been removed and the `_async` suffix has
+  been dropped from the remaining functions:
+  - `golioth_<name>_async()` is now `golioth_<name>()` with the same
+    parameters, e.g. `golioth_lightdb_set_int_async()` is now
+    `golioth_lightdb_set_int()`.
+  - Replace `golioth_<name>_sync(..., timeout_s)` with
+    `golioth_<name>(..., callback, callback_arg)`. The return value
+    only reports whether the request was queued; the result is passed
+    to the callback. Applications that need to block can wait for the
+    callback, but not from inside a Golioth callback, as callbacks run
+    on the client thread.
+  - `golioth_lightdb_get_sync()` and the typed
+    `golioth_lightdb_get_<type>_sync()` getters: use
+    `golioth_lightdb_get()` and decode the payload in the callback,
+    e.g. with `golioth_payload_as_int()`.
+  - `golioth_ota_report_state_sync()`: use the new
+    `golioth_ota_report_state()`, which takes a callback and callback
+    argument in place of the timeout.
+  - `golioth_ota_get_block_sync()`: use
+    `golioth_ota_download_component()`.
+  - `golioth_stream_set_blockwise_sync()` is unchanged.
+- Gateway (experimental): `golioth_gateway_device_cert_set()` no
+  longer blocks. New `set_cb` and `callback_arg` arguments come before
+  `timeout_s`; `set_cb` is called with `callback_arg` when the request
+  completes.
+- Zephyr: the `golioth_esp_at` shield (nRF52840 DK + ESP32 running
+  ESP-AT) has been removed from the SDK. Applications built with
+  `--shield golioth_esp_at` need to provide the shield in their own
+  board root, e.g. a copy of `zephyr/boards/shields/golioth_esp_at/`
+  from v0.22.0.
+- Zephyr: the fw_update sample's `golioth_fw_update_init()` and
+  `golioth_fw_update_init_with_config()` have been replaced by
+  `golioth_fw_update_run()`, which runs on the calling thread and does
+  not return. Applications based on the sample also need
+  `CONFIG_IMG_ENABLE_IMAGE_CHECK=y` and `CONFIG_MBEDTLS_PSA_CRYPTO_C=y`.
+- NCS: the fw_update sample on the nRF9160 DK keeps the MCUboot
+  secondary slot in external flash. Devices running an earlier build
+  of the sample must be reflashed, including MCUboot, instead of being
+  updated over the air.
+
+### Highlights
+
+- The synchronous API functions have been removed, except
+  `golioth_stream_set_blockwise_sync()`, and the `_async` suffix has
+  been dropped from the rest. See Breaking Changes above.
+- Zephyr support has been upgraded to v4.3.0 and nRF Connect SDK
+  support to v3.2.3.
+- The FRDM-RW612 can connect over WiFi and replaces the nRF52840 DK +
+  ESP32 (ESP-AT) as a Continuously Verified Board.
+
+### Changed
+
+- Zephyr: certificate authentication enables
+  `CONFIG_MBEDTLS_ECP_NIST_OPTIM` by default, which speeds up the DTLS
+  handshake on NIST curves (P-256, P-384)
 
 ### Fixed
+
+- Fixed memory allocated with `golioth_sys_malloc()` being released
+  with `free()` instead of `golioth_sys_free()` in ports that override
+  them
+- OTA: fixed a memory leak in `golioth_ota_download_component()` when
+  the download could not be started
 - Zephyr: fixed a duplicated or late acknowledgement completing the next
   block of a blockwise transfer
 - Zephyr: fixed requests failing when the server answers with a separate
   response
+- Zephyr: fixed thread stacks not being reused after a thread is
+  destroyed. Re-creating the Golioth client, as the certificate
+  rotation sample does, could run its thread past the end of the stack
+  pool.
+- Zephyr: fixed Ethernet on the FRDM-RW612 sometimes not coming up
+  after boot. The fixes are Zephyr patches in `zephyr/patches.yml`:
+  run `west patch apply` after `west update`, or
+  `west patch -sm golioth apply` when the SDK is a module named
+  `golioth` in your own manifest.
+- Zephyr samples: fixed a crash when there is no network interface,
+  and made WiFi and Ethernet connections more reliable
+- Zephyr samples: fixed broken documentation links and build
+  instructions in the READMEs
+- ESP-IDF: the fw_update sample logged the wrong error when
+  `esp_ota_end()` failed
+
+### Removed
+
+- Zephyr: the RAK5010 and the nRF52840 DK + ESP32 are no longer
+  Continuously Verified, and their board files have been removed from
+  the samples
+- Documentation: the guide for migrating from the legacy Golioth
+  Zephyr SDK has been removed
+
+### Known Issues
+
+- Zephyr: the certificate_provisioning and certificate_rotation
+  samples do not support WiFi on the FRDM-RW612 yet
 
 ## [0.22.0] 2025-12-16
 
