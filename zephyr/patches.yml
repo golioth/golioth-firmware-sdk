@@ -5,3 +5,15 @@ patches:
     author: Mike Szczys
     email: mike@golioth.io
     date: 2026-01-02
+  - path: 0002-drivers-ksz8081-fix-reset-pin-polarity.patch
+    sha256sum: 0d90e20956635a7734a8be87d8ea065b5f7d9b8deb6d26f0199b176185178813
+    module: zephyr
+    author: Fabio Baltieri
+    email: fabiobaltieri@google.com
+    date: 2025-12-09
+  - path: 0003-boards-nxp-frdm_rw612-fix-swapped-ENET-PHY-reset-and.patch
+    sha256sum: 30763908b575e22de75a9b6751c15120eb7638a5ab9ea01dd333ee503076cd79
+    module: zephyr
+    author: Tobias Frauenschläger
+    email: t.frauenschlaeger@me.com
+    date: 2026-09-28

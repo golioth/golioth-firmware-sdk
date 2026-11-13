@@ -1,0 +1,40 @@
+From 0000000000000000000000000000000000000000 Mon Sep 17 00:00:00 2001
+From: =?UTF-8?q?Tobias=20Frauenschl=C3=A4ger?= <t.frauenschlaeger@me.com>
+Date: Mon, 28 Sep 2026 19:22:19 +0200
+Subject: [PATCH] boards: nxp: frdm_rw612: fix swapped ENET PHY reset and
+ interrupt pins
+MIME-Version: 1.0
+Content-Type: text/plain; charset=UTF-8
+Content-Transfer-Encoding: 8bit
+
+On the FRDM-RW612, the KSZ8081 reset is wired to GPIO21 and its
+interrupt output to GPIO55, as used by the MCUXpresso SDK ENET
+examples for this board. The devicetree had the two swapped, so the
+PHY driver toggled the interrupt line instead of resetting the PHY.
+The KSZ8081 interrupt output is active low by default.
+
+Tested with samples/net/dhcpv4_client: the PHY is found at address 2,
+autonegotiation completes at 100 Mbit full duplex, and ping works in
+both directions.
+
+Signed-off-by: Tobias Frauenschläger <t.frauenschlaeger@me.com>
+(cherry picked from commit e86092e44c7f0e16f5513ae79fec7f1ab592ff6b)
+---
+ boards/nxp/frdm_rw612/frdm_rw612_common.dtsi | 4 ++--
+ 1 file changed, 2 insertions(+), 2 deletions(-)
+
+diff --git a/boards/nxp/frdm_rw612/frdm_rw612_common.dtsi b/boards/nxp/frdm_rw612/frdm_rw612_common.dtsi
+index c346301132b..53cba86e2bd 100644
+--- a/boards/nxp/frdm_rw612/frdm_rw612_common.dtsi
++++ b/boards/nxp/frdm_rw612/frdm_rw612_common.dtsi
+@@ -232,8 +232,8 @@ mikrobus_serial: &flexcomm0 {};
+ 		compatible = "microchip,ksz8081";
+ 		reg = <2>;
+ 		status = "okay";
+-		reset-gpios = <&hsgpio1 23 GPIO_ACTIVE_LOW>;
+-		int-gpios = <&hsgpio0 21 GPIO_ACTIVE_HIGH>;
++		reset-gpios = <&hsgpio0 21 GPIO_ACTIVE_LOW>;
++		int-gpios = <&hsgpio1 23 GPIO_ACTIVE_LOW>;
+ 		microchip,interface-type = "rmii";
+ 	};
+ };
