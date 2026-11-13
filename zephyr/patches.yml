@@ -5,3 +5,11 @@ patches:
     author: Mike Szczys
     email: mike@golioth.io
     date: 2026-01-02
+  - path: 0002-twister-prefer-fork-on-POSIX-to-maintain-pre-3.14-be.patch
+    sha256sum: f5f4fd98b0e7c88dc371242f091fea392687c62ae27f9cdfda590682c1bc5635
+    module: zephyr
+    author: Anas Nashif
+    email: anas.nashif@intel.com
+    date: 2025-10-21
+    apply-command: >-
+      bash -c 'if [[ $(west config manifest.file) == *west-ncs* ]]; then git apply "$@"; fi' --

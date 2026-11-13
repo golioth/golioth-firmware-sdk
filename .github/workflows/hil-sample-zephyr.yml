@@ -171,7 +171,7 @@ jobs:
 
     container:
       # yamllint disable-line rule:line-length
-      image: golioth/golioth-twister-base:ee62f47-sdk-0.17.4@sha256:435173aace95071ae278f863d14756b27a526f8e2642d0ec916de2f8c5332a34
+      image: golioth/golioth-twister-base:pr-87-sdk-0.17.4@sha256:87447c792b084e98445f31ce395ea45ccc16dd6c87d544d03093174ca9a84eea
       env:
         ZEPHYR_SDK_INSTALL_DIR: /opt/toolchains/zephyr-sdk-0.17.4
       volumes:
@@ -202,6 +202,8 @@ jobs:
           west update -o=--depth=1 -n
           git config --global user.email user@git-scm.com
           git config --global user.name "Git User"
+
+          west patch apply
 
           uv pip install \
             -r zephyr/scripts/requirements-base.txt \
