@@ -1,0 +1,207 @@
+From 0000000000000000000000000000000000000000 Mon Sep 17 00:00:00 2001
+From: Fabio Baltieri <fabiobaltieri@google.com>
+Date: Tue, 9 Dec 2025 14:50:25 +0000
+Subject: [PATCH] drivers: ksz8081: fix reset pin polarity
+
+The reset pin, like most reset pins, is active low. Fix the driver to
+treat it as active low and simplify the pin control logic while at it.
+Fix all current boards using the wrong pin definition and add a note for
+out of tree users.
+
+Signed-off-by: Fabio Baltieri <fabiobaltieri@google.com>
+(cherry picked from commit 318e43503f5cd141e64b97ae6556c12ea30ec818)
+[backport to v4.3.0: keep mdio_bus_enable() in phy_mc_ksz8081_init(),
+ drop the doc/releases/migration-guide-4.4.rst hunk]
+---
+ boards/nxp/frdm_rw612/frdm_rw612_common.dtsi  |  2 +-
+ boards/nxp/mimxrt1020_evk/mimxrt1020_evk.dts  |  2 +-
+ boards/nxp/mimxrt1024_evk/mimxrt1024_evk.dts  |  2 +-
+ boards/nxp/mimxrt1050_evk/mimxrt1050_evk.dtsi |  2 +-
+ boards/nxp/mimxrt1060_evk/mimxrt1060_evk.dtsi |  2 +-
+ boards/nxp/mimxrt1064_evk/mimxrt1064_evk.dts  |  2 +-
+ boards/nxp/mimxrt1160_evk/mimxrt1160_evk.dtsi |  2 +-
+ boards/nxp/mimxrt1170_evk/mimxrt1170_evk.dtsi |  2 +-
+ .../rd_rw612_bga_rw612_ethernet.dts           |  2 +-
+ drivers/ethernet/phy/phy_microchip_ksz8081.c  | 28 ++-----------------
+ 10 files changed, 12 insertions(+), 34 deletions(-)
+
+diff --git a/boards/nxp/frdm_rw612/frdm_rw612_common.dtsi b/boards/nxp/frdm_rw612/frdm_rw612_common.dtsi
+index 1d4e20a9ff7..c346301132b 100644
+--- a/boards/nxp/frdm_rw612/frdm_rw612_common.dtsi
++++ b/boards/nxp/frdm_rw612/frdm_rw612_common.dtsi
+@@ -232,7 +232,7 @@ mikrobus_serial: &flexcomm0 {};
+ 		compatible = "microchip,ksz8081";
+ 		reg = <2>;
+ 		status = "okay";
+-		reset-gpios = <&hsgpio1 23 GPIO_ACTIVE_HIGH>;
++		reset-gpios = <&hsgpio1 23 GPIO_ACTIVE_LOW>;
+ 		int-gpios = <&hsgpio0 21 GPIO_ACTIVE_HIGH>;
+ 		microchip,interface-type = "rmii";
+ 	};
+diff --git a/boards/nxp/mimxrt1020_evk/mimxrt1020_evk.dts b/boards/nxp/mimxrt1020_evk/mimxrt1020_evk.dts
+index 23f61740ce6..73c3facd2a7 100644
+--- a/boards/nxp/mimxrt1020_evk/mimxrt1020_evk.dts
++++ b/boards/nxp/mimxrt1020_evk/mimxrt1020_evk.dts
+@@ -160,7 +160,7 @@ arduino_serial: &lpuart2 {
+ 		compatible = "microchip,ksz8081";
+ 		reg = <0>;
+ 		status = "okay";
+-		reset-gpios = <&gpio1 4 GPIO_ACTIVE_HIGH>;
++		reset-gpios = <&gpio1 4 GPIO_ACTIVE_LOW>;
+ 		int-gpios = <&gpio1 22 GPIO_ACTIVE_HIGH>;
+ 		microchip,interface-type = "rmii";
+ 	};
+diff --git a/boards/nxp/mimxrt1024_evk/mimxrt1024_evk.dts b/boards/nxp/mimxrt1024_evk/mimxrt1024_evk.dts
+index 29a39b7f66f..07a86e4e858 100644
+--- a/boards/nxp/mimxrt1024_evk/mimxrt1024_evk.dts
++++ b/boards/nxp/mimxrt1024_evk/mimxrt1024_evk.dts
+@@ -152,7 +152,7 @@ arduino_serial: &lpuart2 {
+ 		compatible = "microchip,ksz8081";
+ 		reg = <0>;
+ 		status = "okay";
+-		reset-gpios = <&gpio1 4 GPIO_ACTIVE_HIGH>;
++		reset-gpios = <&gpio1 4 GPIO_ACTIVE_LOW>;
+ 		int-gpios = <&gpio1 22 GPIO_ACTIVE_HIGH>;
+ 		microchip,interface-type = "rmii";
+ 	};
+diff --git a/boards/nxp/mimxrt1050_evk/mimxrt1050_evk.dtsi b/boards/nxp/mimxrt1050_evk/mimxrt1050_evk.dtsi
+index 499d43d1fb4..b3ed061bc25 100644
+--- a/boards/nxp/mimxrt1050_evk/mimxrt1050_evk.dtsi
++++ b/boards/nxp/mimxrt1050_evk/mimxrt1050_evk.dtsi
+@@ -200,7 +200,7 @@ zephyr_lcdif: &lcdif {
+ 		compatible = "microchip,ksz8081";
+ 		reg = <0>;
+ 		status = "okay";
+-		reset-gpios = <&gpio1 9 GPIO_ACTIVE_HIGH>;
++		reset-gpios = <&gpio1 9 GPIO_ACTIVE_LOW>;
+ 		int-gpios = <&gpio1 10 GPIO_ACTIVE_HIGH>;
+ 		microchip,interface-type = "rmii";
+ 	};
+diff --git a/boards/nxp/mimxrt1060_evk/mimxrt1060_evk.dtsi b/boards/nxp/mimxrt1060_evk/mimxrt1060_evk.dtsi
+index 087cff325fb..20bdef2f33d 100644
+--- a/boards/nxp/mimxrt1060_evk/mimxrt1060_evk.dtsi
++++ b/boards/nxp/mimxrt1060_evk/mimxrt1060_evk.dtsi
+@@ -178,7 +178,7 @@ arduino_i2c: &lpi2c1 {
+ 		compatible = "microchip,ksz8081";
+ 		reg = <0>;
+ 		status = "okay";
+-		reset-gpios = <&gpio1 9 GPIO_ACTIVE_HIGH>;
++		reset-gpios = <&gpio1 9 GPIO_ACTIVE_LOW>;
+ 		int-gpios = <&gpio1 10 GPIO_ACTIVE_HIGH>;
+ 		microchip,interface-type = "rmii";
+ 	};
+diff --git a/boards/nxp/mimxrt1064_evk/mimxrt1064_evk.dts b/boards/nxp/mimxrt1064_evk/mimxrt1064_evk.dts
+index 4860b8cbb85..76dee0a475f 100644
+--- a/boards/nxp/mimxrt1064_evk/mimxrt1064_evk.dts
++++ b/boards/nxp/mimxrt1064_evk/mimxrt1064_evk.dts
+@@ -249,7 +249,7 @@ arduino_serial: &lpuart3 {
+ 		compatible = "microchip,ksz8081";
+ 		reg = <0>;
+ 		status = "okay";
+-		reset-gpios = <&gpio1 9 GPIO_ACTIVE_HIGH>;
++		reset-gpios = <&gpio1 9 GPIO_ACTIVE_LOW>;
+ 		int-gpios = <&gpio1 10 GPIO_ACTIVE_HIGH>;
+ 		microchip,interface-type = "rmii";
+ 	};
+diff --git a/boards/nxp/mimxrt1160_evk/mimxrt1160_evk.dtsi b/boards/nxp/mimxrt1160_evk/mimxrt1160_evk.dtsi
+index 9f5ded1dbe7..ac1b5c6af4c 100644
+--- a/boards/nxp/mimxrt1160_evk/mimxrt1160_evk.dtsi
++++ b/boards/nxp/mimxrt1160_evk/mimxrt1160_evk.dtsi
+@@ -160,7 +160,7 @@
+ 		compatible = "microchip,ksz8081";
+ 		reg = <0>;
+ 		status = "okay";
+-		reset-gpios = <&gpio12 12 GPIO_ACTIVE_HIGH>;
++		reset-gpios = <&gpio12 12 GPIO_ACTIVE_LOW>;
+ 		int-gpios = <&gpio9 11 GPIO_ACTIVE_HIGH>;
+ 		microchip,interface-type = "rmii";
+ 	};
+diff --git a/boards/nxp/mimxrt1170_evk/mimxrt1170_evk.dtsi b/boards/nxp/mimxrt1170_evk/mimxrt1170_evk.dtsi
+index ab2f9dfb221..f1571826ebe 100644
+--- a/boards/nxp/mimxrt1170_evk/mimxrt1170_evk.dtsi
++++ b/boards/nxp/mimxrt1170_evk/mimxrt1170_evk.dtsi
+@@ -154,7 +154,7 @@ arduino_serial: &lpuart2 {
+ 		compatible = "microchip,ksz8081";
+ 		reg = <0>;
+ 		status = "okay";
+-		reset-gpios = <&gpio12 12 GPIO_ACTIVE_HIGH>;
++		reset-gpios = <&gpio12 12 GPIO_ACTIVE_LOW>;
+ 		int-gpios = <&gpio9 11 GPIO_ACTIVE_HIGH>;
+ 		microchip,interface-type = "rmii";
+ 	};
+diff --git a/boards/nxp/rd_rw612_bga/rd_rw612_bga_rw612_ethernet.dts b/boards/nxp/rd_rw612_bga/rd_rw612_bga_rw612_ethernet.dts
+index 6792e819adc..32d80aa5e93 100644
+--- a/boards/nxp/rd_rw612_bga/rd_rw612_bga_rw612_ethernet.dts
++++ b/boards/nxp/rd_rw612_bga/rd_rw612_bga_rw612_ethernet.dts
+@@ -33,7 +33,7 @@
+ 		compatible = "microchip,ksz8081";
+ 		reg = <2>;
+ 		status = "okay";
+-		reset-gpios = <&hsgpio1 23 GPIO_ACTIVE_HIGH>;
++		reset-gpios = <&hsgpio1 23 GPIO_ACTIVE_LOW>;
+ 		int-gpios = <&hsgpio0 21 GPIO_ACTIVE_HIGH>;
+ 		microchip,interface-type = "rmii";
+ 	};
+diff --git a/drivers/ethernet/phy/phy_microchip_ksz8081.c b/drivers/ethernet/phy/phy_microchip_ksz8081.c
+index 1784885b35b..7bbf786c0b2 100644
+--- a/drivers/ethernet/phy/phy_microchip_ksz8081.c
++++ b/drivers/ethernet/phy/phy_microchip_ksz8081.c
+@@ -407,12 +407,11 @@ static int phy_mc_ksz8081_reset_gpio(const struct mc_ksz8081_config *config)
+ {
+ 	int ret;
+ 
+-	if (!config->reset_gpio.port) {
++	if (!gpio_is_ready_dt(&config->reset_gpio)) {
+ 		return -ENODEV;
+ 	}
+ 
+-	/* Start reset */
+-	ret = gpio_pin_set_dt(&config->reset_gpio, 0);
++	ret = gpio_pin_configure_dt(&config->reset_gpio, GPIO_OUTPUT_ACTIVE);
+ 	if (ret) {
+ 		return ret;
+ 	}
+@@ -420,8 +419,7 @@ static int phy_mc_ksz8081_reset_gpio(const struct mc_ksz8081_config *config)
+ 	/* Wait for at least 500 us as specified by datasheet */
+ 	k_busy_wait(1000);
+ 
+-	/* Reset over */
+-	ret = gpio_pin_set_dt(&config->reset_gpio, 1);
++	ret = gpio_pin_set_dt(&config->reset_gpio, 0);
+ 
+ 	/* After deasserting reset, must wait at least 100 us to use programming interface */
+ 	k_busy_wait(200);
+@@ -653,21 +651,6 @@ done:
+ #define ksz8081_init_int_gpios(dev) 0
+ #endif
+ 
+-#if DT_ANY_INST_HAS_PROP_STATUS_OKAY(reset_gpios)
+-static int ksz8081_init_reset_gpios(const struct device *dev)
+-{
+-	const struct mc_ksz8081_config *config = dev->config;
+-
+-	if (config->reset_gpio.port == NULL) {
+-		return 0;
+-	}
+-
+-	return gpio_pin_configure_dt(&config->reset_gpio, GPIO_OUTPUT_ACTIVE);
+-}
+-#else
+-#define ksz8081_init_reset_gpios(dev) 0
+-#endif
+-
+ static int phy_mc_ksz8081_init(const struct device *dev)
+ {
+ 	const struct mc_ksz8081_config *config = dev->config;
+@@ -683,11 +666,6 @@ static int phy_mc_ksz8081_init(const struct device *dev)
+ 
+ 	mdio_bus_enable(config->mdio_dev);
+ 
+-	ret = ksz8081_init_reset_gpios(dev);
+-	if (ret) {
+-		return ret;
+-	}
+-
+ 	/* Reset PHY */
+ 	ret = phy_mc_ksz8081_reset(dev);
+ 	if (ret) {
