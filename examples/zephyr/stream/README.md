@@ -38,7 +38,7 @@ uart:-$ kernel reboot cold
 
 #### WiFi Configuration
 
-Devices that use WiFi use Zephyr's [WiFi Credentials](https://docs.zephyrproject.org/latest/connectivity/networking/api/wifi_credentials.html)
+Devices that use WiFi use Zephyr's [WiFi Credentials](https://docs.zephyrproject.org/4.3.0/connectivity/networking/api/wifi_credentials.html)
 library. The `wifi cred add` shell command accepts network SSID and security
 information and is compatible with a variety of WiFi security mechanisms.
 For example, to add a network that uses WPA2-PSK:

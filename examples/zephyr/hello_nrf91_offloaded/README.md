@@ -28,10 +28,10 @@ $ west flash
 PSK credentials can be provisioned using nRF91 specific AT commands.
 Those are enabled only in specific application configurations.
 
-##### Using [AT Client](https://developer.nordicsemi.com/nRF_Connect_SDK/doc/2.6.0/nrf/samples/cellular/at_client/README.html)
+##### Using [AT Client](https://nrfconnectdocs.nordicsemi.com/ncs/3.2.3/nrf/samples/cellular/at_client/README.html)
 
 Build and flash [AT
-Client](https://developer.nordicsemi.com/nRF_Connect_SDK/doc/2.6.0/nrf/samples/cellular/at_client/README.html)
+Client](https://nrfconnectdocs.nordicsemi.com/ncs/3.2.3/nrf/samples/cellular/at_client/README.html)
 sample:
 
 ```sh
