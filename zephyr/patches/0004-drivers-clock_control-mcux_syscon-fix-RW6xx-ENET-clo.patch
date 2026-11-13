@@ -1,0 +1,39 @@
+From 0000000000000000000000000000000000000000 Mon Sep 17 00:00:00 2001
+From: =?UTF-8?q?Tobias=20Frauenschl=C3=A4ger?= <t.frauenschlaeger@me.com>
+Date: Mon, 28 Sep 2026 19:22:19 +0200
+Subject: [PATCH] drivers: clock_control: mcux_syscon: fix RW6xx ENET clock
+ rate
+MIME-Version: 1.0
+Content-Type: text/plain; charset=UTF-8
+Content-Transfer-Encoding: 8bit
+
+On RW6xx, MCUX_ENET_CLK reported CLOCK_GetTddrMciEnetClkFreq(), the
+fixed 50 MHz TDDR ENET clock that serves as the PTP time base. The
+ENET MAC and MDIO drivers use this rate to compute the MDC divider,
+but the ENET module runs from the main clock (260 MHz). MDC therefore
+ran at about 13 MHz, above the 10 MHz MDIO limit of PHYs such as the
+KSZ8081, and the PHY never answered.
+
+Report the main clock instead, which is what the MCUXpresso SDK ENET
+examples pass to ENET_SetSMI(). The PTP clock uses the separate
+MCUX_ENET_PLL subsystem and is not affected.
+
+Signed-off-by: Tobias Frauenschläger <t.frauenschlaeger@me.com>
+(cherry picked from commit 4d4b3e1239c76b30b1ff79aa6b8a2bbf323052f5)
+---
+ drivers/clock_control/clock_control_mcux_syscon.c | 2 +-
+ 1 file changed, 1 insertion(+), 1 deletion(-)
+
+diff --git a/drivers/clock_control/clock_control_mcux_syscon.c b/drivers/clock_control/clock_control_mcux_syscon.c
+index f14aedf6c02..febd895d77d 100644
+--- a/drivers/clock_control/clock_control_mcux_syscon.c
++++ b/drivers/clock_control/clock_control_mcux_syscon.c
+@@ -512,7 +512,7 @@ static int mcux_lpc_syscon_clock_control_get_subsys_rate(const struct device *de
+ #ifdef CONFIG_ETH_NXP_ENET
+ 	case MCUX_ENET_CLK:
+ #ifdef CONFIG_SOC_SERIES_RW6XX
+-		*rate = CLOCK_GetTddrMciEnetClkFreq();
++		*rate = CLOCK_GetMainClkFreq();
+ #endif
+ 		break;
+ #endif
