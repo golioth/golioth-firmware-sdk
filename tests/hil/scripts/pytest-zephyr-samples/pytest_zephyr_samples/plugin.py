@@ -3,6 +3,7 @@ import allure
 import os
 from pathlib import Path
 from contextlib import suppress
+from twister_harness.helpers.utils import find_in_config
 
 def pytest_addoption(parser):
     parser.addoption("--wifi-ssid",   type=str, help="WiFi SSID")
@@ -11,14 +12,23 @@ def pytest_addoption(parser):
     parser.addoption("--runner-name", type=str, help="Self-hosted runner name")
 
 @pytest.fixture(scope="session")
-def wifi_ssid(request):
+def wifi_enabled(twister_harness_config):
+    app_build_dir = twister_harness_config.devices[0].app_build_dir
+    return find_in_config(app_build_dir / 'zephyr' / '.config', 'CONFIG_WIFI') == 'y'
+
+@pytest.fixture(scope="session")
+def wifi_ssid(request, wifi_enabled):
+    if not wifi_enabled:
+        return None
     if request.config.getoption("--wifi-ssid") is not None:
         return request.config.getoption("--wifi-ssid")
     else:
         return os.environ.get('WIFI_SSID')
 
 @pytest.fixture(scope="session")
-def wifi_psk(request):
+def wifi_psk(request, wifi_enabled):
+    if not wifi_enabled:
+        return None
     if request.config.getoption("--wifi-psk") is not None:
         return request.config.getoption("--wifi-psk")
     else:
