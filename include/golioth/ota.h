@@ -243,7 +243,13 @@ enum golioth_status golioth_ota_download_component(struct golioth_client *client
                                                    ota_component_download_end_cb end_cb,
                                                    void *arg);
 
-/// Report the state of OTA update to Golioth server synchronously
+/// Report the state of OTA update to Golioth server
+///
+/// This function will enqueue a request and return immediately without
+/// waiting for a response from the server. Optionally, the user may supply
+/// a callback that will be called when the response is received (indicating
+/// the request was acknowledged by the server) or a timeout occurs (response
+/// never received).
 ///
 /// @param client The client handle from @ref golioth_client_create
 /// @param state The OTA update state
@@ -254,7 +260,7 @@ enum golioth_status golioth_ota_download_component(struct golioth_client *client
 /// @param callback Callback to call on response received or timeout. Can be NULL.
 /// @param callback_arg Callback argument, passed directly when callback invoked. Can be NULL.
 ///
-/// @retval GOLIOTH_OK response received from server, get was successful
+/// @retval GOLIOTH_OK request enqueued
 /// @retval GOLIOTH_ERR_NULL invalid client handle
 /// @retval GOLIOTH_ERR_INVALID_STATE client is not running, currently stopped
 /// @retval GOLIOTH_ERR_QUEUE_FULL request queue is full, this request is dropped
