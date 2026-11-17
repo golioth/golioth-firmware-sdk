@@ -65,7 +65,7 @@ This sample requires that you have:
 
 For instructions on generating and positioning these certificates, see
 [golioth cert
-auth](https://docs.golioth.io/firmware/golioth-firmware-sdk/authentication/certificate-auth).
+auth](https://docs.golioth.io/reference/firmware/golioth-firmware-sdk/authentication/certificate-auth).
 
 ## Provisioning Certificates
 

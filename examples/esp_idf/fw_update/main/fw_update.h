@@ -27,7 +27,7 @@ struct golioth_fw_update_config
 /// @defgroup golioth_fw_update golioth_fw_update
 /// Create a background thread that will execute Over-the-Air (OTA) updates
 ///
-/// https://docs.golioth.io/reference/protocols/coap/ota
+/// https://docs.golioth.io/reference/device-api/api-docs/ota
 /// @{
 
 /// Create a thread that will perform firmware updates.

@@ -17,7 +17,7 @@ extern "C"
 /// @defgroup golioth_log golioth_log
 /// Functions for logging messages to Golioth
 ///
-/// https://docs.golioth.io/reference/protocols/coap/logging
+/// https://docs.golioth.io/device-management/logging/sending-logs
 /// @{
 
 /// Log an error to Golioth

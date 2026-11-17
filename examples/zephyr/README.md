@@ -99,11 +99,11 @@ west update
 
 # Golioth Services
 
-  - [Golioth Cloud](https://docs.golioth.io/cloud)
+  - [Golioth Cloud](https://docs.golioth.io)
   - [Authentication](https://docs.golioth.io/reference/device-api/device-auth)
   - [LightDB](https://docs.golioth.io/reference/device-api/api-docs/lightdb)
-  - [Location](https://docs.golioth.io/reference/device-api/api-docs/location)
-  - [Logging](https://docs.golioth.io/reference/device-api/api-docs/logging)
+  - [Location](https://docs.golioth.io/data-routing/transformers/location)
+  - [Logging](https://docs.golioth.io/device-management/logging/sending-logs)
   - [OTA](https://docs.golioth.io/reference/device-api/api-docs/ota)
   - [RPC](https://docs.golioth.io/reference/device-api/api-docs/rpc)
   - [Stream](https://docs.golioth.io/reference/device-api/api-docs/streaming-data)

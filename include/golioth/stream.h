@@ -17,7 +17,7 @@ extern "C"
 /// @defgroup golioth_stream golioth_stream
 /// Functions for interacting with Golioth Stream service.
 ///
-/// https://docs.golioth.io/reference/protocols/coap/stream
+/// https://docs.golioth.io/reference/device-api/api-docs/streaming-data
 /// @{
 
 /// Set an object in stream at a particular path asynchronously
