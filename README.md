@@ -19,7 +19,7 @@ the `docs` folder.
 
 SDK source: https://github.com/golioth/golioth-firmware-sdk
 
-Documentation: https://docs.golioth.io/firmware/golioth-firmware-sdk
+Documentation: https://docs.golioth.io/reference/firmware/golioth-firmware-sdk
 
 API documentation: https://firmware-sdk-docs.golioth.io/
 
@@ -55,10 +55,10 @@ instructions to build and run the examples.
 
 The `golioth_basics` example (`examples/<platform>/golioth_basics`) is recommended
 as a starting point, to learn how to connect to Golioth and use services like
-[LightDB State](https://docs.golioth.io/cloud/services/lightdb),
+[LightDB State](https://docs.golioth.io/application-services/lightdb-state),
 [Stream](https://docs.golioth.io/data-routing),
-[Logging](https://docs.golioth.io/cloud/services/logging),
-and [OTA](https://docs.golioth.io/cloud/services/ota).
+[Logging](https://docs.golioth.io/device-management/logging),
+and [OTA](https://docs.golioth.io/device-management/ota).
 
 ### Additional Documentation
 

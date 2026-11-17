@@ -17,7 +17,7 @@ extern "C"
 /// @defgroup golioth_fw_update golioth_fw_update
 /// Demonstrate how to interact with the OTA service to perform firmware updates
 ///
-/// https://docs.golioth.io/reference/protocols/coap/ota
+/// https://docs.golioth.io/reference/device-api/api-docs/ota
 /// @{
 
 /// Run Firmware Update.

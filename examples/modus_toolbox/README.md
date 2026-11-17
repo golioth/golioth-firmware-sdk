@@ -21,15 +21,15 @@ export CY_TOOLS_PATHS=$HOME/ModusToolbox/tools_2.4
 This example supports all Golioth services, including Over-the-Air firmware
 updates:
 
-* LightDB: https://docs.golioth.io/cloud/services/lightdb
+* LightDB: https://docs.golioth.io/application-services/lightdb-state
 * Stream: https://docs.golioth.io/data-routing
-* Logging: https://docs.golioth.io/cloud/services/logging
-* OTA: https://docs.golioth.io/cloud/services/ota
+* Logging: https://docs.golioth.io/device-management/logging
+* OTA: https://docs.golioth.io/device-management/ota
 
 If you haven't created an account or set up any devices with Golioth, head
 over to [golioth.io](https://golioth.io/) and click on "Get Started".
 Instructions for creating new projects and devices can be found in the
-[Golioth Console docs](https://docs.golioth.io/golioth-console).
+[Golioth Console docs](https://docs.golioth.io/getting-started/golioth-console).
 
 This example is composed of two projects: bootloader and golioth_app.
 You will need to compile and flash the projects separately.

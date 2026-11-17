@@ -19,7 +19,7 @@ extern "C"
 /// @defgroup golioth_ota golioth_ota
 /// Functions for interacting with Golioth OTA services
 ///
-/// https://docs.golioth.io/reference/protocols/coap/ota
+/// https://docs.golioth.io/reference/device-api/api-docs/ota
 /// @{
 
 /// Size of a SHA256 of Artifact hex string in bytes

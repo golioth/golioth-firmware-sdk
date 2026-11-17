@@ -17,7 +17,7 @@ extern "C"
 /// @defgroup golioth_lightdb_state golioth_lightdb_state
 /// Functions for interacting with Golioth LightDB State service.
 ///
-/// https://docs.golioth.io/reference/protocols/coap/lightdb
+/// https://docs.golioth.io/reference/device-api/api-docs/lightdb
 /// @{
 
 //-------------------------------------------------------------------------------
